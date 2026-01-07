@@ -1,0 +1,48 @@
+Code Create QR Code
+function generatePromptPayQR(mobile, amount) {
+  function formatMobile(mobile) {
+    if (mobile.length === 10 && mobile.startsWith("0")) {
+      return "0066" + mobile.substring(1);
+    }
+    return mobile;
+  }
+
+  const ppID = formatMobile(mobile);
+
+  // แปลงจำนวนเงินเป็นทศนิยม 2 ตำแหน่ง
+  const amountStr = amount.toFixed(2); // "150.00"
+  const amountLength = amountStr.length.toString().padStart(2, "0"); // "06"
+
+  // สร้าง Payload ตามมาตรฐาน EMVCo
+  let payload =
+    "000201010212" +             // Payload Format Indicator + Point of Initiation Method
+    "29370016A000000677010111" + // Application ID สำหรับ PromptPay
+    "0113" + ppID +              // SubTag 01 = เบอร์มือถือ (ความยาว 13)
+    "5802TH" +                   // Country = TH
+    "5303764" +                  // Currency = THB
+    "54" + amountLength + amountStr; // Tag 54 + length + amount
+
+  // CRC16
+  function crc16(payload) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+      crc ^= payload.charCodeAt(i) << 8;
+      for (let j = 0; j < 8; j++) {
+        crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+        crc &= 0xFFFF;
+      }
+    }
+    return crc.toString(16).toUpperCase().padStart(4, "0");
+  }
+
+  // ต่อ CRC16
+  const fullPayload = payload + "6304" + crc16(payload + "6304");
+  return fullPayload;
+}
+
+// ตัวอย่างใช้งาน
+const mobile = "0980744060";
+const amount = 150.00;
+const qrPayload = generatePromptPayQR(mobile, amount);
+
+console.log("PromptPay QR Payload:", qrPayload);

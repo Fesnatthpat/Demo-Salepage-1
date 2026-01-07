@@ -1,5 +1,7 @@
 @extends('layout')
 
+
+
 @section('content')
     <div class="container px-4 mx-auto md:px-8 lg:p-12">
 
@@ -51,7 +53,8 @@
                                 $totalOriginalPrice = $originalPrice * $quantity;
 
                                 // เช็คว่ามีส่วนลดหรือไม่
-                                $hasDiscount = $totalOriginalPrice > $totalPrice;
+                                $hasDiscount = ($item->attributes->discount ?? 0) > 0;
+
 
                                 // บวกสะสมเข้ายอดรวมทั้งหมด (PHP)
                                 $summaryTotalPrice += $totalPrice;
@@ -67,7 +70,9 @@
                                     <div class="mt-8 md:mt-10">
                                         {{-- ใส่ data-price และ data-original-price เพื่อให้ JS คำนวณ --}}
                                         <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" checked
-                                            data-price="{{ $totalPrice }}" data-original-price="{{ $totalOriginalPrice }}"
+                                            data-price="{{ $totalPrice }}" 
+                                            data-original-price="{{ $totalOriginalPrice }}"
+                                            data-discount="{{ $item->attributes->discount ?? 0 }}"
                                             class="item-checkbox w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
                                             onchange="calculateTotal()">
                                     </div>
@@ -82,7 +87,13 @@
                                         <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->name }}</h1>
                                         <p class="text-xs text-gray-500">Code: {{ $item->attributes->pd_code }}</p>
                                         <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น:
-                                            ฿{{ number_format($totalOriginalPrice / $quantity) }}</p>
+                                            @if ($hasDiscount)
+                                                <s class="text-gray-400">฿{{ number_format($originalPrice) }}</s>
+                                                <span class="font-semibold text-red-600 ml-1">฿{{ number_format($price) }}</span>
+                                            @else
+                                                <span class="text-gray-800">฿{{ number_format($price) }}</span>
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
 
@@ -98,7 +109,7 @@
                                             </div>
                                             <span
                                                 class="text-[10px] md:text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full mt-1">
-                                                ประหยัด ฿{{ number_format($totalOriginalPrice - $totalPrice) }}
+                                                ประหยัด ฿{{ number_format($item->attributes->discount ?? 0) }}
                                             </span>
                                         @else
                                             <div class="text-2xl font-bold text-emerald-600">
@@ -236,6 +247,7 @@
         function calculateTotal() {
             let totalSalePrice = 0; // ราคาทีต้องจ่ายจริง
             let totalOriginalPrice = 0; // ราคาเต็ม
+            let totalDiscount = 0; // [FIXED] ส่วนลดรวม
             let count = 0;
 
             const checkboxes = document.querySelectorAll('.item-checkbox');
@@ -245,17 +257,17 @@
                 if (checkbox.checked) {
                     let price = parseFloat(checkbox.getAttribute('data-price'));
                     let original = parseFloat(checkbox.getAttribute('data-original-price'));
+                    let discount = parseFloat(checkbox.getAttribute('data-discount')); // [NEW] Get fixed discount
 
                     if (!isNaN(price)) totalSalePrice += price;
                     if (!isNaN(original)) totalOriginalPrice += original;
                     else totalOriginalPrice += price; // Fallback
 
+                    if (!isNaN(discount)) totalDiscount += discount; // [NEW] Sum up fixed discounts
+
                     count++;
                 }
             });
-
-            // คำนวณส่วนลดรวม
-            let totalDiscount = totalOriginalPrice - totalSalePrice;
 
             // Update หน้าจอ
             const totalDisplay = document.getElementById('total-display');
@@ -265,7 +277,7 @@
 
             if (totalDisplay) totalDisplay.innerText = numberWithCommas(totalSalePrice);
             if (subtotalDisplay) subtotalDisplay.innerText = numberWithCommas(totalOriginalPrice);
-            if (discountDisplay) discountDisplay.innerText = numberWithCommas(totalDiscount);
+            if (discountDisplay) discountDisplay.innerText = numberWithCommas(totalDiscount); // [FIXED] Use the new totalDiscount
             if (selectedCount) selectedCount.innerText = count;
 
             // จัดการ Checkbox Select All

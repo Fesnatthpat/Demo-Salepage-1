@@ -64,25 +64,34 @@ class CartService
         $productModel = Product::findOrFail($productId);
         $userId = $this->getUserId();
         
-        $salePrice = $productModel->real_price;
+        // --- REPLICATE PRODUCT PAGE LOGIC ---
+        // On product page, $currentPrice is pd_price, $fullPrice is pd_full_price or calculated
+        $salePrice = (float) $productModel->pd_price; // This is the price shown as current price on product page (e.g., 1499)
+        $discountAmount = isset($productModel->discount_amount) ? (float) $productModel->discount_amount : 0;
+        
+        $fullPrice = (float) $productModel->pd_full_price; // This is the full price (e.g., 2499)
+        if (!($fullPrice > 0)) { // Fallback if pd_full_price is not set or zero
+            $fullPrice = $salePrice + $discountAmount;
+        }
+        // --- END OF LOGIC REPLICATION ---
+
         $quantity = max(1, $quantity);
 
         $cartDetails = [
             'id' => $productId,
             'name' => $productModel->pd_name,
-            'price' => $salePrice,
+            'price' => $salePrice, // Store the selling price as the main price for the cart item
             'quantity' => $quantity,
             'attributes' => [
                 'image' => $productModel->pd_img,
-                'original_price' => $productModel->pd_price,
-                'discount' => $productModel->discount_amount,
+                'original_price' => $fullPrice, // Store the full price as an attribute
+                'discount' => $discountAmount,
                 'pd_code' => $productModel->pd_code,
             ],
             'associatedModel' => $productModel,
         ];
 
         // Let Darryle's built-in 'update' handle quantity logic.
-        // The 'add' method with 'update' set to true also works, but this is explicit.
         if (Cart::session($userId)->has($productId)) {
             Cart::session($userId)->update($productId, [
                 'quantity' => [

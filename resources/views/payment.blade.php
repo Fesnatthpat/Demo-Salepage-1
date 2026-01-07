@@ -27,10 +27,10 @@
 
         {{-- คำนวณยอดรวม --}}
         @php
-            $grandTotal = isset($totalAmount) ? $totalAmount : 0;
+            $grandTotal = $totalAmount; // This is the sum of discounted prices for selected items
             $shippingCost = 0;
-            $discount = 0;
-            $finalTotal = $grandTotal + $shippingCost - $discount;
+            $discount = $totalDiscount; // Use the totalDiscount passed from controller for display
+            $finalTotal = $grandTotal + $shippingCost; // Correct calculation: Total is already discounted.
         @endphp
 
         {{-- ==================== 1. ส่วนที่อยู่ ==================== --}}
@@ -311,15 +311,19 @@
                     <h3 class="font-bold text-gray-800 mb-4">สรุปยอดชำระ:</h3>
                     <div class="space-y-2 text-sm text-gray-600 mb-4">
                         <div class="flex justify-between">
+                            <span>ราคารวมเต็มก่อนลดราคา</span>
+                            <span class="font-medium text-gray-900">฿{{ number_format($totalOriginalAmount) }}</span>
+                        </div>
+                        <div class="flex justify-between">
                             <span>รวมการสั่งซื้อ</span>
-                            <span class="font-medium text-gray-900">฿{{ number_format($grandTotal) }}</span>
+                            <span class="font-medium text-green-600">฿{{ number_format($grandTotal) }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>การจัดส่ง</span>
                             <span class="font-medium text-gray-900">฿{{ number_format($shippingCost) }}</span>
                         </div>
                         @if ($discount > 0)
-                            <div class="flex justify-between text-green-600">
+                            <div class="flex justify-between text-red-600">
                                 <span>ส่วนลด</span>
                                 <span>-฿{{ number_format($discount) }}</span>
                             </div>

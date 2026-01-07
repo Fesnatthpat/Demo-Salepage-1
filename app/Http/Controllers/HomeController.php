@@ -10,30 +10,38 @@ class HomeController extends Controller
     {
         $recommendedProducts = DB::table('product_salepage')
             ->select(
+                'product_salepage.pd_code', // เลือก code จากตาราง salepage เป็นหลัก
+                'product_salepage.pd_sp_discount',
                 'product.pd_id',
-                'product.pd_code',
                 'product.pd_name',
                 'product.pd_price',
                 'product.pd_img',
-                'product_salepage.pd_sp_discount',
-                'product.pd_full_price' // <--- เลือกมาแล้ว
+                'product.pd_full_price'
             )
-            ->join('product', 'product_salepage.pd_id', '=', 'product.pd_id')
+            // ★★★ แก้ไขจุดที่ 1: เปลี่ยนมาเชื่อมด้วย pd_code ตามหน้า AllProducts ★★★
+            ->leftJoin('product', 'product_salepage.pd_code', '=', 'product.pd_code')
+            
+            // เชื่อม Brand (ถ้าจำเป็น)
             ->leftJoin('brand', 'product.brand_id', '=', 'brand.brand_id')
+            
+            // กรองเฉพาะที่เปิดใช้งานใน Salepage
             ->where('product_salepage.pd_sp_active', 1)
-            ->where('product.pd_status', 1)
+            
+            // (Optional) ถ้าต้องการเช็คว่าสินค้าหลักต้องเปิดขายด้วย ให้เปิดบรรทัดนี้
+            // ->where('product.pd_status', 1) 
 
             ->groupBy(
+                'product_salepage.pd_code',
+                'product_salepage.pd_sp_discount',
                 'product.pd_id',
-                'product.pd_code',
                 'product.pd_name',
                 'product.pd_price',
                 'product.pd_img',
-                'product_salepage.pd_sp_discount',
-                'product.pd_full_price' // <--- [จุดที่แก้] ต้องเพิ่มบรรทัดนี้ใน groupBy ด้วยครับ
+                'product.pd_full_price'
             )
-            ->orderBy('product.pd_id', 'desc')
-            ->limit(4)
+            // เรียงลำดับจากใหม่ไปเก่า
+            ->orderBy('product_salepage.pd_id', 'desc') // ใช้ ID ของ salepage ในการเรียง
+            ->limit(4) // ดึงมา 4 รายการ
             ->get();
 
         return view('index', compact('recommendedProducts'));

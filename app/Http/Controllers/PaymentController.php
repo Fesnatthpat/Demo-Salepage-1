@@ -29,18 +29,28 @@ class PaymentController extends Controller
         $cartContent = Cart::session(auth()->id())->getContent();
         $cartItems = [];
         $totalAmount = 0;
+        $totalDiscount = 0; // Initialize total discount
+        $totalOriginalAmount = 0; // Initialize total original amount
 
         foreach ($cartContent as $item) {
             if (in_array((string) $item->id, $selectedItems)) {
                 $cartItems[] = $item;
                 $totalAmount += ($item->price * $item->quantity);
+
+                // Calculate original price for this item (similar to cart.blade.php)
+                $originalPrice = $item->attributes->has('original_price')
+                    ? $item->attributes->original_price
+                    : $item->price;
+                
+                $totalOriginalAmount += ($originalPrice * $item->quantity);
+                $totalDiscount += ($item->attributes->discount ?? 0); // Sum up fixed per-item discount
             }
         }
 
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
 
-        return view('payment', compact('cartItems', 'totalAmount', 'addresses', 'selectedItems', 'provinces'));
+        return view('payment', compact('cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 'addresses', 'selectedItems', 'provinces'));
     }
 
     // [Step 2] Process Order (Create)

@@ -110,7 +110,7 @@
                                                         <span
                                                             class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                                         <span
-                                                            class="text-xs text-gray-400 line-through">฿{{ number_format($currentPrice) }}</span>
+                                                            class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
                                                     @else
                                                         <span
                                                             class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>

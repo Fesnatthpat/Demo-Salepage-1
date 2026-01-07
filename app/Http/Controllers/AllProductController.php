@@ -9,26 +9,27 @@ class AllProductController extends Controller
 {
     public function index(Request $request)
     {
-        // [แก้ไข 1] เริ่มต้น Query จากตาราง product_salepage (เหมือนหน้า Index)
+        // 1. เริ่มต้น Query จากตาราง product_salepage
         $query = DB::table('product_salepage')
             ->select(
-                'product_salepage.pd_id as ps_pd_id', // Alias product_salepage's pd_id to avoid conflict
-                'product_salepage.pd_code as ps_pd_code',
-                'product_salepage.pd_sp_discount', // Discount from salepage
+                // ดึง pd_code จากตาราง salepage เป็นหลัก
+                'product_salepage.pd_code', 
+                'product_salepage.pd_sp_discount', // ส่วนลดจาก salepage
+                
+                // ดึงรายละเอียดอื่นๆ จากตาราง product
                 'product.pd_id',
-                'product.pd_code',
                 'product.pd_name',
                 'product.pd_img',
-                'product.pd_price',      // Current selling price from product
-                'product.pd_full_price'  // Full price from product
+                'product.pd_price',      // ราคาขายปัจจุบัน
+                'product.pd_full_price'  // ราคาเต็ม
             )
-            // [แก้ไข 2] Left Join ไปหาตาราง product (สินค้า)
-            ->leftJoin('product', 'product_salepage.pd_id', '=', 'product.pd_id')
+            // 2. เชื่อมตารางด้วย pd_code (ตามที่รีเควส)
+            ->leftJoin('product', 'product_salepage.pd_code', '=', 'product.pd_code')
             
-            // [แก้ไข 3] กรองเฉพาะรายการที่ Active ใน salepage และ product ต้องเปิดขาย
-            ->where('product_salepage.pd_sp_active', 1); // Only filter salepage active, product status will be null if not found
+            // 3. กรองเฉพาะรายการที่ Active ใน salepage
+            ->where('product_salepage.pd_sp_active', 1);
 
-        // --- Search Logic ---
+        // --- Search Logic (ค้นหาจากชื่อสินค้า) ---
         if ($request->has('search') && $request->search != '') {
             $query->where('product.pd_name', 'like', '%' . $request->search . '%');
         }
@@ -38,19 +39,18 @@ class AllProductController extends Controller
              // $query->where(...) 
         }
 
-        // [แก้ไข 4] Group By ตามจำนวน field ที่ Select มาให้ครบ
+        // 4. Group By เพื่อป้องกันข้อมูลซ้ำ (เลือกทุกคอลัมน์ที่ Select มา)
         $products = $query->groupBy(
-            'product_salepage.pd_id', // Group by salepage pd_id
-            'product_salepage.pd_code', // Group by salepage pd_code
+            'product_salepage.pd_code',
             'product_salepage.pd_sp_discount',
             'product.pd_id',
-            'product.pd_code',
             'product.pd_name',
             'product.pd_img',
             'product.pd_price',
             'product.pd_full_price'
         )
-        ->orderBy('product.pd_id', 'desc')
+        // เรียงลำดับ (สามารถเปลี่ยนเป็น product_salepage.created_at หรือ id ได้ถ้ามี)
+        ->orderBy('product.pd_id', 'desc') 
         ->paginate(12);
 
         // ดึง Category (ตัวอย่าง)

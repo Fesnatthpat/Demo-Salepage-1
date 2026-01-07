@@ -138,9 +138,15 @@
                 return;
             }
 
+            // คำนวณนาที (ปัดเศษลง)
             const minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
+
+            // ★★★ แก้ไขตรงนี้: เพิ่ม Math.floor() ให้วินาทีด้วย ★★★
+            let seconds = Math.floor(timeLeft % 60);
+
+            // เติมเลข 0 ข้างหน้าถ้าต่ำกว่า 10 (เช่น 09, 05)
             seconds = seconds < 10 ? '0' + seconds : seconds;
+
             timerElement.innerHTML = `${minutes}:${seconds}`;
             timeLeft--;
         }

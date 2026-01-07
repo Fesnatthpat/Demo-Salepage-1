@@ -54,7 +54,7 @@ class AllProductController extends Controller
         ->paginate(12);
 
         // ดึง Category (ตัวอย่าง)
-        $categories = []; 
+        $categories = ["Electronics", "Books", "Clothing", "Home & Kitchen"]; 
 
         return view('allproducts', compact('products', 'categories'));
     }

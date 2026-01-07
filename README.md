@@ -1,59 +1,53 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# README: Salepage Demo 1 - Code & Security Review
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+ไฟล์นี้เป็นสรุปผลการตรวจสอบโค้ดและโครงสร้างของโปรเจค `salepage-demo-1` ณ วันที่ 7 มกราคม 2026 โดย Gemini CLI
 
-## About Laravel
+## ภาพรวม
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+โปรเจคอยู่ในเกณฑ์ที่ดีมาก โดยเฉพาะในด้านความปลอดภัยพื้นฐาน นักพัฒนาได้นำมาตรการรักษาความปลอดภัยที่สำคัญมาใช้อย่างถูกต้อง เช่น การป้องกันการเข้าถึงข้อมูลของผู้อื่น (Authorization), การป้องกัน CSRF, และการจัดการไฟล์อัปโหลดที่ปลอดภัย
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+จุดที่แนะนำให้ปรับปรุงส่วนใหญ่จะเกี่ยวกับโครงสร้างโค้ด (Code Structure) และแนวทางปฏิบัติเพื่อการบำรุงรักษาในระยะยาว (Maintainability) มากกว่าที่จะเป็นช่องโหว่ด้านความปลอดภัยที่ร้ายแรง
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## สรุปผลการตรวจสอบ (ตามไฟล์)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. การตั้งค่าและความปลอดภัยพื้นฐาน (`.gitignore`)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+*   [✔] **ดีมาก:** ไฟล์ `.gitignore` ได้รับการตั้งค่าอย่างถูกต้อง มีการละเว้นไฟล์ที่ละเอียดอ่อนและไม่ควรอยู่ใน Repository เช่น `.env`
 
-## Laravel Sponsors
+### 2. Dependencies (`composer.json`)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+*   [✔] **ดี:** โปรเจคใช้ Laravel 12 ซึ่งเป็นเวอร์ชันล่าสุด และมีการเลือกใช้ Dependencies ที่เหมาะสมกับงาน (เช่น `darryldecode/cart`, `laravel/socialite`)
 
-### Premium Partners
+### 3. การจัดการเส้นทาง (`routes/web.php`)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+*   [✔] **ดี:** มีการจัดระเบียบ Route ที่ดีและเข้าใจง่าย มีการใช้ `auth` middleware เพื่อป้องกันส่วนที่ต้องมีการยืนยันตัวตนอย่างถูกต้อง
+*   [✔] **ดำเนินการแล้ว:** ลบ Route สำหรับการทดสอบ และลบกลุ่ม Middleware ที่ซ้ำซ้อนออกแล้ว
 
-## Contributing
+### 4. Controller Logic (`PaymentController.php`)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+*   [✔] **ดีมาก (ด้านความปลอดภัย):**
+    *   **Authorization:** มีการตรวจสอบสิทธิ์ของผู้ใช้ (`where('user_id', Auth::id())`) ในทุก Query ทำให้ผู้ใช้ไม่สามารถเข้าถึงข้อมูลออเดอร์ของคนอื่นได้
+    *   **Data Integrity:** การใช้ Database Transaction (`DB::beginTransaction`) ช่วยให้ข้อมูลไม่เสียหายหากเกิดข้อผิดพลาดระหว่างการสร้างออเดอร์
+    *   **File Uploads:** การอัปโหลดสลิปมีการตรวจสอบประเภทและขนาดของไฟล์ และใช้คำสั่ง `store()` ซึ่งเป็นวิธีที่ปลอดภัยตามมาตรฐานของ Laravel
 
-## Code of Conduct
+*   [✔] **ดำเนินการแล้ว:**
+    *   **Hardcoded Values:** ย้ายเบอร์โทรศัพท์ PromptPay ไปเก็บในไฟล์ `.env.example` และปรับโค้ดให้เรียกใช้จาก `env('PROMPTPAY_ACCOUNT')`
+    *   **Refactoring Business Logic:** แยกโค้ด Logic การสร้าง PromptPay Payload ไปยัง Service Class ใหม่ (`app/Services/PromptPayService.php`) และปรับ Controller ให้เรียกใช้ Service นี้แทน ทำให้โค้ดสะอาดและง่ายต่อการบำรุงรักษา
+    *   **Unnecessary Database Query:** ลบการ Query ฐานข้อมูลที่ไม่จำเป็นออกไปแล้ว
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 5. View & Frontend (`qr.blade.php`)
 
-## Security Vulnerabilities
+*   [✔] **ดี:** มีการใช้ syntax `{{ $variable }}` ของ Blade ในการแสดงผลข้อมูล ซึ่งช่วยป้องกันการโจมตีแบบ XSS (Cross-Site Scripting) ได้โดยอัตโนมัติ
+*   [⚠️] **ข้อเสนอแนะ:** โค้ด JavaScript (ส่วนของ Timer, Popup) ในไฟล์ View มีปริมาณค่อนข้างเยอะ หากในอนาคตมีความซับซ้อนมากขึ้น ควรพิจารณาแยกออกไปเป็นไฟล์ `.js` ต่างหากเพื่อให้ง่ายต่อการจัดการ
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## สถานะปัจจุบัน
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+*   โปรเจคได้รับการปรับปรุงตามคำแนะนำหลักๆ เพื่อเพิ่มความสะอาดของโค้ดและโครงสร้างแล้ว
+*   ส่วนของ `.env` ได้รับการตั้งค่าตัวแปร `PROMPTPAY_ACCOUNT` ใน `.env.example` แล้ว
+*   Route ที่ไม่จำเป็นถูกลบออกแล้ว
+*   `PaymentController` ได้รับการ Refactor เพื่อลดความซับซ้อนและใช้ Service Class สำหรับ Logic การสร้าง PromptPay
+

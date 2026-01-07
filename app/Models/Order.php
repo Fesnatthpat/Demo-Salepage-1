@@ -10,20 +10,33 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'ord_id'; // ระบุ PK ให้ตรงกับตาราง orders
+    // ★ 1. ระบุ Primary Key ให้ชัดเจน
+    protected $primaryKey = 'ord_id'; 
+    
+    // ★ 2. ปิด timestamps ถ้าในตารางไม่ได้ใช้ created_at/updated_at มาตรฐาน (แต่ถ้าใช้ก็ลบบรรทัดนี้ทิ้งได้)
+    // public $timestamps = false; 
 
-    protected $guarded = [];
+    // ★ 3. อนุญาตให้บันทึกข้อมูลลงฟิลด์เหล่านี้
+    protected $fillable = [
+        'ord_code',
+        'user_id',
+        'total_price',
+        'shipping_cost',
+        'total_discount',
+        'net_amount',
+        'ord_date',
+        'status_id',
+        'shipping_name',
+        'shipping_phone',
+        'shipping_address',
+        'slip_path', // <--- เพิ่มตัวนี้
+    ];
 
     public function details()
     {
         return $this->hasMany(OrderDetail::class, 'ord_id', 'ord_id');
     }
 
-    /**
-     * Get the formatted order date.
-     *
-     * @return string
-     */
     public function getFormattedOrdDateAttribute()
     {
         return Carbon::parse($this->ord_date)->format('d/m/Y H:i');

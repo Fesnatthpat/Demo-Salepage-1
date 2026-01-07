@@ -25,11 +25,7 @@ Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name(
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/login/line', [AuthController::class, 'redirectToLine'])->name('login.line');
-
-// Wrap the callback in the 'web' middleware group to ensure session handling.
-Route::group(['middleware' => ['web']], function () {
-    Route::get('/callback/line', [AuthController::class, 'handleLineCallback'])->name('line.callback');
-});
+Route::get('/callback/line', [AuthController::class, 'handleLineCallback'])->name('line.callback');
 
 
 // --- 4. ส่วนที่ต้อง Login ---
@@ -68,13 +64,3 @@ Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('ord
 // --- API (สำหรับ Dropdown ที่อยู่) ---
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
-
-// --- Session Test Routes ---
-Route::get('/test-session-set', function () {
-    session(['test_key' => 'hello world']);
-    return 'Session value has been set.';
-});
-
-Route::get('/test-session-get', function () {
-    return 'Session value is: ' . session('test_key', 'not found');
-});

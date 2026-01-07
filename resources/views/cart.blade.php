@@ -110,8 +110,10 @@
                                     {{-- ปุ่มจัดการจำนวน --}}
                                     <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                                         <div class="flex items-center border border-gray-300 rounded h-10 md:h-12 bg-white">
-                                            <button type="button" class="cart-action-btn px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg"
-                                                data-url="{{ route('cart.update', ['id' => $item->id, 'action' => 'decrease']) }}" data-method="PATCH">
+                                            <button type="button"
+                                                class="cart-action-btn px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg"
+                                                data-url="{{ route('cart.update', ['id' => $item->id, 'action' => 'decrease']) }}"
+                                                data-method="PATCH">
                                                 -
                                             </button>
 
@@ -119,13 +121,16 @@
                                                 {{ $quantity }}
                                             </span>
 
-                                            <button type="button" class="cart-action-btn px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg"
-                                                data-url="{{ route('cart.update', ['id' => $item->id, 'action' => 'increase']) }}" data-method="PATCH">
+                                            <button type="button"
+                                                class="cart-action-btn px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg"
+                                                data-url="{{ route('cart.update', ['id' => $item->id, 'action' => 'increase']) }}"
+                                                data-method="PATCH">
                                                 +
                                             </button>
                                         </div>
 
-                                        <button type="button" class="cart-action-btn text-red-500 hover:text-red-700 font-medium text-sm md:text-base underline md:no-underline md:btn md:btn-ghost md:btn-sm md:text-red-500"
+                                        <button type="button"
+                                            class="cart-action-btn text-red-500 hover:text-red-700 font-medium text-sm md:text-base underline md:no-underline md:btn md:btn-ghost md:btn-sm md:text-red-500"
                                             data-url="{{ route('cart.remove', $item->id) }}" data-method="DELETE">
                                             ลบรายการ
                                         </button>
@@ -304,11 +309,11 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
             document.querySelectorAll('.cart-action-btn').forEach(button => {
-                button.addEventListener('click', function (e) {
+                button.addEventListener('click', function(e) {
                     e.preventDefault();
 
                     const url = this.getAttribute('data-url');

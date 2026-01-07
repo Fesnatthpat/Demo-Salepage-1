@@ -6,7 +6,10 @@
         // More robust price calculation
         $currentPrice = (float) $product->pd_price;
         $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-        $fullPrice = isset($product->pd_full_price) && $product->pd_full_price > 0 ? (float) $product->pd_full_price : ($currentPrice + $discount);
+        $fullPrice =
+            isset($product->pd_full_price) && $product->pd_full_price > 0
+                ? (float) $product->pd_full_price
+                : $currentPrice + $discount;
         $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
     @endphp
 
@@ -37,7 +40,7 @@
                 <div class="p-6 lg:p-10">
                     <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">{{ $product->pd_name }}</h1>
                     <div class="mt-2 text-sm text-gray-500">
-                        @if($product->brand_name)
+                        @if ($product->brand_name)
                             <span class="font-semibold">Brand:</span> {{ $product->brand_name }} |
                         @endif
                         <span class="font-semibold">Code:</span> {{ $product->pd_code }} |
@@ -123,7 +126,8 @@
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
                     },
                     body: formData
                 })

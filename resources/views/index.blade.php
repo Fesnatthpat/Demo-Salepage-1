@@ -103,7 +103,10 @@
                         // More robust price calculation
                         $currentPrice = (float) $product->pd_price;
                         $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-                        $fullPrice = isset($product->pd_full_price) && $product->pd_full_price > 0 ? (float) $product->pd_full_price : ($currentPrice + $discount);
+                        $fullPrice =
+                            isset($product->pd_full_price) && $product->pd_full_price > 0
+                                ? (float) $product->pd_full_price
+                                : $currentPrice + $discount;
                         $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
                     @endphp
 

@@ -66,8 +66,13 @@
                                     @php
                                         // More robust price calculation
                                         $currentPrice = (float) $product->pd_price;
-                                        $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-                                        $fullPrice = isset($product->pd_full_price) && $product->pd_full_price > 0 ? (float) $product->pd_full_price : ($currentPrice + $discount);
+                                        $discount = isset($product->pd_sp_discount)
+                                            ? (float) $product->pd_sp_discount
+                                            : 0;
+                                        $fullPrice =
+                                            isset($product->pd_full_price) && $product->pd_full_price > 0
+                                                ? (float) $product->pd_full_price
+                                                : $currentPrice + $discount;
                                         $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
                                     @endphp
                                     {{-- ========================================================= --}}
@@ -91,12 +96,13 @@
                                         </a>
 
                                         <div class="card-body p-4 flex flex-col flex-1">
-                                                                                    <h2
-                                                                                        class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
-                                                                                        <a href="{{ url('/product/' . ($product->pd_id ?? $product->ps_pd_id)) }}"
-                                                                                            class="hover:text-emerald-600 transition">{{ $product->pd_name ?? 'Missing Product Name' }}</a>
-                                                                                    </h2>
-                                                                                    <p class="text-xs text-gray-500">Code: {{ $product->pd_code ?? $product->ps_pd_code }}</p>
+                                            <h2
+                                                class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
+                                                <a href="{{ url('/product/' . ($product->pd_id ?? $product->ps_pd_id)) }}"
+                                                    class="hover:text-emerald-600 transition">{{ $product->pd_name ?? 'Missing Product Name' }}</a>
+                                            </h2>
+                                            <p class="text-xs text-gray-500">Code:
+                                                {{ $product->pd_code ?? $product->ps_pd_code }}</p>
                                             {{-- ส่วนราคาและปุ่มเพิ่มลงตะกร้า --}}
                                             <div class="mt-auto pt-2">
                                                 <div class="flex flex-col mb-3">
@@ -189,7 +195,8 @@
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute('content')
                             },
                             body: formData
                         })

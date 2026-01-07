@@ -218,9 +218,9 @@
                     badge.classList.add('scale-100');
                 }, 200);
             }
-                };
-            </script>
-            @stack('scripts')
-        </body>
-        
-        </html>
+        };
+    </script>
+    @stack('scripts')
+</body>
+
+</html>

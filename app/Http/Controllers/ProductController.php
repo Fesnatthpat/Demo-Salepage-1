@@ -14,8 +14,15 @@ class ProductController extends Controller
             return redirect('/')->with('error', 'ไม่พบสินค้านี้');
         }
 
-        // Manually add the discount to the main object for compatibility with the view
-        $product->pd_sp_discount = $product->salePage->pd_sp_discount ?? 0;
+        // If a sale page entry exists, override the price and discount
+        if ($product->salePage) {
+            $product->pd_price = $product->salePage->pd_sp_price;
+            $product->pd_sp_discount = $product->salePage->pd_sp_discount;
+        } else {
+            // Ensure pd_sp_discount is 0 if there is no sale page, for consistency
+            $product->pd_sp_discount = 0;
+        }
+
 
         return view('product', compact('product'));
     }

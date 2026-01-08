@@ -13,7 +13,7 @@
         <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
             <span
                 class="inline-block py-1 px-3 rounded-full bg-red-600 text-white text-xs font-bold tracking-widest mb-4 animate-bounce">
-                LIMITED TIME OFFER
+                ซื้อก่อน ลดก่อน
             </span>
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                 <span class="block text-gray-300 text-2xl md:text-3xl font-light mb-2">สมาชิกช้อปสินค้า</span>
@@ -100,14 +100,25 @@
             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                 @foreach ($recommendedProducts as $product)
                     @php
-                        // More robust price calculation
-                        $currentPrice = (float) $product->pd_price;
-                        $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-                        $fullPrice =
-                            isset($product->pd_full_price) && $product->pd_full_price > 0
-                                ? (float) $product->pd_full_price
-                                : $currentPrice + $discount;
-                        $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
+                        // Assume pd_price (aliased from product_salepage.pd_sp_price) is the ORIGINAL price on sale page
+                        $originalPrice  = (float) ($product->pd_price ?? 0); 
+                        // Assume pd_sp_discount is the discount AMOUNT to subtract
+                        $discountAmount = (float) ($product->pd_sp_discount ?? 0);
+                        
+                        // The final selling price is original price minus discount amount
+                        $finalSellingPrice = $originalPrice - $discountAmount;
+
+                        // Ensure final selling price is not negative
+                        if ($finalSellingPrice < 0) {
+                            $finalSellingPrice = 0;
+                        }
+                        
+                        // A product is on sale if a discount is applied.
+                        $isOnSale = $discountAmount > 0;
+
+                        // Variable names for display
+                        $currentPriceForDisplay = $finalSellingPrice; // This will be green
+                        $fullPriceForDisplay = $originalPrice; // This will be strikethrough
                     @endphp
 
                     {{-- ★★★ เพิ่ม class flex flex-col h-full เพื่อจัด layout ให้ปุ่มอยู่ล่างสุดเสมอ ★★★ --}}
@@ -125,7 +136,7 @@
                                 @if ($isOnSale)
                                     <div
                                         class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
-                                        ลด ฿{{ number_format($discount) }}
+                                        ลด ฿{{ number_format($discountAmount) }}
                                     </div>
                                 @endif
 
@@ -159,13 +170,13 @@
                                     @if ($isOnSale)
                                         {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
                                         <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPriceForDisplay) }}</span>
                                         <span
-                                            class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
+                                            class="text-xs text-gray-400 line-through">฿{{ number_format($fullPriceForDisplay) }}</span>
                                     @else
                                         {{-- กรณีไม่มีส่วนลด: แสดงราคาขายปัจจุบันสีเขียว --}}
                                         <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPriceForDisplay) }}</span>
                                     @endif
                                 </div>
                             </div>

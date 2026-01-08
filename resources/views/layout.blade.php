@@ -79,7 +79,7 @@
                             src="/images/logo_hm.png" alt="Logo" class="h-10 w-auto object-contain"></a>
                     <ul class="menu menu-horizontal px-1 gap-6 text-base font-medium text-gray-600 hidden md:flex">
                         <li><a href="/" class="hover:text-emerald-600 hover:bg-transparent">หน้าหลัก</a></li>
-                        <li><a href="/allproducts" class="hover:text-emerald-600 hover:bg-transparent">สินค้า</a></li>
+                        <li><a href="/allproducts" class="hover:text-emerald-600 hover:bg-transparent">สินค้าทั้งหมด</a></li>
                         @auth
                             <li><a href="/orderhistory"
                                     class="hover:text-emerald-600 hover:bg-transparent">ประวัติการสั่งซื้อ</a></li>

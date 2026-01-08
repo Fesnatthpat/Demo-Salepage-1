@@ -14,16 +14,16 @@ class AllProductController extends Controller
             ->select(
                 // ดึง pd_code จากตาราง salepage เป็นหลัก
                 'product_salepage.pd_code', 
-                'product_salepage.pd_sp_discount', // ส่วนลดจาก salepage
-                
+                'product_salepage.pd_sp_price as pd_price', // ราคาขายจาก salepage (แก้ไข)
+                'product_salepage.pd_sp_discount',        // ส่วนลดจาก salepage
+
                 // ดึงรายละเอียดอื่นๆ จากตาราง product
                 'product.pd_id',
                 'product.pd_name',
                 'product.pd_img',
-                'product.pd_price',      // ราคาขายปัจจุบัน
-                'product.pd_full_price'  // ราคาเต็ม
+                'product.pd_full_price'                   // ราคาเต็ม (อาจจะยังใช้แสดง)
             )
-            // 2. เชื่อมตารางด้วย pd_code (ตามที่รีเควส)
+            // 2. เชื่อมตารางด้วย pd_code
             ->leftJoin('product', 'product_salepage.pd_code', '=', 'product.pd_code')
             
             // 3. กรองเฉพาะรายการที่ Active ใน salepage
@@ -39,17 +39,17 @@ class AllProductController extends Controller
              // $query->where(...) 
         }
 
-        // 4. Group By เพื่อป้องกันข้อมูลซ้ำ (เลือกทุกคอลัมน์ที่ Select มา)
+        // 4. Group By เพื่อป้องกันข้อมูลซ้ำ
         $products = $query->groupBy(
             'product_salepage.pd_code',
+            'product_salepage.pd_sp_price',
             'product_salepage.pd_sp_discount',
             'product.pd_id',
             'product.pd_name',
             'product.pd_img',
-            'product.pd_price',
             'product.pd_full_price'
         )
-        // เรียงลำดับ (สามารถเปลี่ยนเป็น product_salepage.created_at หรือ id ได้ถ้ามี)
+        // เรียงลำดับ
         ->orderBy('product.pd_id', 'desc') 
         ->paginate(12);
 

@@ -18,7 +18,7 @@ class Product extends Model
     public function salePage()
     {
         // สมมติว่ามี Model ProductSalepage ถ้าไม่มีให้สร้าง หรือระบุ Table เอง
-        return $this->hasOne(ProductSalepage::class, 'pd_id', 'pd_id')
+        return $this->hasOne(ProductSalepage::class, 'pd_code', 'pd_code')
             ->where('pd_sp_active', 1);
     }
 

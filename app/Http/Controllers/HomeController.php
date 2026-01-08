@@ -11,10 +11,10 @@ class HomeController extends Controller
         $recommendedProducts = DB::table('product_salepage')
             ->select(
                 'product_salepage.pd_code', // เลือก code จากตาราง salepage เป็นหลัก
+                'product_salepage.pd_sp_price as pd_price', // << แก้ไข
                 'product_salepage.pd_sp_discount',
                 'product.pd_id',
                 'product.pd_name',
-                'product.pd_price',
                 'product.pd_img',
                 'product.pd_full_price'
             )
@@ -32,10 +32,10 @@ class HomeController extends Controller
 
             ->groupBy(
                 'product_salepage.pd_code',
+                'product_salepage.pd_sp_price', // << แก้ไข
                 'product_salepage.pd_sp_discount',
                 'product.pd_id',
                 'product.pd_name',
-                'product.pd_price',
                 'product.pd_img',
                 'product.pd_full_price'
             )

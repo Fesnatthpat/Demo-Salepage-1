@@ -3,14 +3,25 @@
 @section('content')
     {{-- Logic PHP คงเดิม --}}
     @php
-        // More robust price calculation
-        $currentPrice = (float) $product->pd_price;
-        $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-        $fullPrice =
-            isset($product->pd_full_price) && $product->pd_full_price > 0
-                ? (float) $product->pd_full_price
-                : $currentPrice + $discount;
-        $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
+        // Assume pd_price (aliased from product_salepage.pd_sp_price) is the ORIGINAL price on sale page
+        $originalPrice  = (float) ($product->pd_price ?? 0); 
+        // Assume pd_sp_discount is the discount AMOUNT to subtract
+        $discountAmount = (float) ($product->pd_sp_discount ?? 0);
+        
+        // The final selling price is original price minus discount amount
+        $finalSellingPrice = $originalPrice - $discountAmount;
+
+        // Ensure final selling price is not negative
+        if ($finalSellingPrice < 0) {
+            $finalSellingPrice = 0;
+        }
+        
+        // A product is on sale if a discount is applied.
+        $isOnSale = $discountAmount > 0;
+
+        // Variable names for display
+        $currentPriceForDisplay = $finalSellingPrice; // This will be green
+        $fullPriceForDisplay = $originalPrice; // This will be strikethrough
     @endphp
 
     <div x-data="{
@@ -30,7 +41,7 @@
                         @if ($isOnSale)
                             <div
                                 class="absolute top-4 left-4 badge badge-error text-white gap-1 text-sm font-bold shadow-md px-3 py-1">
-                                ลด ฿{{ number_format($discount) }}
+                                ลด ฿{{ number_format($discountAmount) }}
                             </div>
                         @endif
                     </div>
@@ -54,11 +65,11 @@
                     <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 mt-4">
                         <h2 class="text-3xl lg:text-4xl font-bold text-emerald-600 flex items-end gap-3">
                             @if ($isOnSale)
-                                <span>฿{{ number_format($currentPrice) }}</span>
+                                <span>฿{{ number_format($currentPriceForDisplay) }}</span>
                                 <span
-                                    class="text-lg text-gray-400 font-normal line-through">฿{{ number_format($fullPrice) }}</span>
+                                    class="text-lg text-gray-400 font-normal line-through">฿{{ number_format($fullPriceForDisplay) }}</span>
                             @else
-                                <span>฿{{ number_format($currentPrice) }}</span>
+                                <span>฿{{ number_format($currentPriceForDisplay) }}</span>
                             @endif
                         </h2>
                     </div>

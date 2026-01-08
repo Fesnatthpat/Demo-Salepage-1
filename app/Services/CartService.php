@@ -61,48 +61,63 @@ class CartService
      */
     public function addOrUpdate(int $productId, int $quantity): void
     {
-        $productModel = Product::findOrFail($productId);
+        $productModel = Product::with('salePage')->findOrFail($productId);
         $userId = $this->getUserId();
-        
-        // --- REPLICATE PRODUCT PAGE LOGIC ---
-        // On product page, $currentPrice is pd_price, $fullPrice is pd_full_price or calculated
-        $salePrice = (float) $productModel->pd_price; // This is the price shown as current price on product page (e.g., 1499)
-        $discountAmount = isset($productModel->discount_amount) ? (float) $productModel->discount_amount : 0;
-        
-        $fullPrice = (float) $productModel->pd_full_price; // This is the full price (e.g., 2499)
-        if (!($fullPrice > 0)) { // Fallback if pd_full_price is not set or zero
-            $fullPrice = $salePrice + $discountAmount;
+
+        // --- NEW LOGIC: Determine price from salePage or base product based on new interpretation ---
+        $priceForCart = 0;
+        $originalPriceForCart = 0;
+        $discountAmount = 0;
+
+        if ($productModel->salePage) {
+            // Use sale page pricing: pd_sp_price is original, pd_sp_discount is amount off
+            $originalPrice = (float) $productModel->salePage->pd_sp_price;
+            $discountAmount = (float) $productModel->salePage->pd_sp_discount;
+            
+            $finalSellingPrice = $originalPrice - $discountAmount;
+            if ($finalSellingPrice < 0) {
+                $finalSellingPrice = 0;
+            }
+
+            $priceForCart = $finalSellingPrice;
+            $originalPriceForCart = $originalPrice;
+        } else {
+            // Use standard product pricing: pd_price is final, pd_full_price is original
+            $priceForCart = (float) $productModel->pd_price;
+            $originalPriceForCart = (float) ($productModel->pd_full_price > 0 ? $productModel->pd_full_price : $priceForCart);
+            $discountAmount = 0; // No specific sale page discount
         }
-        // --- END OF LOGIC REPLICATION ---
+        // --- END OF NEW LOGIC ---
 
         $quantity = max(1, $quantity);
 
         $cartDetails = [
             'id' => $productId,
             'name' => $productModel->pd_name,
-            'price' => $salePrice, // Store the selling price as the main price for the cart item
+            'price' => $priceForCart, // Store the final selling price
             'quantity' => $quantity,
             'attributes' => [
                 'image' => $productModel->pd_img,
-                'original_price' => $fullPrice, // Store the full price as an attribute
-                'discount' => $discountAmount,
+                'original_price' => $originalPriceForCart, // Store the full/original price
+                'discount' => $discountAmount, // Store the discount amount
                 'pd_code' => $productModel->pd_code,
             ],
             'associatedModel' => $productModel,
         ];
 
         // Let Darryle's built-in 'update' handle quantity logic.
-        if (Cart::session($userId)->has($productId)) {
-            Cart::session($userId)->update($productId, [
+        $cart = Cart::session($userId);
+        if ($cart->has($productId)) {
+            $cart->update($productId, [
                 'quantity' => [
                     'relative' => false,
                     'value' => $quantity
                 ],
-                'price' => $salePrice,
+                'price' => $priceForCart, // Always update with the latest price
                 'attributes' => $cartDetails['attributes']
             ]);
         } else {
-            Cart::session($userId)->add($cartDetails);
+            $cart->add($cartDetails);
         }
 
         if (Auth::check()) {

@@ -13,21 +13,21 @@
                 <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-end">
                     <form action="{{ route('admin.salepages.index') }}" method="GET" class="w-full sm:w-auto">
                         <div class="flex w-full sm:w-auto">
-                            <input type="text" name="search" 
-                                   placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
-                                   class="input input-bordered w-full sm:w-64 rounded-r-none focus:outline-none" 
-                                   value="{{ request('search') }}">
-                            
+                            <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
+                                class="input input-bordered w-full sm:w-64 rounded-r-none focus:outline-none"
+                                value="{{ request('search') }}">
+
                             <button type="submit" class="btn btn-square btn-primary rounded-l-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </button>
                         </div>
                     </form>
 
-                    <a href="{{ route('admin.salepages.create') }}"
-                        class="btn btn-primary w-full sm:w-auto">
+                    <a href="{{ route('admin.salepages.create') }}" class="btn btn-primary w-full sm:w-auto">
                         <i class="fas fa-plus mr-2"></i>
                         เพิ่มราคาใหม่
                     </a>
@@ -46,12 +46,12 @@
             <!-- Status Filter -->
             <div class="mb-4">
                 <div class="join">
-                    <a href="{{ route('admin.salepages.index', ['search' => request('search')]) }}" 
-                       class="join-item btn btn-sm {{ !request()->has('status') ? 'btn-active' : '' }}">ทั้งหมด</a>
-                    <a href="{{ route('admin.salepages.index', ['status' => 1, 'search' => request('search')]) }}" 
-                       class="join-item btn btn-sm {{ request('status') == '1' ? 'btn-active' : '' }}">ใช้งาน</a>
-                    <a href="{{ route('admin.salepages.index', ['status' => 0, 'search' => request('search')]) }}" 
-                       class="join-item btn btn-sm {{ request('status') == '0' ? 'btn-active' : '' }}">ไม่ใช้งาน</a>
+                    <a href="{{ route('admin.salepages.index', ['search' => request('search')]) }}"
+                        class="join-item btn btn-sm {{ !request()->has('status') ? 'btn-active' : '' }}">ทั้งหมด</a>
+                    <a href="{{ route('admin.salepages.index', ['status' => 1, 'search' => request('search')]) }}"
+                        class="join-item btn btn-sm {{ request('status') == '1' ? 'btn-active' : '' }}">ใช้งาน</a>
+                    <a href="{{ route('admin.salepages.index', ['status' => 0, 'search' => request('search')]) }}"
+                        class="join-item btn btn-sm {{ request('status') == '0' ? 'btn-active' : '' }}">ไม่ใช้งาน</a>
                 </div>
             </div>
 
@@ -60,7 +60,7 @@
                     <thead>
                         <tr>
                             <th>สินค้า</th>
-                            <th class="text-right">ราคา SalePage</th>
+                            <th class="text-right">ราคา</th>
                             <th class="text-right">ส่วนลด</th>
                             <th>รายละเอียด</th>
                             <th class="text-center">สถานะ</th>
@@ -73,7 +73,7 @@
                                 <td>
                                     <div class="flex items-center space-x-3">
                                         <div class="avatar">
-                                            <div class="mask mask-squircle w-12 h-12">
+                                            <div class="rounded border w-12 h-12">
                                                 <img src="https://crm.kawinbrothers.com/product_images/{{ $salePage->product->pd_img ?? 'default.png' }}"
                                                     alt="{{ $salePage->product->pd_name ?? '' }}">
                                             </div>

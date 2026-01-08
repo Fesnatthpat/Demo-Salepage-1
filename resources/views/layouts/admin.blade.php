@@ -46,7 +46,7 @@
                 </a>
                 <a href="{{ route('admin.salepages.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md {{ request()->routeIs('admin.salepages.*') ? 'bg-gray-200' : 'hover:bg-gray-200' }}">
                     <i class="fas fa-box mr-3"></i>
-                    ราคาสินค้า SalePage
+                    จัดการราคาสินค้า
                 </a>
                 <a href="#" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
                     <i class="fas fa-users mr-3"></i>

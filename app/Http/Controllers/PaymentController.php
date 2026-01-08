@@ -132,7 +132,7 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error: '.$e->getMessage());
+            return back()->with('error', ' '.$e->getMessage());
         }
     }
 

@@ -64,3 +64,43 @@ Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('ord
 // --- API (สำหรับ Dropdown ที่อยู่) ---
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
+
+
+// --- 5. Admin Panel ---
+
+
+use App\Http\Controllers\Admin\DashboardController;
+
+
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+
+
+
+
+
+Route::prefix('admin')->name('admin.')->group(function () {
+
+
+    // TODO: Add admin authentication middleware
+
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+
+
+
+
+    // Order Management
+
+
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+
+
+    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+
+
+    Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+
+});
+

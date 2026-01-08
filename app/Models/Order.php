@@ -32,9 +32,23 @@ class Order extends Model
         'slip_path', // <--- เพิ่มตัวนี้
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'ord_date' => 'datetime',
+    ];
+
     public function details()
     {
         return $this->hasMany(OrderDetail::class, 'ord_id', 'ord_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function getFormattedOrdDateAttribute()

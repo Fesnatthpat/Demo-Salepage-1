@@ -7,7 +7,7 @@
         @if (session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
-                <strong class="font-bold">เกิดข้อผิดพลาด!</strong>
+                {{-- <strong class="font-bold">เกิดข้อผิดพลาด!</strong> --}}
                 <span class="block sm:inline">{{ session('error') }}</span>
             </div>
         @endif

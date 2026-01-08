@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'รายละเอียดออเดอร์ | Salepage Demo')
+
 @section('content')
     @php
         // Map status ID to text and color
@@ -89,8 +91,21 @@
                         <h3 class="font-bold text-gray-800 mb-3 text-base">ข้อมูลการจัดส่ง</h3>
                         <div class="text-sm text-gray-600 space-y-1">
                             <p class="font-semibold text-gray-900">{{ $order->shipping_name }}</p>
-                            <p>{{ $order->shipping_address }}</p>
-                            <p>เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p>
+                            @php
+                                $addressParts = explode("\nหมายเหตุ:", $order->shipping_address, 2);
+                                $mainAddress = $addressParts[0];
+                                $noteText = isset($addressParts[1]) ? trim($addressParts[1]) : null;
+                            @endphp
+                            <p>{!! nl2br(e($mainAddress)) !!}</p>
+                            <div class="divider my-2"></div>
+                            {{-- <p class="pt-2 font-semibold text-gray-900">เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p> --}}
+                            <p class="max-h-20 overflow-y-auto"><span class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span> {{ $order->shipping_phone }}</p>
+                            @if ($noteText)
+                                <div class="divider my-2"></div>
+                                <p class="max-h-20 overflow-y-auto"><span class="font-semibold text-gray-700">หมายเหตุ:</span> {{ $noteText }}</p>
+                            @endif
+                            {{-- <p class="pt-2">เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p> --}}
+                            {{-- <p class="pt-2">เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p> --}}
                         </div>
                     </div>
 

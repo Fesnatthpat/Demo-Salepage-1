@@ -36,17 +36,17 @@
                 <h1 class="text-2xl font-bold text-emerald-600">CRM ADMIN</h1>
             </div>
             <nav class="flex-1 px-4 py-4 space-y-2">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 bg-gray-200 rounded-md">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 rounded-md {{ request()->routeIs('admin.dashboard') ? 'bg-gray-200' : 'hover:bg-gray-200' }}">
                     <i class="fas fa-tachometer-alt mr-3"></i>
                     แดชบอร์ด
                 </a>
-                <a href="#" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
+                <a href="{{ route('admin.orders.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md {{ request()->routeIs('admin.orders.*') ? 'bg-gray-200' : 'hover:bg-gray-200' }}">
                     <i class="fas fa-shopping-cart mr-3"></i>
                     ออเดอร์
                 </a>
-                <a href="#" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
+                <a href="{{ route('admin.salepages.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md {{ request()->routeIs('admin.salepages.*') ? 'bg-gray-200' : 'hover:bg-gray-200' }}">
                     <i class="fas fa-box mr-3"></i>
-                    สินค้า
+                    ราคาสินค้า SalePage
                 </a>
                 <a href="#" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
                     <i class="fas fa-users mr-3"></i>

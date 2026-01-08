@@ -10,7 +10,7 @@
     {{-- SweetAlert2 สำหรับแจ้งเตือนสวยๆ --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
-    <title>SALESPAGE</title>
+    <title>@yield('title', 'Salepage Demo')</title>
 </head>
 
 <body class="font-['Noto_Sans_Thai'] bg-[#f9fafb]">

@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', $product->pd_name . ' | Salepage Demo')
+
 @section('content')
     {{-- Logic PHP คงเดิม --}}
     @php
@@ -108,7 +110,7 @@
                 <div class="p-6 lg:p-10 border-t lg:border-r border-gray-200 lg:col-start-1 lg:row-start-2 bg-gray-50/50">
                     <h3 class="text-lg font-bold text-gray-900 border-b-2 border-emerald-500 inline-block pb-1 mb-4">
                         รายละเอียดสินค้า</h3>
-                    <p class="text-gray-700 text-sm leading-7">{{ $product->pd_details ?? $product->pd_name }}</p>
+                    <p class="text-gray-700 text-sm leading-7">{{ $product->pd_sp_details ?? $product->pd_details ?? $product->pd_name }}</p>
                 </div>
 
             </div>

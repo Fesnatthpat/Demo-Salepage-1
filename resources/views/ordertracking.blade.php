@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'ติดตามคำสั่งซื้อ | Salepage Demo')
+
 @section('content')
 
     @php

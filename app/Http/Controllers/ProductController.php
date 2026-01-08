@@ -18,9 +18,11 @@ class ProductController extends Controller
         if ($product->salePage) {
             $product->pd_price = $product->salePage->pd_sp_price;
             $product->pd_sp_discount = $product->salePage->pd_sp_discount;
+            $product->pd_sp_details = $product->salePage->pd_sp_details;
         } else {
             // Ensure pd_sp_discount is 0 if there is no sale page, for consistency
             $product->pd_sp_discount = 0;
+            $product->pd_sp_details = null;
         }
 
 

@@ -75,6 +75,9 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+
+
 
 
 
@@ -102,5 +105,29 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
 
-});
+
+
+
+        // Product Management (now Sale Pages)
+
+
+
+
+
+        Route::resource('salepages', AdminProductController::class);
+
+
+
+
+
+    });
+
+
+
+
+
+    
+
+
+
 

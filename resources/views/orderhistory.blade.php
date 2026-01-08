@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'ประวัติการสั่งซื้อ | Salepage Demo')
+
 @section('content')
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
         <div class="bg-white border border-gray-200 rounded-lg p-6 lg:p-8 shadow-sm">

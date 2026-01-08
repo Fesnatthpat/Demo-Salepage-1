@@ -1,6 +1,6 @@
 @extends('layout')
 
-
+@section('title', 'ตะกร้าสินค้า | Salepage Demo')
 
 @section('content')
     <div class="container px-4 mx-auto md:px-8 lg:p-12">

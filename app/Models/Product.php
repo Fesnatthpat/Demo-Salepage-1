@@ -13,6 +13,16 @@ class Product extends Model
 
     protected $primaryKey = 'pd_id';
 
+    protected $fillable = [
+        'pd_name',
+        'pd_code',
+        'pd_details',
+        'pd_price',
+        'pd_full_price',
+        'pd_status',
+        'pd_img',
+    ];
+
     // Relationship ไปยังตาราง SalePage (ส่วนลด)
     // หมายเหตุ: คุณควรสร้าง Model ชื่อ ProductSalepage หรือใช้ชื่อ Table ให้ถูกต้อง
     public function salePage()

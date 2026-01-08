@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'เข้าสู่ระบบ | Salepage Demo')
+
 @section('content')
     <div class="container mx-auto px-4">
         {{-- จัดกึ่งกลางหน้าจอทั้งแนวตั้งและแนวนอน --}}

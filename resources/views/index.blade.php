@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'หน้าหลัก | Salepage Demo')
+
 @section('content')
 
     {{-- HERO SECTION (คงเดิม) --}}

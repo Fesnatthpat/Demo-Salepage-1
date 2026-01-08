@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'สินค้าทั้งหมด | Salepage Demo')
+
 @section('content')
 
     <div class="bg-gray-50 min-h-screen py-8">

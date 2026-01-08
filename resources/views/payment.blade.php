@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'ชำระเงินและที่อยู่จัดส่ง | Salepage Demo')
+
 @section('content')
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
 
@@ -88,6 +90,12 @@
                                         </p>
                                         <p><span class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span>
                                             {{ $address->phone }}</p>
+                                        
+                                        @if($address->note)
+                                        <div class="divider my-2"></div>
+                                        <p class="max-h-20 overflow-y-auto"><span class="font-semibold text-gray-700">หมายเหตุ:</span>
+                                            {{ $address->note }}</p>
+                                        @endif
                                     </div>
                                 </div>
 

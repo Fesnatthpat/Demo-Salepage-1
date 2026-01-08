@@ -70,23 +70,28 @@ class PaymentController extends Controller
         try {
             // คำนวณยอดเงิน
             $totalPrice = 0;
+            $totalDiscount = 0; // Initialize totalDiscount
             $itemsToBuy = [];
             foreach ($cartContent as $item) {
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
                     $totalPrice += ($item->price * $item->quantity);
+                    $totalDiscount += ($item->attributes['discount'] ?? 0) * $item->quantity; // Sum up discounts
                 }
             }
 
             if (count($itemsToBuy) === 0) throw new \Exception('ไม่พบสินค้า');
 
             $shippingCost = 0;
-            $totalDiscount = 0;
+            // $totalDiscount is now correctly calculated
             $netAmount = ($totalPrice + $shippingCost) - $totalDiscount;
 
             // ดึงที่อยู่
             $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
             $fullAddress = $address->address_line1.' '.($address->address_line2 ?? '').' '.($address->district->name_th ?? '').' '.($address->amphure->name_th ?? '').' '.($address->province->name_th ?? '').' '.$address->zipcode;
+            if(!empty($address->note)) {
+                $fullAddress .= "\nหมายเหตุ: " . $address->note;
+            }
 
             $orderCode = 'ORD-'.date('YmdHis').'-'.rand(100, 999);
 

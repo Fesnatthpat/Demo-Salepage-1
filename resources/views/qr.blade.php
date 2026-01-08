@@ -1,5 +1,7 @@
 @extends('layout')
 
+@section('title', 'QR Code สำหรับออเดอร์ ' . $order->ord_code . ' | Salepage Demo')
+
 @section('content')
     <div class="container mx-auto p-4 min-h-screen flex items-center justify-center bg-gray-50">
 

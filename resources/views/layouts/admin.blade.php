@@ -48,6 +48,10 @@
                     <i class="fas fa-box mr-3"></i>
                     จัดการราคาสินค้า
                 </a>
+                <a href="{{ route('admin.products.index') }}" class="flex items-center px-4 py-2 text-gray-600 rounded-md {{ request()->routeIs('admin.products.*') ? 'bg-gray-200' : 'hover:bg-gray-200' }}">
+                    <i class="fas fa-boxes mr-3"></i> {{-- Changed icon to fas fa-boxes --}}
+                    จัดการสินค้า
+                </a>
                 <a href="#" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
                     <i class="fas fa-users mr-3"></i>
                     ลูกค้า
@@ -105,5 +109,6 @@
             </main>
         </div>
     </div>
+    @stack('scripts') {{-- Add this line to render scripts from child views --}}
 </body>
 </html>

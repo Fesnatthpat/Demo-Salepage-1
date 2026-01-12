@@ -6,6 +6,7 @@ use App\Models\CartStorage;
 use App\Models\Product;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ProductSalepage;
 use Illuminate\Support\Collection;
 
 class CartService
@@ -61,7 +62,22 @@ class CartService
      */
     public function addOrUpdate(int $productId, int $quantity): void
     {
-        $productModel = Product::with('salePage')->findOrFail($productId);
+        $salePageProduct = ProductSalepage::with('images')->find($productId);
+
+        if ($salePageProduct) {
+            $productModel = (object) [
+                'id' => $salePageProduct->pd_sp_id,
+                'pd_name' => $salePageProduct->pd_sp_name,
+                'pd_price' => $salePageProduct->pd_sp_price,
+                'pd_sp_discount' => $salePageProduct->pd_sp_discount,
+                'pd_code' => $salePageProduct->pd_code,
+                'pd_img' => $salePageProduct->images->first()->image_path ?? null,
+                'salePage' => $salePageProduct,
+            ];
+        } else {
+            $productModel = Product::with('salePage')->findOrFail($productId);
+        }
+
         $userId = $this->getUserId();
 
         // --- NEW LOGIC: Determine price from salePage or base product based on new interpretation ---

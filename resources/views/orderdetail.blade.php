@@ -58,21 +58,27 @@
                             <div
                                 class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                 <div class="flex items-center gap-4">
-                                    @if ($detail->product && $detail->product->pd_img)
+                                    @if ($detail->productSalepage && $detail->productSalepage->images->isNotEmpty())
                                         <div
                                             class="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                            <img src="https://crm.kawinbrothers.com/product_images/{{ $detail->product->pd_img }}"
-                                                class="w-full h-full object-cover" alt="{{ $detail->product->pd_name }}" />
+                                            <img src="{{ asset('storage/' . $detail->productSalepage->images->first()->image_path) }}"
+                                                class="w-full h-full object-cover" alt="{{ $detail->productSalepage->pd_sp_name }}" />
                                         </div>
                                     @endif
                                     <div>
                                         <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-2">
-                                            {{ $detail->product->pd_name ?? 'ไม่พบข้อมูลสินค้า' }}
+                                            {{ $detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า' }}
                                         </p>
-                                        <p class="text-xs text-gray-500">Code: {{ $detail->product->pd_code ?? 'N/A' }}</p>
+                                        <p class="text-xs text-gray-500">Code: {{ $detail->productSalepage->pd_code ?? 'N/A' }}</p>
                                         <p class="text-sm text-gray-500">จำนวน: {{ $detail->ordd_count }} ชิ้น</p>
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:
-                                            ฿{{ number_format($detail->pd_price, 2) }}</p>
+                                            @if($detail->pd_original_price > $detail->pd_price)
+                                                <s class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
+                                                <span class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                            @else
+                                                <span class="text-gray-800">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="text-right flex-shrink-0">

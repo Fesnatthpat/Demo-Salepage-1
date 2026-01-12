@@ -130,7 +130,7 @@
                         {{-- รูปภาพ --}}
                         <a href="{{ url('/product/' . $product->pd_id) }}">
                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}"
+                                <img src="{{ asset('storage/' . $product->pd_img) }}"
                                     alt="{{ $product->pd_name }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
 

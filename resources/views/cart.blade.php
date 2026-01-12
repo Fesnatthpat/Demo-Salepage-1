@@ -79,7 +79,7 @@
 
                                     {{-- รูปภาพ --}}
                                     <div class="flex-shrink-0">
-                                        <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}"
+                                        <img src="{{ asset('storage/' . $item->attributes->image) }}"
                                             alt="{{ $item->name }}"
                                             class="w-20 h-20 object-cover rounded-lg md:w-24 md:h-24" />
                                     </div>

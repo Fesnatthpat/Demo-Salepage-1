@@ -30,7 +30,7 @@ class OrderController extends Controller
      */
     public function show(string $orderCode)
     {
-        $order = Order::with('details', 'details.product')
+        $order = Order::with('details', 'details.productSalepage.images')
                         ->where('ord_code', $orderCode)
                         ->where('user_id', Auth::id())
                         ->firstOrFail();
@@ -68,7 +68,7 @@ class OrderController extends Controller
         $orderCode = $request->input('order_code');
         $phone = $request->input('phone');
 
-        $order = Order::with('details', 'details.product')
+        $order = Order::with('details', 'details.productSalepage.images')
                         ->where('ord_code', $orderCode)
                         ->where('shipping_phone', $phone) // Validate phone as a second factor
                         ->first();

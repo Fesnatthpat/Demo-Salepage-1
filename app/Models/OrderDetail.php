@@ -16,8 +16,8 @@ class OrderDetail extends Model
     /**
      * Get the product associated with the order detail.
      */
-    public function product()
+    public function productSalepage()
     {
-        return $this->belongsTo(Product::class, 'pd_id', 'pd_id');
+        return $this->belongsTo(ProductSalepage::class, 'pd_id', 'pd_sp_id');
     }
 }

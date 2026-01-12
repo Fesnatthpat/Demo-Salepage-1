@@ -78,6 +78,9 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 
+use App\Http\Controllers\Admin\ProductManagementController; // Add this line
+
+
 
 
 
@@ -108,13 +111,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 
-        // Product Management (now Sale Pages)
+    // Sale Pages Management
+
+
+    Route::resource('salepages', AdminProductController::class);
 
 
 
 
 
-        Route::resource('salepages', AdminProductController::class);
+        // Product Management (New)
+
+
+
+
+
+        Route::resource('products', ProductManagementController::class);
+
+
+
+
+
+        Route::delete('/products/image/{image}', [ProductManagementController::class, 'deleteImage'])->name('products.image.destroy');
 
 
 

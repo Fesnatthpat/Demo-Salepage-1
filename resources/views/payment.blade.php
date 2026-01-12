@@ -267,7 +267,7 @@
                             <div class="flex items-center gap-4">
                                 <div
                                     class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                    <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}"
+                                    <img src="{{ asset('storage/' . $item->attributes->image) }}"
                                         class="w-full h-full object-cover" />
                                 </div>
                                 <div>

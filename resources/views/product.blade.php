@@ -3,39 +3,35 @@
 @section('title', $product->pd_name . ' | Salepage Demo')
 
 @section('content')
-    {{-- Logic PHP คงเดิม --}}
     @php
-        // Assume pd_price (aliased from product_salepage.pd_sp_price) is the ORIGINAL price on sale page
-        $originalPrice  = (float) ($product->pd_price ?? 0); 
-        // Assume pd_sp_discount is the discount AMOUNT to subtract
+        $originalPrice  = (float) ($product->pd_price ?? 0);
         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
-        
-        // The final selling price is original price minus discount amount
-        $finalSellingPrice = $originalPrice - $discountAmount;
+        $finalSellingPrice = max(0, $originalPrice - $discountAmount);
+        $isOnSale = $discountAmount > 0;
+        $currentPriceForDisplay = $finalSellingPrice;
+        $fullPriceForDisplay = $originalPrice;
 
-        // Ensure final selling price is not negative
-        if ($finalSellingPrice < 0) {
-            $finalSellingPrice = 0;
+        $imagePaths = collect($product->images)->pluck('image_path')->map(function ($path) {
+            return asset('storage/' . $path);
+        })->toArray();
+
+        if (empty($imagePaths) && $product->pd_img) {
+            $imagePaths[] = asset('storage/' . $product->pd_img);
         }
         
-        // A product is on sale if a discount is applied.
-        $isOnSale = $discountAmount > 0;
+        $activeImageUrl = $imagePaths[0] ?? 'https://via.placeholder.com/600x600.png?text=No+Image';
 
-        // Variable names for display
-        $currentPriceForDisplay = $finalSellingPrice; // This will be green
-        $fullPriceForDisplay = $originalPrice; // This will be strikethrough
     @endphp
 
     <div x-data="{
-        activeImage: 'https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}',
-        images: ['https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}'],
+        activeImage: '{{ $activeImageUrl }}',
+        images: {{ json_encode($imagePaths) }},
         quantity: 1
     }" class="container mx-auto px-4 py-8">
 
         <div class="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2">
 
-                {{-- ส่วนรูปภาพ (คงเดิม) --}}
                 <div class="p-6 lg:p-10 lg:border-r border-gray-200">
                     <div
                         class="w-full relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
@@ -46,6 +42,15 @@
                                 ลด ฿{{ number_format($discountAmount) }}
                             </div>
                         @endif
+                    </div>
+                     <div class="grid grid-cols-5 gap-2 mt-4">
+                        <template x-for="image in images" :key="image">
+                            <div @click="activeImage = image"
+                                class="aspect-square rounded-md overflow-hidden cursor-pointer border-2"
+                                :class="{ 'border-emerald-500': activeImage === image, 'border-transparent': activeImage !== image }">
+                                <img :src="image" class="w-full h-full object-cover">
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -77,7 +82,7 @@
                     </div>
 
                     {{-- ฟอร์มเพิ่มสินค้า (AJAX) และปุ่มเพิ่มลงตะกร้า --}}
-                    <form id="add-to-cart-form" data-action="{{ route('cart.add', ['id' => $product->pd_id]) }}"
+                    <form id="add-to-cart-form" data-action="{{ route('cart.add', ['id' => $product->id]) }}"
                         class="flex flex-col sm:flex-row gap-3 pt-2">
 
                         {{-- Input จำนวนสินค้า --}}

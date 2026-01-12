@@ -126,9 +126,9 @@
                 <ul class="space-y-4">
                     @forelse($topSellingProducts as $item)
                         <li class="flex items-center space-x-4">
-                            <img src="https://crm.kawinbrothers.com/product_images/{{ $item->product->pd_img ?? '' }}" alt="{{ $item->product->pd_name ?? 'N/A' }}" class="w-16 h-16 object-cover rounded-lg bg-gray-200">
+                            <img src="{{ asset('storage/' . ($item->productSalepage->images->first()->image_path ?? '')) }}" alt="{{ $item->productSalepage->pd_sp_name ?? 'N/A' }}" class="w-16 h-16 object-cover rounded-lg bg-gray-200">
                             <div class="flex-1">
-                                <p class="font-semibold text-gray-800">{{ $item->product->pd_name ?? 'ไม่พบชื่อสินค้า' }}</p>
+                                <p class="font-semibold text-gray-800">{{ $item->productSalepage->pd_sp_name ?? 'ไม่พบชื่อสินค้า' }}</p>
                                 <p class="text-sm text-gray-500">ขายแล้ว {{ $item->total_sold }} ชิ้น</p>
                             </div>
                         </li>

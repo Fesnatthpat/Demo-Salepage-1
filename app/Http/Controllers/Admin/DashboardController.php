@@ -40,7 +40,7 @@ class DashboardController extends Controller
 
         // 6. Top Selling Products
         $topSellingProducts = OrderDetail::select('pd_id', DB::raw('SUM(ordd_count) as total_sold'))
-            ->with('product:pd_id,pd_name,pd_img') // Eager load product name and image
+            ->with('productSalepage.images')
             ->groupBy('pd_id')
             ->orderBy('total_sold', 'desc')
             ->limit(5)

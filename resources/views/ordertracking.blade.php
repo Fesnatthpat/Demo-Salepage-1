@@ -175,14 +175,14 @@
                         <div class="space-y-4">
                             @foreach ($order->details as $detail)
                                 <div class="flex gap-4">
-                                    @if ($detail->product && $detail->product->pd_img)
-                                        <img src="https://crm.kawinbrothers.com/product_images/{{ $detail->product->pd_img }}"
+                                    @if ($detail->productSalepage && $detail->productSalepage->images->isNotEmpty())
+                                        <img src="{{ asset('storage/' . $detail->productSalepage->images->first()->image_path) }}"
                                             class="w-20 h-20 rounded-md object-cover border border-gray-100"
-                                            alt="{{ $detail->product->pd_name }}">
+                                            alt="{{ $detail->productSalepage->pd_sp_name }}">
                                     @endif
                                     <div class="flex-1">
                                         <h4 class="font-medium text-gray-900">
-                                            {{ $detail->product->pd_name ?? 'ไม่พบข้อมูลสินค้า' }}</h4>
+                                            {{ $detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า' }}</h4>
                                         <p class="text-sm text-gray-500">จำนวน: {{ $detail->ordd_count }} ชิ้น</p>
                                         <div class="flex justify-between items-center mt-2">
                                             <span class="text-gray-500 text-sm">x{{ $detail->ordd_count }}</span>

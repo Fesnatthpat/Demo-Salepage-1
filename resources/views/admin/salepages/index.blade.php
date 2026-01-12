@@ -74,13 +74,13 @@
                                     <div class="flex items-center space-x-3">
                                         <div class="avatar">
                                             <div class="rounded border w-12 h-12">
-                                                <img src="https://crm.kawinbrothers.com/product_images/{{ $salePage->product->pd_img ?? 'default.png' }}"
-                                                    alt="{{ $salePage->product->pd_name ?? '' }}">
+                                                <img src="{{ asset('storage/' . ($salePage->images->first()->image_path ?? 'default.png')) }}"
+                                                    alt="{{ $salePage->pd_sp_name ?? '' }}">
                                             </div>
                                         </div>
                                         <div>
                                             <div class="font-bold w-64 truncate">
-                                                {{ $salePage->product->pd_name ?? 'ไม่พบสินค้าหลัก' }}</div>
+                                                {{ $salePage->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}</div>
                                             <div class="text-sm opacity-50">{{ $salePage->pd_code }}</div>
                                         </div>
                                     </div>

@@ -8,40 +8,22 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $recommendedProducts = DB::table('product_salepage')
+        $recommendedProducts = DB::table('product_salepage as ps')
             ->select(
-                'product_salepage.pd_code', // เลือก code จากตาราง salepage เป็นหลัก
-                'product_salepage.pd_sp_price as pd_price', // << แก้ไข
-                'product_salepage.pd_sp_discount',
-                'product.pd_id',
-                'product.pd_name',
-                'product.pd_img',
-                'product.pd_full_price'
+                'ps.pd_sp_id as pd_id',
+                'ps.pd_code',
+                'ps.pd_sp_name as pd_name',
+                'ps.pd_sp_price as pd_price',
+                'ps.pd_sp_discount',
+                'img.image_path as pd_img'
             )
-            // ★★★ แก้ไขจุดที่ 1: เปลี่ยนมาเชื่อมด้วย pd_code ตามหน้า AllProducts ★★★
-            ->leftJoin('product', 'product_salepage.pd_code', '=', 'product.pd_code')
-            
-            // เชื่อม Brand (ถ้าจำเป็น)
-            ->leftJoin('brand', 'product.brand_id', '=', 'brand.brand_id')
-            
-            // กรองเฉพาะที่เปิดใช้งานใน Salepage
-            ->where('product_salepage.pd_sp_active', 1)
-            
-            // (Optional) ถ้าต้องการเช็คว่าสินค้าหลักต้องเปิดขายด้วย ให้เปิดบรรทัดนี้
-            // ->where('product.pd_status', 1) 
-
-            ->groupBy(
-                'product_salepage.pd_code',
-                'product_salepage.pd_sp_price', // << แก้ไข
-                'product_salepage.pd_sp_discount',
-                'product.pd_id',
-                'product.pd_name',
-                'product.pd_img',
-                'product.pd_full_price'
-            )
-            // เรียงลำดับจากใหม่ไปเก่า
-            ->orderBy('product_salepage.pd_id', 'desc') // ใช้ ID ของ salepage ในการเรียง
-            ->limit(4) // ดึงมา 4 รายการ
+            ->leftJoin('image_product as img', function ($join) {
+                $join->on('ps.pd_sp_id', '=', 'img.product_id')
+                     ->where('img.is_primary', '=', 1);
+            })
+            ->where('ps.pd_sp_active', 1)
+            ->orderBy('ps.pd_sp_id', 'desc')
+            ->limit(4)
             ->get();
 
         return view('index', compact('recommendedProducts'));

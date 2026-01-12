@@ -92,7 +92,7 @@
                                         class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-b-md overflow-hidden duration-300 group flex flex-col h-full">
                                         <a href="{{ url('/product/' . $product->pd_id) }}">
                                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                                <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}"
+                                                <img src="{{ asset('storage/' . $product->pd_img) }}"
                                                     alt="{{ $product->pd_name }}"
                                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
 
@@ -109,11 +109,11 @@
                                         <div class="card-body p-4 flex flex-col flex-1">
                                             <h2
                                                 class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
-                                                <a href="{{ url('/product/' . ($product->pd_id ?? $product->ps_pd_id)) }}"
+                                                <a href="{{ url('/product/' . ($product->pd_id ?? $product->pd_sp_id)) }}"
                                                     class="hover:text-emerald-600 transition">{{ $product->pd_name ?? 'Missing Product Name' }}</a>
                                             </h2>
                                             <p class="text-xs text-gray-500">Code:
-                                                {{ $product->pd_code ?? $product->ps_pd_code }}</p>
+                                                {{ $product->pd_code }}</p>
                                             {{-- ส่วนราคาและปุ่มเพิ่มลงตะกร้า --}}
                                             <div class="mt-auto pt-2">
                                                 <div class="flex flex-col mb-3">
@@ -158,7 +158,7 @@
                                             </svg>
                                         </div>
                                         <p class="font-bold text-gray-700">ไม่พบรายละเอียดสินค้า</p>
-                                        <p class="text-sm text-gray-500">สำหรับ Sale ID: {{ $product->ps_pd_id }}</p>
+                                        <p class="text-sm text-gray-500">สำหรับ Sale ID: {{ $product->pd_sp_id }}</p>
                                         <p class="text-sm text-gray-500">กรุณาตรวจสอบข้อมูลสินค้า</p>
                                     </div>
                                 @endif

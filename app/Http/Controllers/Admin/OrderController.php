@@ -38,7 +38,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load('user', 'details.product');
+        $order->load('user', 'details.productSalepage.images');
 
         // This could be moved to a config file or a model constant
         $statuses = [

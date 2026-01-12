@@ -84,7 +84,7 @@ class PaymentController extends Controller
 
             $shippingCost = 0;
             // $totalDiscount is now correctly calculated
-            $netAmount = ($totalPrice + $shippingCost) - $totalDiscount;
+            $netAmount = $totalPrice + $shippingCost;
 
             // ดึงที่อยู่
             $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
@@ -117,6 +117,7 @@ class PaymentController extends Controller
                     'user_id' => $userId,
                     'pd_id' => $item->id,
                     'pd_price' => $item->price,
+                    'pd_original_price' => $item->attributes['original_price'] ?? $item->price,
                     'ordd_count' => $item->quantity,
                     'pd_sp_discount' => $item->attributes['discount'] ?? 0,
                     'ordd_create_date' => now(),

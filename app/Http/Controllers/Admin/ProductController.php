@@ -15,13 +15,13 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ProductSalepage::with('product')->orderBy('pd_id', 'desc');
+        $query = ProductSalepage::with('images')->orderBy('pd_sp_id', 'desc');
 
         // Search Filter
         if ($request->filled('search')) {
             $searchTerm = '%' . $request->search . '%';
-            $query->whereHas('product', function ($q) use ($searchTerm) {
-                $q->where('pd_name', 'like', $searchTerm)
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('pd_sp_name', 'like', $searchTerm)
                   ->orWhere('pd_code', 'like', $searchTerm);
             });
         }
@@ -101,7 +101,6 @@ class ProductController extends Controller
             'pd_code' => [
                 'required',
                 'string',
-                'exists:product,pd_code',
                 ($salePage)
                     ? Rule::unique('product_salepage')->ignore($salePage->pd_id, 'pd_id')
                     : Rule::unique('product_salepage')

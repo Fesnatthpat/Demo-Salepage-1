@@ -41,16 +41,21 @@
                                             <div class="flex items-center space-x-3">
                                                 <div class="avatar">
                                                     <div class="mask mask-squircle w-12 h-12">
-                                                        <img src="https://crm.kawinbrothers.com/product_images/{{ $detail->product->pd_img ?? '' }}" alt="{{ $detail->product->pd_name ?? '' }}">
+                                                        <img src="{{ asset('storage/' . ($detail->productSalepage->images->first()->image_path ?? '')) }}" alt="{{ $detail->productSalepage->pd_sp_name ?? '' }}">
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div class="font-bold">{{ $detail->product->pd_name ?? 'N/A' }}</div>
-                                                    <div class="text-sm opacity-50">SKU: {{ $detail->product->pd_code ?? 'N/A' }}</div>
+                                                    <div class="font-bold">{{ $detail->productSalepage->pd_sp_name ?? 'N/A' }}</div>
+                                                    <div class="text-sm opacity-50">SKU: {{ $detail->productSalepage->pd_code ?? 'N/A' }}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-right">฿{{ number_format($detail->pd_price, 2) }}</td>
+                                        <td class="text-right">
+                                            @if($detail->pd_original_price > $detail->pd_price)
+                                                <s class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
+                                            @endif
+                                            ฿{{ number_format($detail->pd_price, 2) }}
+                                        </td>
                                         <td class="text-center">{{ $detail->ordd_count }}</td>
                                         <td class="text-right font-semibold">฿{{ number_format($detail->pd_price * $detail->ordd_count, 2) }}</td>
                                     </tr>

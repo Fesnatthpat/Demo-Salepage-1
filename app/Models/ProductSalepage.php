@@ -13,7 +13,7 @@ class ProductSalepage extends Model
     protected $table = 'product_salepage';
 
     // ระบุ Primary Key (ถ้าไม่ใช่ id)
-    protected $primaryKey = 'pd_id';
+    protected $primaryKey = 'pd_sp_id'; // Corrected based on provided schema
 
     // ถ้าในตารางนี้ไม่มี column created_at, updated_at ให้ uncomment บรรทัดล่างนี้
     // public $timestamps = false;
@@ -23,5 +23,13 @@ class ProductSalepage extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'pd_code', 'pd_code');
+    }
+
+    /**
+     * Get the product images for the salepage.
+     */
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class, 'product_id', 'pd_sp_id');
     }
 }

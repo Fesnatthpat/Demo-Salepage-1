@@ -176,9 +176,9 @@
                             @foreach ($order->details as $detail)
                                 <div class="flex gap-4">
                                     @if ($detail->productSalepage && $detail->productSalepage->images->isNotEmpty())
-                                        <img src="{{ asset('storage/' . $detail->productSalepage->images->first()->image_path) }}"
+                                        <img src="{{ asset('storage/' . (optional($detail->productSalepage->images->first())->image_path ?? 'images/img.png')) }}"
                                             class="w-20 h-20 rounded-md object-cover border border-gray-100"
-                                            alt="{{ $detail->productSalepage->pd_sp_name }}">
+                                            alt="{{ $detail->productSalepage->pd_sp_name ?? 'Product Image' }}">
                                     @endif
                                     <div class="flex-1">
                                         <h4 class="font-medium text-gray-900">

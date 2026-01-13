@@ -20,6 +20,17 @@ class ProductSalepage extends Model
 
     protected $guarded = [];
 
+    protected $fillable = [
+        'pd_id',
+        'pd_code',
+        'pd_sp_name',
+        'pd_sp_price',
+        'pd_sp_discount',
+        'pd_sp_details',
+        'pd_sp_active',
+        'pd_sp_display_location',
+    ];
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'pd_code', 'pd_code');

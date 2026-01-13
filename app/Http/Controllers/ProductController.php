@@ -14,6 +14,8 @@ class ProductController extends Controller
         $salePageProduct = ProductSalepage::with('images')->find($id);
 
         if ($salePageProduct) {
+            $primaryImage = $salePageProduct->images->where('is_primary', true)->first();
+            $pd_img = $primaryImage ? $primaryImage->image_path : ($salePageProduct->images->first()->image_path ?? null);
             // If found, create a product-like object to pass to the view
             $product = (object) [
                 'pd_id' => $salePageProduct->pd_sp_id,
@@ -28,7 +30,7 @@ class ProductController extends Controller
                 'brand_name' => null,
                 'pd_code' => $salePageProduct->pd_code,
                 'quantity' => 99, // Default stock
-                'pd_img' => $salePageProduct->images->first()->image_path ?? null,
+                'pd_img' => $pd_img,
             ];
         } else {
             // Fallback to the original logic if not in sale page
@@ -38,7 +40,8 @@ class ProductController extends Controller
                 return redirect('/')->with('error', 'ไม่พบสินค้านี้');
             }
              // Add pd_img for consistency
-            $product->pd_img = $product->images->first()->image_path ?? $product->pd_img;
+            $primaryImage = $product->images->where('is_primary', true)->first();
+            $product->pd_img = $primaryImage ? $primaryImage->image_path : ($product->images->first()->image_path ?? $product->pd_img);
         }
 
         return view('product', compact('product'));

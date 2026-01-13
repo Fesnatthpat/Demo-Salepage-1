@@ -41,7 +41,7 @@
                                             <div class="flex items-center space-x-3">
                                                 <div class="avatar">
                                                     <div class="mask mask-squircle w-12 h-12">
-                                                        <img src="{{ asset('storage/' . ($detail->productSalepage->images->first()->image_path ?? '')) }}" alt="{{ $detail->productSalepage->pd_sp_name ?? '' }}">
+                                                        <img src="{{ asset('images/' . (optional($detail->productSalepage->images->first())->image_path ?? 'img.png')) }}" alt="{{ $detail->productSalepage->pd_sp_name ?? 'Product Image' }}">
                                                     </div>
                                                 </div>
                                                 <div>

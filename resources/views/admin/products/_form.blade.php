@@ -1,103 +1,142 @@
-<div class="card bg-base-100 shadow-xl border border-base-200 mb-6">
-    <div class="card-body">
-        <h2 class="card-title text-primary mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
-            ข้อมูลสินค้า
-        </h2>
-
-        @if (isset($productSalepage) && $productSalepage->pd_code)
-        <div class="form-control w-full mb-4">
-            <label class="label" for="pd_code">
-                <span class="label-text font-bold">รหัสสินค้า</span>
-            </label>
-            <input type="text" id="pd_code" class="input input-bordered w-full bg-gray-100" value="{{ $productSalepage->pd_code }}" readonly />
+{{-- ส่วนที่ 1: ข้อมูลหลัก --}}
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-info-circle text-primary"></i> ข้อมูลทั่วไป
+        </h3>
+        
+        {{-- สถานะ เปิด/ปิด สินค้า (ย้ายมาไว้บนหัว Card ให้กดง่ายๆ) --}}
+        <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+            <span class="text-sm font-medium text-gray-600">สถานะการขาย:</span>
+            <input type="hidden" name="pd_sp_active" value="0">
+            <input type="checkbox" name="pd_sp_active" value="1" 
+                class="toggle toggle-success toggle-sm" 
+                {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 1) == 1 ? 'checked' : '' }} />
+            <span class="text-xs text-gray-400">(เปิด/ปิด)</span>
         </div>
+    </div>
+
+    <div class="card-body p-6">
+        {{-- ถ้ามีรหัสสินค้าแล้ว (หน้าแก้ไข) ให้แสดงโชว์เฉยๆ --}}
+        @if(isset($productSalepage->pd_code))
+            <div class="mb-6 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <i class="fas fa-tag"></i>
+                <span>รหัสสินค้า: <strong>{{ $productSalepage->pd_code }}</strong> (สร้างอัตโนมัติ)</span>
+            </div>
         @endif
 
-        <div class="form-control w-full mb-4">
-            <label class="label" for="pd_sp_name">
-                <span class="label-text font-bold">ชื่อสินค้า <span class="text-error">*</span></span>
-            </label>
-            <input type="text" name="pd_sp_name" id="pd_sp_name" 
-                placeholder="ระบุชื่อสินค้า..." 
-                class="input input-bordered w-full @error('pd_sp_name') input-error @enderror"
+        {{-- ชื่อสินค้า --}}
+        <div class="form-control w-full mb-6">
+            <label class="label font-bold text-gray-700">ชื่อสินค้า <span class="text-error">*</span></label>
+            <input type="text" name="pd_sp_name" 
+                class="input input-bordered w-full text-lg h-12 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                placeholder="ระบุชื่อสินค้า (เช่น เสื้อยืด Cotton 100%)"
                 value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}" />
-            @error('pd_sp_name')
-                <div class="label">
-                    <span class="label-text-alt text-error">{{ $message }}</span>
-                </div>
-            @enderror
+            @error('pd_sp_name') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
         </div>
 
-        <div class="form-control w-full">
-            <label class="label" for="pd_sp_details">
-                <span class="label-text font-bold">รายละเอียดสินค้า</span>
-            </label>
-            <textarea name="pd_sp_details" id="pd_sp_details" 
-                class="textarea textarea-bordered h-32 w-full @error('pd_sp_details') textarea-error @enderror" 
-                placeholder="อธิบายคุณสมบัติ จุดเด่น...">{{ old('pd_sp_details', $productSalepage->pd_sp_details ?? '') }}</textarea>
-            @error('pd_sp_details')
-                <div class="label">
-                    <span class="label-text-alt text-error">{{ $message }}</span>
+        {{-- Grid: ราคา และ การแสดงผล --}}
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+            
+            {{-- ราคาขาย (กินพื้นที่ 4 ส่วน) --}}
+            <div class="md:col-span-4 form-control">
+                <label class="label font-bold text-gray-700">ราคาขาย (บาท) <span class="text-error">*</span></label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-gray-400 font-bold">฿</span>
+                    <input type="number" step="0.01" name="pd_sp_price" 
+                        class="input input-bordered w-full pl-10 font-mono text-xl font-bold text-gray-800"
+                        placeholder="0.00"
+                        value="{{ old('pd_sp_price', $productSalepage->pd_sp_price ?? '') }}" />
                 </div>
-            @enderror
+                @error('pd_sp_price') <span class="text-error text-sm mt-1">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- ส่วนลด (กินพื้นที่ 4 ส่วน) --}}
+            <div class="md:col-span-4 form-control">
+                <label class="label font-bold text-gray-700">ส่วนลด (บาท)</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-gray-400 font-bold">฿</span>
+                    <input type="number" step="0.01" name="pd_sp_discount" 
+                        class="input input-bordered w-full pl-10 font-mono text-xl text-red-500"
+                        placeholder="0.00"
+                        value="{{ old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '') }}" />
+                </div>
+                <label class="label py-0 mt-1"><span class="label-text-alt text-gray-400">ใส่ 0 หากไม่มี</span></label>
+            </div>
+
+            {{-- ตำแหน่งแสดงผล (กินพื้นที่ 4 ส่วน) --}}
+            <div class="md:col-span-4 form-control">
+                <label class="label font-bold text-gray-700">ตำแหน่งแสดงผล</label>
+                <select name="pd_sp_display_location" class="select select-bordered w-full text-base">
+                    <option value="general" {{ (old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'general') ? 'selected' : '' }}>
+                        📦 สินค้าทั่วไป
+                    </option>
+                    <option value="homepage" {{ (old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage') ? 'selected' : '' }}>
+                        ⭐ สินค้าแนะนำ (หน้าแรก)
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        {{-- รายละเอียดสินค้า --}}
+        <div class="form-control w-full">
+            <label class="label font-bold text-gray-700">รายละเอียดสินค้า</label>
+            <textarea name="pd_sp_details" rows="5"
+                class="textarea textarea-bordered h-32 text-base leading-relaxed"
+                placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้..."
+            >{{ old('pd_sp_details', $productSalepage->pd_sp_details ?? '') }}</textarea>
         </div>
     </div>
 </div>
 
-<div class="card bg-base-100 shadow-xl border border-base-200">
-    <div class="card-body">
-        <h2 class="card-title text-primary mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-            </svg>
-            รูปภาพสินค้า
-        </h2>
-
-        <div class="form-control w-full mb-6">
-            <div class="relative group cursor-pointer">
-                <div id="upload-zone" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-base-300 rounded-2xl bg-base-50 hover:bg-base-100 hover:border-primary transition-all duration-300">
+{{-- ส่วนที่ 2: รูปภาพ --}}
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-images text-primary"></i> รูปภาพสินค้า
+        </h3>
+    </div>
+    
+    <div class="card-body p-6">
+        {{-- Upload Zone --}}
+        <div class="form-control w-full mb-8">
+            <div class="relative group">
+                <div id="upload-zone" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:border-blue-400 transition-all cursor-pointer">
                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg class="w-10 h-10 mb-3 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                        <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">คลิกเพื่ออัปโหลด</span> หรือลากไฟล์มาวาง</p>
-                        <p class="text-xs text-gray-500">PNG, JPG, JPEG (เลือกได้หลายรูป)</p>
+                        <div class="bg-white p-3 rounded-full shadow-sm mb-3">
+                            <i class="fas fa-cloud-upload-alt text-2xl text-primary"></i>
+                        </div>
+                        <p class="mb-1 text-base text-gray-600"><span class="font-bold text-primary">คลิกเพื่อเลือกรูป</span> หรือลากไฟล์มาวาง</p>
+                        <p class="text-xs text-gray-400">รองรับ JPG, PNG, WEBP (สูงสุด 64MB/รูป)</p>
                     </div>
                     <input type="file" name="images[]" id="images" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 </div>
             </div>
-            @error('images') <span class="text-error text-sm mt-2">{{ $message }}</span> @enderror
-            @error('images.*') <span class="text-error text-sm mt-2">{{ $message }}</span> @enderror
         </div>
 
-        <div id="new-image-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-            </div>
+        {{-- Preview Area --}}
+        <div id="new-image-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4"></div>
 
+        {{-- Existing Images --}}
         @if (isset($productSalepage) && $productSalepage->images->count() > 0)
-            <div class="divider">รูปภาพปัจจุบัน</div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div class="divider text-gray-400 text-sm">รูปภาพปัจจุบัน</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 @foreach ($productSalepage->images as $image)
-                <div class="card card-compact bg-base-100 shadow-md border border-base-200 group hover:shadow-lg transition-all" id="image-card-{{ $image->img_pd_id }}">
-                    <figure class="relative pt-[75%] bg-gray-100 overflow-hidden">
-                        <img src="{{ asset('storage/' . $image->image_path) }}" class="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $image->image_alt }}">
-                        @if($image->is_primary)
-                        <div class="absolute top-2 right-2 badge badge-primary shadow-sm">หลัก</div>
-                        @endif
-                    </figure>
-                    <div class="card-body p-3">
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-2 p-0 mb-2">
-                                <input type="radio" name="is_primary" value="{{ $image->img_pd_id }}" class="radio radio-primary radio-sm" {{ $image->is_primary ? 'checked' : '' }}>
-                                <span class="label-text text-xs">ตั้งเป็นรูปหลัก</span>
-                            </label>
-                        </div>
-                        <button type="button" class="btn btn-error btn-outline btn-xs w-full delete-image gap-2" data-image-id="{{ $image->img_pd_id }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                            ลบ
+                <div class="relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm aspect-square bg-gray-100" id="image-card-{{ $image->img_pd_id }}">
+                    <img src="{{ asset('storage/' . $image->image_path) }}" class="w-full h-full object-cover">
+                    
+                    @if($image->is_primary)
+                        <div class="absolute top-2 right-2 badge badge-primary shadow-md z-10">ปก</div>
+                    @endif
+
+                    {{-- Hover Actions --}}
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2">
+                        <label class="btn btn-xs btn-white w-full gap-2">
+                            <input type="radio" name="is_primary" value="{{ $image->img_pd_id }}" {{ $image->is_primary ? 'checked' : '' }} class="radio radio-primary radio-xs">
+                            ตั้งเป็นปก
+                        </label>
+                        <button type="button" class="btn btn-xs btn-error w-full text-white delete-image" data-image-id="{{ $image->img_pd_id }}">
+                            <i class="fas fa-trash"></i> ลบ
                         </button>
                     </div>
                 </div>
@@ -107,46 +146,46 @@
     </div>
 </div>
 
+{{-- Scripts --}}
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const uploadInput = document.getElementById('images');
         const previewContainer = document.getElementById('new-image-preview');
         const uploadZone = document.getElementById('upload-zone');
+        const form = document.querySelector('form');
 
-        // Drag & Drop Effects
-        ['dragenter', 'dragover'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                uploadZone.classList.add('border-primary', 'bg-blue-50');
-            });
+        // Drag & Drop Visuals
+        ['dragenter', 'dragover'].forEach(eName => {
+            uploadZone.addEventListener(eName, (e) => { e.preventDefault(); uploadZone.classList.add('border-primary', 'bg-blue-50'); });
+        });
+        ['dragleave', 'drop'].forEach(eName => {
+            uploadZone.addEventListener(eName, (e) => { e.preventDefault(); uploadZone.classList.remove('border-primary', 'bg-blue-50'); });
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                uploadZone.classList.remove('border-primary', 'bg-blue-50');
-            });
-        });
-
-        // Handle File Selection & Preview
+        // 1. Image Preview & Validation
         uploadInput.addEventListener('change', function() {
-            previewContainer.innerHTML = ''; // Clear old previews
+            previewContainer.innerHTML = '';
             const files = Array.from(this.files);
+            const MAX_SIZE = 64 * 1024 * 1024; // 64MB
+            let isTooLarge = false;
+
+            files.forEach(file => {
+                if(file.size > MAX_SIZE) {
+                    isTooLarge = true;
+                    alert(`ไฟล์ "${file.name}" ใหญ่เกินไป! (ต้องไม่เกิน 64MB)`);
+                }
+            });
+
+            if(isTooLarge) { this.value = ''; return; }
 
             files.forEach(file => {
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const div = document.createElement('div');
-                        // Tailwind Style สำหรับรูป Preview
-                        div.className = 'relative aspect-square rounded-lg overflow-hidden border border-base-300 shadow-sm';
-                        div.innerHTML = `
-                            <img src="${e.target.result}" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate text-center">
-                                ${file.name}
-                            </div>
-                        `;
+                        div.className = 'relative rounded-lg overflow-hidden border border-gray-200 aspect-square shadow-sm';
+                        div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
                         previewContainer.appendChild(div);
                     }
                     reader.readAsDataURL(file);
@@ -154,44 +193,44 @@
             });
         });
 
-        // Handle Image Deletion
-        document.querySelectorAll('.delete-image').forEach(button => {
-            button.addEventListener('click', function() {
-                if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้?')) {
-                    const imageId = this.dataset.imageId;
-                    const cardElement = document.getElementById(`image-card-${imageId}`);
-                    const originalBtnText = this.innerHTML;
-                    
-                    // Loading State
-                    this.innerHTML = '<span class="loading loading-spinner loading-xs"></span> กำลังลบ...';
-                    this.disabled = true;
+        // 2. Prevent Submit if File Too Large
+        form.addEventListener('submit', function(e) {
+            if(uploadInput.files.length > 0) {
+                const MAX_SIZE = 64 * 1024 * 1024;
+                for (let i = 0; i < uploadInput.files.length; i++) {
+                    if (uploadInput.files[i].size > MAX_SIZE) {
+                        e.preventDefault();
+                        alert(`ไฟล์ "${uploadInput.files[i].name}" ใหญ่เกินไป!`);
+                        return;
+                    }
+                }
+            }
+        });
 
-                    fetch(`/admin/products/image/${imageId}`, {
+        // 3. Delete Image Logic
+        document.querySelectorAll('.delete-image').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(confirm('ยืนยันที่จะลบรูปภาพนี้?')) {
+                    const id = this.dataset.imageId;
+                    const card = document.getElementById(`image-card-${id}`);
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+                    this.disabled = true;
+                    
+                    fetch(`/admin/products/image/${id}`, {
                         method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Animation remove
-                            cardElement.classList.add('scale-0', 'opacity-0');
-                            setTimeout(() => {
-                                cardElement.remove();
-                                // ถ้าไม่มีรูปเหลือ ให้ซ่อน wrapper (Optional logic)
-                            }, 300);
-                        } else {
-                            alert('Error: ' + data.message);
-                            this.innerHTML = originalBtnText;
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+                    }).then(r => r.json()).then(data => {
+                        if(data.success) { 
+                            card.remove(); 
+                        } else { 
+                            alert('ลบไม่สำเร็จ: ' + (data.message || 'Error'));
+                            this.innerHTML = originalText;
                             this.disabled = false;
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Connection Error');
-                        this.innerHTML = originalBtnText;
+                    }).catch(e => {
+                        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                        this.innerHTML = originalText;
                         this.disabled = false;
                     });
                 }

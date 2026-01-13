@@ -43,7 +43,7 @@
                             <td>
                                 <div class="avatar">
                                     <div class="mask mask-squircle w-12 h-12">
-                                        <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img ?? 'default.png' }}" alt="{{ $product->pd_name }}">
+                                        <img src="{{ asset('images/' . ($product->pd_img ?? 'img.png')) }}" alt="{{ $product->pd_name ?? 'Product Image' }}">
                                     </div>
                                 </div>
                             </td>

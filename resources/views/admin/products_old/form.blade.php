@@ -81,7 +81,7 @@
                     <div class="card-body">
                         <h2 class="card-title">รูปภาพสินค้า</h2>
                         @if($product->pd_img)
-                        <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}" alt="{{$product->pd_name}}" class="w-full h-auto rounded-lg mb-4">
+                        <img src="{{ asset('images/' . ($product->pd_img ?? 'img.png')) }}" alt="{{$product->pd_name}}" class="w-full h-auto rounded-lg mb-4">
                         @endif
                         <input type="file" name="pd_img_file" class="file-input file-input-bordered w-full" />
                         <p class="text-xs text-gray-500 mt-2">หากอัปโหลดไฟล์ใหม่ รูปภาพเดิมจะถูกแทนที่</p>

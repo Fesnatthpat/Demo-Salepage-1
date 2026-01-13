@@ -111,28 +111,31 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 
-    // Sale Pages Management
-
-
-    Route::resource('salepages', AdminProductController::class);
+                // Product Management (Unified)
 
 
 
 
 
-        // Product Management (New)
+                Route::resource('products', AdminProductController::class)->parameters([
 
 
 
 
 
-        Route::resource('products', ProductManagementController::class);
+                    'products' => 'product'
 
 
 
 
 
-        Route::delete('/products/image/{image}', [ProductManagementController::class, 'deleteImage'])->name('products.image.destroy');
+                ]);
+
+
+
+
+
+                Route::delete('/products/image/{product_image}', [AdminProductController::class, 'deleteImage'])->name('products.image.destroy');
 
 
 

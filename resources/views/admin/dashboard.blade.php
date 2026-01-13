@@ -100,7 +100,6 @@
                                                 @default badge-ghost
                                             @endswitch
                                         ">
-                                            {{-- You might need a helper function to map status_id to name --}}
                                             สถานะ {{ $order->status_id }}
                                         </span>
                                     </td>
@@ -126,9 +125,19 @@
                 <ul class="space-y-4">
                     @forelse($topSellingProducts as $item)
                         <li class="flex items-center space-x-4">
-                            <img src="{{ asset('storage/' . ($item->productSalepage->images->first()->image_path ?? '')) }}" alt="{{ $item->productSalepage->pd_sp_name ?? 'N/A' }}" class="w-16 h-16 object-cover rounded-lg bg-gray-200">
+                            
+                            {{-- ส่วนที่ปรับแก้ตามโค้ดใหม่ของคุณ --}}
+                            <div class="avatar">
+                                <div class="rounded border w-12 h-12">
+                                    {{-- ใช้ asset() และ ?-> เพื่อความปลอดภัยและถูกต้อง --}}
+                                    <img src="{{ asset('storage/' . ($item->productSalepage?->images?->first()?->image_path ?? 'img.png')) }}"
+                                         alt="{{ $item->productSalepage?->pd_sp_name ?? 'Product Image' }}">
+                                </div>
+                            </div>
+                            {{-- จบส่วนที่ปรับแก้ --}}
+
                             <div class="flex-1">
-                                <p class="font-semibold text-gray-800">{{ $item->productSalepage->pd_sp_name ?? 'ไม่พบชื่อสินค้า' }}</p>
+                                <p class="font-semibold text-gray-800">{{ $item->productSalepage?->pd_sp_name ?? 'ไม่พบชื่อสินค้า' }}</p>
                                 <p class="text-sm text-gray-500">ขายแล้ว {{ $item->total_sold }} ชิ้น</p>
                             </div>
                         </li>

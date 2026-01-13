@@ -61,8 +61,8 @@
                                     @if ($detail->productSalepage && $detail->productSalepage->images->isNotEmpty())
                                         <div
                                             class="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                            <img src="{{ asset('storage/' . $detail->productSalepage->images->first()->image_path) }}"
-                                                class="w-full h-full object-cover" alt="{{ $detail->productSalepage->pd_sp_name }}" />
+                                            <img src="{{ asset('storage/' . (optional($detail->productSalepage->images->first())->image_path ?? 'images/img.png')) }}"
+                                                class="w-full h-full object-cover" alt="{{ $detail->productSalepage->pd_sp_name ?? 'Product Image' }}" />
                                         </div>
                                     @endif
                                     <div>

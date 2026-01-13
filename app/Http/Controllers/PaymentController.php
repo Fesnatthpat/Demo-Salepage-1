@@ -76,7 +76,7 @@ class PaymentController extends Controller
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
                     $totalPrice += ($item->price * $item->quantity);
-                    $totalDiscount += ($item->attributes['discount'] ?? 0) * $item->quantity; // Sum up discounts
+                    $totalDiscount += ($item->attributes['discount'] ?? 0); // Sum up fixed per-item discount (not multiplied by quantity)
                 }
             }
 

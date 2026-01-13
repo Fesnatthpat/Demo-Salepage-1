@@ -39,7 +39,9 @@ class CustomerController extends Controller
      */
     public function show(User $customer)
     {
-        $customer->load('orders'); // Eager load orders
+        $customer->load(['orders' => function ($query) {
+            $query->orderBy('ord_date', 'desc');
+        }]); // Eager load orders and sort by latest date
         return view('admin.customers.show', compact('customer'));
     }
 

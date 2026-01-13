@@ -21,6 +21,33 @@
             </form>
         </div>
 
+        <!-- Status Filter -->
+        <div class="mb-4">
+            <div class="join">
+                {{-- All Statuses --}}
+                <a href="{{ route('admin.orders.index', array_merge(request()->except('status'), ['status' => 'all'])) }}"
+                    class="join-item btn btn-sm {{ !request('status') || request('status') == 'all' ? 'btn-active' : '' }}">
+                    ทั้งหมด
+                </a>
+                {{-- Specific Statuses --}}
+                @php
+                    $statusOptions = [
+                        1 => 'รอชำระเงิน',
+                        2 => 'กำลังดำเนินการ',
+                        3 => 'จัดส่งแล้ว',
+                        4 => 'สำเร็จ',
+                        5 => 'ยกเลิก',
+                    ];
+                @endphp
+                @foreach($statusOptions as $id => $text)
+                    <a href="{{ route('admin.orders.index', array_merge(request()->except('status'), ['status' => $id])) }}"
+                        class="join-item btn btn-sm {{ request('status') == $id ? 'btn-active' : '' }}">
+                        {{ $text }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
         <!-- Orders Table -->
         <div class="overflow-x-auto">
             <table class="table w-full">
@@ -63,7 +90,7 @@
                             </td>
                             <td>{{ $order->ord_date->format('d M Y, H:i') }}</td>
                             <td>
-                                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-ghost btn-sm">
+                                <a href="{{ route('admin.orders.show', $order) }}" class=" text-blue-600 text-bold hover:underline">
                                     <i class="fas fa-eye mr-2"></i>
                                     รายละเอียด
                                 </a>

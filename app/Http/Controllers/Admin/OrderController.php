@@ -25,6 +25,10 @@ class OrderController extends Controller
             });
         }
 
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status_id', $request->status);
+        }
+
         $orders = $query->paginate(15);
 
         return view('admin.orders.index', compact('orders'));

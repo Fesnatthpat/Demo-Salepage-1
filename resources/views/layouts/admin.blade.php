@@ -54,7 +54,8 @@
                     <i class="fas fa-boxes mr-3"></i> {{-- Changed icon to fas fa-boxes --}}
                     จัดการสินค้า
                 </a>
-                <a href="#" class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
+                <a href="{{ route('admin.customers.index') }}"
+                    class="flex items-center px-4 py-2 text-gray-600 rounded-md {{ request()->routeIs('admin.customers.*') ? 'bg-gray-200' : 'hover:bg-gray-200' }}">
                     <i class="fas fa-users mr-3"></i>
                     ลูกค้า
                 </a>

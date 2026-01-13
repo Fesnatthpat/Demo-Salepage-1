@@ -23,5 +23,13 @@ class User extends Authenticatable
         'avatar',  // เพิ่ม avatar ที่นี่
         'password',
     ];
+
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id', 'id');
+    }
     // ...
 }

@@ -78,7 +78,16 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 
+use App\Http\Controllers\Admin\CustomerController; // Added this line
+
+
+
+
+
 use App\Http\Controllers\Admin\ProductManagementController; // Add this line
+
+
+
 
 
 
@@ -87,7 +96,19 @@ use App\Http\Controllers\Admin\ProductManagementController; // Add this line
 Route::prefix('admin')->name('admin.')->group(function () {
 
 
+
+
+
+
+
+
     // TODO: Add admin authentication middleware
+
+
+
+
+
+
 
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -96,16 +117,58 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
     // Order Management
+
+
+
+
+
+
 
 
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
 
 
+
+
+
+
+
+
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
 
 
+
+
+
+
+
+
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+
+
+
+
+
+
+
+    // Customer Management (New)
+
+
+    Route::resource('customers', CustomerController::class);
 
 
 

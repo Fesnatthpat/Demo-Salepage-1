@@ -11,21 +11,36 @@
         $currentPriceForDisplay = $finalSellingPrice;
         $fullPriceForDisplay = $originalPrice;
 
-        $imagePaths = collect($product->images)->pluck('image_path')->map(function ($path) {
-            return asset('storage/' . $path);
-        })->toArray();
+        // Determine the main image path first
+        $mainImagePath = $product->pd_img ? asset('storage/' . $product->pd_img) : 'https://via.placeholder.com/600x600.png?text=No+Image';
 
-        if (empty($imagePaths) && $product->pd_img) {
-            $imagePaths[] = asset('storage/' . $product->pd_img);
+        $otherImagePaths = [];
+        // Filter out the main image from the collection and add others
+        if ($product->images->isNotEmpty()) {
+            // Get all image paths, excluding the main one if it came from the collection
+            $otherImages = $product->images->filter(function($image) use ($product) {
+                return $image->image_path !== $product->pd_img;
+            });
+            $otherImagePaths = $otherImages->pluck('image_path')->map(function ($path) {
+                return asset('storage/' . $path);
+            })->toArray();
+        }
+
+        // Combine all image paths, ensuring the main image is first
+        $allImagePaths = $mainImagePath !== 'https://via.placeholder.com/600x600.png?text=No+Image' ? [$mainImagePath] : [];
+        $allImagePaths = array_merge($allImagePaths, $otherImagePaths);
+
+        // Ensure there's always at least one image path for the gallery
+        if (empty($allImagePaths)) {
+            $allImagePaths[] = 'https://via.placeholder.com/600x600.png?text=No+Image';
         }
         
-        $activeImageUrl = $imagePaths[0] ?? 'https://via.placeholder.com/600x600.png?text=No+Image';
-
+        $activeImageUrl = $allImagePaths[0]; // The first image in the prepared array will be the active one
     @endphp
 
     <div x-data="{
         activeImage: '{{ $activeImageUrl }}',
-        images: {{ json_encode($imagePaths) }},
+        images: {{ json_encode($allImagePaths) }},
         quantity: 1
     }" class="container mx-auto px-4 py-8">
 

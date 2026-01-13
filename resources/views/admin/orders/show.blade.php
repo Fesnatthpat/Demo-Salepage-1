@@ -2,13 +2,18 @@
 
 @section('title', 'รายละเอียดออเดอร์')
 @section('page-title')
-    <a href="{{ route('admin.orders.index') }}" class="text-gray-500 hover:text-gray-900">ออเดอร์</a> /
-    <span class="text-gray-900">รายละเอียดออเดอร์ {{ $order->ord_code }}</span>
+    <div class="flex items-center gap-2 text-sm text-gray-500">
+        <a href="{{ route('admin.orders.index') }}" class="hover:text-primary transition-colors">
+            <i class="fas fa-shopping-bag mr-1"></i> ออเดอร์
+        </a>
+        <span>/</span>
+        <span class="text-gray-900 font-medium">รหัส: {{ $order->ord_code }}</span>
+    </div>
 @endsection
 
 @section('content')
-    @if(session('success'))
-        <div class="alert alert-success shadow-lg mb-6">
+    @if (session('success'))
+        <div class="alert alert-success shadow-sm mb-6">
             <div>
                 <i class="fas fa-check-circle"></i>
                 <span>{{ session('success') }}</span>
@@ -19,15 +24,17 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- Main Content (Order Details & Items) --}}
         <div class="lg:col-span-2 space-y-8">
-            
+
             {{-- Order Items Card --}}
-            <div class="card bg-white shadow-md">
+            <div class="card bg-white shadow-sm border border-gray-200">
                 <div class="card-body">
-                    <h2 class="card-title mb-4">รายการสินค้าในออเดอร์</h2>
+                    <h2 class="card-title text-gray-800 mb-4 border-b pb-2">
+                        <i class="fas fa-list-ul text-primary mr-2"></i> รายการสินค้า
+                    </h2>
                     <div class="overflow-x-auto">
                         <table class="table w-full">
                             <thead>
-                                <tr>
+                                <tr class="bg-gray-50 text-gray-600">
                                     <th>สินค้า</th>
                                     <th class="text-right">ราคาต่อหน่วย</th>
                                     <th class="text-center">จำนวน</th>
@@ -35,50 +42,64 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($order->details as $detail)
-                                    <tr>
+                                @foreach ($order->details as $detail)
+                                    <tr class="border-b border-gray-100 last:border-0">
                                         <td>
                                             <div class="flex items-center space-x-3">
                                                 <div class="avatar">
-                                                    <div class="mask mask-squircle w-12 h-12">
-                                                        <img src="{{ asset('images/' . (optional($detail->productSalepage->images->first())->image_path ?? 'img.png')) }}" alt="{{ $detail->productSalepage->pd_sp_name ?? 'Product Image' }}">
+                                                    <div class="mask mask-squircle w-12 h-12 bg-gray-100">
+                                                        {{-- แก้ไขจุดที่ 1: เปลี่ยน path เป็น storage และใช้ ?-> กัน Error --}}
+                                                        <img src="{{ asset('storage/' . ($detail->productSalepage?->images?->first()?->image_path ?? 'default.png')) }}"
+                                                            alt="{{ $detail->productSalepage?->pd_sp_name ?? 'Product Image' }}"
+                                                            class="object-cover"
+                                                            onerror="this.src='https://via.placeholder.com/64?text=No+Image'">
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div class="font-bold">{{ $detail->productSalepage->pd_sp_name ?? 'N/A' }}</div>
-                                                    <div class="text-sm opacity-50">SKU: {{ $detail->productSalepage->pd_code ?? 'N/A' }}</div>
+                                                    <div class="font-bold text-gray-800">
+                                                        {{ $detail->productSalepage?->pd_sp_name ?? 'สินค้าถูกลบไปแล้ว' }}
+                                                    </div>
+                                                    <div class="text-xs text-gray-400">
+                                                        SKU: {{ $detail->productSalepage?->pd_code ?? '-' }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            @if($detail->pd_original_price > $detail->pd_price)
-                                                <s class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
+                                            @if ($detail->pd_original_price > $detail->pd_price)
+                                                <div class="text-xs text-gray-400 line-through">
+                                                    ฿{{ number_format($detail->pd_original_price, 2) }}</div>
                                             @endif
-                                            ฿{{ number_format($detail->pd_price, 2) }}
+                                            <span class="font-medium">฿{{ number_format($detail->pd_price, 2) }}</span>
                                         </td>
-                                        <td class="text-center">{{ $detail->ordd_count }}</td>
-                                        <td class="text-right font-semibold">฿{{ number_format($detail->pd_price * $detail->ordd_count, 2) }}</td>
+                                        <td class="text-center font-mono">{{ $detail->ordd_count }}</td>
+                                        <td class="text-right font-bold text-primary">
+                                            ฿{{ number_format($detail->pd_price * $detail->ordd_count, 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+
                     {{-- Totals --}}
-                    <div class="divider"></div>
-                    <div class="space-y-2 max-w-sm ml-auto">
-                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">ยอดรวมสินค้า</span>
+                    <div class="divider my-4"></div>
+                    <div class="space-y-2 max-w-sm ml-auto bg-gray-50 p-4 rounded-lg">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">ยอดรวมสินค้า</span>
                             <span class="font-semibold">฿{{ number_format($order->total_price, 2) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500">ค่าจัดส่ง</span>
+                            <span class="text-gray-600">ค่าจัดส่ง</span>
                             <span class="font-semibold">฿{{ number_format($order->shipping_cost, 2) }}</span>
                         </div>
-                        <div class="flex justify-between text-sm text-red-500">
-                            <span class="text-gray-500">ส่วนลด</span>
-                            <span class="font-semibold">-฿{{ number_format($order->total_discount, 2) }}</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-bold">
+                        @if ($order->total_discount > 0)
+                            <div class="flex justify-between text-sm text-red-500">
+                                <span>ส่วนลด</span>
+                                <span class="font-semibold">-฿{{ number_format($order->total_discount, 2) }}</span>
+                            </div>
+                        @endif
+                        <div class="divider my-1"></div>
+                        <div class="flex justify-between text-lg font-bold text-primary">
                             <span>ยอดสุทธิ</span>
                             <span>฿{{ number_format($order->net_amount, 2) }}</span>
                         </div>
@@ -88,26 +109,27 @@
         </div>
 
         {{-- Sidebar (Customer & Status) --}}
-        <div class="lg:col-span-1 space-y-8">
+        <div class="lg:col-span-1 space-y-6">
             {{-- Status Update Card --}}
-            <div class="card bg-white shadow-md">
+            <div class="card bg-white shadow-sm border border-gray-200">
                 <div class="card-body">
-                    <h2 class="card-title">สถานะออเดอร์</h2>
-                    <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST">
+                    <h2 class="card-title text-gray-800 text-base">
+                        <i class="fas fa-tasks text-primary mr-2"></i> สถานะออเดอร์
+                    </h2>
+                    <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST" class="mt-4">
                         @csrf
                         <div class="form-control w-full">
-                            <label class="label">
-                                <span class="label-text">อัปเดตสถานะ</span>
-                            </label>
-                            <div class="flex gap-2">
-                                <select name="status_id" class="select select-bordered flex-grow">
-                                    @foreach($statuses as $id => $name)
-                                        <option value="{{ $id }}" {{ $order->status_id == $id ? 'selected' : '' }}>
+                            <div class="join w-full">
+                                <select name="status_id"
+                                    class="select select-bordered join-item flex-grow focus:outline-none">
+                                    @foreach ($statuses as $id => $name)
+                                        <option value="{{ $id }}"
+                                            {{ $order->status_id == $id ? 'selected' : '' }}>
                                             {{ $name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn btn-primary">บันทึก</button>
+                                <button type="submit" class="btn btn-primary join-item">บันทึก</button>
                             </div>
                         </div>
                     </form>
@@ -115,29 +137,48 @@
             </div>
 
             {{-- Customer Info Card --}}
-            <div class="card bg-white shadow-md">
+            <div class="card bg-white shadow-sm border border-gray-200">
                 <div class="card-body">
-                    <h2 class="card-title">ข้อมูลลูกค้าและที่อยู่จัดส่ง</h2>
-                    <div class="space-y-2 text-sm mt-4">
-                        <p><strong>ชื่อ:</strong> {{ $order->shipping_name }}</p>
-                        <p><strong>อีเมล:</strong> {{ $order->user->email ?? 'N/A' }}</p>
-                        <p><strong>เบอร์โทรศัพท์:</strong> {{ $order->shipping_phone }}</p>
-                        <div class="divider my-2"></div>
-                        <p><strong>ที่อยู่:</strong></p>
-                        <p class="whitespace-pre-line overflow-y-auto h-[300px]">{{ $order->shipping_address }}</p>
+                    <h2 class="card-title text-gray-800 text-base">
+                        <i class="fas fa-user-circle text-primary mr-2"></i> ข้อมูลจัดส่ง
+                    </h2>
+                    <div class="space-y-3 text-sm mt-2 text-gray-600">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-user mt-1 text-gray-400 w-4"></i>
+                            <div>
+                                <p class="font-bold text-gray-800">{{ $order->shipping_name }}</p>
+                                <p class="text-xs text-gray-400">User Email: {{ $order->user->email ?? '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-phone text-gray-400 w-4"></i>
+                            <p>{{ $order->shipping_phone }}</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-map-marker-alt mt-1 text-gray-400 w-4"></i>
+                            <p class="whitespace-pre-line leading-relaxed">{{ $order->shipping_address }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-             @if($order->slip_path)
-            <div class="card bg-white shadow-md">
-                <div class="card-body">
-                     <h2 class="card-title">สลิปการโอนเงิน</h2>
-                     <a href="{{ asset('storage/' . $order->slip_path) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $order->slip_path) }}" alt="Payment Slip" class="rounded-lg mt-4 w-full cursor-pointer">
-                     </a>
+            @if ($order->slip_path)
+                <div class="card bg-white shadow-sm border border-gray-200">
+                    <div class="card-body">
+                        <h2 class="card-title text-gray-800 text-base">
+                            <i class="fas fa-receipt text-primary mr-2"></i> หลักฐานการโอน
+                        </h2>
+                        <div class="mt-4 rounded-lg overflow-hidden border border-gray-200">
+                            <a href="{{ asset('storage/' . $order->slip_path) }}" target="_blank"
+                                class="block hover:opacity-90 transition">
+                                {{-- แก้ไขจุดที่ 2: ใช้ asset storage ให้ถูกต้อง (ของเดิมถูกแล้วแต่เช็คเพื่อความชัวร์) --}}
+                                <img src="{{ asset('storage/' . $order->slip_path) }}" alt="Payment Slip"
+                                    class="w-full object-contain bg-gray-50">
+                            </a>
+                        </div>
+                        <p class="text-center text-xs text-gray-400 mt-2">คลิกที่รูปเพื่อดูภาพขยาย</p>
+                    </div>
                 </div>
-            </div>
             @endif
         </div>
     </div>

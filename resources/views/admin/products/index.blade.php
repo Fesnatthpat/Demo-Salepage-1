@@ -3,6 +3,22 @@
 @section('title', 'จัดการสินค้า')
 @section('page-title', 'รายการสินค้าทั้งหมด')
 
+@section('styles')
+<style>
+    .slip-thumbnail { /* Reusing slip-thumbnail class for product images for consistency */
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+    .slip-thumbnail:hover {
+        transform: scale(1.1);
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="card bg-white shadow-md">
         <div class="card-body">
@@ -61,25 +77,37 @@
                 <table class="table w-full">
                     <thead>
                         <tr>
+                            <th class="text-center">รูปภาพ</th>
                             <th>สินค้า</th>
                             <th class="text-right">ราคา</th>
                             <th class="text-right">ส่วนลด</th>
                             <th>รายละเอียด</th>
                             <th class="text-center">สถานะ</th>
-                            <th>Actions</th> {{-- Changed from empty th to Actions --}}
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($products as $product) {{-- Changed $salePages to $products, $salePage to $product --}}
+                        @forelse ($products as $product)
                             <tr class="hover">
+                                <td class="align-middle text-center">
+                                    @php
+                                        $imagePath = 'img.png'; // Default placeholder
+                                        if ($product->images->isNotEmpty()) {
+                                            $primaryImage = $product->images->firstWhere('is_primary', true);
+                                            if ($primaryImage) {
+                                                $imagePath = $primaryImage->image_path;
+                                            } else {
+                                                $imagePath = $product->images->first()->image_path; // Fallback to first image
+                                            }
+                                        }
+                                    @endphp
+                                    <img src="{{ asset('storage/' . $imagePath) }}"
+                                         alt="{{ $product->pd_sp_name ?? 'Product Image' }}"
+                                         class="slip-thumbnail"
+                                         data-slip-src="{{ asset('storage/' . $imagePath) }}">
+                                </td>
                                 <td>
                                     <div class="flex items-center space-x-3">
-                                        <div class="avatar">
-                                            <div class="rounded border w-12 h-12">
-                                                <img src="{{ asset('storage/' . (optional($product->images->first())->image_path ?? 'img.png')) }}"
-                                                    alt="{{ $product->pd_sp_name ?? 'Product Image' }}">
-                                            </div>
-                                        </div>
                                         <div>
                                             <div class="font-bold w-64 truncate">
                                                 {{ $product->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}</div>
@@ -96,9 +124,9 @@
                                 </td>
                                 <td class="text-center">
                                     @if ($product->pd_sp_active == 1)
-                                        <span class="btn bg-green-500 text-white btn-xs">ใช้งาน</span> {{-- Added btn-xs for smaller badge-like button --}}
+                                        <span class="btn bg-green-500 text-white btn-xs">ใช้งาน</span>
                                     @else
-                                        <span class="btn bg-gray-500 text-white btn-xs">ไม่ใช้งาน</span> {{-- Added btn-xs --}}
+                                        <span class="btn bg-gray-500 text-white btn-xs">ไม่ใช้งาน</span>
                                     @endif
                                 </td>
                                 <td>
@@ -138,7 +166,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-8 text-gray-500">
+                                <td colspan="7" class="text-center py-8 text-gray-500">
                                     ยังไม่มีข้อมูลสินค้าในระบบ
                                 </td>
                             </tr>
@@ -151,4 +179,86 @@
             </div>
         </div>
     </div>
+
+<!-- Slip Preview Modal -->
+<div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; transition: opacity 0.2s;">
+    <img src="" alt="Slip Preview" style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: white;">
+</div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('slip-preview-modal');
+    if (!modal) return;
+
+    const modalImage = modal.querySelector('img');
+    const thumbnails = document.querySelectorAll('.slip-thumbnail');
+    let hideTimeout;
+
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('mouseenter', (e) => {
+            clearTimeout(hideTimeout);
+            const rect = e.target.getBoundingClientRect();
+            modalImage.src = e.target.dataset.slipSrc;
+            modal.style.opacity = 0;
+            modal.style.display = 'block';
+
+            // Use a short timeout to allow the image to load and get its dimensions
+            setTimeout(() => {
+                const modalRect = modal.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const margin = 15; // Margin from viewport edges and cursor
+
+                let top = rect.top;
+                let left = rect.right + margin;
+
+                // If it goes off-screen right, position it to the left
+                if (left + modalRect.width > viewportWidth - margin) {
+                    left = rect.left - modalRect.width - margin;
+                }
+
+                // If it goes off-screen bottom, align bottom of modal with viewport bottom
+                if (top + modalRect.height > viewportHeight - margin) {
+                    top = viewportHeight - modalRect.height - margin;
+                }
+                
+                // Ensure it doesn't go off-screen top
+                if (top < margin) {
+                    top = margin;
+                }
+
+                // Ensure it doesn't go off-screen left
+                 if (left < margin) {
+                    left = margin;
+                }
+
+                modal.style.top = `${top}px`;
+                modal.style.left = `${left}px`;
+                modal.style.opacity = 1;
+            }, 50);
+        });
+
+        thumb.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                modal.style.opacity = 0;
+                setTimeout(() => modal.style.display = 'none', 200); // Hide after transition
+            }, 100);
+        });
+    });
+
+    // Also hide the modal if the mouse enters the modal itself and then leaves
+    modal.addEventListener('mouseenter', () => {
+         clearTimeout(hideTimeout);
+    });
+     modal.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => {
+            modal.style.opacity = 0;
+            setTimeout(() => modal.style.display = 'none', 200);
+        }, 100);
+    });
+
+});
+</script>
+@endpush

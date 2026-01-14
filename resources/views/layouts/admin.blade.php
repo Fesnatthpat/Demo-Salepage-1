@@ -19,6 +19,7 @@
 
     <!-- Scripts and Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @yield('styles')
     <style>
         body {
             font-family: 'Sarabun', sans-serif;

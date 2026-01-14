@@ -11,13 +11,13 @@ return new class extends Migration
         // สร้างตารางกลาง
         Schema::create('product_salepage_options', function (Blueprint $table) {
             $table->id();
-            
+
             // ID ของสินค้าหลัก
             $table->unsignedBigInteger('product_salepage_id');
-            
+
             // ID ของสินค้าที่เป็นตัวเลือก (Option)
             $table->unsignedBigInteger('option_product_salepage_id');
-            
+
             $table->timestamps();
 
             // (Optional) ถ้าต้องการทำ Foreign Key เพื่อความสมบูรณ์ของข้อมูล (Uncomment ได้)

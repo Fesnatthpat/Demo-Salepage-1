@@ -35,7 +35,7 @@
     </div>
 
     <div class="card-body p-6">
-        {{-- ถ้ามีรหัสสินค้าแล้ว (หน้าแก้ไข) ให้แสดงโชว์เฉยๆ --}}
+        {{-- รหัสสินค้า --}}
         @if (isset($productSalepage->pd_code))
             <div
                 class="mb-6 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
@@ -58,8 +58,7 @@
 
         {{-- Grid: ราคา และ การแสดงผล --}}
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
-
-            {{-- ราคาขาย (กินพื้นที่ 4 ส่วน) --}}
+            {{-- ราคาขาย --}}
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-700">ราคาขาย (บาท) <span class="text-error">*</span></label>
                 <div class="relative">
@@ -73,7 +72,7 @@
                 @enderror
             </div>
 
-            {{-- ส่วนลด (กินพื้นที่ 4 ส่วน) --}}
+            {{-- ส่วนลด --}}
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-700">ส่วนลด (บาท)</label>
                 <div class="relative">
@@ -85,7 +84,7 @@
                 <label class="label py-0 mt-1"><span class="label-text-alt text-gray-400">ใส่ 0 หากไม่มี</span></label>
             </div>
 
-            {{-- ตำแหน่งแสดงผล (กินพื้นที่ 4 ส่วน) --}}
+            {{-- ตำแหน่งแสดงผล --}}
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-700">ตำแหน่งแสดงผล</label>
                 <select name="pd_sp_display_location" class="select select-bordered w-full text-base">
@@ -136,15 +135,32 @@
     </div>
 </div>
 
-{{-- ส่วนที่ 1.7: โปรโมชั่น (แก้ปัญหาปุ่มปิดอยู่ แต่คงเมนูเลือกของแถมไว้) --}}
+{{-- ส่วนที่ 1.7: โปรโมชั่น (แก้ไขเป็นแบบเลือกรูปภาพ) --}}
 @php
-    // คำนวณค่าสถานะ BOGO ให้ถูกต้อง
+    // คำนวณค่าสถานะ BOGO
     $rawBogoValue = old('is_bogo_active', $productSalepage->is_bogo_active ?? 0);
-    // แปลงเป็น string 'true'/'false' เพื่อส่งให้ Alpine
     $isBogoOn = $rawBogoValue == 1 || $rawBogoValue === 'on' || $rawBogoValue === true ? 'true' : 'false';
+
+    // เตรียมรายการ ID ของแถมที่ถูกเลือกไว้แล้ว (เพื่อใช้ใน Alpine)
+    $selectedBogoIds = old(
+        'bogo_options',
+        ($productSalepage->bogoFreeOptions ?? collect())->pluck('pd_sp_id')->toArray(),
+    );
 @endphp
 
-<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" x-data="{ isBogoEnabled: {{ $isBogoOn }} }">
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" x-data="{
+    isBogoEnabled: {{ $isBogoOn }},
+    selectedBogo: {{ json_encode($selectedBogoIds) }},
+    searchBogo: '',
+
+    toggleBogo(id) {
+        if (this.selectedBogo.includes(id)) {
+            this.selectedBogo = this.selectedBogo.filter(item => item !== id);
+        } else {
+            this.selectedBogo.push(id);
+        }
+    }
+}">
 
     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -154,37 +170,102 @@
     <div class="card-body p-6">
         {{-- BOGO Toggle --}}
         <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 shadow-sm mb-6 bg-gray-50">
-            <span class="text-sm font-medium text-gray-700">โปรโมชั่น "ซื้อ 1 แถม 1":</span>
-
+            <span class="text-sm font-medium text-gray-700">โปรโมชั่น &quot;ซื้อ 1 แถม 1&quot;:</span>
             <input type="hidden" name="is_bogo_active" value="0">
             <input type="checkbox" name="is_bogo_active" value="1" class="toggle toggle-primary toggle-sm"
-                x-model="isBogoEnabled" {{-- บังคับ checked ถ้าค่าเป็นจริง --}} {{ $isBogoOn === 'true' ? 'checked' : '' }} />
-
+                x-model="isBogoEnabled" {{ $isBogoOn === 'true' ? 'checked' : '' }} />
             <span class="text-xs text-gray-500">(เปิด/ปิด โปรโมชั่น 1 แถม 1)</span>
         </div>
 
-        {{-- BOGO Options Selector (ส่วนเลือกของแถม ยังอยู่ที่นี่ครับ!) --}}
-        <div class="form-control w-full" x-show="isBogoEnabled">
-            <div class="p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm mb-4">
-                <h4 class="font-bold mb-1">วิธีเพิ่มของแถม:</h4>
-                <ol class="list-decimal list-inside text-xs">
-                    <li>ขั้นแรก, ไปที่หน้า "จัดการสินค้า" และ "เพิ่มสินค้าใหม่" เพื่อสร้างสินค้าที่จะใช้เป็นของแถมก่อน
-                    </li>
-                    <li>ตรวจสอบให้แน่ใจว่าสินค้าของแถมนั้นมีชื่อและรูปภาพเรียบร้อย</li>
-                    <li>กลับมาที่หน้านี้, เปิดโปรโมชั่น 1 แถม 1, และเลือกสินค้าของแถมจากรายการด้านล่างนี้</li>
-                </ol>
+        {{-- BOGO Product Selection (Grid Style) --}}
+        {{-- แก้ไข: เอา style="display: none;" ออก และใช้ x-show แบบปกติ --}}
+        <div class="form-control w-full" x-show="isBogoEnabled" x-transition>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <label class="label font-bold text-gray-700 p-0">เลือกสินค้าที่จะให้เป็นของแถม</label>
+                {{-- ช่องค้นหาของแถม --}}
+                <div class="relative w-full md:w-64">
+                    <input type="text" x-model="searchBogo" placeholder="ค้นหาชื่อสินค้า..."
+                        class="input input-sm input-bordered w-full pr-8">
+                    <i class="fas fa-search absolute right-3 top-2 text-gray-400 text-xs"></i>
+                </div>
             </div>
-            <label class="label font-bold text-gray-700">เลือกสินค้าที่จะให้เป็นของแถม</label>
-            <select name="bogo_options[]" id="bogo-options" multiple>
+
+            {{-- Grid แสดงรายการสินค้า --}}
+            <div
+                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[500px] overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
                 @foreach ($products as $productOption)
-                    <option value="{{ $productOption->pd_sp_id }}"
-                        {{ in_array($productOption->pd_sp_id, old('bogo_options', ($productSalepage->bogoFreeOptions ?? collect())->pluck('pd_sp_id')->toArray())) ? 'selected' : '' }}>
-                        {{ $productOption->pd_sp_name }} ({{ $productOption->pd_code }})
-                    </option>
+                    {{-- 
+                        ใช้ x-show เพื่อกรองการค้นหา 
+                        (หมายเหตุ: การค้นหาแบบนี้เหมาะกับรายการสินค้าไม่เกินหลักร้อย ถ้าเยอะมากแนะนำทำ AJAX)
+                    --}}
+                    <div x-show="'{{ $productOption->pd_sp_name }}'.toLowerCase().includes(searchBogo.toLowerCase()) || '{{ $productOption->pd_code }}'.toLowerCase().includes(searchBogo.toLowerCase())"
+                        @click="toggleBogo({{ $productOption->pd_sp_id }})"
+                        class="cursor-pointer group relative border-2 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md bg-white"
+                        :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ?
+                            'border-primary ring-2 ring-primary ring-offset-1' :
+                            'border-gray-100 hover:border-gray-300'">
+
+                        {{-- Checkmark Icon (จะแสดงเมื่อถูกเลือก) --}}
+                        <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})" style="display: none;"
+                            x-show.important="true"
+                            class="absolute top-2 right-2 z-10 bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm">
+                            <i class="fas fa-check text-xs"></i>
+                        </div>
+
+                        {{-- รูปภาพสินค้า --}}
+                        <div class="aspect-square bg-gray-100 relative">
+                            @php
+                                $optImg = 'https://via.placeholder.com/150?text=No+Image';
+                                if ($productOption->images->isNotEmpty()) {
+                                    $primary = $productOption->images->where('is_primary', true)->first();
+                                    $path = $primary
+                                        ? $primary->image_path
+                                        : $productOption->images->first()->image_path;
+                                    $optImg = asset('storage/' . $path);
+                                }
+                            @endphp
+                            <img src="{{ $optImg }}"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+
+                            {{-- Overlay เมื่อเลือก --}}
+                            <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})"
+                                class="absolute inset-0 bg-primary/10 transition-opacity"></div>
+                        </div>
+
+                        {{-- รายละเอียดด้านล่าง --}}
+                        <div class="p-3">
+                            <h4
+                                class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-primary transition-colors">
+                                {{ $productOption->pd_sp_name }}</h4>
+                            <p class="text-xs text-gray-400 mt-1">{{ $productOption->pd_code }}</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <p class="text-xs font-semibold text-gray-600">
+                                    ฿{{ number_format($productOption->pd_sp_price, 0) }}</p>
+                                <span
+                                    x-text="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'เลือกแล้ว' : 'เลือก'"
+                                    class="text-[10px] px-2 py-0.5 rounded-full"
+                                    :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'bg-primary text-white' :
+                                        'bg-gray-100 text-gray-500'">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 @endforeach
-            </select>
-            <label class="label">
-                <span class="label-text-alt">คุณสามารถเลือกสินค้าได้หลายรายการเพื่อให้ลูกค้าเลือกเป็นของแถม</span>
+            </div>
+
+            {{-- Hidden Inputs สำหรับส่งค่ากลับไป Server --}}
+            <div id="hidden-inputs-container">
+                <template x-for="id in selectedBogo" :key="id">
+                    <input type="hidden" name="bogo_options[]" :value="id">
+                </template>
+            </div>
+
+            <label class="label mt-2">
+                <span class="label-text-alt text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    เลือกไปแล้ว <span x-text="selectedBogo.length" class="font-bold text-primary"></span> รายการ
+                </span>
             </label>
         </div>
     </div>
@@ -359,19 +440,9 @@
                 });
             });
 
-            // 4. Initialize Tom Select
+            // 4. Initialize Tom Select (เฉพาะ product-options ตัวบน ตัว bogo-options ไม่ต้องใช้แล้วเพราะเราทำเป็น Grid)
             if (document.getElementById('product-options')) {
                 new TomSelect('#product-options', {
-                    plugins: ['remove_button'],
-                    create: false,
-                    sortField: {
-                        field: "text",
-                        direction: "asc"
-                    }
-                });
-            }
-            if (document.getElementById('bogo-options')) {
-                new TomSelect('#bogo-options', {
                     plugins: ['remove_button'],
                     create: false,
                     sortField: {

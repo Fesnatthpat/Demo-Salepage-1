@@ -1,18 +1,35 @@
 {{-- ส่วนที่ 1: ข้อมูลหลัก --}}
 <div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
-    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
             <i class="fas fa-info-circle text-primary"></i> ข้อมูลทั่วไป
         </h3>
         
-        {{-- สถานะ เปิด/ปิด สินค้า (ย้ายมาไว้บนหัว Card ให้กดง่ายๆ) --}}
-        <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
-            <span class="text-sm font-medium text-gray-600">สถานะการขาย:</span>
-            <input type="hidden" name="pd_sp_active" value="0">
-            <input type="checkbox" name="pd_sp_active" value="1" 
-                class="toggle toggle-success toggle-sm" 
-                {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 1) == 1 ? 'checked' : '' }} />
-            <span class="text-xs text-gray-400">(เปิด/ปิด)</span>
+        <div class="flex items-center gap-4">
+            {{-- สถานะ เปิด/ปิด สินค้า --}}
+            <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+                <span class="text-sm font-medium text-gray-600">สถานะการขาย:</span>
+                <input type="hidden" name="pd_sp_active" value="0">
+                <input type="checkbox" name="pd_sp_active" value="1" 
+                    class="toggle toggle-success toggle-sm" 
+                    {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : '' }} />
+                <span class="text-xs text-gray-400">(เปิด/ปิด)</span>
+            </div>
+
+            {{-- สินค้าแนะนำ --}}
+            <div class="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+                <span class="text-sm font-medium text-gray-600">สินค้าแนะนำ:</span>
+                <div class="flex items-center gap-4">
+                    <label class="label cursor-pointer gap-1 p-0">
+                        <input type="radio" name="is_recommended" value="1" class="radio radio-primary radio-xs" {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : '' }} />
+                        <span class="label-text text-xs">ใช่</span> 
+                    </label>
+                    <label class="label cursor-pointer gap-1 p-0">
+                        <input type="radio" name="is_recommended" value="0" class="radio radio-primary radio-xs" {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 0 ? 'checked' : '' }} />
+                        <span class="label-text text-xs">ไม่ใช่</span> 
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 

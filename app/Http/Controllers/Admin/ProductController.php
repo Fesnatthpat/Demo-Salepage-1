@@ -180,6 +180,7 @@ class ProductController extends Controller
             'pd_sp_discount' => 'nullable|numeric|min:0', // ไม่ต้องมี lte:price ก็ได้เผื่อแจกฟรี
             'pd_sp_details' => 'nullable|string',
             'pd_sp_active' => 'required|boolean',
+            'is_recommended' => 'required|boolean',
             'pd_sp_display_location' => 'nullable|string',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:65536' // 64MB per file
         ]);

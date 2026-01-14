@@ -10,7 +10,10 @@
             {{-- Header --}}
             <div class="bg-gradient-to-r from-[#00B900] to-[#06C755] p-6 text-center text-white relative overflow-hidden">
                 <h1 class="font-bold text-2xl relative z-10">ชำระเงิน</h1>
-                <p class="text-white/90 text-sm mt-1 relative z-10">ออเดอร์ {{ $order->ord_code }}</p>
+
+                {{-- ชื่อบริษัทใน Header --}}
+                <p class="text-white font-medium text-lg mt-1 relative z-10">บริษัท กวินบราเทอร์</p>
+                <p class="text-white/80 text-xs mt-0.5 relative z-10">ออเดอร์ {{ $order->ord_code }}</p>
 
                 <div class="mt-4 bg-white/20 backdrop-blur-sm rounded-lg p-3 inline-block relative z-10">
                     <span class="block text-xs text-white/80">ยอดชำระทั้งหมด</span>
@@ -18,7 +21,48 @@
                 </div>
             </div>
 
-            <div class="p-6">
+            {{-- ส่วนแสดงเลขบัญชีธนาคาร --}}
+            <div class="px-6 pt-6 pb-2">
+                @php
+                    $bankName = 'ธนาคารกสิกรไทย';
+                    $accNumber = '123-4-56789-0';
+                    $accName = 'บจก. กวินบราเทอร์';
+                @endphp
+
+                <div onclick="copyToClipboard('{{ $accNumber }}')"
+                    class="bg-blue-50 border border-blue-100 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-blue-100 hover:shadow-sm transition-all duration-200 group relative">
+
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white p-2 rounded-full shadow-sm text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs text-gray-500">{{ $bankName }}</p>
+                            <p class="text-lg font-bold text-blue-900 font-mono tracking-wide">{{ $accNumber }}</p>
+                            <p class="text-[10px] text-gray-400">{{ $accName }}</p>
+                        </div>
+                    </div>
+
+                    <div class="text-gray-400 group-hover:text-blue-600 flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        <span
+                            class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">คัดลอก</span>
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <p class="text-xs text-gray-400">หรือสแกน QR Code ด้านล่าง</p>
+                </div>
+            </div>
+
+            <div class="p-6 pt-2">
                 {{-- Countdown Timer --}}
                 <div id="timer-container"
                     class="flex items-center justify-center gap-2 mb-6 text-gray-500 text-sm bg-red-50 py-2 rounded-full border border-red-100 transition-all duration-300">
@@ -32,7 +76,7 @@
                     <span>นาที</span>
                 </div>
 
-                {{-- Expired Message (ซ่อนอยู่ตอนแรก) --}}
+                {{-- Expired Message --}}
                 <div id="expired-message"
                     class="hidden text-center mb-6 bg-gray-100 py-3 rounded-full text-gray-500 text-sm">
                     <span class="flex items-center justify-center gap-2">
@@ -49,12 +93,15 @@
                     {{-- QR Code Container --}}
                     <div class="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 inline-block mb-4 relative group transition-all duration-500"
                         id="qr-container">
+
                         {{-- รูป QR Code --}}
                         <img id="qr-code-image" src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" alt="PromptPay QR Code"
                             class="w-48 h-48 object-cover rounded-lg mx-auto transition-all duration-500">
 
                         <div class="mt-3 text-center">
-                            <p class="text-xs text-gray-400">สแกนเพื่อชำระเงิน</p>
+                            {{-- ★★★ ส่วนที่เพิ่ม: ชื่อบริษัทใต้ QR Code ★★★ --}}
+                            <p class="font-bold text-gray-800 text-lg">บริษัท กวินบราเทอร์</p>
+                            <p class="text-xs text-gray-400 mt-1">สแกนเพื่อชำระเงิน</p>
                         </div>
 
                         {{-- Overlay เมื่อหมดเวลา --}}
@@ -69,7 +116,7 @@
                         </div>
                     </div>
 
-                    {{-- ปุ่มบันทึกรูป (จะถูกซ่อนเมื่อหมดเวลา) --}}
+                    {{-- ปุ่มบันทึกรูป --}}
                     <div id="save-btn-container" class="flex justify-center gap-3 mb-6 transition-all duration-300">
                         <button onclick="saveQRCode()"
                             class="btn btn-sm btn-outline gap-2 text-gray-600 border-gray-300 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal">
@@ -82,13 +129,13 @@
                         </button>
                     </div>
 
-                    {{-- ปุ่ม Refresh (จะโชว์เมื่อหมดเวลา) --}}
+                    {{-- ปุ่ม Refresh --}}
                     <div id="refresh-btn-container" class="hidden mb-6">
                         <form action="{{ route('payment.refresh', $order->ord_code) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-outline btn-primary gap-2 w-full max-w-[200px]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
@@ -140,13 +187,8 @@
                 return;
             }
 
-            // คำนวณนาที (ปัดเศษลง)
             const minutes = Math.floor(timeLeft / 60);
-
-            // ★★★ แก้ไขตรงนี้: เพิ่ม Math.floor() ให้วินาทีด้วย ★★★
             let seconds = Math.floor(timeLeft % 60);
-
-            // เติมเลข 0 ข้างหน้าถ้าต่ำกว่า 10 (เช่น 09, 05)
             seconds = seconds < 10 ? '0' + seconds : seconds;
 
             timerElement.innerHTML = `${minutes}:${seconds}`;
@@ -154,29 +196,21 @@
         }
 
         function handleExpired() {
-            // 1. ซ่อน Timer, โชว์ข้อความหมดเวลา
             timerContainer.classList.add('hidden');
             expiredMessage.classList.remove('hidden');
-
-            // 2. เบลอ QR Code และแสดง Overlay
             qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
-
-            // 3. ซ่อนปุ่ม Save, โชว์ปุ่ม Refresh
             saveBtnContainer.classList.add('hidden');
             refreshBtnContainer.classList.remove('hidden');
 
-            // 4. ปิดการใช้งานปุ่มแนบสลิป
             uploadBtn.disabled = true;
             uploadBtn.classList.add('btn-disabled', 'bg-gray-300', 'text-gray-500');
             uploadBtn.classList.remove('bg-[#00B900]', 'hover:bg-[#009900]', 'shadow-md');
             uploadBtn.innerHTML = 'หมดเวลาดำเนินการ';
         }
 
-        // เริ่มนับถอยหลังทันที
-        updateTimerDisplay(); // รันครั้งแรกทันทีไม่ต้องรอ 1 วิ
+        updateTimerDisplay();
         const countdown = setInterval(updateTimerDisplay, 1000);
 
-        // Save QR Code Logic
         function saveQRCode() {
             const img = document.getElementById('qr-code-image');
             const link = document.createElement('a');
@@ -185,6 +219,30 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function copyToClipboard(text) {
+            const cleanText = text;
+            navigator.clipboard.writeText(cleanText).then(() => {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: false,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+
+                Toast.fire({
+                    icon: 'success',
+                    title: 'คัดลอกเลขบัญชีแล้ว'
+                });
+            }).catch(err => {
+                console.error('ไม่สามารถคัดลอกได้: ', err);
+            });
         }
 
         function triggerFileInput() {

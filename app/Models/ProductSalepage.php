@@ -28,6 +28,7 @@ class ProductSalepage extends Model
         'pd_sp_discount',
         'pd_sp_details',
         'pd_sp_active',
+        'is_recommended',
         'pd_sp_display_location',
     ];
 

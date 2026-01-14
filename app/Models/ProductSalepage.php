@@ -46,16 +46,16 @@ class ProductSalepage extends Model
         return $this->hasMany(ProductImage::class, 'product_id', 'pd_sp_id');
     }
 
-    // ในไฟล์ app/Models/ProductSalepage.php
-
+    // app/Models/ProductSalepage.php
     public function options()
     {
         return $this->belongsToMany(
             ProductSalepage::class,
-            'product_salepage_options', // ชื่อตารางกลางที่เราเพิ่งสร้าง
-            'product_salepage_id',      // Foreign Key ของตัวตั้งต้น
-            'option_product_salepage_id' // Foreign Key ของตัวเลือก
-        );
+            'product_salepage_options',
+            'product_salepage_id',
+            'option_product_salepage_id'
+        )
+            ->withTimestamps(); // <--- ★★★ ต้องเติมคำสั่งนี้ต่อท้ายครับ
     }
 
     /**
@@ -81,6 +81,7 @@ class ProductSalepage extends Model
             'bogo_promotion_options',
             'product_salepage_id',
             'free_option_product_id'
-        );
+        )
+        ->withTimestamps(); // <--- ★★★ เติมตรงนี้เช่นกัน
     }
 }

@@ -136,8 +136,16 @@
     </div>
 </div>
 
-{{-- ส่วนที่ 1.7: โปรโมชั่น --}}
-<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" x-data="{ isBogoEnabled: {{ old('is_bogo_active', $productSalepage->is_bogo_active ?? 0) == 1 ? 'true' : 'false' }} }">
+{{-- ส่วนที่ 1.7: โปรโมชั่น (แก้ปัญหาปุ่มปิดอยู่ แต่คงเมนูเลือกของแถมไว้) --}}
+@php
+    // คำนวณค่าสถานะ BOGO ให้ถูกต้อง
+    $rawBogoValue = old('is_bogo_active', $productSalepage->is_bogo_active ?? 0);
+    // แปลงเป็น string 'true'/'false' เพื่อส่งให้ Alpine
+    $isBogoOn = $rawBogoValue == 1 || $rawBogoValue === 'on' || $rawBogoValue === true ? 'true' : 'false';
+@endphp
+
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" x-data="{ isBogoEnabled: {{ $isBogoOn }} }">
+
     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
             <i class="fas fa-gift text-primary"></i> โปรโมชั่น
@@ -147,13 +155,15 @@
         {{-- BOGO Toggle --}}
         <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 shadow-sm mb-6 bg-gray-50">
             <span class="text-sm font-medium text-gray-700">โปรโมชั่น "ซื้อ 1 แถม 1":</span>
+
             <input type="hidden" name="is_bogo_active" value="0">
             <input type="checkbox" name="is_bogo_active" value="1" class="toggle toggle-primary toggle-sm"
-                x-model="isBogoEnabled" />
+                x-model="isBogoEnabled" {{-- บังคับ checked ถ้าค่าเป็นจริง --}} {{ $isBogoOn === 'true' ? 'checked' : '' }} />
+
             <span class="text-xs text-gray-500">(เปิด/ปิด โปรโมชั่น 1 แถม 1)</span>
         </div>
 
-        {{-- BOGO Options Selector --}}
+        {{-- BOGO Options Selector (ส่วนเลือกของแถม ยังอยู่ที่นี่ครับ!) --}}
         <div class="form-control w-full" x-show="isBogoEnabled">
             <div class="p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm mb-4">
                 <h4 class="font-bold mb-1">วิธีเพิ่มของแถม:</h4>

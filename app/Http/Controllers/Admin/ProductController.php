@@ -120,9 +120,18 @@ class ProductController extends Controller
         // 1. ตรวจสอบข้อมูล
         $validatedData = $this->validateSalePage($request, $productSalepage);
         
-        // 2. อัปเดตข้อมูล
-        $productSalepage->update($validatedData);
+        // 2. อัปเดตข้อมูล (แยกส่วนเพื่อความชัดเจน)
+        // Manual assignment for most fields
+        $productSalepage->fill($validatedData);
 
+        // Explicitly set boolean values from the request for robustness
+        $productSalepage->pd_sp_active = $request->boolean('pd_sp_active');
+        $productSalepage->is_recommended = $request->boolean('is_recommended');
+        $productSalepage->is_bogo_active = $request->boolean('is_bogo_active');
+        
+        $productSalepage->save(); // Persist the changes
+
+        // Sync relationships
         $productSalepage->options()->sync($request->options ?? []);
         $productSalepage->bogoFreeOptions()->sync($request->bogo_options ?? []);
 

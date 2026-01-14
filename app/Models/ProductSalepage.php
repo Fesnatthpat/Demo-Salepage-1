@@ -29,6 +29,7 @@ class ProductSalepage extends Model
         'pd_sp_details',
         'pd_sp_active',
         'is_recommended',
+        'is_bogo_active',
         'pd_sp_display_location',
     ];
 
@@ -43,5 +44,43 @@ class ProductSalepage extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class, 'product_id', 'pd_sp_id');
+    }
+
+    // ในไฟล์ app/Models/ProductSalepage.php
+
+    public function options()
+    {
+        return $this->belongsToMany(
+            ProductSalepage::class,
+            'product_salepage_options', // ชื่อตารางกลางที่เราเพิ่งสร้าง
+            'product_salepage_id',      // Foreign Key ของตัวตั้งต้น
+            'option_product_salepage_id' // Foreign Key ของตัวเลือก
+        );
+    }
+
+    /**
+     * The parent products that this product is an option for.
+     */
+    public function parentProducts()
+    {
+        return $this->belongsToMany(
+            ProductSalepage::class,
+            'product_salepage_options',
+            'option_product_salepage_id',
+            'product_salepage_id'
+        );
+    }
+
+    /**
+     * The eligible free items for this product's BOGO promotion.
+     */
+    public function bogoFreeOptions()
+    {
+        return $this->belongsToMany(
+            ProductSalepage::class,
+            'bogo_promotion_options',
+            'product_salepage_id',
+            'free_option_product_id'
+        );
     }
 }

@@ -20,6 +20,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
+Route::post('/cart/add-bogo', [CartController::class, 'addBogo'])->name('cart.add.bogo');
 
 // --- 3. Login/Logout ---
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

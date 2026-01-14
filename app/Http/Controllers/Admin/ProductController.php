@@ -42,8 +42,10 @@ class ProductController extends Controller
      */
     public function create()
     {
+        $products = ProductSalepage::orderBy('pd_sp_name')->get();
         return view('admin.products.create', [
             'productSalepage' => new ProductSalepage,
+            'products' => $products,
         ]);
     }
 
@@ -64,6 +66,14 @@ class ProductController extends Controller
 
         // 3. บันทึกข้อมูลสินค้าลงฐานข้อมูล
         $salePage = ProductSalepage::create($validatedData);
+
+        if ($request->has('options')) {
+            $salePage->options()->attach($request->options);
+        }
+
+        if ($request->has('bogo_options')) {
+            $salePage->bogoFreeOptions()->attach($request->bogo_options);
+        }
 
         // 4. จัดการอัปโหลดรูปภาพ
         if ($request->hasFile('images')) {
@@ -91,10 +101,12 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        $productSalepage = ProductSalepage::with('images')->findOrFail($id);
+        $productSalepage = ProductSalepage::with(['images', 'options'])->findOrFail($id);
+        $products = ProductSalepage::where('pd_sp_id', '!=', $id)->orderBy('pd_sp_name')->get();
         
         return view('admin.products.edit', [
             'productSalepage' => $productSalepage,
+            'products' => $products,
         ]);
     }
 
@@ -110,6 +122,9 @@ class ProductController extends Controller
         
         // 2. อัปเดตข้อมูล
         $productSalepage->update($validatedData);
+
+        $productSalepage->options()->sync($request->options ?? []);
+        $productSalepage->bogoFreeOptions()->sync($request->bogo_options ?? []);
 
         // 3. จัดการรูปภาพใหม่ (ถ้ามี)
         if ($request->hasFile('images')) {
@@ -174,15 +189,19 @@ class ProductController extends Controller
     private function validateSalePage(Request $request, ?ProductSalepage $salePage = null): array
     {
         return $request->validate([
-            // ตัด pd_code ออก เพราะเราสร้างเอง
             'pd_sp_name' => 'required|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
-            'pd_sp_discount' => 'nullable|numeric|min:0', // ไม่ต้องมี lte:price ก็ได้เผื่อแจกฟรี
+            'pd_sp_discount' => 'nullable|numeric|min:0',
             'pd_sp_details' => 'nullable|string',
             'pd_sp_active' => 'required|boolean',
             'is_recommended' => 'required|boolean',
+            'is_bogo_active' => 'required|boolean',
             'pd_sp_display_location' => 'nullable|string',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:65536' // 64MB per file
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:65536',
+            'options' => 'nullable|array',
+            'options.*' => 'exists:product_salepage,pd_sp_id',
+            'bogo_options' => 'nullable|array',
+            'bogo_options.*' => 'exists:product_salepage,pd_sp_id',
         ]);
     }
 }

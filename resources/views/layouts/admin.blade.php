@@ -17,6 +17,10 @@
     {{-- Font Awesome --}}
     <script src="https://kit.fontawesome.com/c8014560d3.js" crossorigin="anonymous"></script>
 
+    {{-- Tom Select for pretty multi-select --}}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
     <!-- Scripts and Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('styles')

@@ -106,6 +106,77 @@
     </div>
 </div>
 
+{{-- ส่วนที่ 1.5: ตัวเลือกสินค้า --}}
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-cogs text-primary"></i> ตัวเลือกสินค้า
+        </h3>
+    </div>
+    <div class="card-body p-6">
+        <div class="form-control w-full">
+            <label class="label font-bold text-gray-700">เลือกสินค้าที่เป็นตัวเลือก (เช่น สี, ขนาด)</label>
+            <select name="options[]" id="product-options" multiple>
+                @foreach($products as $product)
+                    <option value="{{ $product->pd_sp_id }}" 
+                        {{ in_array($product->pd_sp_id, old('options', $productSalepage->exists ? $productSalepage->options->pluck('pd_sp_id')->toArray() : [])) ? 'selected' : '' }}>
+                        {{ $product->pd_sp_name }} ({{ $product->pd_code }})
+                    </option>
+                @endforeach
+            </select>
+            <label class="label">
+                <span class="label-text-alt">ใช้สำหรับจัดกลุ่มสินค้าที่มีลักษณะเดียวกันแต่มีรายละเอียดต่างกัน เช่น เสื้อคนละสี</span>
+            </label>
+        </div>
+    </div>
+</div>
+
+{{-- ส่วนที่ 1.7: โปรโมชั่น --}}
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6"
+     x-data="{ isBogoEnabled: {{ old('is_bogo_active', $productSalepage->is_bogo_active ?? 0) == 1 ? 'true' : 'false' }} }">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-gift text-primary"></i> โปรโมชั่น
+        </h3>
+    </div>
+    <div class="card-body p-6">
+        {{-- BOGO Toggle --}}
+        <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 shadow-sm mb-6 bg-gray-50">
+            <span class="text-sm font-medium text-gray-700">โปรโมชั่น "ซื้อ 1 แถม 1":</span>
+            <input type="hidden" name="is_bogo_active" value="0">
+            <input type="checkbox" name="is_bogo_active" value="1" 
+                class="toggle toggle-primary toggle-sm"
+                x-model="isBogoEnabled"
+                />
+            <span class="text-xs text-gray-500">(เปิด/ปิด โปรโมชั่น 1 แถม 1)</span>
+        </div>
+
+        {{-- BOGO Options Selector --}}
+        <div class="form-control w-full" x-show="isBogoEnabled">
+            <div class="p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm mb-4">
+                <h4 class="font-bold mb-1">วิธีเพิ่มของแถม:</h4>
+                <ol class="list-decimal list-inside text-xs">
+                    <li>ขั้นแรก, ไปที่หน้า "จัดการสินค้า" และ "เพิ่มสินค้าใหม่" เพื่อสร้างสินค้าที่จะใช้เป็นของแถมก่อน</li>
+                    <li>ตรวจสอบให้แน่ใจว่าสินค้าของแถมนั้นมีชื่อและรูปภาพเรียบร้อย</li>
+                    <li>กลับมาที่หน้านี้, เปิดโปรโมชั่น 1 แถม 1, และเลือกสินค้าของแถมจากรายการด้านล่างนี้</li>
+                </ol>
+            </div>
+            <label class="label font-bold text-gray-700">เลือกสินค้าที่จะให้เป็นของแถม</label>
+            <select name="bogo_options[]" id="bogo-options" multiple>
+                @foreach($products as $productOption)
+                    <option value="{{ $productOption->pd_sp_id }}" 
+                        {{ in_array($productOption->pd_sp_id, old('bogo_options', ($productSalepage->bogoFreeOptions ?? collect())->pluck('pd_sp_id')->toArray())) ? 'selected' : '' }}>
+                        {{ $productOption->pd_sp_name }} ({{ $productOption->pd_code }})
+                    </option>
+                @endforeach
+            </select>
+            <label class="label">
+                <span class="label-text-alt">คุณสามารถเลือกสินค้าได้หลายรายการเพื่อให้ลูกค้าเลือกเป็นของแถม</span>
+            </label>
+        </div>
+    </div>
+</div>
+
 {{-- ส่วนที่ 2: รูปภาพ --}}
 <div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6">
     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -253,6 +324,28 @@
                 }
             });
         });
+
+        // 4. Initialize Tom Select
+        if (document.getElementById('product-options')) {
+            new TomSelect('#product-options',{
+                plugins: ['remove_button'],
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+        }
+        if (document.getElementById('bogo-options')) {
+            new TomSelect('#bogo-options',{
+                plugins: ['remove_button'],
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+        }
     });
 </script>
 @endpush

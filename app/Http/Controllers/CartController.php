@@ -46,4 +46,32 @@ class CartController extends Controller
         $this->cartService->removeItem((int)$productId);
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
+
+    public function addBogo(Request $request)
+    {
+        $validated = $request->validate([
+            'main_product_id' => 'required|exists:product_salepage,pd_sp_id',
+            'free_product_id' => 'required|exists:product_salepage,pd_sp_id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        // Optional TODO: Add logic to verify that free_product_id is a valid free option for main_product_id
+        // This adds an extra layer of security on top of the frontend validation.
+
+        $this->cartService->addBogoItem(
+            (int)$validated['main_product_id'],
+            (int)$validated['free_product_id'],
+            (int)$validated['quantity']
+        );
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มสินค้าโปรโมชั่นเรียบร้อยแล้ว',
+                'cartCount' => $this->cartService->getTotalQuantity()
+            ]);
+        }
+
+        return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าโปรโมชั่นลงตะกร้าแล้ว');
+    }
 }

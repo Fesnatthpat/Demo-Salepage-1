@@ -10,13 +10,17 @@ class ProductController extends Controller
 {
     public function show($id)
     {
-        // Prioritize finding the product in product_salepage
-        $salePageProduct = ProductSalepage::with('images')->find($id);
+        // Eager load everything needed for the page
+        $salePageProduct = ProductSalepage::with([
+            'images', 
+            'options.images', 
+            'bogoFreeOptions.images'
+        ])->find($id);
 
         if ($salePageProduct) {
             $primaryImage = $salePageProduct->images->where('is_primary', true)->first();
             $pd_img = $primaryImage ? $primaryImage->image_path : ($salePageProduct->images->first()->image_path ?? null);
-            // If found, create a product-like object to pass to the view
+            
             $product = (object) [
                 'pd_id' => $salePageProduct->pd_sp_id,
                 'id' => $salePageProduct->pd_sp_id,
@@ -26,6 +30,9 @@ class ProductController extends Controller
                 'pd_details' => $salePageProduct->pd_sp_details,
                 'pd_sp_details' => $salePageProduct->pd_sp_details,
                 'images' => $salePageProduct->images,
+                'options' => $salePageProduct->options,
+                'is_bogo_active' => $salePageProduct->is_bogo_active,
+                'bogoFreeOptions' => $salePageProduct->bogoFreeOptions,
                 'brand' => null,
                 'brand_name' => null,
                 'pd_code' => $salePageProduct->pd_code,
@@ -33,15 +40,22 @@ class ProductController extends Controller
                 'pd_img' => $pd_img,
             ];
         } else {
-            // Fallback to the original logic if not in sale page
+            // Fallback logic for original products, if any.
+            // These will not have BOGO promotions by design.
             $product = Product::with(['brand', 'images'])->find($id);
 
             if (! $product) {
                 return redirect('/')->with('error', 'ไม่พบสินค้านี้');
             }
-             // Add pd_img for consistency
+            
             $primaryImage = $product->images->where('is_primary', true)->first();
             $product->pd_img = $primaryImage ? $primaryImage->image_path : ($product->images->first()->image_path ?? $product->pd_img);
+            
+            // Add the missing properties to avoid errors in the view
+            $product->options = collect();
+            $product->is_bogo_active = false;
+            $product->bogoFreeOptions = collect();
+            $product->pd_sp_discount = 0;
         }
 
         return view('product', compact('product'));

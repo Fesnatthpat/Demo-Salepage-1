@@ -21,22 +21,14 @@ class ProductSalepage extends Model
     protected $guarded = [];
 
     protected $fillable = [
-        'pd_id',
         'pd_code',
         'pd_sp_name',
         'pd_sp_price',
         'pd_sp_discount',
-        'pd_sp_details',
+        'pd_sp_description', // Changed from pd_sp_details
+        'pd_sp_stock',       // Added new field
         'pd_sp_active',
-        'is_recommended',
-        'is_bogo_active',
-        'pd_sp_display_location',
     ];
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'pd_code', 'pd_code');
-    }
 
     /**
      * Get the product images for the salepage.
@@ -44,44 +36,5 @@ class ProductSalepage extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class, 'product_id', 'pd_sp_id');
-    }
-
-    // app/Models/ProductSalepage.php
-    public function options()
-    {
-        return $this->belongsToMany(
-            ProductSalepage::class,
-            'product_salepage_options',
-            'product_salepage_id',
-            'option_product_salepage_id'
-        )
-            ->withTimestamps(); // <--- ★★★ ต้องเติมคำสั่งนี้ต่อท้ายครับ
-    }
-
-    /**
-     * The parent products that this product is an option for.
-     */
-    public function parentProducts()
-    {
-        return $this->belongsToMany(
-            ProductSalepage::class,
-            'product_salepage_options',
-            'option_product_salepage_id',
-            'product_salepage_id'
-        );
-    }
-
-    /**
-     * The eligible free items for this product's BOGO promotion.
-     */
-    public function bogoFreeOptions()
-    {
-        return $this->belongsToMany(
-            ProductSalepage::class,
-            'bogo_promotion_options',
-            'product_salepage_id',
-            'free_option_product_id'
-        )
-        ->withTimestamps(); // <--- ★★★ เติมตรงนี้เช่นกัน
     }
 }

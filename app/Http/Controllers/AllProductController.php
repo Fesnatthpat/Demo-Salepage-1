@@ -7,41 +7,37 @@ use Illuminate\Support\Facades\DB;
 
 class AllProductController extends Controller
 {
+    // ในไฟล์ app/Http/Controllers/AllProductController.php
+
     public function index(Request $request)
     {
-        // New logic: Use product_salepage as the source of truth
         $query = DB::table('product_salepage as ps')
             ->select(
-                'ps.pd_sp_id as pd_id', // Alias for consistency
+                'ps.pd_sp_id as pd_id',
                 'ps.pd_sp_id',
-                'ps.pd_code',
+                'ps.pd_sp_code as pd_code',   // แก้เป็น pd_sp_code
                 'ps.pd_sp_name as pd_name',
                 'ps.pd_sp_price as pd_price',
                 'ps.pd_sp_discount',
-                'img.image_path as pd_img'
+                'img.img_path as pd_img'      // แก้เป็น img_path
             )
-            ->leftJoin('image_product as img', function ($join) {
-                $join->on('ps.pd_sp_id', '=', 'img.product_id')
-                     ->where('img.is_primary', '=', 1);
+            // แก้ไขส่วน Join ตารางรูปภาพ
+            ->leftJoin('product_images as img', function ($join) {
+                $join->on('ps.pd_sp_id', '=', 'img.pd_sp_id') // แก้เป็น pd_sp_id
+                    ->where('img.img_sort', '=', 1);         // แก้เป็น img_sort
             })
-            ->where('ps.pd_sp_active', 1)
-            ->where('ps.pd_sp_display_location', 'general'); // Added this line
+            ->where('ps.pd_sp_active', 1);
+        // ->where('ps.pd_sp_display_location', 'general'); // ปิดไว้ก่อนถ้ายังไม่มีคอลัมน์นี้
 
         // --- Search Logic ---
         if ($request->has('search') && $request->search != '') {
-            $query->where('ps.pd_sp_name', 'like', '%' . $request->search . '%');
-        }
-
-        // --- Category Logic (if any) ---
-        if ($request->has('category') && $request->category != '') {
-            // $query->where(...)
+            $query->where('ps.pd_sp_name', 'like', '%'.$request->search.'%');
         }
 
         $products = $query->orderBy('ps.pd_sp_id', 'desc')
-                          ->paginate(12);
+            ->paginate(12);
 
-        // Example categories
-        $categories = ["Electronics", "Books", "Clothing", "Home & Kitchen"];
+        $categories = ['Electronics', 'Books', 'Clothing', 'Home & Kitchen'];
 
         return view('allproducts', compact('products', 'categories'));
     }

@@ -57,23 +57,8 @@ class ProductController extends Controller
         // 1. ตรวจสอบข้อมูล (ตัด pd_code ออก)
         $validatedData = $this->validateSalePage($request);
 
-        // 2. ระบบรันรหัสสินค้าอัตโนมัติ (Auto Generate)
-        // หา ID ล่าสุด เพื่อนำมา +1
-        $lastProduct = ProductSalepage::latest('pd_sp_id')->first();
-        $nextId = $lastProduct ? ($lastProduct->pd_sp_id + 1) : 1;
-        // สร้างรหัส P-00001, P-00002, ...
-        $validatedData['pd_code'] = 'P-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
-
         // 3. บันทึกข้อมูลสินค้าลงฐานข้อมูล
         $salePage = ProductSalepage::create($validatedData);
-
-        if ($request->has('options')) {
-            $salePage->options()->attach($request->options);
-        }
-
-        if ($request->has('bogo_options')) {
-            $salePage->bogoFreeOptions()->attach($request->bogo_options);
-        }
 
         // 4. จัดการอัปโหลดรูปภาพ
         if ($request->hasFile('images')) {
@@ -123,17 +108,9 @@ class ProductController extends Controller
         // 2. อัปเดตข้อมูล (แยกส่วนเพื่อความชัดเจน)
         // Manual assignment for most fields
         $productSalepage->fill($validatedData);
-
-        // Explicitly set boolean values from the request for robustness
         $productSalepage->pd_sp_active = $request->boolean('pd_sp_active');
-        $productSalepage->is_recommended = $request->boolean('is_recommended');
-        $productSalepage->is_bogo_active = $request->boolean('is_bogo_active');
         
         $productSalepage->save(); // Persist the changes
-
-        // Sync relationships
-        $productSalepage->options()->sync($request->options ?? []);
-        $productSalepage->bogoFreeOptions()->sync($request->bogo_options ?? []);
 
         // 3. จัดการรูปภาพใหม่ (ถ้ามี)
         if ($request->hasFile('images')) {
@@ -198,19 +175,19 @@ class ProductController extends Controller
     private function validateSalePage(Request $request, ?ProductSalepage $salePage = null): array
     {
         return $request->validate([
+            'pd_sp_code' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('product_salepage', 'pd_code')->ignore($salePage->pd_sp_id ?? null, 'pd_sp_id'),
+            ],
             'pd_sp_name' => 'required|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
             'pd_sp_discount' => 'nullable|numeric|min:0',
-            'pd_sp_details' => 'nullable|string',
+            'pd_sp_description' => 'nullable|string', // Changed from pd_sp_details
+            'pd_sp_stock' => 'required|integer|min:0', // Added new field
             'pd_sp_active' => 'required|boolean',
-            'is_recommended' => 'required|boolean',
-            'is_bogo_active' => 'required|boolean',
-            'pd_sp_display_location' => 'nullable|string',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:65536',
-            'options' => 'nullable|array',
-            'options.*' => 'exists:product_salepage,pd_sp_id',
-            'bogo_options' => 'nullable|array',
-            'bogo_options.*' => 'exists:product_salepage,pd_sp_id',
         ]);
     }
 }

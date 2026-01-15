@@ -5,7 +5,7 @@
 @section('content')
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
 
-        {{-- Display Generic Session Errors --}}
+        {{-- แสดงข้อความ Error/Success --}}
         @if (session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
@@ -13,7 +13,7 @@
             </div>
         @endif
 
-        {{-- Display Validation Errors --}}
+        {{-- แสดง Validation Errors --}}
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
@@ -249,28 +249,33 @@
             @endif
         </div>
 
-        {{-- 2. สั่งซื้อสินค้าแล้ว --}}
+        {{-- 2. สั่งซื้อสินค้าแล้ว (จุดที่แก้ไข Logic รูปภาพ) --}}
         <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-6">สั่งซื้อสินค้าแล้ว</h2>
             <div class="space-y-4">
                 @if (isset($cartItems) && count($cartItems) > 0)
                     @foreach ($cartItems as $item)
                         @php
-                            $originalPrice = $item->attributes->original_price ?? $item->price;
+                            // แปลง Attributes เป็น Array เพื่อความชัวร์
+                            $attrs = $item->attributes;
+                            if (!is_array($attrs) && is_object($attrs) && method_exists($attrs, 'toArray')) {
+                                $attrs = $attrs->toArray();
+                            }
+                            $attrs = (array) $attrs;
+
+                            $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
 
-                            // ==========================================
-                            // 🔧 Auto-Detect Image Logic (สำหรับ Cart Item)
-                            // ==========================================
+                            // --- Logic ค้นหารูปภาพ (Auto-Detect) ---
                             $displayImage = 'https://via.placeholder.com/150?text=No+Image';
-                            $rawPath = $item->attributes->image ?? null;
+                            $rawPath = $attrs['image'] ?? null;
 
                             if ($rawPath) {
                                 if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
                                     $displayImage = $rawPath;
                                 } else {
                                     $cleanName = basename($rawPath);
-                                    // รายชื่อห้องที่น่าสงสัย
+                                    // ลองหาไฟล์จากหลายๆ ที่ที่เป็นไปได้
                                     $possiblePaths = [
                                         'storage/' . $rawPath,
                                         'storage/' . $cleanName,
@@ -281,17 +286,17 @@
 
                                     $found = false;
                                     foreach ($possiblePaths as $path) {
-                                        // เช็คว่ามีไฟล์จริงไหม
                                         if (file_exists(public_path($path))) {
-                                            $displayImage = asset($path);
+                                            $displayImage = asset($path) . '?v=' . time(); // เพิ่ม version กัน cache
                                             $found = true;
                                             break;
                                         }
                                     }
 
                                     if (!$found) {
-                                        // Fallback ถ้าหาไม่เจอ
-                                        $displayImage = asset('storage/' . $rawPath);
+                                        // Fallback สุดท้าย
+                                        $safePath = str_replace(['public/', 'storage/'], '', $rawPath);
+                                        $displayImage = asset('storage/' . $safePath) . '?v=' . time();
                                     }
                                 }
                             }

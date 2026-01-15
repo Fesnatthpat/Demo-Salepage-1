@@ -15,7 +15,8 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::where('user_id', Auth::id())
+        $orders = Order::with('details.productSalepage.images')
+                        ->where('user_id', Auth::id())
                         ->orderBy('ord_date', 'desc')
                         ->get();
 

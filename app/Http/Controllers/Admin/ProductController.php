@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product; // ถ้าไม่ได้ใช้ model นี้แล้ว สามารถลบออกได้
 use App\Models\ProductSalepage;
+// use App\Models\ProductImage; // ถ้ามี Model นี้ให้เปิดใช้งาน
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -23,7 +23,7 @@ class ProductController extends Controller
             $searchTerm = '%'.$request->search.'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('pd_sp_name', 'like', $searchTerm)
-                    ->orWhere('pd_code', 'like', $searchTerm);
+                    ->orWhere('pd_sp_code', 'like', $searchTerm); // แก้: pd_code -> pd_sp_code
             });
         }
 
@@ -32,7 +32,7 @@ class ProductController extends Controller
             $query->where('pd_sp_active', $request->status);
         }
 
-        $products = $query->paginate(10); // เปลี่ยนชื่อตัวแปรให้สื่อความหมาย (products)
+        $products = $query->paginate(10);
 
         return view('admin.products.index', compact('products'));
     }
@@ -43,6 +43,7 @@ class ProductController extends Controller
     public function create()
     {
         $products = ProductSalepage::orderBy('pd_sp_name')->get();
+
         return view('admin.products.create', [
             'productSalepage' => new ProductSalepage,
             'products' => $products,
@@ -54,31 +55,57 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. ตรวจสอบข้อมูล (ตัด pd_code ออก)
-        $validatedData = $this->validateSalePage($request);
+        // 1. ตรวจสอบข้อมูล
+        $this->validateSalePage($request);
 
-        // 3. บันทึกข้อมูลสินค้าลงฐานข้อมูล
-        $salePage = ProductSalepage::create($validatedData);
+        // 2. สร้างรหัสสินค้าอัตโนมัติ (Auto Generate)
+        $lastProduct = ProductSalepage::latest('pd_sp_id')->first();
+        $nextId = $lastProduct ? ($lastProduct->pd_sp_id + 1) : 1;
+        $generatedCode = 'P-'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
+
+        // 3. เตรียมข้อมูลบันทึก (Map ชื่อตัวแปรให้ตรง DB เป๊ะๆ)
+        $dataToSave = [
+            'pd_sp_code' => $generatedCode,              // แก้: pd_code -> pd_sp_code
+            'pd_sp_name' => $request->pd_sp_name,
+            'pd_sp_description' => $request->pd_sp_details,     // แก้: details -> description
+            'pd_sp_price' => $request->pd_sp_price,
+            'pd_sp_discount' => $request->pd_sp_discount ?? 0,
+            'pd_sp_active' => $request->boolean('pd_sp_active'),
+
+            // คอลัมน์เพิ่มเติม
+            'is_recommended' => $request->boolean('is_recommended'),
+            'is_bogo_active' => $request->boolean('is_bogo_active'),
+            'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
+        ];
+
+        // บันทึกสินค้า
+        $salePage = ProductSalepage::create($dataToSave);
+
+        // จัดการ Relations (ถ้ามี)
+        if ($request->has('options')) {
+            $salePage->options()->attach($request->options);
+        }
+        if ($request->has('bogo_options')) {
+            $salePage->bogoFreeOptions()->attach($request->bogo_options);
+        }
 
         // 4. จัดการอัปโหลดรูปภาพ
         if ($request->hasFile('images')) {
-            foreach($request->file('images') as $file) {
+            $isFirst = true;
+            foreach ($request->file('images') as $file) {
                 $path = $file->store('product_images', 'public');
+
+                // แก้: ใช้ img_path และ img_sort
                 $salePage->images()->create([
-                    'image_path' => $path,
-                    'is_primary' => false // ค่าเริ่มต้นไม่ใช่รูปหลัก
+                    'img_path' => $path,        // image_path -> img_path
+                    'img_sort' => $isFirst ? 1 : 0, // is_primary -> img_sort (1=ปก)
                 ]);
-            }
-            
-            // ตั้งรูปแรกเป็นรูปหลักถ้ายังไม่มี
-            if($salePage->images()->exists()) {
-                $firstImage = $salePage->images()->first();
-                $firstImage->update(['is_primary' => true]);
+                $isFirst = false;
             }
         }
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'สร้างสินค้าใหม่เรียบร้อยแล้ว (รหัส ' . $validatedData['pd_code'] . ')');
+            ->with('success', 'สร้างสินค้าใหม่เรียบร้อยแล้ว (รหัส '.$generatedCode.')');
     }
 
     /**
@@ -86,9 +113,10 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        $productSalepage = ProductSalepage::with(['images', 'options'])->findOrFail($id);
+        // แก้: ใช้ pd_sp_id หรือ findOrFail($id) ถ้า Model set primaryKey แล้ว
+        $productSalepage = ProductSalepage::with(['images', 'options'])->where('pd_sp_id', $id)->firstOrFail();
         $products = ProductSalepage::where('pd_sp_id', '!=', $id)->orderBy('pd_sp_name')->get();
-        
+
         return view('admin.products.edit', [
             'productSalepage' => $productSalepage,
             'products' => $products,
@@ -100,34 +128,51 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $productSalepage = ProductSalepage::findOrFail($id);
-        
+        $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
+
         // 1. ตรวจสอบข้อมูล
-        $validatedData = $this->validateSalePage($request, $productSalepage);
-        
-        // 2. อัปเดตข้อมูล (แยกส่วนเพื่อความชัดเจน)
-        // Manual assignment for most fields
-        $productSalepage->fill($validatedData);
+        $this->validateSalePage($request, $productSalepage);
+
+        // 2. อัปเดตข้อมูล (Map ให้ตรง DB)
+        $productSalepage->pd_sp_name = $request->pd_sp_name;
+        $productSalepage->pd_sp_price = $request->pd_sp_price;
+        $productSalepage->pd_sp_discount = $request->pd_sp_discount ?? 0;
+        $productSalepage->pd_sp_description = $request->pd_sp_details; // แก้: details -> description
+
         $productSalepage->pd_sp_active = $request->boolean('pd_sp_active');
-        
-        $productSalepage->save(); // Persist the changes
+        $productSalepage->is_recommended = $request->boolean('is_recommended');
+        $productSalepage->is_bogo_active = $request->boolean('is_bogo_active');
+        $productSalepage->pd_sp_display_location = $request->pd_sp_display_location;
+
+        $productSalepage->save();
+
+        // Sync relationships
+        $productSalepage->options()->sync($request->options ?? []);
+        $productSalepage->bogoFreeOptions()->sync($request->bogo_options ?? []);
 
         // 3. จัดการรูปภาพใหม่ (ถ้ามี)
         if ($request->hasFile('images')) {
-            foreach($request->file('images') as $file) {
+            foreach ($request->file('images') as $file) {
                 $path = $file->store('product_images', 'public');
                 $productSalepage->images()->create([
-                    'image_path' => $path
+                    'img_path' => $path,  // แก้: img_path
+                    'img_sort' => 0,       // รูปใหม่มาทีหลัง ไม่ใช่ปก
                 ]);
             }
         }
-        
+
         // 4. จัดการเลือกรูปหลัก (Primary Image)
-        if ($request->has('is_primary')) {
-            // รีเซ็ตทุกรูปให้ไม่เป็นหลักก่อน
-            $productSalepage->images()->update(['is_primary' => false]);
-            // ตั้งค่ารูปที่เลือกเป็นหลัก
-            $productSalepage->images()->where('img_pd_id', $request->is_primary)->update(['is_primary' => true]);
+        if ($request->has('is_primary')) { // is_primary คือค่า ID ของรูปที่จะตั้งเป็นปก
+            $newPrimaryId = $request->is_primary;
+
+            // รีเซ็ตทุกรูปเป็น 0
+            $productSalepage->images()->update(['img_sort' => 0]);
+
+            // ตั้งค่ารูปที่เลือกเป็น 1
+            // หมายเหตุ: ต้องตรวจสอบว่า Model Image ชื่อคอลัมน์ PK คืออะไร (สมมติ img_id)
+            DB::table('product_images') // ใช้ DB table ตรงๆ เพื่อความชัวร์ หรือใช้ Model ก็ได้
+                ->where('img_id', $newPrimaryId)
+                ->update(['img_sort' => 1]);
         }
 
         return redirect()->route('admin.products.index')->with('success', 'อัปเดตข้อมูลสินค้าเรียบร้อยแล้ว');
@@ -138,34 +183,28 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $productSalepage = ProductSalepage::findOrFail($id);
-        
-        // ลบรูปภาพใน Storage (Optional: ถ้าต้องการลบไฟล์จริงด้วย)
-        /*
-        foreach($productSalepage->images as $img) {
-            Storage::disk('public')->delete($img->image_path);
-        }
-        */
-
-        $productSalepage->delete();
+        $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
+        $productSalepage->delete(); // รูปควรลบ Auto ถ้าตั้ง Cascade ไว้ใน DB
 
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
-    
+
     // ฟังก์ชันสำหรับลบรูปภาพ (AJAX)
     public function destroyImage($imageId)
     {
-        // โค้ดส่วนนี้ต้องสร้าง Model Image หรือเรียกผ่าน Relation ก็ได้
-        // สมมติว่ามี Model ProductImage
-        $image = \App\Models\ProductImage::find($imageId); 
-        // หรือถ้าไม่มี Model แยก ใช้ DB::table ก็ได้ แต่แนะนำให้สร้าง Model ครับ
-        
+        // ใช้ DB Facade ดึง path มาลบไฟล์ก่อน
+        $image = DB::table('product_images')->where('img_id', $imageId)->first();
+
         if ($image) {
-            Storage::disk('public')->delete($image->image_path);
-            $image->delete();
+            if (Storage::disk('public')->exists($image->img_path)) {
+                Storage::disk('public')->delete($image->img_path);
+            }
+
+            DB::table('product_images')->where('img_id', $imageId)->delete();
+
             return response()->json(['success' => true]);
         }
-        
+
         return response()->json(['success' => false, 'message' => 'Image not found']);
     }
 
@@ -175,19 +214,17 @@ class ProductController extends Controller
     private function validateSalePage(Request $request, ?ProductSalepage $salePage = null): array
     {
         return $request->validate([
-            'pd_sp_code' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('product_salepage', 'pd_code')->ignore($salePage->pd_sp_id ?? null, 'pd_sp_id'),
-            ],
             'pd_sp_name' => 'required|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
             'pd_sp_discount' => 'nullable|numeric|min:0',
-            'pd_sp_description' => 'nullable|string', // Changed from pd_sp_details
-            'pd_sp_stock' => 'required|integer|min:0', // Added new field
-            'pd_sp_active' => 'required|boolean',
+            'pd_sp_details' => 'nullable|string', // รับค่าจากฟอร์มชื่อ details
+            'pd_sp_active' => 'required|boolean', // หรือบางทีส่งมาเป็น 1/0
+            'is_recommended' => 'nullable', // รับ nullable เพราะ checkbox ถ้าไม่ติ๊กจะไม่ส่งค่ามา
+            'is_bogo_active' => 'nullable',
+            'pd_sp_display_location' => 'nullable|string',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:65536',
+            'options' => 'nullable|array',
+            'bogo_options' => 'nullable|array',
         ]);
     }
 }

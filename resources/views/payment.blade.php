@@ -9,7 +9,6 @@
         @if (session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
-                {{-- <strong class="font-bold">เกิดข้อผิดพลาด!</strong> --}}
                 <span class="block sm:inline">{{ session('error') }}</span>
             </div>
         @endif
@@ -29,10 +28,10 @@
 
         {{-- คำนวณยอดรวม --}}
         @php
-            $grandTotal = $totalAmount; // This is the sum of discounted prices for selected items
+            $grandTotal = $totalAmount;
             $shippingCost = 0;
-            $discount = $totalDiscount; // Use the totalDiscount passed from controller for display
-            $finalTotal = $grandTotal + $shippingCost; // Correct calculation: Total is already discounted.
+            $discount = $totalDiscount;
+            $finalTotal = $grandTotal + $shippingCost;
         @endphp
 
         {{-- ==================== 1. ส่วนที่อยู่ ==================== --}}
@@ -90,11 +89,12 @@
                                         </p>
                                         <p><span class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span>
                                             {{ $address->phone }}</p>
-                                        
-                                        @if($address->note)
-                                        <div class="divider my-2"></div>
-                                        <p class="max-h-20 overflow-y-auto"><span class="font-semibold text-gray-700">หมายเหตุ:</span>
-                                            {{ $address->note }}</p>
+
+                                        @if ($address->note)
+                                            <div class="divider my-2"></div>
+                                            <p class="max-h-20 overflow-y-auto"><span
+                                                    class="font-semibold text-gray-700">หมายเหตุ:</span>
+                                                {{ $address->note }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -106,13 +106,10 @@
                                         แก้ไขที่อยู่
                                     </button>
 
-                                    {{-- ★★★ [แก้ไข 1] ปุ่มลบ ใช้ SweetAlert2 ★★★ --}}
-                                    {{-- ตั้ง ID ให้ Form เพื่อให้ JS อ้างอิงได้ --}}
                                     <form id="delete-form-{{ $address->id }}"
                                         action="{{ route('address.destroy', $address->id) }}" method="POST" @click.stop>
                                         @csrf
                                         @method('DELETE')
-                                        {{-- เปลี่ยน type="submit" เป็น type="button" และเรียกฟังก์ชัน JS --}}
                                         <button type="button" onclick="confirmDelete('delete-form-{{ $address->id }}')"
                                             class="btn btn-sm btn-outline border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 hover:text-red-600 font-normal px-3">
                                             ลบ
@@ -122,7 +119,7 @@
                             </div>
                         </div>
 
-                        {{-- Modal Edit (เหมือนเดิม เพิ่มแค่ onsubmit="showLoading()") --}}
+                        {{-- Modal Edit --}}
                         <dialog id="{{ $modalEditId }}" class="modal modal-middle" x-data="addressDropdown()"
                             x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
                             <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden cursor-default"
@@ -137,7 +134,6 @@
                                     <form action="{{ route('address.update', $address->id) }}" method="POST"
                                         id="form_edit_{{ $address->id }}" onsubmit="showLoading()">
                                         @csrf @method('PUT')
-                                        {{-- (เนื้อหาใน Form คงเดิม ไม่เปลี่ยนแปลง) --}}
                                         <div class="mb-6">
                                             <h4 class="text-emerald-600 font-bold mb-4">ข้อมูลผู้รับ</h4>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,7 +174,8 @@
                                                         class="select select-bordered w-full rounded focus:outline-emerald-500">
                                                         <option value="">-- เลือกจังหวัด --</option>
                                                         @foreach ($provinces as $province)
-                                                            <option value="{{ $province->id }}">{{ $province->name_th }}
+                                                            <option value="{{ $province->id }}">
+                                                                {{ $province->name_th }}
                                                             </option>
                                                         @endforeach
                                                     </select>
@@ -261,14 +258,51 @@
                         @php
                             $originalPrice = $item->attributes->original_price ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
+
+                            // ==========================================
+                            // 🔧 Auto-Detect Image Logic (สำหรับ Cart Item)
+                            // ==========================================
+                            $displayImage = 'https://via.placeholder.com/150?text=No+Image';
+                            $rawPath = $item->attributes->image ?? null;
+
+                            if ($rawPath) {
+                                if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                                    $displayImage = $rawPath;
+                                } else {
+                                    $cleanName = basename($rawPath);
+                                    // รายชื่อห้องที่น่าสงสัย
+                                    $possiblePaths = [
+                                        'storage/' . $rawPath,
+                                        'storage/' . $cleanName,
+                                        'storage/uploads/' . $cleanName,
+                                        'storage/images/' . $cleanName,
+                                        'uploads/' . $cleanName,
+                                    ];
+
+                                    $found = false;
+                                    foreach ($possiblePaths as $path) {
+                                        // เช็คว่ามีไฟล์จริงไหม
+                                        if (file_exists(public_path($path))) {
+                                            $displayImage = asset($path);
+                                            $found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!$found) {
+                                        // Fallback ถ้าหาไม่เจอ
+                                        $displayImage = asset('storage/' . $rawPath);
+                                    }
+                                }
+                            }
                         @endphp
                         <div
                             class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                             <div class="flex items-center gap-4">
                                 <div
                                     class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                    <img src="{{ asset('storage/' . $item->attributes->image) }}"
-                                        class="w-full h-full object-cover" />
+                                    <img src="{{ $displayImage }}" class="w-full h-full object-cover"
+                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';" />
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
@@ -453,12 +487,12 @@
                             </div>
                         </div>
                     </form>
-                </div>
-                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                    <form method="dialog"><button
-                            class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button></form>
-                    <button onclick="document.getElementById('form_add_new').submit()"
-                        class="btn bg-[#00B900] hover:bg-[#009900] text-white border-none font-normal px-6">บันทึกข้อมูล</button>
+                    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                        <form method="dialog"><button
+                                class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button></form>
+                        <button onclick="document.getElementById('form_add_new').submit()"
+                            class="btn bg-[#00B900] hover:bg-[#009900] text-white border-none font-normal px-6">บันทึกข้อมูล</button>
+                    </div>
                 </div>
             </div>
         </dialog>
@@ -479,7 +513,7 @@
             if (loader) loader.classList.remove('hidden');
         }
 
-        // ★★★ [แก้ไข 2] ฟังก์ชัน Confirm Delete ด้วย SweetAlert2 ★★★
+        // ฟังก์ชัน Confirm Delete ด้วย SweetAlert2
         function confirmDelete(formId) {
             Swal.fire({
                 title: 'ยืนยันการลบ?',

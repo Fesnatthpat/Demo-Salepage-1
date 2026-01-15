@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
@@ -29,21 +28,21 @@ class PaymentController extends Controller
         $cartContent = Cart::session(auth()->id())->getContent();
         $cartItems = [];
         $totalAmount = 0;
-        $totalDiscount = 0; // Initialize total discount
-        $totalOriginalAmount = 0; // Initialize total original amount
+        $totalDiscount = 0;
+        $totalOriginalAmount = 0;
 
         foreach ($cartContent as $item) {
             if (in_array((string) $item->id, $selectedItems)) {
                 $cartItems[] = $item;
                 $totalAmount += ($item->price * $item->quantity);
 
-                // Calculate original price for this item (similar to cart.blade.php)
+                // Calculate original price
                 $originalPrice = $item->attributes->has('original_price')
                     ? $item->attributes->original_price
                     : $item->price;
-                
+
                 $totalOriginalAmount += ($originalPrice * $item->quantity);
-                $totalDiscount += ($item->attributes->discount ?? 0); // Sum up fixed per-item discount
+                $totalDiscount += ($item->attributes->discount ?? 0);
             }
         }
 
@@ -70,27 +69,28 @@ class PaymentController extends Controller
         try {
             // คำนวณยอดเงิน
             $totalPrice = 0;
-            $totalDiscount = 0; // Initialize totalDiscount
+            $totalDiscount = 0;
             $itemsToBuy = [];
             foreach ($cartContent as $item) {
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
                     $totalPrice += ($item->price * $item->quantity);
-                    $totalDiscount += ($item->attributes['discount'] ?? 0); // Sum up fixed per-item discount (not multiplied by quantity)
+                    $totalDiscount += ($item->attributes['discount'] ?? 0);
                 }
             }
 
-            if (count($itemsToBuy) === 0) throw new \Exception('ไม่พบสินค้า');
+            if (count($itemsToBuy) === 0) {
+                throw new \Exception('ไม่พบสินค้า');
+            }
 
             $shippingCost = 0;
-            // $totalDiscount is now correctly calculated
             $netAmount = $totalPrice + $shippingCost;
 
             // ดึงที่อยู่
             $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
             $fullAddress = $address->address_line1.' '.($address->address_line2 ?? '').' '.($address->district->name_th ?? '').' '.($address->amphure->name_th ?? '').' '.($address->province->name_th ?? '').' '.$address->zipcode;
-            if(!empty($address->note)) {
-                $fullAddress .= "\nหมายเหตุ: " . $address->note;
+            if (! empty($address->note)) {
+                $fullAddress .= "\nหมายเหตุ: ".$address->note;
             }
 
             $orderCode = 'ORD-'.date('YmdHis').'-'.rand(100, 999);
@@ -113,7 +113,8 @@ class PaymentController extends Controller
             // บันทึก Order Detail
             foreach ($itemsToBuy as $item) {
                 OrderDetail::create([
-                    'ord_id' => $order->ord_id, // ใช้ ID จาก object ที่เพิ่งสร้าง
+                    // ★★★ แก้ไขจุดนี้: เปลี่ยนจาก ord_id เป็น id (เพราะ PK ของ Order คือ id) ★★★
+                    'ord_id' => $order->id,
                     'user_id' => $userId,
                     'pd_id' => $item->id,
                     'pd_price' => $item->price,
@@ -134,29 +135,31 @@ class PaymentController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('payment.qr', ['orderId' => $orderCode]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', ' '.$e->getMessage());
+
+            return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }
     }
 
     // [Step 3] Show QR Code
     public function showQr($orderId, PromptPayService $promptPayService)
     {
+        // แก้ไข: ใช้ ord_code ในการค้นหา (ตาม route parameter)
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
-        // ★ ตั้งเวลาหมดอายุ 15 นาที จากเวลาอัปเดตล่าสุด
         $expireTime = $order->updated_at->addMinutes(15);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
-        if ($secondsRemaining < 0) $secondsRemaining = 0;
+        if ($secondsRemaining < 0) {
+            $secondsRemaining = 0;
+        }
 
-        // สร้าง Payload พร้อมเพย์ผ่าน Service
         $promptpayTarget = env('PROMPTPAY_ACCOUNT', '0812345678');
         $payload = $promptPayService->generatePayload($promptpayTarget, $order->net_amount);
 
-        // ★ สร้าง QR เป็น SVG เพื่อแก้ปัญหา Driver Error
         $qrCodeBase64 = base64_encode(QrCode::format('svg')->size(250)->errorCorrection('H')->generate($payload));
 
         return view('qr', compact('order', 'qrCodeBase64', 'secondsRemaining'));
@@ -168,8 +171,8 @@ class PaymentController extends Controller
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
         if ($order->status_id == 1) {
-            // อัปเดตเวลา updated_at เป็นปัจจุบัน เพื่อเริ่มนับ 15 นาทีใหม่
-            $order->touch(); 
+            $order->touch();
+
             return redirect()->route('payment.qr', ['orderId' => $orderCode])->with('success', 'รีเฟรช QR Code แล้ว');
         }
 
@@ -179,26 +182,25 @@ class PaymentController extends Controller
     // [Step 4] Upload Slip
     public function uploadSlip(Request $request, $orderCode)
     {
-        $request->validate(['slip_image' => 'required|image|max:5120']); // Max 5MB
+        $request->validate(['slip_image' => 'required|image|max:5120']);
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
-        // ตรวจสอบเวลาหมดอายุ (ต้องตรงกับใน showQr)
         if (now()->greaterThan($order->updated_at->addMinutes(15))) {
             return back()->with('error', 'หมดเวลาชำระเงิน กรุณากดปุ่มรีเฟรช');
         }
 
         if ($request->hasFile('slip_image')) {
-            // ★ บันทึกไฟล์ลง Storage
             $path = $request->file('slip_image')->store('slips', 'public');
-            
-            // ★ บันทึก Path ลง Database
+
             $order->slip_path = $path;
             $order->status_id = 2; // แจ้งชำระเงินแล้ว
+            // บันทึกเวลาและยอดโอน (ถ้ามี input เพิ่มในอนาคต)
+            $order->transfer_date = now();
             $order->save();
 
             return redirect()->route('order.show', ['orderCode' => $order->ord_code])
-                             ->with('success', 'แนบสลิปเรียบร้อยแล้ว');
+                ->with('success', 'แนบสลิปเรียบร้อยแล้ว');
         }
 
         return back()->with('error', 'อัปโหลดไม่สำเร็จ');

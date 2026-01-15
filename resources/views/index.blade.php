@@ -102,25 +102,15 @@
             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                 @foreach ($recommendedProducts as $product)
                     @php
-                        // Assume pd_price (aliased from product_salepage.pd_sp_price) is the ORIGINAL price on sale page
-                        $originalPrice  = (float) ($product->pd_price ?? 0); 
-                        // Assume pd_sp_discount is the discount AMOUNT to subtract
+                        // --- Logic for Eloquent Model ---
+                        $originalPrice  = (float) ($product->pd_sp_price ?? 0);
                         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
-                        
-                        // The final selling price is original price minus discount amount
-                        $finalSellingPrice = $originalPrice - $discountAmount;
-
-                        // Ensure final selling price is not negative
-                        if ($finalSellingPrice < 0) {
-                            $finalSellingPrice = 0;
-                        }
-                        
-                        // A product is on sale if a discount is applied.
+                        $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                         $isOnSale = $discountAmount > 0;
 
-                        // Variable names for display
-                        $currentPriceForDisplay = $finalSellingPrice; // This will be green
-                        $fullPriceForDisplay = $originalPrice; // This will be strikethrough
+                        // Get primary image from the images collection
+                        $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first();
+                        $imagePath = $primaryImage ? $primaryImage->image_path : 'https://via.placeholder.com/400x500.png?text=No+Image';
                     @endphp
 
                     {{-- ★★★ เพิ่ม class flex flex-col h-full เพื่อจัด layout ให้ปุ่มอยู่ล่างสุดเสมอ ★★★ --}}
@@ -128,10 +118,10 @@
                         class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
 
                         {{-- รูปภาพ --}}
-                        <a href="{{ url('/product/' . $product->pd_id) }}">
+                        <a href="{{ route('product.show', $product->pd_sp_id) }}">
                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                <img src="{{ asset('storage/' . $product->pd_img) }}"
-                                    alt="{{ $product->pd_name }}"
+                                <img src="{{ asset('storage/' . $imagePath) }}"
+                                    alt="{{ $product->pd_sp_name }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
 
                                 {{-- Logic ป้าย SALE: แสดงจำนวนเงินที่ลด --}}
@@ -144,7 +134,7 @@
 
                                 <div
                                     class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100 z-10">
-                                    <a href="{{ url('/product/' . $product->pd_id) }}"
+                                    <a href="{{ route('product.show', $product->pd_sp_id) }}"
                                         class="btn btn-block bg-white/90 hover:bg-emerald-600 hover:text-white text-gray-800 border-none shadow-md text-sm h-10 min-h-0">
                                         ดูรายละเอียด
                                     </a>
@@ -160,25 +150,25 @@
 
                             <h2
                                 class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
-                                <a href="{{ url('/product/' . $product->pd_id) }}"
+                                <a href="{{ route('product.show', $product->pd_sp_id) }}"
                                     class="hover:text-emerald-600 transition">
-                                    {{ $product->pd_name }}
+                                    {{ $product->pd_sp_name }}
                                 </a>
                             </h2>
-                            <p class="text-xs text-gray-500">Code: {{ $product->pd_code }}</p>
+                            <p class="text-xs text-gray-500">Code: {{ $product->pd_sp_code }}</p>
 
                             <div class="flex justify-between items-end mt-2 mb-3">
                                 <div class="flex items-baseline gap-2">
                                     @if ($isOnSale)
                                         {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
                                         <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPriceForDisplay) }}</span>
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
                                         <span
-                                            class="text-xs text-gray-400 line-through">฿{{ number_format($fullPriceForDisplay) }}</span>
+                                            class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
                                     @else
                                         {{-- กรณีไม่มีส่วนลด: แสดงราคาขายปัจจุบันสีเขียว --}}
                                         <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPriceForDisplay) }}</span>
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -186,7 +176,7 @@
                             {{-- ★★★ เพิ่มปุ่ม: Add to Cart (Quick Add) ★★★ --}}
                             <div class="mt-auto">
                                 <button type="button"
-                                    onclick="addToCartQuick(this, '{{ route('cart.add', ['id' => $product->pd_id]) }}')"
+                                    onclick="addToCartQuick(this, '{{ route('cart.add', ['id' => $product->pd_sp_id]) }}')"
                                     class="btn btn-sm w-full btn-outline border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 font-bold gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">

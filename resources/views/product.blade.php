@@ -9,27 +9,30 @@
         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
         $isOnSale = $discountAmount > 0;
 
-        $mainImagePath = $product->pd_img
-            ? asset('storage/' . $product->pd_img)
-            : 'https://via.placeholder.com/600x600.png?text=No+Image';
-        $otherImagePaths = [];
+        // --- Refactored Image Logic (แก้ไขใหม่) ---
+        $allImagePaths = [];
+        $activeImageUrl = 'https://via.placeholder.com/600x600.png?text=No+Image';
+
         if (isset($product->images) && $product->images->isNotEmpty()) {
-            $otherImages = $product->images->filter(fn($image) => $image->image_path !== $product->pd_img);
-            $otherImagePaths = $otherImages
-                ->pluck('image_path')
+            // เรียงลำดับรูปภาพ: เอา img_sort มากสุด (1) ขึ้นก่อน
+            $sortedImages = $product->images->sortByDesc('img_sort');
+
+            $allImagePaths = $sortedImages
+                ->pluck('img_path') // แก้ไข: ใช้ img_path ตาม DB
                 ->map(fn($path) => asset('storage/' . $path))
-                ->toArray();
+                ->values()
+                ->all();
+            
+            // รูปแรกสุดคือรูปปก
+            $activeImageUrl = $allImagePaths[0] ?? $activeImageUrl;
+        } else {
+            $allImagePaths[] = $activeImageUrl;
         }
-        $allImagePaths =
-            $mainImagePath !== 'https://via.placeholder.com/600x600.png?text=No+Image' ? [$mainImagePath] : [];
-        $allImagePaths = array_merge($allImagePaths, $otherImagePaths);
-        if (empty($allImagePaths)) {
-            $allImagePaths[] = 'https://via.placeholder.com/600x600.png?text=No+Image';
-        }
-        $activeImageUrl = $allImagePaths[0];
 
         $isBogo =
-            $product->is_bogo_active && isset($product->bogoFreeOptions) && $product->bogoFreeOptions->isNotEmpty();
+            ($product->is_bogo_active ?? false) && 
+            isset($product->bogoFreeOptions) && 
+            $product->bogoFreeOptions->isNotEmpty();
     @endphp
 
     <div x-data="productPage({
@@ -132,11 +135,14 @@
                                             'border-emerald-500 shadow-md' : 'border-gray-200 hover:border-emerald-400'">
                                         <div class="aspect-square rounded-md overflow-hidden bg-gray-50 mb-2">
                                             @php
+                                                // แก้ไข: ใช้ img_sort แทน is_primary
                                                 $freebieImage =
-                                                    $freebie->images->where('is_primary', true)->first() ??
+                                                    $freebie->images->where('img_sort', 1)->first() ??
                                                     $freebie->images->first();
+                                                
+                                                // แก้ไข: ใช้ img_path
                                                 $freebieImagePath = $freebieImage
-                                                    ? asset('storage/' . $freebieImage->image_path)
+                                                    ? asset('storage/' . $freebieImage->img_path)
                                                     : 'https://via.placeholder.com/300x300.png?text=No+Image';
                                             @endphp
                                             <img src="{{ $freebieImagePath }}" alt="{{ $freebie->pd_sp_name }}"
@@ -168,11 +174,14 @@
                                     class="block group border border-gray-200 rounded-lg p-2 hover:border-emerald-500 hover:shadow-lg transition-all">
                                     <div class="aspect-square rounded-md overflow-hidden bg-gray-50 mb-2">
                                         @php
+                                            // แก้ไข: ใช้ img_sort แทน is_primary
                                             $optionImage =
-                                                $option->images->where('is_primary', true)->first() ??
+                                                $option->images->where('img_sort', 1)->first() ??
                                                 $option->images->first();
+                                            
+                                            // แก้ไข: ใช้ img_path
                                             $optionImagePath = $optionImage
-                                                ? asset('storage/' . $optionImage->image_path)
+                                                ? asset('storage/' . $optionImage->img_path)
                                                 : 'https://via.placeholder.com/300x300.png?text=No+Image';
                                         @endphp
                                         <img src="{{ $optionImagePath }}" alt="{{ $option->pd_sp_name }}"

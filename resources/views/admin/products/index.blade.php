@@ -5,13 +5,14 @@
 
 @section('styles')
 <style>
-    .slip-thumbnail { /* Reusing slip-thumbnail class for product images for consistency */
+    .slip-thumbnail {
         width: 50px;
         height: 50px;
         object-fit: cover;
         cursor: pointer;
         border-radius: 4px;
         transition: transform 0.2s;
+        background-color: #f3f4f6; /* สีพื้นหลังกันรูปโหลดไม่ติด */
     }
     .slip-thumbnail:hover {
         transform: scale(1.1);
@@ -27,7 +28,7 @@
                     <h2 class="card-title">สินค้าทั้งหมด ({{ $products->total() }})</h2>
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-end">
-                    {{-- Search Form - Updated route to admin.products.index --}}
+                    {{-- Search Form --}}
                     <form action="{{ route('admin.products.index') }}" method="GET" class="w-full sm:w-auto">
                         <div class="flex w-full sm:w-auto">
                             <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
@@ -44,7 +45,7 @@
                         </div>
                     </form>
 
-                    {{-- Create Button - Updated route to admin.products.create --}}
+                    {{-- Create Button --}}
                     <a href="{{ route('admin.products.create') }}" class="btn btn-primary w-full sm:w-auto">
                         <i class="fas fa-plus mr-2"></i>
                         เพิ่มสินค้าใหม่
@@ -61,7 +62,6 @@
                 </div>
             @endif
 
-            <!-- Status Filter - Updated route to admin.products.index -->
             <div class="mb-4">
                 <div class="join">
                     <a href="{{ route('admin.products.index', ['search' => request('search')]) }}"
@@ -91,27 +91,34 @@
                             <tr class="hover">
                                 <td class="align-middle text-center">
                                     @php
-                                        $imagePath = 'img.png'; // Default placeholder
+                                        // ✅ แก้ไข Logic รูปภาพให้ตรงกับ DB ใหม่
+                                        $imagePath = 'https://via.placeholder.com/150?text=No+Image'; // Default
+                                        
                                         if ($product->images->isNotEmpty()) {
-                                            $primaryImage = $product->images->firstWhere('is_primary', true);
+                                            // หาภาพปก (img_sort มากสุด = 1)
+                                            $primaryImage = $product->images->sortByDesc('img_sort')->first();
+                                            
+                                            // ใช้ img_path แทน image_path
                                             if ($primaryImage) {
-                                                $imagePath = $primaryImage->image_path;
-                                            } else {
-                                                $imagePath = $product->images->first()->image_path; // Fallback to first image
+                                                $path = $primaryImage->img_path;
+                                                // ตรวจสอบว่า path เป็น URL เต็มหรือ path ใน storage
+                                                $imagePath = \Illuminate\Support\Str::startsWith($path, 'http') 
+                                                    ? $path 
+                                                    : asset('storage/' . $path);
                                             }
                                         }
                                     @endphp
-                                    <img src="{{ asset('storage/' . $imagePath) }}"
+                                    <img src="{{ $imagePath }}"
                                          alt="{{ $product->pd_sp_name ?? 'Product Image' }}"
                                          class="slip-thumbnail"
-                                         data-slip-src="{{ asset('storage/' . $imagePath) }}">
+                                         data-slip-src="{{ $imagePath }}">
                                 </td>
                                 <td>
                                     <div class="flex items-center space-x-3">
                                         <div>
                                             <div class="font-bold w-64 truncate">
                                                 {{ $product->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}</div>
-                                            <div class="text-sm opacity-50">{{ $product->pd_code }}</div>
+                                            <div class="text-sm opacity-50">{{ $product->pd_sp_code }}</div> {{-- แก้ pd_code -> pd_sp_code --}}
                                         </div>
                                     </div>
                                 </td>
@@ -120,7 +127,7 @@
                                 </td>
                                 <td>
                                     <span
-                                        class="text-sm text-gray-600 line-clamp-2 max-w-xs">{{ $product->pd_sp_details ?? '-' }}</span>
+                                        class="text-sm text-gray-600 line-clamp-2 max-w-xs">{{ $product->pd_sp_description ?? '-' }}</span> {{-- แก้ details -> description --}}
                                 </td>
                                 <td class="text-center">
                                     @if ($product->pd_sp_active == 1)
@@ -131,20 +138,17 @@
                                 </td>
                                 <td>
                                     <div class="flex justify-center items-center gap-2">
-                                        {{-- Updated route to admin.products.edit --}}
                                         <a href="{{ route('admin.products.edit', $product->pd_sp_id) }}"
                                             class="btn btn-sm btn-warning text-white">
                                             <i class="fas fa-edit"></i> แก้ไข
                                         </a>
 
-                                        {{-- Updated modal ID and route to admin.products.destroy --}}
                                         <label for="delete-modal-{{ $product->pd_sp_id }}"
                                             class="btn btn-sm btn-error text-white">
                                             <i class="fas fa-trash-alt"></i> ลบ
                                         </label>
                                     </div>
 
-                                    {{-- Updated modal ID and route to admin.products.destroy --}}
                                     <input type="checkbox" id="delete-modal-{{ $product->pd_sp_id }}" class="modal-toggle" />
                                     <div class="modal">
                                         <div class="modal-box">
@@ -180,9 +184,8 @@
         </div>
     </div>
 
-<!-- Slip Preview Modal -->
 <div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; transition: opacity 0.2s;">
-    <img src="" alt="Slip Preview" style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: white;">
+    <img src="" alt="Preview" style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: white;">
 </div>
 @endsection
 
@@ -204,35 +207,23 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.style.opacity = 0;
             modal.style.display = 'block';
 
-            // Use a short timeout to allow the image to load and get its dimensions
             setTimeout(() => {
                 const modalRect = modal.getBoundingClientRect();
                 const viewportWidth = window.innerWidth;
                 const viewportHeight = window.innerHeight;
-                const margin = 15; // Margin from viewport edges and cursor
+                const margin = 15;
 
                 let top = rect.top;
                 let left = rect.right + margin;
 
-                // If it goes off-screen right, position it to the left
                 if (left + modalRect.width > viewportWidth - margin) {
                     left = rect.left - modalRect.width - margin;
                 }
-
-                // If it goes off-screen bottom, align bottom of modal with viewport bottom
                 if (top + modalRect.height > viewportHeight - margin) {
                     top = viewportHeight - modalRect.height - margin;
                 }
-                
-                // Ensure it doesn't go off-screen top
-                if (top < margin) {
-                    top = margin;
-                }
-
-                // Ensure it doesn't go off-screen left
-                 if (left < margin) {
-                    left = margin;
-                }
+                if (top < margin) top = margin;
+                if (left < margin) left = margin;
 
                 modal.style.top = `${top}px`;
                 modal.style.left = `${left}px`;
@@ -243,22 +234,10 @@ document.addEventListener('DOMContentLoaded', function () {
         thumb.addEventListener('mouseleave', () => {
             hideTimeout = setTimeout(() => {
                 modal.style.opacity = 0;
-                setTimeout(() => modal.style.display = 'none', 200); // Hide after transition
+                setTimeout(() => modal.style.display = 'none', 200);
             }, 100);
         });
     });
-
-    // Also hide the modal if the mouse enters the modal itself and then leaves
-    modal.addEventListener('mouseenter', () => {
-         clearTimeout(hideTimeout);
-    });
-     modal.addEventListener('mouseleave', () => {
-        hideTimeout = setTimeout(() => {
-            modal.style.opacity = 0;
-            setTimeout(() => modal.style.display = 'none', 200);
-        }, 100);
-    });
-
 });
 </script>
 @endpush

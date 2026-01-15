@@ -61,42 +61,32 @@
                     @if ($products->count() > 0)
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             @foreach ($products as $product)
-                                @if ($product->pd_id)
-                                    {{-- ========================================================= --}}
-                                    {{-- [Logic คำนวณราคา แบบเดียวกับหน้า Index] --}}
-                                    {{-- ========================================================= --}}
+                                @if ($product)
                                     @php
-                                        // Assume pd_price (aliased from product_salepage.pd_sp_price) is the ORIGINAL price on sale page
-                                        $originalPrice  = (float) ($product->pd_price ?? 0); 
-                                        // Assume pd_sp_discount is the discount AMOUNT to subtract
+                                        // --- Logic for Eloquent Model ---
+                                        $originalPrice = (float) ($product->pd_sp_price ?? 0);
                                         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
-                                        
-                                        // The final selling price is original price minus discount amount
-                                        $finalSellingPrice = $originalPrice - $discountAmount;
-
-                                        // Ensure final selling price is not negative
-                                        if ($finalSellingPrice < 0) {
-                                            $finalSellingPrice = 0;
-                                        }
-                                        
-                                        // A product is on sale if a discount is applied.
+                                        $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                                         $isOnSale = $discountAmount > 0;
 
-                                        // Variable names for display
-                                        $currentPriceForDisplay = $finalSellingPrice; // This will be green
-                                        $fullPriceForDisplay = $originalPrice; // This will be strikethrough
+                                        // ✅ แก้ไข: ดึงรูปปกโดยใช้ img_sort (เรียงมากไปน้อย เอา 1 ขึ้นก่อน)
+                                        $primaryImage = $product->images->sortByDesc('img_sort')->first();
+
+                                        // ✅ แก้ไข: ใช้ img_path ตามฐานข้อมูลใหม่
+                                        $imagePath = $primaryImage
+                                            ? $primaryImage->img_path
+                                            : 'https://via.placeholder.com/400x500.png?text=No+Image';
                                     @endphp
-                                    {{-- ========================================================= --}}
 
                                     <div
                                         class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-b-md overflow-hidden duration-300 group flex flex-col h-full">
-                                        <a href="{{ url('/product/' . $product->pd_id) }}">
+                                        <a href="{{ route('product.show', $product->pd_sp_id) }}">
                                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                                <img src="{{ asset('storage/' . $product->pd_img) }}"
-                                                    alt="{{ $product->pd_name }}"
+                                                {{-- ✅ ใส่ asset() ให้ถูกต้อง --}}
+                                                <img src="{{ Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath) }}"
+                                                    alt="{{ $product->pd_sp_name }}"
                                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
 
-                                                {{-- [แก้ใหม่] ป้าย SALE: แสดงยอดเงินที่ลด --}}
                                                 @if ($isOnSale)
                                                     <div
                                                         class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
@@ -109,28 +99,27 @@
                                         <div class="card-body p-4 flex flex-col flex-1">
                                             <h2
                                                 class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
-                                                <a href="{{ url('/product/' . ($product->pd_id ?? $product->pd_sp_id)) }}"
-                                                    class="hover:text-emerald-600 transition">{{ $product->pd_name ?? 'Missing Product Name' }}</a>
+                                                <a href="{{ route('product.show', $product->pd_sp_id) }}"
+                                                    class="hover:text-emerald-600 transition">{{ $product->pd_sp_name ?? 'Missing Product Name' }}</a>
                                             </h2>
                                             <p class="text-xs text-gray-500">Code:
-                                                {{ $product->pd_code }}</p>
+                                                {{ $product->pd_sp_code }}</p>
                                             {{-- ส่วนราคาและปุ่มเพิ่มลงตะกร้า --}}
                                             <div class="mt-auto pt-2">
                                                 <div class="flex flex-col mb-3">
                                                     @if ($isOnSale)
                                                         <span
-                                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPriceForDisplay) }}</span>
+                                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
                                                         <span
-                                                            class="text-xs text-gray-400 line-through">฿{{ number_format($fullPriceForDisplay) }}</span>
+                                                            class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
                                                     @else
                                                         <span
-                                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPriceForDisplay) }}</span>
+                                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
                                                     @endif
                                                 </div>
 
-                                                {{-- ★★★ [เพิ่ม] ปุ่มเพิ่มลงตะกร้า ★★★ --}}
                                                 <form class="add-to-cart-form-listing w-full"
-                                                    data-action="{{ route('cart.add', ['id' => $product->pd_id]) }}">
+                                                    data-action="{{ route('cart.add', ['id' => $product->pd_sp_id]) }}">
                                                     <input type="hidden" name="quantity" value="1">
                                                     <button type="submit"
                                                         class="btn btn-sm w-full bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-sm flex items-center justify-center gap-2">
@@ -150,16 +139,7 @@
                                     {{-- Placeholder card for missing product details --}}
                                     <div
                                         class="card bg-gray-100 border border-gray-200 shadow-sm rounded-b-md overflow-hidden flex flex-col h-full p-4 items-center justify-center text-center">
-                                        <div class="text-gray-500 mb-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <p class="font-bold text-gray-700">ไม่พบรายละเอียดสินค้า</p>
-                                        <p class="text-sm text-gray-500">สำหรับ Sale ID: {{ $product->pd_sp_id }}</p>
-                                        <p class="text-sm text-gray-500">กรุณาตรวจสอบข้อมูลสินค้า</p>
+                                        <p class="text-sm text-gray-500">Error rendering product.</p>
                                     </div>
                                 @endif
                             @endforeach
@@ -178,7 +158,7 @@
         </div>
     </div>
 
-    {{-- ★★★ [เพิ่ม] Script สำหรับจัดการปุ่มเพิ่มตะกร้าในหน้า Loop ★★★ --}}
+    {{-- Script สำหรับจัดการปุ่มเพิ่มตะกร้าในหน้า Loop --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
@@ -235,6 +215,8 @@
                                         window.updateCartBadge(data.cartCount);
                                     }
                                 }, 500);
+                            } else {
+                                throw new Error(data.message || 'Unknown error');
                             }
                         })
                         .catch(error => {

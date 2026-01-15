@@ -58,25 +58,83 @@
                             <div
                                 class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                 <div class="flex items-center gap-4">
-                                    @if ($detail->productSalepage && $detail->productSalepage->images->isNotEmpty())
-                                        <div
-                                            class="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                            <img src="{{ asset('storage/' . (optional($detail->productSalepage->images->first())->image_path ?? 'images/img.png')) }}"
-                                                class="w-full h-full object-cover" alt="{{ $detail->productSalepage->pd_sp_name ?? 'Product Image' }}" />
-                                        </div>
-                                    @endif
+                                    @php
+                                        // ==========================================
+                                        // 🔧 Auto-Detect Image Logic (เหมือนหน้า index)
+                                        // ==========================================
+                                        $displayImage = 'https://via.placeholder.com/150?text=No+Image';
+
+                                        if (
+                                            $detail->productSalepage &&
+                                            $detail->productSalepage->images->isNotEmpty()
+                                        ) {
+                                            $images = $detail->productSalepage->images;
+
+                                            // พยายามหารูปปก (รองรับทั้ง img_sort และ is_primary)
+                                            $dbImage = $images->sortBy('img_sort')->first();
+                                            if (!$dbImage) {
+                                                $dbImage = $images->where('is_primary', true)->first();
+                                            }
+                                            if (!$dbImage) {
+                                                $dbImage = $images->first();
+                                            }
+
+                                            // รองรับชื่อฟิลด์ทั้ง img_path และ image_path
+                                            $rawPath = $dbImage->img_path ?? $dbImage->image_path;
+
+                                            if ($rawPath) {
+                                                if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                                                    $displayImage = $rawPath;
+                                                } else {
+                                                    // ค้นหาไฟล์จริง (Auto-Detect)
+                                                    $cleanName = basename($rawPath);
+                                                    $possiblePaths = [
+                                                        'storage/' . $rawPath,
+                                                        'storage/' . $cleanName,
+                                                        'storage/uploads/' . $cleanName,
+                                                        'storage/images/' . $cleanName,
+                                                        'uploads/' . $cleanName,
+                                                    ];
+
+                                                    $found = false;
+                                                    foreach ($possiblePaths as $path) {
+                                                        if (file_exists(public_path($path))) {
+                                                            $displayImage = asset($path);
+                                                            $found = true;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    if (!$found) {
+                                                        // Fallback สุดท้าย
+                                                        $displayImage = asset('storage/' . $rawPath);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    @endphp
+                                    <div
+                                        class="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0 relative">
+                                        <img src="{{ $displayImage }}" class="w-full h-full object-cover"
+                                            alt="{{ $detail->productSalepage->pd_sp_name ?? 'Product Image' }}"
+                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';" />
+                                    </div>
                                     <div>
                                         <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-2">
                                             {{ $detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า' }}
                                         </p>
-                                        <p class="text-xs text-gray-500">Code: {{ $detail->productSalepage->pd_code ?? 'N/A' }}</p>
+                                        <p class="text-xs text-gray-500">Code:
+                                            {{ $detail->productSalepage->pd_code ?? 'N/A' }}</p>
                                         <p class="text-sm text-gray-500">จำนวน: {{ $detail->ordd_count }} ชิ้น</p>
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:
-                                            @if($detail->pd_original_price > $detail->pd_price)
-                                                <s class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
-                                                <span class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                            @if ($detail->pd_original_price > $detail->pd_price)
+                                                <s
+                                                    class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
+                                                <span
+                                                    class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->pd_price, 2) }}</span>
                                             @else
-                                                <span class="text-gray-800">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                                <span
+                                                    class="text-gray-800">฿{{ number_format($detail->pd_price, 2) }}</span>
                                             @endif
                                         </p>
                                     </div>
@@ -104,14 +162,14 @@
                             @endphp
                             <p>{!! nl2br(e($mainAddress)) !!}</p>
                             <div class="divider my-2"></div>
-                            {{-- <p class="pt-2 font-semibold text-gray-900">เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p> --}}
-                            <p class="max-h-20 overflow-y-auto"><span class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span> {{ $order->shipping_phone }}</p>
+                            <p class="max-h-20 overflow-y-auto"><span
+                                    class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span> {{ $order->shipping_phone }}
+                            </p>
                             @if ($noteText)
                                 <div class="divider my-2"></div>
-                                <p class="max-h-20 overflow-y-auto"><span class="font-semibold text-gray-700">หมายเหตุ:</span> {{ $noteText }}</p>
+                                <p class="max-h-20 overflow-y-auto"><span
+                                        class="font-semibold text-gray-700">หมายเหตุ:</span> {{ $noteText }}</p>
                             @endif
-                            {{-- <p class="pt-2">เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p> --}}
-                            {{-- <p class="pt-2">เบอร์โทรศัพท์: {{ $order->shipping_phone }}</p> --}}
                         </div>
                     </div>
 

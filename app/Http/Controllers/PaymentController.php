@@ -7,6 +7,7 @@ use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Province;
+use App\Models\ProductSalepage;
 use App\Services\PromptPayService;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Http\Request;
@@ -33,6 +34,12 @@ class PaymentController extends Controller
 
         foreach ($cartContent as $item) {
             if (in_array((string) $item->id, $selectedItems)) {
+                $product = ProductSalepage::find($item->id);
+                if (!$product || $product->pd_sp_stock < $item->quantity) {
+                    $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี " . ($product->pd_sp_stock ?? 0) . ")";
+                    return redirect()->route('cart.index')->with('error', $errorMessage);
+                }
+
                 $cartItems[] = $item;
                 $totalAmount += ($item->price * $item->quantity);
 
@@ -43,6 +50,15 @@ class PaymentController extends Controller
 
                 $totalOriginalAmount += ($originalPrice * $item->quantity);
                 $totalDiscount += ($item->attributes->discount ?? 0); // Sum up fixed per-item discount
+            }
+        }
+
+        // Pre-check stock before showing payment page
+        foreach ($cartItems as $item) {
+            $product = ProductSalepage::find($item->id);
+            if (!$product || $product->pd_sp_stock < $item->quantity) {
+                $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี {$product->pd_sp_stock})";
+                return redirect()->route('cart.index')->with('error', $errorMessage);
             }
         }
 
@@ -65,7 +81,7 @@ class PaymentController extends Controller
         $cartContent = Cart::session($userId)->getContent();
 
         DB::beginTransaction();
-
+        
         try {
             // คำนวณยอดเงิน
             $totalPrice = 0;
@@ -75,16 +91,15 @@ class PaymentController extends Controller
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
                     $totalPrice += ($item->price * $item->quantity);
-                    $totalDiscount += ($item->attributes['discount'] ?? 0); // Sum up fixed per-item discount (not multiplied by quantity)
+                    $totalDiscount += ($item->attributes['discount'] ?? 0);
                 }
             }
 
             if (count($itemsToBuy) === 0) {
-                throw new \Exception('ไม่พบสินค้า');
+                throw new \Exception('No items to buy.');
             }
-
+            
             $shippingCost = 0;
-            // $totalDiscount is now correctly calculated
             $netAmount = $totalPrice + $shippingCost;
 
             // ดึงที่อยู่
@@ -110,12 +125,23 @@ class PaymentController extends Controller
                 'shipping_phone' => $address->phone,
                 'shipping_address' => $fullAddress,
             ]);
-
-            // บันทึก Order Detail
+            
+            // บันทึก Order Detail และ **ตัดสต็อก**
             foreach ($itemsToBuy as $item) {
+                $product = ProductSalepage::where('pd_sp_id', $item->id)->lockForUpdate()->first();
+
+                if (!$product) {
+                    throw new \Exception("Product with ID {$item->id} not found during transaction.");
+                }
+                
+                if ($product->pd_sp_stock < $item->quantity) {
+                    throw new \Exception("Insufficient stock for product '{$item->name}'. Needed: {$item->quantity}, Have: {$product->pd_sp_stock}");
+                }
+
+                $product->decrement('pd_sp_stock', $item->quantity);
+                
                 OrderDetail::create([
-                    // ★★★ แก้ไขจุดนี้: เปลี่ยนจาก ord_id เป็น id ★★★
-                    'ord_id' => $order->id, // ใช้ ->id ซึ่งเป็น Primary Key ปกติของ Laravel หลัง create
+                    'ord_id' => $order->id,
                     'user_id' => $userId,
                     'pd_id' => $item->id,
                     'pd_price' => $item->price,
@@ -141,8 +167,8 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return back()->with('error', ' '.$e->getMessage());
+            
+            return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }
     }
 

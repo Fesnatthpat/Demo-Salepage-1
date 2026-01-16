@@ -85,11 +85,15 @@ class ProductController extends Controller
 
         // 3. เตรียมข้อมูลบันทึก (Map ชื่อตัวแปรให้ตรง DB เป๊ะๆ)
         $dataToSave = [
-            'pd_sp_code' => $generatedCode,              // แก้: pd_code -> pd_sp_code
+            'pd_sp_code' => $generatedCode,
             'pd_sp_name' => $request->pd_sp_name,
             'pd_sp_description' => $request->pd_sp_details,     // แก้: details -> description
             'pd_sp_price' => $request->pd_sp_price,
             'pd_sp_discount' => $request->pd_sp_discount ?? 0,
+
+            // ✅ [แก้ไขจุดที่ 1] บันทึกจำนวนสินค้า (Stock) ลงฐานข้อมูล
+            'pd_sp_stock' => $request->pd_sp_stock,
+
             'pd_sp_active' => $request->boolean('pd_sp_active'),
 
             // คอลัมน์เพิ่มเติม
@@ -158,6 +162,9 @@ class ProductController extends Controller
         $productSalepage->pd_sp_price = $request->pd_sp_price;
         $productSalepage->pd_sp_discount = $request->pd_sp_discount ?? 0;
         $productSalepage->pd_sp_description = $request->pd_sp_details; // แก้: details -> description
+
+        // ✅ [แก้ไขจุดที่ 2] อัปเดตจำนวนสินค้า (Stock)
+        $productSalepage->pd_sp_stock = $request->pd_sp_stock;
 
         $productSalepage->pd_sp_active = $request->boolean('pd_sp_active');
         $productSalepage->is_recommended = $request->boolean('is_recommended');
@@ -237,6 +244,10 @@ class ProductController extends Controller
             'pd_sp_name' => 'required|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
             'pd_sp_discount' => 'nullable|numeric|min:0',
+
+            // ✅ [แก้ไขจุดที่ 3] เพิ่ม Validation สำหรับ Stock
+            'pd_sp_stock' => 'required|integer|min:0',
+
             'pd_sp_details' => 'nullable|string', // รับค่าจากฟอร์มชื่อ details
             'pd_sp_active' => 'required|boolean', // หรือบางทีส่งมาเป็น 1/0
             'is_recommended' => 'nullable', // รับ nullable เพราะ checkbox ถ้าไม่ติ๊กจะไม่ส่งค่ามา

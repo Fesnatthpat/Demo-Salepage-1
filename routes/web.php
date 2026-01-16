@@ -9,7 +9,16 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/db-check', function () {
+    try {
+        return 'DB Connected: ' . DB::connection()->getDatabaseName();
+    } catch (\Exception $e) {
+        return 'DB Connection Failed: ' . $e->getMessage();
+    }
+});
 
 // --- 1. หน้าทั่วไป ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -212,13 +221,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
     });
-
-
-
-
-
-    
-
-
-
-

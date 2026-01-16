@@ -266,19 +266,32 @@
                             $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
 
-                            // --- Logic แก้ไขรูปภาพ (Fix Image Display) ---
+                            // --- Logic แก้ไขรูปภาพใหม่ (ดึงสดจาก DB) ---
                             $displayImage = 'https://via.placeholder.com/150?text=No+Image'; // Default
-                            $rawPath = $attrs['image'] ?? null;
 
-                            if (!empty($rawPath)) {
+                            // ค้นหาข้อมูลสินค้าล่าสุดจาก DB เพื่อเอารูปที่ถูกต้องที่สุด
+                            $productDb = \App\Models\ProductSalepage::with('images')->find($item->id);
+
+                            if ($productDb && $productDb->images->isNotEmpty()) {
+                                // หารูปปก (sort=1) ถ้าไม่มีเอารูปแรก
+                                $primaryImg = $productDb->images->sortByDesc('img_sort')->first();
+                                $rawPath = $primaryImg ? $primaryImg->img_path : $productDb->images->first()->img_path;
+
                                 if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-                                    // กรณีเป็น URL เต็ม
                                     $displayImage = $rawPath;
                                 } else {
-                                    // กรณีเป็น Path ในเครื่อง: ตัด public/ หรือ storage/ ที่ติดมาออก
                                     $cleanPath = str_replace(['public/', 'storage/'], '', $rawPath);
                                     $cleanPath = ltrim($cleanPath, '/');
-                                    // ใช้ asset() สร้าง URL ที่ถูกต้อง
+                                    $displayImage = asset('storage/' . $cleanPath);
+                                }
+                            } elseif (!empty($attrs['image'])) {
+                                // ถ้าไม่มีใน DB ให้ลองใช้จาก Cart Session (เผื่อกรณีสินค้าถูกลบแต่ยังอยู่ในตะกร้า)
+                                $rawPath = $attrs['image'];
+                                if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                                    $displayImage = $rawPath;
+                                } else {
+                                    $cleanPath = str_replace(['public/', 'storage/'], '', $rawPath);
+                                    $cleanPath = ltrim($cleanPath, '/');
                                     $displayImage = asset('storage/' . $cleanPath);
                                 }
                             }

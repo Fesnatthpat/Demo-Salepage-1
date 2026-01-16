@@ -8,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // --- 1. หน้าทั่วไป ---
@@ -32,6 +33,10 @@ Route::get('/callback/line', [AuthController::class, 'handleLineCallback'])->nam
 // --- 4. ส่วนที่ต้อง Login ---
 Route::middleware(['auth'])->group(function () {
 
+    // -- Profile Completion --
+    Route::get('/profile/complete', [ProfileController::class, 'create'])->name('profile.completion');
+    Route::post('/profile/complete', [ProfileController::class, 'store'])->name('profile.store');
+
     // --- Checkout & Payment ---
     Route::get('/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
@@ -45,10 +50,11 @@ Route::middleware(['auth'])->group(function () {
     // แนบสลิป
     Route::post('/payment/slip/upload/{orderCode}', [PaymentController::class, 'uploadSlip'])->name('payment.slip.upload');
 
-
-    // --- ประวัติการสั่งซื้อ ---
-    Route::get('/orderhistory', [OrderController::class, 'index'])->name('order.history');
-    Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('order.show');
+    Route::middleware(['profile.completed'])->group(function () {
+        // --- ประวัติการสั่งซื้อ ---
+        Route::get('/orderhistory', [OrderController::class, 'index'])->name('order.history');
+        Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('order.show');
+    });
 
     // --- Address Management ---
     Route::get('/address', [AddressController::class, 'index'])->name('address.index');

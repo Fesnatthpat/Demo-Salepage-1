@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->string('pd_code')->nullable()->change();
+            $table->string('pd_sp_code')->nullable()->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->string('pd_code')->nullable(false)->change();
+            $table->string('pd_sp_code')->nullable(false)->change();
         });
     }
 };

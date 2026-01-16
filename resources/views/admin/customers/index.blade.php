@@ -30,6 +30,9 @@
                         <th>ชื่อ</th>
                         <th>อีเมล</th>
                         <th>เบอร์โทร</th>
+                        <th>อายุ</th>
+                        <th>เพศ</th>
+                        <th>วันเกิด</th>
                         <th>สถานะ LINE</th>
                         <th>วันที่ลงทะเบียน</th>
                         <th></th>
@@ -45,6 +48,9 @@
                             </td>
                             <td>{{ $customer->email }}</td>
                             <td>{{ $customer->phone ?? 'N/A' }}</td>
+                            <td>{{ $customer->age ?? 'N/A' }}</td>
+                            <td>{{ $customer->gender ?? 'N/A' }}</td>
+                            <td>{{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : 'N/A' }}</td>
                             <td>
                                 @if ($customer->line_id)
                                     <span class="badge badge-success">เชื่อมต่อแล้ว</span>
@@ -62,7 +68,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-gray-500">
+                            <td colspan="10" class="text-center py-8 text-gray-500">
                                 @if(request('search'))
                                     ไม่พบลูกค้าที่ตรงกับคำค้นหา "{{ request('search') }}"
                                 @else

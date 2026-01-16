@@ -91,7 +91,6 @@
     <div class="container mx-auto px-4 mt-12 mb-20">
         <div class="flex justify-between items-end mb-8">
             <div>
-                {{-- ปรับหัวข้อตามต้องการ --}}
                 <h2 class="text-3xl font-bold text-gray-900">สินค้าแนะนำ</h2>
                 <p class="text-gray-500 mt-1">คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
             </div>
@@ -103,28 +102,57 @@
                 @foreach ($recommendedProducts as $product)
                     @php
                         // --- Logic for Eloquent Model ---
-                        $originalPrice  = (float) ($product->pd_sp_price ?? 0);
+                        $originalPrice = (float) ($product->pd_sp_price ?? 0);
                         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
                         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                         $isOnSale = $discountAmount > 0;
 
-                        // Get primary image from the images collection
-                        $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first();
-                        $imagePath = $primaryImage ? $primaryImage->image_path : 'https://via.placeholder.com/400x500.png?text=No+Image';
+                        // --- Logic รูปภาพแบบ Robust (แก้ไขใหม่) ---
+                        $displayImage = 'https://via.placeholder.com/400x500.png?text=No+Image';
+
+                        // หา Image Model (รองรับทั้ง Image Path หรือ img_path)
+                        if ($product->images && $product->images->isNotEmpty()) {
+                            // พยายามหารูป is_primary ก่อน
+                            $primaryImage = $product->images->where('is_primary', true)->first();
+                            // ถ้าไม่มี เอาตัวแรกสุด
+                            if (!$primaryImage) {
+                                $primaryImage = $product->images->first();
+                            }
+
+                            if ($primaryImage) {
+                                // รองรับชื่อ field ใน database ทั้งสองแบบเผื่อไว้
+                                $rawPath = $primaryImage->image_path ?? $primaryImage->img_path;
+
+                                if ($rawPath) {
+                                    // 1. ถ้าเป็น URL เต็มอยู่แล้ว (เช่น https://...)
+                                    if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                                        $displayImage = $rawPath;
+                                    } else {
+                                        // 2. ถ้าเป็น path ในเครื่อง
+                                        // ลบ 'storage/' ออกก่อนถ้ามี เพื่อกัน path ซ้อน (storage/storage/...)
+                                        $cleanPath = str_replace('storage/', '', $rawPath);
+                                        $cleanPath = ltrim($cleanPath, '/'); // ลบ / ตัวหน้าสุดออก
+
+                                        // ใช้ asset('storage/...') ซึ่งเป็นวิธีมาตรฐานของ Laravel
+                                        $displayImage = asset('storage/' . $cleanPath);
+                                    }
+                                }
+                            }
+                        }
                     @endphp
 
-                    {{-- ★★★ เพิ่ม class flex flex-col h-full เพื่อจัด layout ให้ปุ่มอยู่ล่างสุดเสมอ ★★★ --}}
                     <div
                         class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
 
                         {{-- รูปภาพ --}}
                         <a href="{{ route('product.show', $product->pd_sp_id) }}">
                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                <img src="{{ asset('storage/' . $imagePath) }}"
-                                    alt="{{ $product->pd_sp_name }}"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                {{-- แก้ไข img src และเพิ่ม onerror --}}
+                                <img src="{{ $displayImage }}" alt="{{ $product->pd_sp_name }}"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500.png?text=Error';" />
 
-                                {{-- Logic ป้าย SALE: แสดงจำนวนเงินที่ลด --}}
+                                {{-- Logic ป้าย SALE --}}
                                 @if ($isOnSale)
                                     <div
                                         class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
@@ -143,9 +171,7 @@
                         </a>
 
                         {{-- รายละเอียด --}}
-                        {{-- ★★★ เพิ่ม flex-1 flex flex-col เพื่อดันปุ่มไปล่างสุด ★★★ --}}
                         <div class="card-body p-4 flex-1 flex flex-col">
-                            {{-- หมวดหมู่ (Mockup) --}}
                             <div class="text-xs text-gray-400 mb-1">สินค้าแนะนำ</div>
 
                             <h2
@@ -160,20 +186,17 @@
                             <div class="flex justify-between items-end mt-2 mb-3">
                                 <div class="flex items-baseline gap-2">
                                     @if ($isOnSale)
-                                        {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
                                         <span
                                             class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
                                         <span
                                             class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
                                     @else
-                                        {{-- กรณีไม่มีส่วนลด: แสดงราคาขายปัจจุบันสีเขียว --}}
                                         <span
                                             class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
                                     @endif
                                 </div>
                             </div>
 
-                            {{-- ★★★ เพิ่มปุ่ม: Add to Cart (Quick Add) ★★★ --}}
                             <div class="mt-auto">
                                 <button type="button"
                                     onclick="addToCartQuick(this, '{{ route('cart.add', ['id' => $product->pd_sp_id]) }}')"
@@ -202,21 +225,16 @@
         </div>
     </div>
 
-    {{-- ★★★ SCRIPT จัดการปุ่มกด (เหมือนเดิมทุกประการ) ★★★ --}}
+    {{-- SCRIPT (คงเดิม) --}}
     <script>
         function addToCartQuick(btnElement, url) {
-            // ป้องกันการกดซ้ำ
             if (btnElement.disabled) return;
-
-            // เก็บข้อความเดิม และเปลี่ยนเป็น Loading
             const originalText = btnElement.innerHTML;
             btnElement.disabled = true;
             btnElement.innerHTML = '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
 
-            // ส่ง Request แบบ POST
             const formData = new FormData();
-            formData.append('quantity', 1); // quantity is always 1 for quick add
-            // formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content')); // CSRF token handled by axios automatically or can be added manually
+            formData.append('quantity', 1);
 
             fetch(url, {
                     method: 'POST',
@@ -230,12 +248,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Animation ลอยไปตะกร้า (ถ้ามี)
                         if (typeof window.flyToCart === 'function') {
                             window.flyToCart(btnElement);
                         }
-
-                        // Popup แจ้งเตือนสำเร็จ
                         Swal.fire({
                             icon: 'success',
                             title: 'เพิ่มลงตะกร้าแล้ว',
@@ -243,13 +258,10 @@
                             showConfirmButton: false,
                             timer: 1500
                         });
-
-                        // อัปเดตตัวเลขที่เมนูตะกร้า (ถ้ามี)
                         if (window.updateCartBadge) {
                             window.updateCartBadge(data.cartCount);
                         }
                     } else {
-                        // แจ้งเตือน Error
                         Swal.fire({
                             icon: 'error',
                             title: 'เกิดข้อผิดพลาด',
@@ -269,7 +281,6 @@
                     });
                 })
                 .finally(() => {
-                    // คืนค่าปุ่มกลับสู่สภาพเดิม
                     setTimeout(() => {
                         btnElement.disabled = false;
                         btnElement.innerHTML = originalText;

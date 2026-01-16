@@ -21,18 +21,28 @@ class CartController extends Controller
 
     public function addToCart(Request $request, $productId)
     {
-        $quantity = $request->input('quantity', 1);
-        $this->cartService->addOrUpdate((int)$productId, (int)$quantity);
+        try {
+            $quantity = $request->input('quantity', 1);
+            $this->cartService->addOrUpdate((int)$productId, (int)$quantity);
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
-                'cartCount' => $this->cartService->getTotalQuantity()
-            ]);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
+                    'cartCount' => $this->cartService->getTotalQuantity()
+                ]);
+            }
+
+            return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าลงตะกร้าแล้ว');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422); // 422 Unprocessable Entity is a good status code for this
+            }
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าลงตะกร้าแล้ว');
     }
 
     public function updateQuantity($productId, $action)
@@ -49,29 +59,39 @@ class CartController extends Controller
 
     public function addBogo(Request $request)
     {
-        $validated = $request->validate([
-            'main_product_id' => 'required|exists:product_salepage,pd_sp_id',
-            'free_product_id' => 'required|exists:product_salepage,pd_sp_id',
-            'quantity' => 'required|integer|min:1',
-        ]);
-
-        // Optional TODO: Add logic to verify that free_product_id is a valid free option for main_product_id
-        // This adds an extra layer of security on top of the frontend validation.
-
-        $this->cartService->addBogoItem(
-            (int)$validated['main_product_id'],
-            (int)$validated['free_product_id'],
-            (int)$validated['quantity']
-        );
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'เพิ่มสินค้าโปรโมชั่นเรียบร้อยแล้ว',
-                'cartCount' => $this->cartService->getTotalQuantity()
+        try {
+            $validated = $request->validate([
+                'main_product_id' => 'required|exists:product_salepage,pd_sp_id',
+                'free_product_id' => 'required|exists:product_salepage,pd_sp_id',
+                'quantity' => 'required|integer|min:1',
             ]);
+    
+            // Optional TODO: Add logic to verify that free_product_id is a valid free option for main_product_id
+            // This adds an extra layer of security on top of the frontend validation.
+    
+            $this->cartService->addBogoItem(
+                (int)$validated['main_product_id'],
+                (int)$validated['free_product_id'],
+                (int)$validated['quantity']
+            );
+    
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'เพิ่มสินค้าโปรโมชั่นเรียบร้อยแล้ว',
+                    'cartCount' => $this->cartService->getTotalQuantity()
+                ]);
+            }
+    
+            return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าโปรโมชั่นลงตะกร้าแล้ว');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าโปรโมชั่นลงตะกร้าแล้ว');
     }
 }

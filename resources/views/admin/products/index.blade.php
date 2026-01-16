@@ -158,6 +158,7 @@
                             <th>สินค้า</th>
                             <th class="text-right">ราคา</th>
                             <th class="text-right">ส่วนลด</th>
+                            <th class="text-right">คลัง (Stock)</th>
                             <th>รายละเอียด</th>
                             <th class="text-center">สถานะ</th>
                             <th>Actions</th>
@@ -215,6 +216,13 @@
                                         -
                                     @endif
                                 </td>
+                                <td class="text-right">
+                                    @if($product->pd_sp_stock > 0)
+                                        {{ number_format($product->pd_sp_stock) }}
+                                    @else
+                                        <span class="font-bold text-red-500">สินค้าหมด</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <span
                                         class="text-sm text-gray-600 line-clamp-2 max-w-xs">{{ $product->pd_sp_description ?? '-' }}</span>
@@ -267,7 +275,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-8 text-gray-500">
+                                <td colspan="8" class="text-center py-8 text-gray-500">
                                     ยังไม่มีข้อมูลสินค้าในระบบ หรือไม่พบข้อมูลตามเงื่อนไข
                                 </td>
                             </tr>

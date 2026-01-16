@@ -73,6 +73,7 @@ class CartService
             'discount' => $discountAmount,
             'image' => $salePageProduct->images->first()->image_path ?? null,
             'pd_code' => $salePageProduct->pd_code,
+            'stock' => $salePageProduct->pd_sp_stock ?? 0,
         ];
     }
 
@@ -81,13 +82,32 @@ class CartService
      */
     public function addOrUpdate(int $productId, int $quantity): void
     {
-        $productDetails = $this->getProductDetails($productId);
-        if (!$productDetails) return;
+        $product = ProductSalepage::find($productId);
+
+        if (!$product) {
+            // Silently return if product doesn't exist
+            return;
+        }
+
+        // 1. Centralized Stock Check
+        if ($product->pd_sp_stock <= 0) {
+            throw new \Exception('ขออภัย, สินค้าชิ้นนี้หมดสต็อกแล้ว');
+        }
 
         $userId = $this->getUserId();
         $cart = Cart::session($userId);
+        $currentQuantity = $cart->has($productId) ? $cart->get($productId)->quantity : 0;
 
-        $cartDetails = [
+        if (($currentQuantity + $quantity) > $product->pd_sp_stock) {
+            throw new \Exception("ไม่สามารถเพิ่มสินค้าได้, มีสินค้าในสต็อกเพียง {$product->pd_sp_stock} ชิ้น");
+        }
+
+        // 2. Get Product Details for Cart
+        $productDetails = $this->getProductDetails($productId);
+        if (!$productDetails) return;
+
+        // 3. Add to Cart (DarrylDecode handles both add & update quantity)
+        $cart->add([
             'id' => $productDetails->id,
             'name' => $productDetails->name,
             'price' => $productDetails->price,
@@ -98,14 +118,9 @@ class CartService
                 'discount' => $productDetails->discount,
                 'pd_code' => $productDetails->pd_code,
             ],
-        ];
+        ]);
 
-        if ($cart->has($productId)) {
-            $cart->update($productId, ['quantity' => ['relative' => false, 'value' => $quantity]]);
-        } else {
-            $cart->add($cartDetails);
-        }
-
+        // 4. Persist to DB if logged in
         if (Auth::check()) {
             $this->saveCartToDatabase($userId);
         }
@@ -116,13 +131,30 @@ class CartService
      */
     public function addBogoItem(int $mainProductId, int $freeProductId, int $quantity): void
     {
+        $mainProduct = ProductSalepage::find($mainProductId);
+        $freeProduct = ProductSalepage::find($freeProductId);
+
+        if (!$mainProduct || !$freeProduct) return;
+
+        $userId = $this->getUserId();
+        $cart = Cart::session($userId);
+
+        $mainCurrentQty = $cart->has($mainProductId) ? $cart->get($mainProductId)->quantity : 0;
+        $freeCurrentQty = $cart->has($freeProductId) ? $cart->get($freeProductId)->quantity : 0;
+
+        if (($mainCurrentQty + $quantity) > $mainProduct->pd_sp_stock) {
+            throw new \Exception("ขออภัย, สินค้าหลัก '{$mainProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+        }
+
+        if (($freeCurrentQty + $quantity) > $freeProduct->pd_sp_stock) {
+            throw new \Exception("ขออภัย, ของแถม '{$freeProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+        }
+        
         $mainProductDetails = $this->getProductDetails($mainProductId);
         $freeProductDetails = $this->getProductDetails($freeProductId);
 
         if (!$mainProductDetails || !$freeProductDetails) return;
-
-        $userId = $this->getUserId();
-        $cart = Cart::session($userId);
+        
         $bogoId = 'bogo_' . Str::uuid();
 
         // Add the main product

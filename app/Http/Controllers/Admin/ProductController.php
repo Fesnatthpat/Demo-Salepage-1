@@ -32,6 +32,26 @@ class ProductController extends Controller
             $query->where('pd_sp_active', $request->status);
         }
 
+        // Type Filter
+        if ($request->filled('type')) {
+            switch ($request->type) {
+                case 'recommended':
+                    $query->where('is_recommended', true);
+                    break;
+                case 'promotion':
+                    $query->where('pd_sp_discount', '>', 0);
+                    break;
+                case 'out_of_stock':
+                    $query->where('pd_sp_stock', '=', 0);
+                    break;
+                case 'general':
+                    $query->where('is_recommended', false)->where(function ($q) {
+                        $q->where('pd_sp_discount', '=', 0)->orWhereNull('pd_sp_discount');
+                    });
+                    break;
+            }
+        }
+
         $products = $query->paginate(10);
 
         return view('admin.products.index', compact('products'));

@@ -136,20 +136,32 @@
                             {{-- ปุ่ม Actions --}}
                             <div class="flex-1 grid grid-cols-2 gap-3">
                                 {{-- ปุ่มเพิ่มลงตะกร้า (Outline) --}}
-                                <button type="button" @click="handleAddToCartClick(false)" :disabled="isLoading"
+                                <button type="button" @click="handleAddToCartClick(false)" :disabled="isLoading || {{ $product->quantity <= 0 ? 'true' : 'false' }}"
                                     class="btn btn-outline border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-700 font-bold text-base rounded-lg h-12">
-                                    <i class="fas fa-shopping-cart text-lg mr-1"></i>
-                                    <span class="hidden sm:inline">ใส่ตะกร้า</span>
-                                    <span class="sm:hidden">ใส่ตะกร้า</span>
+                                    <template x-if="{{ $product->quantity > 0 ? 'true' : 'false' }}">
+                                        <span class="flex items-center justify-center">
+                                            <i class="fas fa-shopping-cart text-lg mr-1"></i>
+                                            <span class="hidden sm:inline">ใส่ตะกร้า</span>
+                                            <span class="sm:hidden">ใส่ตะกร้า</span>
+                                        </span>
+                                    </template>
+                                    <template x-if="{{ $product->quantity <= 0 ? 'true' : 'false' }}">
+                                        <span class="text-red-500 font-bold">สินค้าหมด</span>
+                                    </template>
                                 </button>
 
                                 {{-- ปุ่มซื้อเลย (Solid) --}}
-                                <button type="button" @click="handleAddToCartClick(true)" :disabled="isLoading"
+                                <button type="button" @click="handleAddToCartClick(true)" :disabled="isLoading || {{ $product->quantity <= 0 ? 'true' : 'false' }}"
                                     class="btn bg-emerald-600 hover:bg-emerald-700 border-none text-white font-bold text-base rounded-lg h-12 shadow-lg shadow-emerald-200/50">
-                                    <span x-show="!isLoading" class="flex items-center gap-2">
-                                        <i class="fas fa-bolt"></i> ซื้อเลย
-                                    </span>
-                                    <span x-show="isLoading" class="loading loading-spinner loading-sm"></span>
+                                    <template x-if="{{ $product->quantity > 0 ? 'true' : 'false' }}">
+                                        <span x-show="!isLoading" class="flex items-center gap-2">
+                                            <i class="fas fa-bolt"></i> ซื้อเลย
+                                        </span>
+                                    </template>
+                                    <span x-show="isLoading && {{ $product->quantity > 0 ? 'true' : 'false' }}" class="loading loading-spinner loading-sm"></span>
+                                    <template x-if="{{ $product->quantity <= 0 ? 'true' : 'false' }}">
+                                        <span class="font-bold">สินค้าหมด</span>
+                                    </template>
                                 </button>
                             </div>
                         </div>

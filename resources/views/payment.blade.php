@@ -249,7 +249,7 @@
             @endif
         </div>
 
-        {{-- 2. สั่งซื้อสินค้าแล้ว (จุดที่แก้ไข Logic รูปภาพ) --}}
+        {{-- 2. สั่งซื้อสินค้าแล้ว (แก้ไข Logic รูปภาพ) --}}
         <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-6">สั่งซื้อสินค้าแล้ว</h2>
             <div class="space-y-4">
@@ -266,38 +266,22 @@
                             $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
 
-                            // --- Logic ค้นหารูปภาพ (Auto-Detect) ---
+                            // --- Logic ค้นหารูปภาพ (Updated) ---
                             $displayImage = 'https://via.placeholder.com/150?text=No+Image';
                             $rawPath = $attrs['image'] ?? null;
 
                             if ($rawPath) {
                                 if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                                    // กรณีเป็น URL เต็ม (http...)
                                     $displayImage = $rawPath;
                                 } else {
-                                    $cleanName = basename($rawPath);
-                                    // ลองหาไฟล์จากหลายๆ ที่ที่เป็นไปได้
-                                    $possiblePaths = [
-                                        'storage/' . $rawPath,
-                                        'storage/' . $cleanName,
-                                        'storage/uploads/' . $cleanName,
-                                        'storage/images/' . $cleanName,
-                                        'uploads/' . $cleanName,
-                                    ];
-
-                                    $found = false;
-                                    foreach ($possiblePaths as $path) {
-                                        if (file_exists(public_path($path))) {
-                                            $displayImage = asset($path) . '?v=' . time(); // เพิ่ม version กัน cache
-                                            $found = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (!$found) {
-                                        // Fallback สุดท้าย
-                                        $safePath = str_replace(['public/', 'storage/'], '', $rawPath);
-                                        $displayImage = asset('storage/' . $safePath) . '?v=' . time();
-                                    }
+                                    // กรณีเป็น Path ในเครื่อง
+                                    // ลบคำว่า public/ หรือ storage/ ที่อาจติดมาใน DB ออก
+                                    $cleanPath = str_replace(['public/', 'storage/'], '', $rawPath);
+                                    // ลบ / ด้านหน้าสุดออก (ถ้ามี)
+                                    $cleanPath = ltrim($cleanPath, '/');
+                                    // ใช้ asset() เพื่อสร้าง URL ที่ถูกต้อง
+                                    $displayImage = asset('storage/' . $cleanPath);
                                 }
                             }
                         @endphp
@@ -348,7 +332,8 @@
                         <input type="checkbox" checked
                             class="checkbox checkbox-primary rounded-sm w-5 h-5 border-gray-400" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
-                            <img src="/images/ci-qrpayment-img-01.png" alt="" class="w-24">
+                            {{-- ใส่รูป QR Code หรือ PromptPay Logo ที่นี่ --}}
+
                         </div>
                         <span class="text-gray-700">ชำระผ่านพร้อมเพย์</span>
                     </div>

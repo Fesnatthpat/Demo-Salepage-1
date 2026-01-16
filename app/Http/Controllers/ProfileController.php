@@ -25,12 +25,14 @@ class ProfileController extends Controller
             'date_of_birth' => 'required|date',
             'gender' => 'required|string|in:male,female,other',
             'age' => 'required|integer|min:1',
+            'phone' => 'required|string|max:20',
         ]);
 
         $user = Auth::user();
         $user->date_of_birth = $request->date_of_birth;
         $user->gender = $request->gender;
         $user->age = $request->age;
+        $user->phone = $request->phone;
         $user->save();
 
         return redirect('/')->with('success', 'Profile updated successfully!');

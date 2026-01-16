@@ -249,14 +249,14 @@
             @endif
         </div>
 
-        {{-- 2. สั่งซื้อสินค้าแล้ว (แก้ไข Logic รูปภาพ) --}}
+        {{-- 2. สั่งซื้อสินค้าแล้ว (ส่วนที่แก้ไขเพื่อให้รูปแสดง) --}}
         <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-6">สั่งซื้อสินค้าแล้ว</h2>
             <div class="space-y-4">
                 @if (isset($cartItems) && count($cartItems) > 0)
                     @foreach ($cartItems as $item)
                         @php
-                            // แปลง Attributes เป็น Array เพื่อความชัวร์
+                            // แปลง Attributes เป็น Array
                             $attrs = $item->attributes;
                             if (!is_array($attrs) && is_object($attrs) && method_exists($attrs, 'toArray')) {
                                 $attrs = $attrs->toArray();
@@ -266,44 +266,50 @@
                             $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
 
-                            // --- Logic ค้นหารูปภาพ (Updated) ---
-                            $displayImage = 'https://via.placeholder.com/150?text=No+Image';
+                            // --- Logic แก้ไขรูปภาพ (Fix Image Display) ---
+                            $displayImage = 'https://via.placeholder.com/150?text=No+Image'; // Default
                             $rawPath = $attrs['image'] ?? null;
 
-                            if ($rawPath) {
+                            if (!empty($rawPath)) {
                                 if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-                                    // กรณีเป็น URL เต็ม (http...)
+                                    // กรณีเป็น URL เต็ม
                                     $displayImage = $rawPath;
                                 } else {
-                                    // กรณีเป็น Path ในเครื่อง
-                                    // ลบคำว่า public/ หรือ storage/ ที่อาจติดมาใน DB ออก
+                                    // กรณีเป็น Path ในเครื่อง: ตัด public/ หรือ storage/ ที่ติดมาออก
                                     $cleanPath = str_replace(['public/', 'storage/'], '', $rawPath);
-                                    // ลบ / ด้านหน้าสุดออก (ถ้ามี)
                                     $cleanPath = ltrim($cleanPath, '/');
-                                    // ใช้ asset() เพื่อสร้าง URL ที่ถูกต้อง
+                                    // ใช้ asset() สร้าง URL ที่ถูกต้อง
                                     $displayImage = asset('storage/' . $cleanPath);
                                 }
                             }
                         @endphp
+
                         <div
                             class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                             <div class="flex items-center gap-4">
+                                {{-- กล่องแสดงรูป --}}
                                 <div
-                                    class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                                    class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0 relative">
                                     <img src="{{ $displayImage }}" class="w-full h-full object-cover"
+                                        alt="{{ $item->name }}"
                                         onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';" />
                                 </div>
+                                {{-- รายละเอียดสินค้า --}}
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
-                                        {{ $item->name }}</p>
+                                        {{ $item->name }}
+                                    </p>
                                     <p class="text-sm text-gray-500">จำนวน: {{ $item->quantity }} ชิ้น</p>
                                 </div>
                             </div>
+
+                            {{-- แสดงราคา --}}
                             <div class="text-right">
                                 <p class="font-bold text-emerald-600">฿{{ number_format($totalPrice) }}</p>
                                 @if ($originalPrice > $item->price)
                                     <p class="text-xs text-gray-400 line-through">
-                                        ฿{{ number_format($originalPrice * $item->quantity) }}</p>
+                                        ฿{{ number_format($originalPrice * $item->quantity) }}
+                                    </p>
                                 @endif
                             </div>
                         </div>
@@ -332,8 +338,8 @@
                         <input type="checkbox" checked
                             class="checkbox checkbox-primary rounded-sm w-5 h-5 border-gray-400" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
-                            {{-- ใส่รูป QR Code หรือ PromptPay Logo ที่นี่ --}}
-
+                            {{-- ใส่รูป QR Code --}}
+                            <img src="{{ asset('images/ci-qrpayment-img-01.png') }}" alt="PromptPay" class="w-24">
                         </div>
                         <span class="text-gray-700">ชำระผ่านพร้อมเพย์</span>
                     </div>
@@ -400,7 +406,7 @@
                     <form action="{{ route('address.save') }}" method="POST" id="form_add_new"
                         onsubmit="showLoading()">
                         @csrf
-                        {{-- (เนื้อหา Form คงเดิม ไม่เปลี่ยนแปลง) --}}
+                        {{-- (เนื้อหา Form คงเดิม) --}}
                         <div class="mb-6">
                             <h4 class="text-emerald-600 font-bold mb-4">ข้อมูลผู้รับ</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

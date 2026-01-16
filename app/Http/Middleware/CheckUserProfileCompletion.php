@@ -19,7 +19,7 @@ class CheckUserProfileCompletion
     {
         if (Auth::check()) {
             $user = Auth::user();
-            if (is_null($user->date_of_birth) || is_null($user->gender) || is_null($user->age)) {
+            if (is_null($user->date_of_birth) || is_null($user->gender) || is_null($user->age) || is_null($user->phone)) {
                 if (!$request->routeIs('profile.completion') && !$request->routeIs('profile.store')) {
                     return redirect()->route('profile.completion');
                 }

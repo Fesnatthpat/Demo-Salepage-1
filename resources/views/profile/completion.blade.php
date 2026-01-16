@@ -57,6 +57,18 @@
                         <p class="mt-1 text-xs text-gray-500">*อายุจะถูกคำนวณอัตโนมัติจากวันเกิด</p>
                     </div>
 
+                    {{-- 4. Phone Number --}}
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+                            เบอร์โทรศัพท์ (Phone Number)
+                        </label>
+                        <div class="relative">
+                            <input type="tel" name="phone" id="phone" required
+                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 ease-in-out"
+                                placeholder="กรอกเบอร์โทรศัพท์">
+                        </div>
+                    </div>
+
                     {{-- Submit Button --}}
                     <div class="pt-2">
                         <button type="submit"

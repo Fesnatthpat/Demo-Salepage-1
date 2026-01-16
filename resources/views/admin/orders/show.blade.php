@@ -48,19 +48,46 @@
                                             <div class="flex items-center space-x-3">
                                                 <div class="avatar">
                                                     <div class="mask mask-squircle w-12 h-12 bg-gray-100">
-                                                        {{-- แก้ไขจุดที่ 1: เปลี่ยน path เป็น storage และใช้ ?-> กัน Error --}}
-                                                        <img src="{{ asset('storage/' . ($detail->productSalepage?->images?->first()?->image_path ?? 'default.png')) }}"
-                                                            alt="{{ $detail->productSalepage?->pd_sp_name ?? 'Product Image' }}"
-                                                            class="object-cover"
-                                                            onerror="this.src='https://via.placeholder.com/64?text=No+Image'">
+                                                        {{-- ★★★ PHP Logic สำหรับหารูปภาพแบบละเอียด (เหมือนหน้า Dashboard) ★★★ --}}
+                                                        @php
+                                                            $displayImage =
+                                                                'https://via.placeholder.com/64?text=No+Image';
+                                                            $product = $detail->productSalepage;
+
+                                                            if ($product && $product->images->isNotEmpty()) {
+                                                                // พยายามหารูปแรก หรือรูปที่มี sort น้อยที่สุด
+                                                                $imgObj =
+                                                                    $product->images->sortBy('img_sort')->first() ??
+                                                                    $product->images->first();
+
+                                                                $rawPath = $imgObj->img_path ?? $imgObj->image_path;
+
+                                                                if ($rawPath) {
+                                                                    if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                                                                        $displayImage = $rawPath;
+                                                                    } else {
+                                                                        $cleanPath = ltrim(
+                                                                            str_replace('storage/', '', $rawPath),
+                                                                            '/',
+                                                                        );
+                                                                        $displayImage = asset('storage/' . $cleanPath);
+                                                                    }
+                                                                }
+                                                            }
+                                                        @endphp
+
+                                                        <img src="{{ $displayImage }}"
+                                                            alt="{{ $product->pd_sp_name ?? 'Product Image' }}"
+                                                            class="object-cover w-full h-full"
+                                                            onerror="this.src='https://via.placeholder.com/64?text=Error'">
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <div class="font-bold text-gray-800">
-                                                        {{ $detail->productSalepage?->pd_sp_name ?? 'สินค้าถูกลบไปแล้ว' }}
+                                                        {{ $product->pd_sp_name ?? 'สินค้าถูกลบไปแล้ว' }}
                                                     </div>
                                                     <div class="text-xs text-gray-400">
-                                                        SKU: {{ $detail->productSalepage?->pd_code ?? '-' }}
+                                                        SKU: {{ $product->pd_code ?? '-' }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -169,11 +196,20 @@
                             <i class="fas fa-receipt text-primary mr-2"></i> หลักฐานการโอน
                         </h2>
                         <div class="mt-4 rounded-lg overflow-hidden border border-gray-200">
-                            <a href="{{ asset('storage/' . $order->slip_path) }}" target="_blank"
-                                class="block hover:opacity-90 transition">
-                                {{-- แก้ไขจุดที่ 2: ใช้ asset storage ให้ถูกต้อง (ของเดิมถูกแล้วแต่เช็คเพื่อความชัวร์) --}}
-                                <img src="{{ asset('storage/' . $order->slip_path) }}" alt="Payment Slip"
-                                    class="w-full object-contain bg-gray-50">
+                            {{-- ★★★ PHP Logic สำหรับรูปสลิป ★★★ --}}
+                            @php
+                                $slipUrl = '';
+                                if (filter_var($order->slip_path, FILTER_VALIDATE_URL)) {
+                                    $slipUrl = $order->slip_path;
+                                } else {
+                                    $cleanSlipPath = ltrim(str_replace('storage/', '', $order->slip_path), '/');
+                                    $slipUrl = asset('storage/' . $cleanSlipPath);
+                                }
+                            @endphp
+
+                            <a href="{{ $slipUrl }}" target="_blank" class="block hover:opacity-90 transition">
+                                <img src="{{ $slipUrl }}" alt="Payment Slip" class="w-full object-contain bg-gray-50"
+                                    onerror="this.src='https://via.placeholder.com/300?text=Slip+Error'">
                             </a>
                         </div>
                         <p class="text-center text-xs text-gray-400 mt-2">คลิกที่รูปเพื่อดูภาพขยาย</p>

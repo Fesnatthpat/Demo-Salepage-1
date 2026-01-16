@@ -73,8 +73,11 @@
                             <template x-for="image in images" :key="image">
                                 <div @click="activeImage = image"
                                     class="aspect-square rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:opacity-80"
-                                    :class="{ 'border-emerald-500 ring-2 ring-emerald-100': activeImage ===
-                                        image, 'border-transparent': activeImage !== image }">
+                                    :class="{
+                                        'border-emerald-500 ring-2 ring-emerald-100': activeImage ===
+                                            image,
+                                        'border-transparent': activeImage !== image
+                                    }">
                                     <img :src="image" class="w-full h-full object-cover">
                                 </div>
                             </template>

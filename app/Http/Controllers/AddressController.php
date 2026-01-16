@@ -28,7 +28,7 @@ class AddressController extends Controller
         // ==========================================================
         // [แก้ไขใหม่] ส่วนการกรองสินค้าที่เลือกและคำนวณราคา
         // ==========================================================
-        
+
         // 1. รับ ID สินค้าที่ถูกติ๊กเลือกมาจากหน้าตะกร้า
         $selectedIds = $request->input('selected_items', []);
 
@@ -36,8 +36,8 @@ class AddressController extends Controller
         $allItems = Cart::session($userId)->getContent();
 
         // 3. กรอง (Filter) เอาเฉพาะตัวที่ ID ตรงกับที่เลือกมา
-        if (!empty($selectedIds)) {
-            $cartItems = $allItems->filter(function($item) use ($selectedIds) {
+        if (! empty($selectedIds)) {
+            $cartItems = $allItems->filter(function ($item) use ($selectedIds) {
                 return in_array($item->id, $selectedIds);
             });
         } else {
@@ -47,7 +47,7 @@ class AddressController extends Controller
         }
 
         // 4. คำนวณยอดรวมใหม่ (เฉพาะของที่เลือก)
-        $total = $cartItems->sum(function($item) {
+        $total = $cartItems->sum(function ($item) {
             return $item->getPriceSum();
         });
 
@@ -64,12 +64,14 @@ class AddressController extends Controller
     public function getAmphures($province_id)
     {
         $amphures = Amphure::where('province_id', $province_id)->orderBy('name_th', 'asc')->get();
+
         return response()->json($amphures);
     }
 
     public function getDistricts($amphure_id)
     {
         $districts = District::where('amphure_id', $amphure_id)->orderBy('name_th', 'asc')->get();
+
         return response()->json($districts);
     }
 
@@ -134,6 +136,7 @@ class AddressController extends Controller
     {
         $address = DeliveryAddress::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         $address->delete();
+
         return back()->with('success', 'ลบที่อยู่เรียบร้อยแล้ว!');
     }
 }

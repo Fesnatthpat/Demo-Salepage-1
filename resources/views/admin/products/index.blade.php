@@ -217,7 +217,7 @@
                                     @endif
                                 </td>
                                 <td class="text-right">
-                                    @if($product->pd_sp_stock > 0)
+                                    @if ($product->pd_sp_stock > 0)
                                         {{ number_format($product->pd_sp_stock) }}
                                     @else
                                         <span class="font-bold text-red-500">สินค้าหมด</span>
@@ -335,7 +335,7 @@
                         modal.style.top = `${top}px`;
                         modal.style.left = `${left}px`;
                         modal.style.opacity = 1;
-                    }, 50);
+                    }, 50);F
                 });
 
                 thumb.addEventListener('mouseleave', () => {

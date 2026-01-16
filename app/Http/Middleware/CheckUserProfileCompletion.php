@@ -4,9 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckUserProfileCompletion
 {
@@ -20,7 +19,7 @@ class CheckUserProfileCompletion
         if (Auth::check()) {
             $user = Auth::user();
             if (is_null($user->date_of_birth) || is_null($user->gender) || is_null($user->age) || is_null($user->phone)) {
-                if (!$request->routeIs('profile.completion') && !$request->routeIs('profile.store')) {
+                if (! $request->routeIs('profile.completion') && ! $request->routeIs('profile.store')) {
                     return redirect()->route('profile.completion');
                 }
             }

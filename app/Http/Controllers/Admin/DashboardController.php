@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\User;
 use App\Models\OrderDetail;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -45,7 +44,7 @@ class DashboardController extends Controller
             ->orderBy('total_sold', 'desc')
             ->limit(5)
             ->get();
-            
+
         $stats = [
             'totalRevenue' => $totalRevenue,
             'totalOrders' => $totalOrders,

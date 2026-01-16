@@ -119,28 +119,31 @@
                                         <p class="text-xs text-gray-500">Code:
                                             {{ $detail->productSalepage->pd_code ?? 'N/A' }}</p>
                                         <p class="text-sm text-gray-500">จำนวน: {{ $detail->ordd_count }} ชิ้น</p>
-                                        
+
                                         {{-- ========== ส่วนที่แก้ไข: ราคาต่อชิ้น ========== --}}
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:
-                                            @if ((float)$detail->pd_price <= 0)
+                                            @if ((float) $detail->pd_price <= 0)
                                                 {{-- กรณีเป็นของแถม --}}
                                                 <span class="font-bold text-red-500 ml-1">ฟรี (0 บาท)</span>
                                             @elseif ($detail->pd_original_price > $detail->pd_price)
                                                 {{-- กรณีมีส่วนลด --}}
-                                                <s class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
-                                                <span class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                                <s
+                                                    class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
+                                                <span
+                                                    class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->pd_price, 2) }}</span>
                                             @else
                                                 {{-- กรณีราคาปกติ --}}
-                                                <span class="text-gray-800">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                                <span
+                                                    class="text-gray-800">฿{{ number_format($detail->pd_price, 2) }}</span>
                                             @endif
                                         </p>
                                         {{-- ========================================== --}}
-                                        
+
                                     </div>
                                 </div>
                                 <div class="text-right flex-shrink-0">
                                     {{-- ========== ส่วนที่แก้ไข: ราคารวม (ขวาสุด) ========== --}}
-                                    @if ((float)$detail->pd_price <= 0)
+                                    @if ((float) $detail->pd_price <= 0)
                                         <p class="font-bold text-red-500">ฟรี</p>
                                     @else
                                         <p class="font-bold text-emerald-600">
@@ -199,16 +202,17 @@
                                 </div>
                             @endif
                         </div>
-                        
+
                         <div class="flex justify-between items-center border-t border-gray-200 pt-4">
                             <span class="font-bold text-gray-800">ยอดชำระทั้งหมด</span>
-                            @if ((float)$order->net_amount <= 0)
+                            @if ((float) $order->net_amount <= 0)
                                 <span class="font-bold text-red-500 text-xl">(แถมฟรี 0 บาท)</span>
                             @else
-                                <span class="font-bold text-red-500 text-xl">฿{{ number_format($order->net_amount, 2) }}</span>
+                                <span
+                                    class="font-bold text-red-500 text-xl">฿{{ number_format($order->net_amount, 2) }}</span>
                             @endif
                         </div>
-                        
+
                     </div>
                 </div>
             </div>

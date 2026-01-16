@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\ProductSalepage;
+use Illuminate\Http\Request;
 
 class AllProductController extends Controller
 {

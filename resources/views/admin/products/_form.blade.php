@@ -7,7 +7,11 @@
 @if ($errors->any())
     <div class="alert alert-error shadow-lg mb-6">
         <div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <div>
                 <h3 class="font-bold">พบข้อผิดพลาด!</h3>
                 <ul class="list-disc pl-5">
@@ -62,7 +66,8 @@
             <div
                 class="mb-6 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
                 <i class="fas fa-tag"></i>
-                <span>รหัสสินค้า: <strong>{{ $productSalepage->pd_sp_code ?? $productSalepage->pd_code }}</strong> (สร้างอัตโนมัติ)</span>
+                <span>รหัสสินค้า: <strong>{{ $productSalepage->pd_sp_code ?? $productSalepage->pd_code }}</strong>
+                    (สร้างอัตโนมัติ)</span>
             </div>
         @endif
 
@@ -111,8 +116,7 @@
                 <label class="label font-bold text-gray-700">จำนวนสินค้าในคลัง <span class="text-error">*</span></label>
                 <input type="number" name="pd_sp_stock"
                     class="input input-bordered w-full text-lg h-12 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    placeholder="0"
-                    value="{{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? '') }}" />
+                    placeholder="0" value="{{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? '') }}" />
                 @error('pd_sp_stock')
                     <span class="text-error text-sm mt-1">{{ $message }}</span>
                 @enderror
@@ -155,16 +159,17 @@
             <label class="label font-bold text-gray-700">เลือกสินค้าที่เป็นตัวเลือก (เช่น สี, ขนาด)</label>
             <select name="options[]" id="product-options" multiple>
                 @foreach ($products as $product)
-                    @if(!isset($productSalepage) || $product->pd_sp_id !== $productSalepage->pd_sp_id)
-                    <option value="{{ $product->pd_sp_id }}"
-                        {{ in_array($product->pd_sp_id, old('options', isset($productSalepage) && $productSalepage->exists ? $productSalepage->options->pluck('pd_sp_id')->toArray() : [])) ? 'selected' : '' }}>
-                        {{ $product->pd_sp_name }} ({{ $product->pd_sp_code ?? $product->pd_code }})
-                    </option>
+                    @if (!isset($productSalepage) || $product->pd_sp_id !== $productSalepage->pd_sp_id)
+                        <option value="{{ $product->pd_sp_id }}"
+                            {{ in_array($product->pd_sp_id, old('options', isset($productSalepage) && $productSalepage->exists ? $productSalepage->options->pluck('pd_sp_id')->toArray() : [])) ? 'selected' : '' }}>
+                            {{ $product->pd_sp_name }} ({{ $product->pd_sp_code ?? $product->pd_code }})
+                        </option>
                     @endif
                 @endforeach
             </select>
             <label class="label">
-                <span class="label-text-alt">ใช้สำหรับจัดกลุ่มสินค้าที่มีลักษณะเดียวกันแต่มีรายละเอียดต่างกัน เช่น เสื้อคนละสี</span>
+                <span class="label-text-alt">ใช้สำหรับจัดกลุ่มสินค้าที่มีลักษณะเดียวกันแต่มีรายละเอียดต่างกัน เช่น
+                    เสื้อคนละสี</span>
             </label>
         </div>
     </div>
@@ -173,31 +178,32 @@
 {{-- ส่วนที่ 1.7: โปรโมชั่น (BOGO - Buy One Get One) --}}
 @php
     $rawBogoValue = old('is_bogo_active', $productSalepage->is_bogo_active ?? 0);
-    $isBogoOn = ($rawBogoValue == 1 || $rawBogoValue === 'on' || $rawBogoValue === true) ? 'true' : 'false';
+    $isBogoOn = $rawBogoValue == 1 || $rawBogoValue === 'on' || $rawBogoValue === true ? 'true' : 'false';
 
     // แปลง ID เป็น Int เพื่อความชัวร์
-    $selectedBogoIds = collect(old('bogo_options', ($productSalepage->bogoFreeOptions ?? collect())->pluck('pd_sp_id')->toArray()))
-        ->map(fn($id) => (int)$id)
+    $selectedBogoIds = collect(
+        old('bogo_options', ($productSalepage->bogoFreeOptions ?? collect())->pluck('pd_sp_id')->toArray()),
+    )
+        ->map(fn($id) => (int) $id)
         ->values()
         ->toArray();
 @endphp
 
-<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" 
-     x-data="{
-        isBogoEnabled: {{ $isBogoOn }},
-        selectedBogo: {{ json_encode($selectedBogoIds) }},
-        searchBogo: '',
+<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" x-data="{
+    isBogoEnabled: {{ $isBogoOn }},
+    selectedBogo: {{ json_encode($selectedBogoIds) }},
+    searchBogo: '',
 
-        toggleBogo(id) {
-            let numId = Number(id);
-            let index = this.selectedBogo.indexOf(numId);
-            if (index > -1) {
-                this.selectedBogo.splice(index, 1);
-            } else {
-                this.selectedBogo.push(numId);
-            }
+    toggleBogo(id) {
+        let numId = Number(id);
+        let index = this.selectedBogo.indexOf(numId);
+        if (index > -1) {
+            this.selectedBogo.splice(index, 1);
+        } else {
+            this.selectedBogo.push(numId);
         }
-    }">
+    }
+}">
 
     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -227,17 +233,19 @@
             </div>
 
             {{-- Grid แสดงรายการสินค้า --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[500px] overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
+            <div
+                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[500px] overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
                 @foreach ($products as $productOption)
                     {{-- ✅ แก้ไข: ใช้ pd_sp_code ในการค้นหา --}}
                     <div x-show='@json($productOption->pd_sp_name).toLowerCase().includes(searchBogo.toLowerCase()) || (@json($productOption->pd_sp_code) || "").toLowerCase().includes(searchBogo.toLowerCase())'
                         @click="toggleBogo({{ $productOption->pd_sp_id }})"
                         class="cursor-pointer group relative border-2 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md bg-white"
-                        :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-gray-100 hover:border-gray-300'">
+                        :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ?
+                            'border-primary ring-2 ring-primary ring-offset-1' : 'border-gray-100 hover:border-gray-300'">
 
                         {{-- Checkmark Icon --}}
                         <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})"
-                             class="absolute top-2 right-2 z-10 bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm">
+                            class="absolute top-2 right-2 z-10 bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm">
                             <i class="fas fa-check text-xs"></i>
                         </div>
 
@@ -248,36 +256,38 @@
                                 $optImg = 'https://via.placeholder.com/150?text=No+Image';
                                 if ($productOption->images->isNotEmpty()) {
                                     $primary = $productOption->images->where('img_sort', 1)->first();
-                                    $path = $primary
-                                        ? $primary->img_path
-                                        : $productOption->images->first()->img_path;
-                                    
+                                    $path = $primary ? $primary->img_path : $productOption->images->first()->img_path;
+
                                     // เช็ค URL
-                                    $optImg = \Illuminate\Support\Str::startsWith($path, 'http') 
-                                        ? $path 
+                                    $optImg = \Illuminate\Support\Str::startsWith($path, 'http')
+                                        ? $path
                                         : asset('storage/' . $path);
                                 }
                             @endphp
                             <img src="{{ $optImg }}"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            
-                            <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})" 
-                                 class="absolute inset-0 bg-primary/10 transition-opacity"></div>
+
+                            <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})"
+                                class="absolute inset-0 bg-primary/10 transition-opacity"></div>
                         </div>
 
                         {{-- รายละเอียดด้านล่าง --}}
                         <div class="p-3">
-                            <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-primary transition-colors">
+                            <h4
+                                class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-primary transition-colors">
                                 {{ $productOption->pd_sp_name }}
                             </h4>
-                            <p class="text-xs text-gray-400 mt-1">{{ $productOption->pd_sp_code ?? $productOption->pd_code }}</p>
+                            <p class="text-xs text-gray-400 mt-1">
+                                {{ $productOption->pd_sp_code ?? $productOption->pd_code }}</p>
                             <div class="flex justify-between items-center mt-2">
                                 <p class="text-xs font-semibold text-gray-600">
                                     ฿{{ number_format($productOption->pd_sp_price, 0) }}
                                 </p>
-                                <span x-text="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'เลือกแล้ว' : 'เลือก'" 
-                                      class="text-[10px] px-2 py-0.5 rounded-full"
-                                      :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'">
+                                <span
+                                    x-text="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'เลือกแล้ว' : 'เลือก'"
+                                    class="text-[10px] px-2 py-0.5 rounded-full"
+                                    :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'bg-primary text-white' :
+                                        'bg-gray-100 text-gray-500'">
                                 </span>
                             </div>
                         </div>
@@ -336,22 +346,23 @@
                     {{-- ✅ แก้ไข: ใช้ img_id (PK) และ img_path --}}
                     <div class="relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm aspect-square bg-gray-100"
                         id="image-card-{{ $image->img_id }}">
-                        
+
                         <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
-                        
+
                         {{-- ✅ แก้ไข: ใช้ img_sort == 1 แทน is_primary --}}
                         @if ($image->img_sort == 1)
                             <div class="absolute top-2 right-2 badge badge-primary shadow-md z-10">ปก</div>
                         @endif
-                        
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2">
+
+                        <div
+                            class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2">
                             <label class="btn btn-xs btn-white w-full gap-2">
                                 {{-- ✅ แก้ไข: value คือ img_id --}}
                                 <input type="radio" name="is_primary" value="{{ $image->img_id }}"
                                     {{ $image->img_sort == 1 ? 'checked' : '' }} class="radio radio-primary radio-xs">
                                 ตั้งเป็นปก
                             </label>
-                            
+
                             {{-- ✅ แก้ไข: data-image-id คือ img_id --}}
                             <button type="button" class="btn btn-xs btn-error w-full text-white delete-image"
                                 data-image-id="{{ $image->img_id }}">
@@ -447,8 +458,10 @@
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             const div = document.createElement('div');
-                            div.className = 'relative rounded-lg overflow-hidden border border-gray-200 aspect-square shadow-sm';
-                            div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                            div.className =
+                                'relative rounded-lg overflow-hidden border border-gray-200 aspect-square shadow-sm';
+                            div.innerHTML =
+                                `<img src="${e.target.result}" class="w-full h-full object-cover">`;
                             previewContainer.appendChild(div);
                         }
                         reader.readAsDataURL(file);

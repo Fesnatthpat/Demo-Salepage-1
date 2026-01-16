@@ -50,33 +50,52 @@
                                     $statusText = 'ไม่ระบุ';
                                     $statusClass = 'bg-gray-100 text-gray-800';
                                     switch ($order->status_id) {
-                                        case 1: $statusText = 'รอชำระเงิน'; $statusClass = 'bg-yellow-100 text-yellow-800'; break;
-                                        case 2: $statusText = 'กำลังดำเนินการ'; $statusClass = 'bg-blue-100 text-blue-800'; break;
-                                        case 3: $statusText = 'จัดส่งแล้ว'; $statusClass = 'bg-green-100 text-green-800'; break;
-                                        case 4: $statusText = 'สำเร็จ'; $statusClass = 'bg-emerald-100 text-emerald-800'; break;
-                                        case 5: $statusText = 'ยกเลิก'; $statusClass = 'bg-red-100 text-red-800'; break;
+                                        case 1:
+                                            $statusText = 'รอชำระเงิน';
+                                            $statusClass = 'bg-yellow-100 text-yellow-800';
+                                            break;
+                                        case 2:
+                                            $statusText = 'กำลังดำเนินการ';
+                                            $statusClass = 'bg-blue-100 text-blue-800';
+                                            break;
+                                        case 3:
+                                            $statusText = 'จัดส่งแล้ว';
+                                            $statusClass = 'bg-green-100 text-green-800';
+                                            break;
+                                        case 4:
+                                            $statusText = 'สำเร็จ';
+                                            $statusClass = 'bg-emerald-100 text-emerald-800';
+                                            break;
+                                        case 5:
+                                            $statusText = 'ยกเลิก';
+                                            $statusClass = 'bg-red-100 text-red-800';
+                                            break;
                                     }
 
                                     // 2. Auto-Detect Image Logic
-                                    $displayImage = 'https://via.placeholder.com/150?text=No+Image'; 
+                                    $displayImage = 'https://via.placeholder.com/150?text=No+Image';
                                     $itemCount = 0;
-                                    $debugInfo = 'Checking...'; 
+                                    $debugInfo = 'Checking...';
 
-                                    if($order->relationLoaded('details')){
-                                         $details = $order->details;
+                                    if ($order->relationLoaded('details')) {
+                                        $details = $order->details;
                                     } else {
-                                         $details = \App\Models\OrderDetail::where('ord_id', $order->id)->get();
+                                        $details = \App\Models\OrderDetail::where('ord_id', $order->id)->get();
                                     }
-                                    
+
                                     $itemCount = $details->count();
                                     $firstItem = $details->first();
 
                                     if ($firstItem) {
-                                        $productModel = \App\Models\ProductSalepage::with('images')->find($firstItem->pd_id);
-                                        
+                                        $productModel = \App\Models\ProductSalepage::with('images')->find(
+                                            $firstItem->pd_id,
+                                        );
+
                                         if ($productModel && $productModel->images->isNotEmpty()) {
                                             $dbImage = $productModel->images->sortBy('img_sort')->first();
-                                            if(!$dbImage) $dbImage = $productModel->images->first();
+                                            if (!$dbImage) {
+                                                $dbImage = $productModel->images->first();
+                                            }
 
                                             $rawPath = $dbImage->img_path;
 
@@ -84,7 +103,7 @@
                                                 if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
                                                     $displayImage = $rawPath;
                                                 } else {
-                                                    $cleanName = basename($rawPath); 
+                                                    $cleanName = basename($rawPath);
                                                     $possiblePaths = [
                                                         'storage/' . $rawPath,
                                                         'storage/' . $cleanName,
@@ -99,13 +118,13 @@
                                                             $displayImage = asset($path);
                                                             $debugInfo = "Found in: $path";
                                                             $found = true;
-                                                            break; 
+                                                            break;
                                                         }
                                                     }
 
                                                     if (!$found) {
                                                         $displayImage = asset('storage/' . $rawPath);
-                                                        $debugInfo = "Not Found (Try default)";
+                                                        $debugInfo = 'Not Found (Try default)';
                                                     }
                                                 }
                                             }
@@ -119,13 +138,12 @@
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-14 w-14 relative group">
                                                     <img class="h-14 w-14 rounded-md object-cover border border-gray-200 shadow-sm"
-                                                        src="{{ $displayImage }}" 
-                                                        alt="Product Image"
-                                                        loading="lazy"
+                                                        src="{{ $displayImage }}" alt="Product Image" loading="lazy"
                                                         onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';">
-                                                    
+
                                                     @if ($itemCount > 1)
-                                                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white font-bold shadow-md z-10">
+                                                        <span
+                                                            class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white font-bold shadow-md z-10">
                                                             +{{ $itemCount - 1 }}
                                                         </span>
                                                     @endif
@@ -164,10 +182,10 @@
                                             {{ $statusText }}
                                         </span>
                                     </td>
-                                    
+
                                     {{-- ========== ส่วนที่แก้ไข: แสดงราคา หรือ ของแถม ========== --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        @if ((float)$order->net_amount <= 0)
+                                        @if ((float) $order->net_amount <= 0)
                                             {{-- กรณีเป็นของแถม (0 บาท) --}}
                                             <div class="text-sm font-bold text-red-500">
                                                 (แถมฟรี 0 บาท)

@@ -10,9 +10,7 @@ use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function __construct(private CartService $cartService)
-    {
-    }
+    public function __construct(private CartService $cartService) {}
 
     // ... (ฟังก์ชัน showLogin, logout, redirectToLine เหมือนเดิม) ...
     public function showLogin()
@@ -46,7 +44,7 @@ class AuthController extends Controller
         try {
             $lineUser = Socialite::driver('line')->user();
         } catch (\Exception $e) {
-            return redirect('/login')->with('error', 'LINE Login Failed: ' . $e->getMessage());
+            return redirect('/login')->with('error', 'LINE Login Failed: '.$e->getMessage());
         }
 
         // 1. Get guest session key BEFORE login changes the session
@@ -67,7 +65,7 @@ class AuthController extends Controller
 
         // 4. Use the CartService to merge the guest cart into the user's cart
         $this->cartService->mergeGuestCart($guestSessionKey, $user->id);
-        
+
         return redirect()->intended('/');
     }
 }

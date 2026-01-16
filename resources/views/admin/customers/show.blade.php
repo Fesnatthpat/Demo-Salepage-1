@@ -40,7 +40,9 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">วันเกิด</p>
-                    <p class="text-lg font-bold text-gray-800">{{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : '-' }}</p>
+                    <p class="text-lg font-bold text-gray-800">
+                        {{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : '-' }}
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">สถานะ LINE</p>

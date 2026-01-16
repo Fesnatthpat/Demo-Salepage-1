@@ -18,11 +18,11 @@ class CustomerController extends Controller
         $query = User::orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
-            $searchTerm = '%' . $request->search . '%';
+            $searchTerm = '%'.$request->search.'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
-                  ->orWhere('email', 'like', $searchTerm)
-                  ->orWhere('phone', 'like', $searchTerm);
+                    ->orWhere('email', 'like', $searchTerm)
+                    ->orWhere('phone', 'like', $searchTerm);
             });
         }
 
@@ -34,7 +34,6 @@ class CustomerController extends Controller
     /**
      * Display the specified customer.
      *
-     * @param  \App\Models\User  $customer
      * @return \Illuminate\Http\Response
      */
     public function show(User $customer)
@@ -42,6 +41,7 @@ class CustomerController extends Controller
         $customer->load(['orders' => function ($query) {
             $query->orderBy('ord_date', 'desc');
         }]); // Eager load orders and sort by latest date
+
         return view('admin.customers.show', compact('customer'));
     }
 

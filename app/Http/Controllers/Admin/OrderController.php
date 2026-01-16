@@ -18,10 +18,10 @@ class OrderController extends Controller
         $query = Order::with('user')->orderBy('ord_date', 'desc');
 
         if ($request->filled('search')) {
-            $searchTerm = '%' . $request->search . '%';
+            $searchTerm = '%'.$request->search.'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('ord_code', 'like', $searchTerm)
-                  ->orWhere('shipping_name', 'like', $searchTerm);
+                    ->orWhere('shipping_name', 'like', $searchTerm);
             });
         }
 
@@ -37,7 +37,6 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Order  $order
      * @return \Illuminate\Http\Response
      */
     public function show(Order $order)
@@ -59,8 +58,6 @@ class OrderController extends Controller
     /**
      * Update the status of the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Order  $order
      * @return \Illuminate\Http\Response
      */
     public function updateStatus(Request $request, Order $order)

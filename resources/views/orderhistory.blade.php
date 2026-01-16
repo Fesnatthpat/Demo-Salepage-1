@@ -57,12 +57,11 @@
                                         case 5: $statusText = 'ยกเลิก'; $statusClass = 'bg-red-100 text-red-800'; break;
                                     }
 
-                                    // 2. Auto-Detect Image Logic (แก้ไขให้ค้นหาไฟล์จริง)
+                                    // 2. Auto-Detect Image Logic
                                     $displayImage = 'https://via.placeholder.com/150?text=No+Image'; 
                                     $itemCount = 0;
                                     $debugInfo = 'Checking...'; 
 
-                                    // ดึงรายการสินค้า
                                     if($order->relationLoaded('details')){
                                          $details = $order->details;
                                     } else {
@@ -73,34 +72,29 @@
                                     $firstItem = $details->first();
 
                                     if ($firstItem) {
-                                        // ดึง Product Model
                                         $productModel = \App\Models\ProductSalepage::with('images')->find($firstItem->pd_id);
                                         
                                         if ($productModel && $productModel->images->isNotEmpty()) {
                                             $dbImage = $productModel->images->sortBy('img_sort')->first();
                                             if(!$dbImage) $dbImage = $productModel->images->first();
 
-                                            $rawPath = $dbImage->img_path; // ชื่อไฟล์จาก DB เช่น "image_abc.png"
+                                            $rawPath = $dbImage->img_path;
 
                                             if ($rawPath) {
                                                 if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
                                                     $displayImage = $rawPath;
                                                 } else {
-                                                    // คลีนชื่อไฟล์ (เอา path เก่าออก) ให้เหลือแค่ชื่อไฟล์เพียวๆ
                                                     $cleanName = basename($rawPath); 
-
-                                                    // รายชื่อห้องที่น่าสงสัย (Possible Paths)
                                                     $possiblePaths = [
-                                                        'storage/' . $rawPath,              // กรณี DB เก็บ full path
-                                                        'storage/' . $cleanName,            // กรณีอยู่ใน storage/ โดยตรง
-                                                        'storage/uploads/' . $cleanName,    // กรณีอยู่ใน folder uploads
-                                                        'storage/images/' . $cleanName,     // กรณีอยู่ใน folder images
-                                                        'uploads/' . $cleanName,            // กรณีอยู่นอก storage (public/uploads)
+                                                        'storage/' . $rawPath,
+                                                        'storage/' . $cleanName,
+                                                        'storage/uploads/' . $cleanName,
+                                                        'storage/images/' . $cleanName,
+                                                        'uploads/' . $cleanName,
                                                     ];
 
                                                     $found = false;
                                                     foreach ($possiblePaths as $path) {
-                                                        // เช็คว่าไฟล์มีจริงไหมในเครื่อง (public_path คือ folder public)
                                                         if (file_exists(public_path($path))) {
                                                             $displayImage = asset($path);
                                                             $debugInfo = "Found in: $path";
@@ -110,7 +104,6 @@
                                                     }
 
                                                     if (!$found) {
-                                                        // ถ้าหาไม่เจอจริงๆ ให้ลองใช้ path เดิมแบบวัดดวง
                                                         $displayImage = asset('storage/' . $rawPath);
                                                         $debugInfo = "Not Found (Try default)";
                                                     }
@@ -138,8 +131,6 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                            {{-- Debug Text: ถ้ายังไม่ขึ้น ให้ดูตรงนี้ว่ามันบอกว่าอะไร --}}
-                                            {{-- <span class="text-[9px] text-red-500 mt-1">{{ $debugInfo }}</span> --}}
                                         </div>
                                     </td>
 
@@ -173,10 +164,24 @@
                                             {{ $statusText }}
                                         </span>
                                     </td>
+                                    
+                                    {{-- ========== ส่วนที่แก้ไข: แสดงราคา หรือ ของแถม ========== --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <div class="text-sm font-bold text-emerald-600">
-                                            ฿{{ number_format($order->net_amount, 2) }}</div>
+                                        @if ((float)$order->net_amount <= 0)
+                                            {{-- กรณีเป็นของแถม (0 บาท) --}}
+                                            <div class="text-sm font-bold text-red-500">
+                                                (แถมฟรี 0 บาท)
+                                            </div>
+                                        @else
+                                            {{-- กรณีราคาปกติ --}}
+                                            <div class="text-sm font-bold text-emerald-600">
+                                                ฿{{ number_format($order->net_amount, 2) }}
+                                            </div>
+                                            {{-- ถ้ามีตัวแปร $order->discount หรือ logic ประหยัด สามารถใส่ else if เพิ่มตรงนี้ได้ --}}
+                                        @endif
                                     </td>
+                                    {{-- ================================================= --}}
+
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <a href="{{ route('order.show', ['orderCode' => $order->ord_code]) }}"
                                             class="text-indigo-600 hover:text-indigo-900 font-semibold hover:underline">ดูรายละเอียด</a>

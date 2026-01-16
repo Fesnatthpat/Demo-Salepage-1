@@ -30,6 +30,9 @@
             ($product->is_bogo_active ?? false) &&
             isset($product->bogoFreeOptions) &&
             $product->bogoFreeOptions->isNotEmpty();
+
+        // เช็คว่ามีตัวเลือกสินค้าหรือไม่
+        $hasOptions = isset($product->options) && $product->options->isNotEmpty();
     @endphp
 
     <div x-data="productPage({
@@ -39,13 +42,13 @@
         productId: {{ $product->id }},
         bogoAction: '{{ route('cart.add.bogo') }}',
         standardAction: '{{ route('cart.add', ['id' => $product->id]) }}',
-        checkoutUrl: '{{ route('payment.checkout') }}' // เพิ่ม URL สำหรับปุ่มซื้อเลย
+        checkoutUrl: '{{ route('payment.checkout') }}'
     })" class="container mx-auto px-4 py-8">
 
         <div class="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2">
 
-                {{-- Image Gallery (เหมือนเดิม) --}}
+                {{-- Left Column: Image Gallery --}}
                 <div class="p-6 lg:p-10 lg:border-r border-gray-200">
                     <div
                         class="w-full relative aspect-square lg:aspect-[4/3] overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
@@ -63,19 +66,33 @@
                             </div>
                         @endif
                     </div>
-                    <div class="grid grid-cols-5 gap-2 mt-4">
-                        <template x-for="image in images" :key="image">
-                            <div @click="activeImage = image"
-                                class="aspect-square rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:opacity-80"
-                                :class="{ 'border-emerald-500 ring-2 ring-emerald-100': activeImage ===
-                                    image, 'border-transparent': activeImage !== image }">
-                                <img :src="image" class="w-full h-full object-cover">
-                            </div>
-                        </template>
+
+                    {{-- Thumbnails --}}
+                    @if (count($allImagePaths) > 1)
+                        <div class="grid grid-cols-5 gap-2 mt-4">
+                            <template x-for="image in images" :key="image">
+                                <div @click="activeImage = image"
+                                    class="aspect-square rounded-md overflow-hidden cursor-pointer border-2 transition-all hover:opacity-80"
+                                    :class="{ 'border-emerald-500 ring-2 ring-emerald-100': activeImage ===
+                                        image, 'border-transparent': activeImage !== image }">
+                                    <img :src="image" class="w-full h-full object-cover">
+                                </div>
+                            </template>
+                        </div>
+                    @endif
+
+                    {{-- Detailed Description (Desktop) --}}
+                    <div class="hidden lg:block mt-8 pt-8 border-t border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 border-b-2 border-emerald-500 inline-block pb-1 mb-4">
+                            รายละเอียดสินค้า
+                        </h3>
+                        <div class="prose prose-sm text-gray-700 leading-7">
+                            {{ $product->pd_sp_details ?? ($product->pd_details ?? $product->pd_name) }}
+                        </div>
                     </div>
                 </div>
 
-                {{-- Product Details --}}
+                {{-- Right Column: Product Details --}}
                 <div class="p-6 lg:p-10 flex flex-col h-full">
                     <div>
                         <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">{{ $product->pd_name }}</h1>
@@ -108,20 +125,52 @@
                             </div>
                         </div>
 
-                        {{-- รายละเอียดแบบย่อ --}}
-                        <div class="prose prose-sm text-gray-600 mb-6">
-                            <p class="line-clamp-3">{{ $product->pd_details ?? '-' }}</p>
-                        </div>
+                        {{-- ★★★ ส่วนที่เพิ่มคืนมา: ตัวเลือกสินค้า (Options) ★★★ --}}
+                        @if ($hasOptions)
+                            <div class="mb-6">
+                                <h3 class="text-sm font-bold text-gray-900 mb-3">ตัวเลือกสินค้า:</h3>
+                                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                    @foreach ($product->options as $option)
+                                        <a href="{{ route('product.show', $option->pd_sp_id) }}"
+                                            class="group relative border rounded-lg p-2 hover:border-emerald-500 hover:shadow-md transition-all bg-white text-center">
+
+                                            {{-- รูปตัวเลือก --}}
+                                            <div class="aspect-square bg-gray-100 rounded mb-2 overflow-hidden">
+                                                @php
+                                                    $optImg = 'https://via.placeholder.com/150?text=No+Image';
+                                                    if ($option->images && $option->images->isNotEmpty()) {
+                                                        $optPrimary =
+                                                            $option->images->sortByDesc('img_sort')->first() ??
+                                                            $option->images->first();
+                                                        $optImg = asset('storage/' . $optPrimary->img_path);
+                                                    }
+                                                @endphp
+                                                <img src="{{ $optImg }}"
+                                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                            </div>
+
+                                            <div class="text-xs font-semibold text-gray-800 truncate">
+                                                {{ $option->pd_sp_name }}</div>
+                                            <div class="text-xs text-emerald-600 font-bold">
+                                                ฿{{ number_format($option->pd_sp_price - ($option->pd_sp_discount ?? 0)) }}
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        {{-- ★★★ จบส่วนที่เพิ่ม ★★★ --}}
+
                     </div>
 
-                    {{-- 🔥 ส่วนปุ่มกดที่ปรับปรุงใหม่ (อยู่ด้านล่าง) --}}
+                    {{-- Add to Cart Section --}}
                     <div class="mt-auto border-t border-gray-100 pt-6">
                         <div class="flex items-center justify-between mb-4">
                             <span class="font-bold text-gray-700">จำนวน:</span>
                         </div>
 
                         <div class="flex flex-col sm:flex-row gap-4">
-                            {{-- ตัวเลือกจำนวน --}}
+                            {{-- Quantity Input --}}
                             <div
                                 class="flex items-center border border-gray-300 rounded-lg h-12 w-full sm:w-32 bg-white shadow-sm">
                                 <button type="button" @click="quantity > 1 ? quantity-- : null"
@@ -133,41 +182,36 @@
                                     class="w-10 h-full text-gray-500 hover:bg-gray-100 hover:text-emerald-600 text-xl font-bold rounded-r transition">+</button>
                             </div>
 
-                            {{-- ปุ่ม Actions --}}
+                            {{-- Buttons --}}
                             <div class="flex-1 grid grid-cols-2 gap-3">
-                                {{-- ปุ่มเพิ่มลงตะกร้า (Outline) --}}
-                                <button type="button" @click="handleAddToCartClick(false)" :disabled="isLoading || {{ $product->quantity <= 0 ? 'true' : 'false' }}"
+                                <button type="button" @click="handleAddToCartClick(false)"
+                                    :disabled="isLoading || {{ $product->quantity <= 0 ? 'true' : 'false' }}"
                                     class="btn btn-outline border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-700 font-bold text-base rounded-lg h-12">
                                     <template x-if="{{ $product->quantity > 0 ? 'true' : 'false' }}">
-                                        <span class="flex items-center justify-center">
-                                            <i class="fas fa-shopping-cart text-lg mr-1"></i>
+                                        <span class="flex items-center justify-center gap-1">
+                                            <i class="fas fa-shopping-cart text-lg"></i>
                                             <span class="hidden sm:inline">ใส่ตะกร้า</span>
                                             <span class="sm:hidden">ใส่ตะกร้า</span>
                                         </span>
                                     </template>
                                     <template x-if="{{ $product->quantity <= 0 ? 'true' : 'false' }}">
-                                        <span class="text-red-500 font-bold">สินค้าหมด</span>
+                                        <span>สินค้าหมด</span>
                                     </template>
                                 </button>
 
-                                {{-- ปุ่มซื้อเลย (Solid) --}}
-                                <button type="button" @click="handleAddToCartClick(true)" :disabled="isLoading || {{ $product->quantity <= 0 ? 'true' : 'false' }}"
+                                <button type="button" @click="handleAddToCartClick(true)"
+                                    :disabled="isLoading || {{ $product->quantity <= 0 ? 'true' : 'false' }}"
                                     class="btn bg-emerald-600 hover:bg-emerald-700 border-none text-white font-bold text-base rounded-lg h-12 shadow-lg shadow-emerald-200/50">
-                                    <template x-if="{{ $product->quantity > 0 ? 'true' : 'false' }}">
-                                        <span x-show="!isLoading" class="flex items-center gap-2">
-                                            <i class="fas fa-bolt"></i> ซื้อเลย
-                                        </span>
-                                    </template>
-                                    <span x-show="isLoading && {{ $product->quantity > 0 ? 'true' : 'false' }}" class="loading loading-spinner loading-sm"></span>
-                                    <template x-if="{{ $product->quantity <= 0 ? 'true' : 'false' }}">
-                                        <span class="font-bold">สินค้าหมด</span>
-                                    </template>
+                                    <span x-show="!isLoading" class="flex items-center gap-2">
+                                        <i class="fas fa-bolt"></i> {{ $product->quantity > 0 ? 'ซื้อเลย' : 'หมด' }}
+                                    </span>
+                                    <span x-show="isLoading" class="loading loading-spinner loading-sm"></span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {{-- BOGO Selection Area --}}
+                    {{-- BOGO Section --}}
                     @if ($isBogo)
                         <div class="mt-6 pt-6 border-t border-dashed border-gray-200">
                             <div class="flex items-center gap-2 mb-3">
@@ -182,7 +226,6 @@
                                             'border-emerald-500 ring-2 ring-emerald-100 ring-offset-1' :
                                             'border-gray-100 hover:border-emerald-300'">
 
-                                        {{-- Checkmark Icon --}}
                                         <div x-show="selectedFreebieId == {{ $freebie->pd_sp_id }}"
                                             class="absolute top-1 right-1 z-10 bg-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
                                             <i class="fas fa-check"></i>
@@ -191,7 +234,7 @@
                                         <div class="aspect-square bg-gray-50">
                                             @php
                                                 $freebieImage =
-                                                    $freebie->images->where('img_sort', 1)->first() ??
+                                                    $freebie->images->sortByDesc('img_sort')->first() ??
                                                     $freebie->images->first();
                                                 $freebieImagePath = $freebieImage
                                                     ? asset('storage/' . $freebieImage->img_path)
@@ -208,6 +251,16 @@
                             </div>
                         </div>
                     @endif
+
+                    {{-- Details (Mobile) --}}
+                    <div class="block lg:hidden mt-8 pt-8 border-t border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 border-b-2 border-emerald-500 inline-block pb-1 mb-4">
+                            รายละเอียดสินค้า
+                        </h3>
+                        <div class="prose prose-sm text-gray-700 leading-7">
+                            {{ $product->pd_sp_details ?? ($product->pd_details ?? $product->pd_name) }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -279,12 +332,10 @@
                             .then(data => {
                                 if (data.success) {
                                     if (isBuyNow) {
-                                        // ถ้ากดซื้อเลย ให้ไปหน้า Checkout ทันที
                                         window.location.href = config.checkoutUrl;
                                     } else {
-                                        // ถ้ากดใส่ตะกร้า ให้โชว์ Animation หรือ Popup
                                         if (window.flyToCart) window.flyToCart(document.querySelector(
-                                            '.btn-outline')); // Animation
+                                            '.btn-outline'));
 
                                         const Toast = Swal.mixin({
                                             toast: true,

@@ -32,42 +32,40 @@
                         @foreach ($items as $item)
                             @php
                                 $quantity = $item->quantity;
-                                $price = $item->price;
+                                $price = $item->price; // ราคาขายจริง
                                 $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $price;
-                                $totalPrice = $price * $quantity;
-                                $totalOriginalPrice = $originalPrice * $quantity;
-                                $hasDiscount = ($item->attributes->discount ?? 0) > 0;
+                                
+                                $totalPrice = $price * $quantity; 
+                                $isFree = $totalPrice <= 0;
 
+                                // ★★★ [แก้ไขจุดสำคัญ] ★★★
+                                // ถ้าเป็นของแถม (Free) ให้คิดราคาต้น (Original) เป็น 0 บาทด้วยสำหรับการคำนวณสรุปยอด
+                                // เพื่อไม่ให้ยอด Subtotal และ Discount สูงเกินจริงจนลูกค้าสับสน
+                                if ($isFree) {
+                                    $calcOriginalPrice = 0; 
+                                } else {
+                                    $calcOriginalPrice = $originalPrice;
+                                }
+
+                                $totalOriginalPrice = $calcOriginalPrice * $quantity;
+
+                                // คำนวณส่วนลดจากราคาที่เราปรับแล้ว
+                                $lineDiscount = $totalOriginalPrice - $totalPrice;
+                                $hasDiscount = $lineDiscount > 0;
+
+                                // สะสมยอดรวมท้ายบิล
                                 $summaryTotalPrice += $totalPrice;
                                 $summaryTotalOriginal += $totalOriginalPrice;
 
-                                // =========================================================
-                                // 🔧 [FIX] แก้ไข Logic ดึงรูปภาพ (ดึงจาก DB ชัวร์สุด)
-                                // =========================================================
+                                // Logic รูปภาพ
                                 $imagePath = null;
-                                
-                                // 1. ดึง Model สินค้าออกมาจากตะกร้า หรือ Query ใหม่เลยเพื่อความชัวร์
-                                // ใช้ \App\Models\ProductSalepage โดยตรง
                                 $productModel = \App\Models\ProductSalepage::with('images')->find($item->id);
-
-                                // 2. ถ้าเจอสินค้าใน DB ให้ไปค้นรูปในตาราง product_images
                                 if ($productModel && $productModel->images->isNotEmpty()) {
-                                    // หารูปปก (img_sort=1) หรือรูปแรกสุด
-                                    // เรียงลำดับจาก img_sort มากไปน้อย (desc) หรือตาม logic ที่คุณใช้
                                     $dbImage = $productModel->images->sortByDesc('img_sort')->first(); 
-                                    
-                                    if ($dbImage) {
-                                        $imagePath = $dbImage->img_path;
-                                    }
+                                    if ($dbImage) $imagePath = $dbImage->img_path;
                                 }
-
-                                // 3. ถ้าใน DB ไม่มี (เช่น สินค้าโดนลบรูปไปแล้ว) ให้ลองดูใน attributes ของตะกร้า (เผื่อไว้)
-                                if (!$imagePath) {
-                                    $imagePath = $item->attributes->image ?? ($item->attributes->img_path ?? null);
-                                }
-
-                                // 4. สร้าง URL รูปภาพ
-                                $displayImage = 'https://via.placeholder.com/150?text=No+Image'; // Default
+                                if (!$imagePath) $imagePath = $item->attributes->image ?? ($item->attributes->img_path ?? null);
+                                $displayImage = 'https://via.placeholder.com/150?text=No+Image'; 
                                 if ($imagePath) {
                                     if (\Illuminate\Support\Str::startsWith($imagePath, ['http://', 'https://'])) {
                                         $displayImage = $imagePath;
@@ -84,12 +82,11 @@
                                         <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" checked
                                             data-price="{{ $totalPrice }}" 
                                             data-original-price="{{ $totalOriginalPrice }}"
-                                            data-discount="{{ $item->attributes->discount ?? 0 }}"
+                                            data-discount="{{ $lineDiscount }}"
                                             class="item-checkbox w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
                                             onchange="calculateTotal()">
                                     </div>
 
-                                    {{-- Image Display --}}
                                     <div class="flex-shrink-0">
                                         <img src="{{ $displayImage }}"
                                             alt="{{ $item->name }}"
@@ -101,8 +98,11 @@
                                     <div class="flex-1 mt-1">
                                         <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->name }}</h1>
                                         <p class="text-xs text-gray-500">Code: {{ $item->attributes->pd_code ?? $item->attributes->pd_sp_code ?? '-' }}</p>
+                                        
                                         <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น:
-                                            @if ($hasDiscount)
+                                            @if ($isFree)
+                                                <span class="font-bold text-red-600">ฟรี</span>
+                                            @elseif ($hasDiscount)
                                                 <s class="text-gray-400">฿{{ number_format($originalPrice) }}</s>
                                                 <span class="font-semibold text-red-600 ml-1">฿{{ number_format($price) }}</span>
                                             @else
@@ -115,14 +115,18 @@
                                 {{-- 2. Actions & Total Price --}}
                                 <div class="flex flex-row justify-between items-center md:flex-col md:items-end gap-4 w-full md:w-auto mt-2 md:mt-0 pl-9 md:pl-0">
                                     <div class="flex flex-col items-end">
-                                        @if ($hasDiscount)
+                                        
+                                        @if ($isFree)
+                                            <div class="text-2xl font-bold text-red-600">ฟรี</div>
+                                        @elseif ($hasDiscount)
                                             <div class="text-2xl font-bold text-red-600">฿{{ number_format($totalPrice) }}</div>
                                             <span class="text-[10px] md:text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full mt-1">
-                                                ประหยัด ฿{{ number_format($item->attributes->discount ?? 0) }}
+                                                ประหยัด ฿{{ number_format($lineDiscount) }}
                                             </span>
                                         @else
                                             <div class="text-2xl font-bold text-emerald-600">฿{{ number_format($totalPrice) }}</div>
                                         @endif
+
                                     </div>
 
                                     <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
@@ -140,10 +144,12 @@
                             </div>
                         @endforeach
 
+                        {{-- Summary Section --}}
                         <div class="flex flex-col lg:flex-row justify-end gap-5 mt-10">
                             <div class="w-full lg:w-[400px]">
                                 <div class="flex justify-between mt-5 text-base text-gray-600">
                                     <div>ยอดรวมสินค้า (<span id="selected-count">{{ count($items) }}</span> รายการ)</div>
+                                    {{-- ยอดรวมนี้จะไม่รวมราคาแฝงของสินค้าฟรีแล้ว --}}
                                     <div class="font-medium">฿<span id="subtotal-display">{{ number_format($summaryTotalOriginal) }}</span></div>
                                 </div>
                                 <div class="flex justify-between mt-2 text-base text-red-500">
@@ -172,6 +178,7 @@
                             </div>
                         </div>
                     @else
+                        {{-- Empty State --}}
                         <div class="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -189,7 +196,7 @@
     <script>
         function numberWithCommas(x) {
             if (x === undefined || x === null) return "0";
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
         function toggleAll(source) {
@@ -204,7 +211,11 @@
             document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
                 let price = parseFloat(cb.dataset.price) || 0;
                 let orig = parseFloat(cb.dataset.originalPrice) || price;
-                let disc = parseFloat(cb.dataset.discount) || 0;
+                
+                // คำนวณส่วนลดใหม่ใน JS (ราคาเต็ม - ราคาขาย)
+                // ถ้าเป็นของแถม orig จะถูกส่งมาเป็น 0 แล้วจาก PHP ทำให้ส่วนลดเป็น 0 (ไม่เอามาคิด)
+                let disc = orig - price;
+                if(disc < 0) disc = 0; // กันพลาด
 
                 totalSale += price;
                 totalOrig += orig;
@@ -215,7 +226,7 @@
             const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = numberWithCommas(val); };
             setVal('total-display', totalSale);
             setVal('subtotal-display', totalOrig);
-            setVal('discount-display', totalOrig - totalSale);
+            setVal('discount-display', totalDisc);
             const countEl = document.getElementById('selected-count');
             if(countEl) countEl.innerText = count;
 

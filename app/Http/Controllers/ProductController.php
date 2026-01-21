@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductSalepage;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -19,7 +20,6 @@ class ProductController extends Controller
         $salePageProduct = ProductSalepage::with([
             'images',
             'options.images',       // โหลดรูปของตัวเลือกด้วย
-            'bogoFreeOptions.images', // โหลดรูปของแถมด้วย
         ])->where('pd_sp_id', $id)->first();
 
         // 2. ถ้าไม่เจอสินค้า ให้เด้งกลับหน้าแรก
@@ -32,11 +32,11 @@ class ProductController extends Controller
         $primaryImage = $salePageProduct->images->where('img_sort', 1)->first();
         $imagePath = $primaryImage ? $primaryImage->img_path : ($salePageProduct->images->first()->img_path ?? null);
 
-        // 4. ✅ หัวใจสำคัญ: Map ข้อมูลให้หน้าเว็บใช้งานได้ (แก้ Error Missing ID)
-        // สร้าง Object ใหม่เพื่อแปลงชื่อ Field จาก Database (pd_sp_...) ให้ตรงกับที่ View ต้องการ (pd_...)
+        // 4. ✅ หัวใจสำคัญ: Map ข้อมูลให้หน้าเว็บใช้งานได้
+        // สร้าง Object ใหม่เพื่อแปลงชื่อ Field จาก Database (pd_sp_...) ให้ตรงกับที่ View ต้องการ
         $product = (object) [
-            // --- กลุ่ม ID (สำคัญมากสำหรับ Route ตะกร้า) ---
-            'id' => $salePageProduct->pd_sp_id,   // แก้ Error Missing parameter: id
+            // --- กลุ่ม ID ---
+            'id' => $salePageProduct->pd_sp_id,
             'pd_id' => $salePageProduct->pd_sp_id,
             'pd_sp_id' => $salePageProduct->pd_sp_id,
 
@@ -57,6 +57,7 @@ class ProductController extends Controller
 
             // --- กลุ่มสต็อก ---
             'quantity' => $salePageProduct->pd_sp_stock ?? 0,
+            'pd_sp_stock' => $salePageProduct->pd_sp_stock ?? 0, // เพิ่มตัวนี้เพื่อให้ View เรียกใช้ได้
 
             // --- กลุ่มรูปภาพ ---
             'pd_img' => $imagePath,            // รูปปกเดี่ยวๆ
@@ -64,14 +65,13 @@ class ProductController extends Controller
 
             // --- กลุ่มตัวเลือกและโปรโมชั่น ---
             'options' => $salePageProduct->options,
-            'is_bogo_active' => $salePageProduct->is_bogo_active ?? 0,
-            'bogoFreeOptions' => $salePageProduct->bogoFreeOptions ?? collect(),
+            
+            // ★★★ แก้ไขตรงนี้: เปลี่ยนชื่อ key จาก 'promotions' เป็น 'active_promotions' ★★★
+            'active_promotions' => $salePageProduct->active_promotions, 
 
-            // --- อื่นๆ (ป้องกัน Error Undefined) ---
             'brand_name' => null,
         ];
 
-        // ส่งตัวแปร $product ที่ปรุงสำเร็จแล้วไปที่หน้า view 'product'
         return view('product', compact('product'));
     }
 }

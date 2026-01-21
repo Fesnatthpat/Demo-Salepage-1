@@ -12,6 +12,13 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
+// --- Admin Controllers ---
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\PromotionController; // ★ เพิ่มบรรทัดนี้
+
 Route::get('/db-check', function () {
     try {
         return 'DB Connected: '.DB::connection()->getDatabaseName();
@@ -51,8 +58,6 @@ Route::middleware(['auth'])->group(function () {
 
     // หน้าแสดง QR Code
     Route::get('/payment/qr/{orderId}', [PaymentController::class, 'showQr'])->name('payment.qr');
-
-    // ★★★ [เพิ่มใหม่] Route สำหรับปุ่ม Refresh QR Code ★★★
     Route::post('/payment/refresh/{orderCode}', [PaymentController::class, 'refreshQr'])->name('payment.refresh');
 
     // แนบสลิป
@@ -80,40 +85,27 @@ Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphure
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
 
 // --- 5. Admin Panel ---
-
-use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController; // Added this line
-
-// Add this line
-
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // TODO: Add admin authentication middleware
+    // TODO: Add admin authentication middleware (ถ้ามีระบบ login admin แยก)
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Order Management
-
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
-    // Customer Management (New)
-
+    // Customer Management
     Route::resource('customers', CustomerController::class);
 
-    // Product Management (Unified)
-
+    // Product Management
     Route::resource('products', AdminProductController::class)->parameters([
-
         'products' => 'product',
-
     ]);
-
     Route::delete('/products/image/{product_image}', [AdminProductController::class, 'deleteImage'])->name('products.image.destroy');
+
+    // Promotion Management ★★★ เพิ่มส่วนนี้ครับ ★★★
+    Route::resource('promotions', PromotionController::class);
 
 });

@@ -122,19 +122,19 @@
 
                                         {{-- ========== ส่วนที่แก้ไข: ราคาต่อชิ้น ========== --}}
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:
-                                            @if ((float) $detail->pd_price <= 0)
+                                            @if ((float) $detail->ordd_price <= 0)
                                                 {{-- กรณีเป็นของแถม --}}
                                                 <span class="font-bold text-red-500 ml-1">ฟรี (0 บาท)</span>
-                                            @elseif ($detail->pd_original_price > $detail->pd_price)
+                                            @elseif ($detail->ordd_original_price > $detail->ordd_price)
                                                 {{-- กรณีมีส่วนลด --}}
                                                 <s
-                                                    class="text-gray-400">฿{{ number_format($detail->pd_original_price, 2) }}</s>
+                                                    class="text-gray-400">฿{{ number_format($detail->ordd_original_price, 2) }}</s>
                                                 <span
-                                                    class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                                    class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->ordd_price, 2) }}</span>
                                             @else
                                                 {{-- กรณีราคาปกติ --}}
                                                 <span
-                                                    class="text-gray-800">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                                    class="text-gray-800">฿{{ number_format($detail->ordd_price, 2) }}</span>
                                             @endif
                                         </p>
                                         {{-- ========================================== --}}
@@ -143,11 +143,11 @@
                                 </div>
                                 <div class="text-right flex-shrink-0">
                                     {{-- ========== ส่วนที่แก้ไข: ราคารวม (ขวาสุด) ========== --}}
-                                    @if ((float) $detail->pd_price <= 0)
+                                    @if ((float) $detail->ordd_price <= 0)
                                         <p class="font-bold text-red-500">ฟรี</p>
                                     @else
                                         <p class="font-bold text-emerald-600">
-                                            ฿{{ number_format($detail->pd_price * $detail->ordd_count, 2) }}
+                                            ฿{{ number_format($detail->ordd_price * $detail->ordd_count, 2) }}
                                         </p>
                                     @endif
                                     {{-- ================================================= --}}

@@ -44,13 +44,15 @@ class PaymentController extends Controller
                 $cartItems[] = $item;
                 $totalAmount += ($item->price * $item->quantity);
 
-                // Calculate original price for this item (similar to cart.blade.php)
-                $originalPrice = $item->attributes->has('original_price')
-                    ? $item->attributes->original_price
-                    : $item->price;
+                // If the item is free, don't add its original price or discount to the totals
+                if ($item->price > 0) {
+                    $originalPrice = $item->attributes->has('original_price')
+                        ? $item->attributes->original_price
+                        : $item->price;
 
-                $totalOriginalAmount += ($originalPrice * $item->quantity);
-                $totalDiscount += ($item->attributes->discount ?? 0); // Sum up fixed per-item discount
+                    $totalOriginalAmount += ($originalPrice * $item->quantity);
+                    $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
+                }
             }
         }
 
@@ -87,13 +89,18 @@ class PaymentController extends Controller
         try {
             // คำนวณยอดเงิน
             $totalPrice = 0;
-            $totalDiscount = 0; // Initialize totalDiscount
+            $totalDiscount = 0;
             $itemsToBuy = [];
             foreach ($cartContent as $item) {
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
                     $totalPrice += ($item->price * $item->quantity);
-                    $totalDiscount += ($item->attributes['discount'] ?? 0);
+
+                    // Recalculate discount correctly, ignoring free items
+                    if ($item->price > 0) {
+                        $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $item->price;
+                        $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
+                    }
                 }
             }
 
@@ -102,7 +109,7 @@ class PaymentController extends Controller
             }
 
             $shippingCost = 0;
-            $netAmount = $totalPrice + $shippingCost;
+            $netAmount = $totalPrice; // Net amount is the final selling price
 
             // ดึงที่อยู่
             $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
@@ -146,10 +153,10 @@ class PaymentController extends Controller
                     'ord_id' => $order->id,
                     'user_id' => $userId,
                     'pd_id' => $item->id,
-                    'pd_price' => $item->price,
-                    'pd_original_price' => $item->attributes['original_price'] ?? $item->price,
+                    'ordd_price' => $item->price,
+                    'ordd_original_price' => $item->attributes['original_price'] ?? $item->price,
                     'ordd_count' => $item->quantity,
-                    'pd_sp_discount' => $item->attributes['discount'] ?? 0,
+                    'ordd_discount' => ($item->attributes['original_price'] ?? $item->price) - $item->price,
                     'ordd_create_date' => now(),
                 ]);
                 Cart::session($userId)->remove($item->id);

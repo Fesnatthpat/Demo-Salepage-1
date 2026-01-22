@@ -127,6 +127,82 @@ class CartService
     }
 
     /**
+     * Add a full promotion set (e.g., Buy X, Get Y and Z) to the cart.
+     * This links all items under a single promotion group ID.
+     */
+    public function addPromotion(int $mainProductId, array $freeProductIds, int $quantity): void
+    {
+        $mainProduct = ProductSalepage::find($mainProductId);
+        if (!$mainProduct) return;
+
+        $userId = $this->getUserId();
+        $cart = Cart::session($userId);
+        $promoGroupId = 'promo_' . Str::uuid();
+
+        // 1. Check stock for the main product
+        $mainCurrentQty = $cart->has($mainProductId) ? $cart->get($mainProductId)->quantity : 0;
+        if (($mainCurrentQty + $quantity) > $mainProduct->pd_sp_stock) {
+            throw new \Exception("ขออภัย, สินค้าหลัก '{$mainProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+        }
+
+        // 2. Check stock for all free products
+        foreach ($freeProductIds as $freeId) {
+            $freeProduct = ProductSalepage::find($freeId);
+            if (!$freeProduct) continue;
+            $freeCurrentQty = $cart->has($freeId) ? $cart->get($freeId)->quantity : 0;
+            // Assuming 1 freebie per 1 main item purchased in this transaction
+            if (($freeCurrentQty + $quantity) > $freeProduct->pd_sp_stock) {
+                 throw new \Exception("ขออภัย, ของแถม '{$freeProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+            }
+        }
+
+        // 3. Add main product
+        $mainProductDetails = $this->getProductDetails($mainProductId);
+        if ($mainProductDetails) {
+            $cart->add([
+                'id' => $mainProductDetails->id,
+                'name' => $mainProductDetails->name,
+                'price' => $mainProductDetails->price,
+                'quantity' => $quantity,
+                'attributes' => [
+                    'image' => $mainProductDetails->image,
+                    'original_price' => $mainProductDetails->original_price,
+                    'discount' => $mainProductDetails->discount,
+                    'pd_code' => $mainProductDetails->pd_code,
+                    'promo_group_id' => $promoGroupId,
+                    'is_freebie' => false,
+                ],
+            ]);
+        }
+
+        // 4. Add all free products
+        foreach ($freeProductIds as $freeId) {
+            $freeProductDetails = $this->getProductDetails($freeId);
+            if ($freeProductDetails) {
+                $cart->add([
+                    'id' => $freeProductDetails->id,
+                    'name' => $freeProductDetails->name . ' (Free)',
+                    'price' => 0,
+                    'quantity' => $quantity, // Assuming 1 freebie per 1 main item
+                    'attributes' => [
+                        'image' => $freeProductDetails->image,
+                        'original_price' => $freeProductDetails->original_price,
+                        'discount' => $freeProductDetails->original_price,
+                        'pd_code' => $freeProductDetails->pd_code,
+                        'promo_group_id' => $promoGroupId,
+                        'is_freebie' => true,
+                    ],
+                ]);
+            }
+        }
+
+        // 5. Persist cart
+        if (Auth::check()) {
+            $this->saveCartToDatabase($userId);
+        }
+    }
+
+    /**
      * Add a BOGO (Buy One, Get One) item pair to the cart.
      */
     public function addBogoItem(int $mainProductId, int $freeProductId, int $quantity): void

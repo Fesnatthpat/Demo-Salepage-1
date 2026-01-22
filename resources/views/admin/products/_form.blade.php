@@ -5,7 +5,7 @@
 
 {{-- Display All Validation Errors --}}
 @if ($errors->any())
-    <div class="alert alert-error shadow-lg mb-6">
+    <div class="alert alert-error shadow-lg mb-6 text-white">
         <div>
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
                 viewBox="0 0 24 24">
@@ -175,140 +175,7 @@
     </div>
 </div>
 
-{{-- ส่วนที่ 1.7: โปรโมชั่น (BOGO - Buy One Get One) --}}
-@php
-    $rawBogoValue = old('is_bogo_active', $productSalepage->is_bogo_active ?? 0);
-    $isBogoOn = $rawBogoValue == 1 || $rawBogoValue === 'on' || $rawBogoValue === true ? 'true' : 'false';
 
-    // แปลง ID เป็น Int เพื่อความชัวร์
-    $selectedBogoIds = collect(
-        old('bogo_options', ($productSalepage->bogoFreeOptions ?? collect())->pluck('pd_sp_id')->toArray()),
-    )
-        ->map(fn($id) => (int) $id)
-        ->values()
-        ->toArray();
-@endphp
-
-<div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6" x-data="{
-    isBogoEnabled: {{ $isBogoOn }},
-    selectedBogo: {{ json_encode($selectedBogoIds) }},
-    searchBogo: '',
-
-    toggleBogo(id) {
-        let numId = Number(id);
-        let index = this.selectedBogo.indexOf(numId);
-        if (index > -1) {
-            this.selectedBogo.splice(index, 1);
-        } else {
-            this.selectedBogo.push(numId);
-        }
-    }
-}">
-
-    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-gift text-primary"></i> โปรโมชั่น (ซื้อ 1 แถม 1)
-        </h3>
-    </div>
-    <div class="card-body p-6">
-        {{-- BOGO Toggle --}}
-        <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 shadow-sm mb-6 bg-gray-50">
-            <span class="text-sm font-medium text-gray-700">เปิดใช้งานโปรโมชั่น &quot;ซื้อ 1 แถม 1&quot;:</span>
-            <input type="hidden" name="is_bogo_active" value="0">
-            <input type="checkbox" name="is_bogo_active" value="1" class="toggle toggle-primary toggle-sm"
-                x-model="isBogoEnabled" />
-            <span class="text-xs text-gray-500">(เปิด/ปิด)</span>
-        </div>
-
-        {{-- BOGO Product Selection (Grid Style) --}}
-        <div class="form-control w-full" x-show="isBogoEnabled" x-transition>
-
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                <label class="label font-bold text-gray-700 p-0">เลือกสินค้าที่จะให้เป็นของแถม</label>
-                <div class="relative w-full md:w-64">
-                    <input type="text" x-model="searchBogo" placeholder="ค้นหาชื่อสินค้าหรือรหัส..."
-                        class="input input-sm input-bordered w-full pr-8">
-                    <i class="fas fa-search absolute right-3 top-2 text-gray-400 text-xs"></i>
-                </div>
-            </div>
-
-            {{-- Grid แสดงรายการสินค้า --}}
-            <div
-                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[500px] overflow-y-auto p-1 border border-gray-100 rounded-lg bg-gray-50/50">
-                @foreach ($products as $productOption)
-                    {{-- ✅ แก้ไข: ใช้ pd_sp_code ในการค้นหา --}}
-                    <div x-show='@json($productOption->pd_sp_name).toLowerCase().includes(searchBogo.toLowerCase()) || (@json($productOption->pd_sp_code) || "").toLowerCase().includes(searchBogo.toLowerCase())'
-                        @click="toggleBogo({{ $productOption->pd_sp_id }})"
-                        class="cursor-pointer group relative border-2 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md bg-white"
-                        :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ?
-                            'border-primary ring-2 ring-primary ring-offset-1' : 'border-gray-100 hover:border-gray-300'">
-
-                        {{-- Checkmark Icon --}}
-                        <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})"
-                            class="absolute top-2 right-2 z-10 bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm">
-                            <i class="fas fa-check text-xs"></i>
-                        </div>
-
-                        {{-- รูปภาพสินค้า --}}
-                        <div class="aspect-square bg-gray-100 relative">
-                            @php
-                                // ✅ แก้ไข Logic รูป BOGO (img_sort, img_path)
-                                $optImg = 'https://via.placeholder.com/150?text=No+Image';
-                                if ($productOption->images->isNotEmpty()) {
-                                    $primary = $productOption->images->where('img_sort', 1)->first();
-                                    $path = $primary ? $primary->img_path : $productOption->images->first()->img_path;
-
-                                    // เช็ค URL
-                                    $optImg = \Illuminate\Support\Str::startsWith($path, 'http')
-                                        ? $path
-                                        : asset('storage/' . $path);
-                                }
-                            @endphp
-                            <img src="{{ $optImg }}"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-
-                            <div x-show="selectedBogo.includes({{ $productOption->pd_sp_id }})"
-                                class="absolute inset-0 bg-primary/10 transition-opacity"></div>
-                        </div>
-
-                        {{-- รายละเอียดด้านล่าง --}}
-                        <div class="p-3">
-                            <h4
-                                class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-primary transition-colors">
-                                {{ $productOption->pd_sp_name }}
-                            </h4>
-                            <p class="text-xs text-gray-400 mt-1">
-                                {{ $productOption->pd_sp_code ?? $productOption->pd_code }}</p>
-                            <div class="flex justify-between items-center mt-2">
-                                <p class="text-xs font-semibold text-gray-600">
-                                    ฿{{ number_format($productOption->pd_sp_price, 0) }}
-                                </p>
-                                <span
-                                    x-text="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'เลือกแล้ว' : 'เลือก'"
-                                    class="text-[10px] px-2 py-0.5 rounded-full"
-                                    :class="selectedBogo.includes({{ $productOption->pd_sp_id }}) ? 'bg-primary text-white' :
-                                        'bg-gray-100 text-gray-500'">
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            {{-- Hidden Inputs --}}
-            <template x-for="id in selectedBogo" :key="id">
-                <input type="hidden" name="bogo_options[]" :value="id">
-            </template>
-
-            <label class="label mt-2">
-                <span class="label-text-alt text-gray-500">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    เลือกไปแล้ว <span x-text="selectedBogo.length" class="font-bold text-primary"></span> รายการ
-                </span>
-            </label>
-        </div>
-    </div>
-</div>
 
 {{-- ส่วนที่ 2: รูปภาพ --}}
 <div class="card bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden mt-6">
@@ -343,13 +210,11 @@
             <div class="divider text-gray-400 text-sm">รูปภาพปัจจุบัน</div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 @foreach ($productSalepage->images as $image)
-                    {{-- ✅ แก้ไข: ใช้ img_id (PK) และ img_path --}}
                     <div class="relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm aspect-square bg-gray-100"
                         id="image-card-{{ $image->img_id }}">
 
                         <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
 
-                        {{-- ✅ แก้ไข: ใช้ img_sort == 1 แทน is_primary --}}
                         @if ($image->img_sort == 1)
                             <div class="absolute top-2 right-2 badge badge-primary shadow-md z-10">ปก</div>
                         @endif
@@ -357,13 +222,12 @@
                         <div
                             class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2">
                             <label class="btn btn-xs btn-white w-full gap-2">
-                                {{-- ✅ แก้ไข: value คือ img_id --}}
                                 <input type="radio" name="is_primary" value="{{ $image->img_id }}"
                                     {{ $image->img_sort == 1 ? 'checked' : '' }} class="radio radio-primary radio-xs">
                                 ตั้งเป็นปก
                             </label>
 
-                            {{-- ✅ แก้ไข: data-image-id คือ img_id --}}
+                            {{-- ปุ่มลบรูปภาพ (AJAX) --}}
                             <button type="button" class="btn btn-xs btn-error w-full text-white delete-image"
                                 data-image-id="{{ $image->img_id }}">
                                 <i class="fas fa-trash"></i> ลบ
@@ -379,41 +243,6 @@
 {{-- Scripts --}}
 @push('scripts')
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('giftManager', (initialActive, initialGifts) => ({
-                active: initialActive,
-                gifts: initialGifts,
-
-                addGift() {
-                    this.gifts.push({
-                        id: null,
-                        name: '',
-                        qty: 1,
-                        desc: '',
-                        preview: null,
-                        uid: Date.now() + Math.random().toString(36).substr(2, 9)
-                    });
-                },
-
-                removeGift(index) {
-                    this.gifts.splice(index, 1);
-                },
-
-                handleFileChange(event, index) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.gifts[index].preview = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                }
-            }));
-        });
-    </script>
-
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const uploadInput = document.getElementById('images');
             const previewContainer = document.getElementById('new-image-preview');
@@ -421,69 +250,51 @@
             const form = document.querySelector('form');
 
             // Drag & Drop
-            ['dragenter', 'dragover'].forEach(eName => {
-                uploadZone.addEventListener(eName, (e) => {
-                    e.preventDefault();
-                    uploadZone.classList.add('border-primary', 'bg-blue-50');
+            if (uploadZone) {
+                ['dragenter', 'dragover'].forEach(eName => {
+                    uploadZone.addEventListener(eName, (e) => {
+                        e.preventDefault();
+                        uploadZone.classList.add('border-primary', 'bg-blue-50');
+                    });
                 });
-            });
-            ['dragleave', 'drop'].forEach(eName => {
-                uploadZone.addEventListener(eName, (e) => {
-                    e.preventDefault();
-                    uploadZone.classList.remove('border-primary', 'bg-blue-50');
+                ['dragleave', 'drop'].forEach(eName => {
+                    uploadZone.addEventListener(eName, (e) => {
+                        e.preventDefault();
+                        uploadZone.classList.remove('border-primary', 'bg-blue-50');
+                    });
                 });
-            });
+            }
 
             // Image Preview
-            uploadInput.addEventListener('change', function() {
-                previewContainer.innerHTML = '';
-                const files = Array.from(this.files);
-                const MAX_SIZE = 64 * 1024 * 1024; // 64MB
-                let isTooLarge = false;
+            if (uploadInput) {
+                uploadInput.addEventListener('change', function() {
+                    previewContainer.innerHTML = '';
+                    const files = Array.from(this.files);
+                    const MAX_SIZE = 64 * 1024 * 1024; // 64MB
 
-                files.forEach(file => {
-                    if (file.size > MAX_SIZE) {
-                        isTooLarge = true;
-                        alert(`ไฟล์ "${file.name}" ใหญ่เกินไป! (ต้องไม่เกิน 64MB)`);
-                    }
-                });
-
-                if (isTooLarge) {
-                    this.value = '';
-                    return;
-                }
-
-                files.forEach(file => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const div = document.createElement('div');
-                            div.className =
-                                'relative rounded-lg overflow-hidden border border-gray-200 aspect-square shadow-sm';
-                            div.innerHTML =
-                                `<img src="${e.target.result}" class="w-full h-full object-cover">`;
-                            previewContainer.appendChild(div);
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                });
-            });
-
-            // Prevent Submit Too Large
-            form.addEventListener('submit', function(e) {
-                if (uploadInput.files.length > 0) {
-                    const MAX_SIZE = 64 * 1024 * 1024;
-                    for (let i = 0; i < uploadInput.files.length; i++) {
-                        if (uploadInput.files[i].size > MAX_SIZE) {
-                            e.preventDefault();
-                            alert(`ไฟล์ "${uploadInput.files[i].name}" ใหญ่เกินไป!`);
+                    files.forEach(file => {
+                        if (file.size > MAX_SIZE) {
+                            alert(`ไฟล์ "${file.name}" ใหญ่เกินไป! (ต้องไม่เกิน 64MB)`);
+                            this.value = '';
                             return;
                         }
-                    }
-                }
-            });
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const div = document.createElement('div');
+                                div.className =
+                                    'relative rounded-lg overflow-hidden border border-gray-200 aspect-square shadow-sm';
+                                div.innerHTML =
+                                    `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                                previewContainer.appendChild(div);
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                });
+            }
 
-            // Delete Image
+            // AJAX Delete Image
             document.querySelectorAll('.delete-image').forEach(btn => {
                 btn.addEventListener('click', function() {
                     if (confirm('ยืนยันที่จะลบรูปภาพนี้?')) {
@@ -493,6 +304,7 @@
                         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                         this.disabled = true;
 
+                        // ยิง AJAX ไปที่ Route ที่เราสร้าง
                         fetch(`/admin/products/image/${id}`, {
                             method: 'DELETE',
                             headers: {
@@ -508,6 +320,7 @@
                                 this.disabled = false;
                             }
                         }).catch(e => {
+                            console.error(e);
                             alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
                             this.innerHTML = originalText;
                             this.disabled = false;

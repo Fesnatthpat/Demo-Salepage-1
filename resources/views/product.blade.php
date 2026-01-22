@@ -48,7 +48,8 @@
                 $freebieOptions = $giftableProducts;
                 // หาจำนวนของแถมที่เลือกได้
                 foreach ($product->active_promotions as $promo) {
-                    $giftAction = $promo->actions->firstWhere('type', 'free_gift_selection');
+                    // ★ แก้ไข: ตรวจสอบ 'type' ของโปรโมชั่นให้ตรงกับที่ Admin บันทึก
+                    $giftAction = $promo->actions->firstWhere('type', 'buy_x_get_y');
                     if ($giftAction) {
                         $quantityToGet = $giftAction->actions['quantity_to_get'] ?? 0;
                         break; // เจอแล้วหยุดเลย

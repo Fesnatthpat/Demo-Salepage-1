@@ -1,23 +1,22 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
+// --- Admin Controllers ---
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-
-// --- Admin Controllers ---
-use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\PromotionController; // ★ เพิ่มบรรทัดนี้
 
 Route::get('/db-check', function () {
     try {
@@ -37,7 +36,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
-Route::post('/cart/add-bogo', [CartController::class, 'addBogo'])->name('cart.add.bogo');
+Route::post('/cart/add-bogo', [CartController::class, 'addPromotion'])->name('cart.add.bogo');
 
 // --- 3. Login/Logout ---
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -87,8 +86,6 @@ Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistric
 // --- 5. Admin Panel ---
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // TODO: Add admin authentication middleware (ถ้ามีระบบ login admin แยก)
-
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Order Management
@@ -103,9 +100,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('products', AdminProductController::class)->parameters([
         'products' => 'product',
     ]);
-    Route::delete('/products/image/{product_image}', [AdminProductController::class, 'deleteImage'])->name('products.image.destroy');
 
-    // Promotion Management ★★★ เพิ่มส่วนนี้ครับ ★★★
+    // ✅ แก้ไขตรงนี้: เปลี่ยนจาก deleteImage เป็น destroyImage
+    Route::delete('/products/image/{product_image}', [AdminProductController::class, 'destroyImage'])->name('products.image.destroy');
+
+    // Promotion Management
     Route::resource('promotions', PromotionController::class);
 
 });

@@ -58,21 +58,19 @@ class CartController extends Controller
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 
-    public function addBogo(Request $request)
+    public function addPromotion(Request $request)
     {
         try {
             $validated = $request->validate([
                 'main_product_id' => 'required|exists:product_salepage,pd_sp_id',
-                'free_product_id' => 'required|exists:product_salepage,pd_sp_id',
+                'free_product_ids' => 'required|array|min:1',
+                'free_product_ids.*' => 'required|exists:product_salepage,pd_sp_id',
                 'quantity' => 'required|integer|min:1',
             ]);
 
-            // Optional TODO: Add logic to verify that free_product_id is a valid free option for main_product_id
-            // This adds an extra layer of security on top of the frontend validation.
-
-            $this->cartService->addBogoItem(
+            $this->cartService->addPromotion(
                 (int) $validated['main_product_id'],
-                (int) $validated['free_product_id'],
+                $validated['free_product_ids'],
                 (int) $validated['quantity']
             );
 

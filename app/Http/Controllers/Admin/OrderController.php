@@ -13,10 +13,10 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        // เริ่มต้น Query พร้อมโหลดข้อมูล User เพื่อลดจำนวน Query (N+1 Problem)
-        $query = Order::with('user');
+        // โหลด details.productSalepage เพื่อเอาราคาจริง (pd_sp_price) มาใช้คำนวณแก้ขัด
+        $query = Order::with(['user', 'details.productSalepage']);
 
-        // 1. ระบบค้นหา (Search)
+        // 1. ระบบค้นหา
         if ($request->has('search') && $request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -25,32 +25,28 @@ class OrderController extends Controller
             });
         }
 
-        // 2. ระบบกรองสถานะ (Filter Status)
+        // 2. กรองสถานะ
         if ($request->has('status') && $request->status != 'all') {
             $query->where('status_id', $request->status);
         }
 
-        // 3. เรียงลำดับ (ล่าสุดขึ้นก่อน) และแบ่งหน้า
+        // 3. เรียงลำดับ
         $orders = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // ส่งตัวแปร $orders ไปยัง View
         return view('admin.orders.index', compact('orders'));
     }
 
     /**
      * แสดงรายละเอียดออเดอร์ (สำหรับหน้า show)
-     * ✅ แก้ไข: ส่งตัวแปร $order ไปยัง View เพื่อแก้ Error "Undefined variable"
      */
     public function show($id)
     {
-        // 1. ดึงข้อมูลออเดอร์ตาม ID
-        // สำคัญ: ใช้ with(...) เพื่อดึงข้อมูลสินค้าในออเดอร์และรูปภาพสินค้ามาด้วย
+        // โหลดข้อมูลสินค้าและรูปภาพมาแสดงผล
         $order = Order::with([
-            'user',                             // ข้อมูลลูกค้า
-            'details.productSalepage.images',    // ข้อมูลสินค้าและรูปภาพ (สำหรับแสดงในตารางสินค้า)
+            'user',
+            'details.productSalepage.images',
         ])->findOrFail($id);
 
-        // 2. รายการสถานะ สำหรับ Dropdown เปลี่ยนสถานะ
         $statuses = [
             1 => 'รอชำระเงิน',
             2 => 'แจ้งชำระเงินแล้ว',
@@ -59,7 +55,6 @@ class OrderController extends Controller
             5 => 'ยกเลิก',
         ];
 
-        // 3. ส่งข้อมูล $order และ $statuses ไปยังหน้า View
         return view('admin.orders.show', compact('order', 'statuses'));
     }
 
@@ -68,17 +63,14 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        // ตรวจสอบค่าที่ส่งมา
         $request->validate([
             'status_id' => 'required|integer|in:1,2,3,4,5',
         ]);
 
-        // ค้นหาและบันทึก
         $order = Order::findOrFail($id);
         $order->status_id = $request->status_id;
         $order->save();
 
-        // เด้งกลับหน้าเดิมพร้อมแจ้งเตือน
         return redirect()->back()->with('success', 'อัปเดตสถานะออเดอร์เรียบร้อยแล้ว');
     }
 }

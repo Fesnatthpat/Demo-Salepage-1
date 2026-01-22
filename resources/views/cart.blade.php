@@ -59,26 +59,9 @@
                                 $summaryTotalPrice += $totalPrice;
                                 $summaryTotalOriginal += $totalOriginalPrice;
 
-                                // Logic รูปภาพ
-                                $imagePath = null;
-                                $productModel = \App\Models\ProductSalepage::with('images')->find($item->id);
-                                if ($productModel && $productModel->images->isNotEmpty()) {
-                                    $dbImage = $productModel->images->sortByDesc('img_sort')->first();
-                                    if ($dbImage) {
-                                        $imagePath = $dbImage->img_path;
-                                    }
-                                }
-                                if (!$imagePath) {
-                                    $imagePath = $item->attributes->image ?? ($item->attributes->img_path ?? null);
-                                }
-                                $displayImage = 'https://via.placeholder.com/150?text=No+Image';
-                                if ($imagePath) {
-                                    if (\Illuminate\Support\Str::startsWith($imagePath, ['http://', 'https://'])) {
-                                        $displayImage = $imagePath;
-                                    } else {
-                                        $displayImage = asset('storage/' . $imagePath);
-                                    }
-                                }
+                                // Use the new accessor from the ProductSalepage model
+                                $productModel = $products[$item->id] ?? null;
+                                $displayImage = $productModel ? $productModel->cover_image_url : 'https://via.placeholder.com/150?text=No+Image';
                             @endphp
 
                             <div

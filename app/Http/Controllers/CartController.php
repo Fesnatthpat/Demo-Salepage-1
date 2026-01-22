@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductSalepage;
+use App\Models\Promotion;
+use App\Models\PromotionRule;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
@@ -14,7 +18,14 @@ class CartController extends Controller
         $items = $this->cartService->getCartContents();
         $total = $this->cartService->getTotal();
 
-        return view('cart', compact('items', 'total'));
+        // Eager load products to prevent N+1 queries in the view
+        $productIds = $items->pluck('id')->toArray();
+        $products = ProductSalepage::with('images')
+            ->whereIn('pd_sp_id', $productIds)
+            ->get()
+            ->keyBy('pd_sp_id');
+
+        return view('cart', compact('items', 'total', 'products'));
     }
 
     public function addToCart(Request $request, $productId)
@@ -68,6 +79,38 @@ class CartController extends Controller
                 'quantity' => 'required|integer|min:1',
             ]);
 
+            // --- Security Check: Verify that the freebie IDs are valid for this promotion ---
+            $now = now();
+            $mainProductId = $validated['main_product_id'];
+            $requestedFreebieIds = collect($validated['free_product_ids'])->map(fn($id) => (int)$id)->sort()->values();
+
+            $relevantPromotionIds = PromotionRule::where(function ($query) use ($mainProductId) {
+                $query->where('rules->product_id', (string) $mainProductId)
+                      ->orWhere('rules->product_id', (int) $mainProductId);
+            })
+                ->pluck('promotion_id')
+                ->unique();
+            
+            $activePromotions = Promotion::with(['actions.giftableProducts', 'actions.productToGet'])
+                ->whereIn('id', $relevantPromotionIds)
+                ->where('is_active', true)
+                ->where(fn($q) => $q->where('start_date', '<=', $now)->orWhereNull('start_date'))
+                ->where(fn($q) => $q->where('end_date', '>=', $now)->orWhereNull('end_date'))
+                ->get();
+
+            $validFreebieIds = $activePromotions->flatMap(fn($promo) => 
+                $promo->actions->flatMap(fn($action) => 
+                    $action->giftableProducts->pluck('pd_sp_id')->merge(
+                        $action->productToGet ? [$action->productToGet->pd_sp_id] : []
+                    )
+                )
+            )->unique()->sort()->values();
+            
+            if ($requestedFreebieIds->diff($validFreebieIds)->isNotEmpty()) {
+                throw ValidationException::withMessages(['free_product_ids' => 'Invalid free product selection.']);
+            }
+            // --- End Security Check ---
+
             $this->cartService->addPromotion(
                 (int) $validated['main_product_id'],
                 $validated['free_product_ids'],
@@ -85,10 +128,9 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าโปรโมชั่นลงตะกร้าแล้ว');
         } catch (\Exception $e) {
             if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                ], 422);
+                // Use the actual exception message to provide clear feedback
+                $message = $e->getMessage();
+                return response()->json(['success' => false, 'message' => $message], 422);
             }
 
             return redirect()->back()->with('error', $e->getMessage());

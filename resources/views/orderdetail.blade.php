@@ -59,52 +59,7 @@
                                 class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                 <div class="flex items-center gap-4">
                                     @php
-                                        // ==========================================
-                                        // 🔧 Auto-Detect Image Logic
-                                        // ==========================================
-                                        $displayImage = 'https://via.placeholder.com/150?text=No+Image';
-
-                                        if (
-                                            $detail->productSalepage &&
-                                            $detail->productSalepage->images->isNotEmpty()
-                                        ) {
-                                            $images = $detail->productSalepage->images;
-                                            $dbImage = $images->sortBy('img_sort')->first();
-                                            if (!$dbImage) {
-                                                $dbImage = $images->where('is_primary', true)->first();
-                                            }
-                                            if (!$dbImage) {
-                                                $dbImage = $images->first();
-                                            }
-
-                                            $rawPath = $dbImage->img_path ?? $dbImage->image_path;
-
-                                            if ($rawPath) {
-                                                if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-                                                    $displayImage = $rawPath;
-                                                } else {
-                                                    $cleanName = basename($rawPath);
-                                                    $possiblePaths = [
-                                                        'storage/' . $rawPath,
-                                                        'storage/' . $cleanName,
-                                                        'storage/uploads/' . $cleanName,
-                                                        'storage/images/' . $cleanName,
-                                                        'uploads/' . $cleanName,
-                                                    ];
-                                                    $found = false;
-                                                    foreach ($possiblePaths as $path) {
-                                                        if (file_exists(public_path($path))) {
-                                                            $displayImage = asset($path);
-                                                            $found = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                    if (!$found) {
-                                                        $displayImage = asset('storage/' . $rawPath);
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        $displayImage = $detail->productSalepage->cover_image_url ?? 'https://via.placeholder.com/150?text=No+Image';
                                     @endphp
                                     <div
                                         class="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0 relative">

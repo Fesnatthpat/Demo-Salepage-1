@@ -265,36 +265,9 @@
 
                             $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
-
-                            // --- Logic แก้ไขรูปภาพใหม่ (ดึงสดจาก DB) ---
-                            $displayImage = 'https://via.placeholder.com/150?text=No+Image'; // Default
-
-                            // ค้นหาข้อมูลสินค้าล่าสุดจาก DB เพื่อเอารูปที่ถูกต้องที่สุด
-                            $productDb = \App\Models\ProductSalepage::with('images')->find($item->id);
-
-                            if ($productDb && $productDb->images->isNotEmpty()) {
-                                // หารูปปก (sort=1) ถ้าไม่มีเอารูปแรก
-                                $primaryImg = $productDb->images->sortByDesc('img_sort')->first();
-                                $rawPath = $primaryImg ? $primaryImg->img_path : $productDb->images->first()->img_path;
-
-                                if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-                                    $displayImage = $rawPath;
-                                } else {
-                                    $cleanPath = str_replace(['public/', 'storage/'], '', $rawPath);
-                                    $cleanPath = ltrim($cleanPath, '/');
-                                    $displayImage = asset('storage/' . $cleanPath);
-                                }
-                            } elseif (!empty($attrs['image'])) {
-                                // ถ้าไม่มีใน DB ให้ลองใช้จาก Cart Session (เผื่อกรณีสินค้าถูกลบแต่ยังอยู่ในตะกร้า)
-                                $rawPath = $attrs['image'];
-                                if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-                                    $displayImage = $rawPath;
-                                } else {
-                                    $cleanPath = str_replace(['public/', 'storage/'], '', $rawPath);
-                                    $cleanPath = ltrim($cleanPath, '/');
-                                    $displayImage = asset('storage/' . $cleanPath);
-                                }
-                            }
+                            
+                            $productDb = $products[$item->id] ?? null;
+                            $displayImage = $productDb ? $productDb->cover_image_url : 'https://via.placeholder.com/150?text=No+Image';
                         @endphp
 
                         <div

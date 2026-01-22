@@ -69,7 +69,11 @@ class PaymentController extends Controller
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
 
-        return view('payment', compact('cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 'addresses', 'selectedItems', 'provinces'));
+        // Eager load product models to prevent N+1 in the view
+        $productIds = collect($cartItems)->pluck('id')->toArray();
+        $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
+
+        return view('payment', compact('cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 'addresses', 'selectedItems', 'provinces', 'products'));
     }
 
     // [Step 2] Process Order (Create)

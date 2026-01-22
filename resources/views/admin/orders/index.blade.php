@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'จัดการออเดอร์')
+{{-- แก้ไขส่วนนี้: ใช้ข้อความธรรมดาแทนการดึงรหัสออเดอร์ --}}
 @section('page-title', 'รายการออเดอร์ทั้งหมด')
 
 @section('styles')
@@ -53,9 +54,9 @@
                     @php
                         $statusOptions = [
                             1 => 'รอชำระเงิน',
-                            2 => 'กำลังดำเนินการ',
-                            3 => 'จัดส่งแล้ว',
-                            4 => 'สำเร็จ',
+                            2 => 'แจ้งชำระเงินแล้ว', // หรือ กำลังดำเนินการ
+                            3 => 'กำลังเตรียมจัดส่ง', // หรือ จัดส่งแล้ว
+                            4 => 'จัดส่งแล้ว', // หรือ สำเร็จ
                             5 => 'ยกเลิก',
                         ];
                     @endphp
@@ -96,13 +97,11 @@
                         @forelse ($orders as $order)
                             <tr class="hover group">
                                 <td class="align-middle">
-                                    {{-- ★★★ ส่วนแก้ไข: ใช้ SVG แทน FontAwesome เพื่อให้เห็นไอคอนแน่นอน ★★★ --}}
                                     <div class="flex items-center gap-2">
                                         <span class="font-mono font-semibold text-gray-700">{{ $order->ord_code }}</span>
                                         <button onclick="copyToClipboard('{{ $order->ord_code }}')"
                                             class="btn btn-ghost btn-xs btn-square text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
                                             title="คลิกเพื่อคัดลอก">
-                                            {{-- SVG Icon รูปกระดาษซ้อนกัน (Copy) --}}
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -144,9 +143,9 @@
                                         {{ $statusMap[$order->status_id] ?? 'ไม่ทราบสถานะ' }}
                                     </span>
                                 </td>
-                                <td class="align-middle">{{ $order->ord_date->format('d M Y, H:i') }}</td>
+                                <td class="align-middle">{{ $order->created_at->format('d M Y, H:i') }}</td>
                                 <td class="align-middle">
-                                    <a href="{{ route('admin.orders.show', $order) }}"
+                                    <a href="{{ route('admin.orders.show', $order->id) }}"
                                         class="text-blue-600 font-semibold hover:underline flex items-center gap-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
@@ -187,11 +186,9 @@
 @endsection
 
 @push('scripts')
-    {{-- ตรวจสอบว่ามี SweetAlert2 หรือยัง ถ้าไม่มีให้เพิ่มบรรทัดนี้ --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // ฟังก์ชันสำหรับคัดลอก
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 const Toast = Swal.mixin({
@@ -251,7 +248,6 @@
                         if (top < margin) {
                             top = margin;
                         }
-
                         if (left < margin) {
                             left = margin;
                         }
@@ -270,16 +266,13 @@
                 });
             });
 
-            modal.addEventListener('mouseenter', () => {
-                clearTimeout(hideTimeout);
-            });
+            modal.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
             modal.addEventListener('mouseleave', () => {
                 hideTimeout = setTimeout(() => {
                     modal.style.opacity = 0;
                     setTimeout(() => modal.style.display = 'none', 200);
                 }, 100);
             });
-
         });
     </script>
 @endpush

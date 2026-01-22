@@ -87,29 +87,33 @@ class PaymentController extends Controller
         DB::beginTransaction();
 
         try {
-            // คำนวณยอดเงิน
-            $totalPrice = 0;
+            // Re-calculate totals correctly
+            $subTotalPrice = 0; // Sum of original prices of non-free items
+            $finalTotalPrice = 0; // Sum of final prices (net amount)
             $totalDiscount = 0;
             $itemsToBuy = [];
+
             foreach ($cartContent as $item) {
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
-                    $totalPrice += ($item->price * $item->quantity);
+                    $finalTotalPrice += ($item->price * $item->quantity);
 
-                    // Recalculate discount correctly, ignoring free items
                     if ($item->price > 0) {
                         $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $item->price;
-                        $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
+                        $subTotalPrice += ($originalPrice * $item->quantity);
                     }
                 }
             }
+            
+            // The total discount is the difference between the subtotal and the final price
+            $totalDiscount = $subTotalPrice - $finalTotalPrice;
 
             if (count($itemsToBuy) === 0) {
                 throw new \Exception('No items to buy.');
             }
 
             $shippingCost = 0;
-            $netAmount = $totalPrice; // Net amount is the final selling price
+            $netAmount = $finalTotalPrice; // Net amount is the final selling price
 
             // ดึงที่อยู่
             $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
@@ -124,7 +128,7 @@ class PaymentController extends Controller
             $order = Order::create([
                 'ord_code' => $orderCode,
                 'user_id' => $userId,
-                'total_price' => $totalPrice,
+                'total_price' => $subTotalPrice,
                 'shipping_cost' => $shippingCost,
                 'total_discount' => $totalDiscount,
                 'net_amount' => $netAmount,

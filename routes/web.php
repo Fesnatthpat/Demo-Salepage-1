@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CustomerController;
+// --- Controllers ฝั่งหน้าบ้าน (Frontend) ---
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -9,15 +10,16 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HomeController; // Controller ฝั่งหน้าบ้าน (Order History)
 use App\Http\Controllers\OrderController;
-// --- Admin Controllers ---
+// --- Controllers ฝั่งหลังบ้าน (Admin) ---
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductController; // ตั้งชื่อใหม่กันชนกับ OrderController หน้าบ้าน
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
+// --- เช็คการเชื่อมต่อ Database (Optional) ---
 Route::get('/db-check', function () {
     try {
         return 'DB Connected: '.DB::connection()->getDatabaseName();
@@ -26,85 +28,102 @@ Route::get('/db-check', function () {
     }
 });
 
-// --- 1. หน้าทั่วไป ---
+// ==========================================
+// 1. หน้าทั่วไป (Public Routes)
+// ==========================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
-// --- 2. ตะกร้าสินค้า ---
+// ==========================================
+// 2. ระบบตะกร้าสินค้า (Cart)
+// ==========================================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
+// Route สำหรับของแถม (BOGO / Promotion)
 Route::post('/cart/add-bogo', [CartController::class, 'addPromotion'])->name('cart.add.bogo');
 
-// --- 3. Login/Logout ---
+// ==========================================
+// 3. ระบบสมาชิก (Login/Logout)
+// ==========================================
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Line Login
 Route::get('/login/line', [AuthController::class, 'redirectToLine'])->name('login.line');
 Route::get('/callback/line', [AuthController::class, 'handleLineCallback'])->name('line.callback');
 
-// --- 4. ส่วนที่ต้อง Login ---
+// ==========================================
+// 4. ส่วนที่ต้องเข้าสู่ระบบ (Authenticated Users)
+// ==========================================
 Route::middleware(['auth'])->group(function () {
 
-    // -- Profile Completion --
+    // -- กรอกข้อมูลส่วนตัวเพิ่มเติม --
     Route::get('/profile/complete', [ProfileController::class, 'create'])->name('profile.completion');
     Route::post('/profile/complete', [ProfileController::class, 'store'])->name('profile.store');
 
-    // --- Checkout & Payment ---
+    // -- ระบบชำระเงิน (Checkout & Payment) --
     Route::get('/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 
-    // หน้าแสดง QR Code
+    // หน้าแสดง QR Code และ Upload Slip
     Route::get('/payment/qr/{orderId}', [PaymentController::class, 'showQr'])->name('payment.qr');
     Route::post('/payment/refresh/{orderCode}', [PaymentController::class, 'refreshQr'])->name('payment.refresh');
-
-    // แนบสลิป
     Route::post('/payment/slip/upload/{orderCode}', [PaymentController::class, 'uploadSlip'])->name('payment.slip.upload');
 
+    // -- กลุ่มที่ต้องกรอกข้อมูลส่วนตัวครบแล้ว --
     Route::middleware(['profile.completed'])->group(function () {
-        // --- ประวัติการสั่งซื้อ ---
+        // ประวัติการสั่งซื้อ (ฝั่งลูกค้า)
         Route::get('/orderhistory', [OrderController::class, 'index'])->name('order.history');
         Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('order.show');
     });
 
-    // --- Address Management ---
+    // -- จัดการที่อยู่ (Address) --
     Route::get('/address', [AddressController::class, 'index'])->name('address.index');
     Route::post('/address', [AddressController::class, 'saveAddress'])->name('address.save');
     Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
     Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
 });
 
-// --- General Tracking (Guest & Auth) ---
+// ==========================================
+// 5. ติดตามพัสดุ (Tracking) - Guest เข้าได้
+// ==========================================
 Route::get('/ordertracking', [OrderController::class, 'showTrackingForm'])->name('order.tracking.form');
 Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('order.tracking');
 
-// --- API (สำหรับ Dropdown ที่อยู่) ---
+// ==========================================
+// 6. API สำหรับ Dropdown ที่อยู่ (Ajax)
+// ==========================================
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
 
-// --- 5. Admin Panel ---
+// ==========================================
+// 7. Admin Panel (ระบบหลังบ้าน)
+// ==========================================
 Route::prefix('admin')->name('admin.')->group(function () {
 
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Order Management
+    // Order Management (จัดการออเดอร์)
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    // Route นี้จะส่ง {order} (ซึ่งคือ ID) ไปให้ method show($id) ใน Controller
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
-    // Customer Management
+    // Customer Management (จัดการลูกค้า)
     Route::resource('customers', CustomerController::class);
 
-    // Product Management
+    // Product Management (จัดการสินค้า)
     Route::resource('products', AdminProductController::class)->parameters([
         'products' => 'product',
     ]);
-
-    // ✅ แก้ไขตรงนี้: เปลี่ยนจาก deleteImage เป็น destroyImage
+    // Route สำหรับลบรูปสินค้า (Ajax)
     Route::delete('/products/image/{product_image}', [AdminProductController::class, 'destroyImage'])->name('products.image.destroy');
 
-    // Promotion Management
+    // Promotion Management (จัดการโปรโมชั่น)
     Route::resource('promotions', PromotionController::class);
 
 });
+    

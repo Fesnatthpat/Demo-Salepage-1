@@ -9,41 +9,48 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * แสดงรายการออเดอร์ทั้งหมด (สำหรับหน้า index)
      */
     public function index(Request $request)
     {
-        $query = Order::with('user')->orderBy('ord_date', 'desc');
+        // เริ่มต้น Query พร้อมโหลดข้อมูล User เพื่อลดจำนวน Query (N+1 Problem)
+        $query = Order::with('user');
 
-        if ($request->filled('search')) {
-            $searchTerm = '%'.$request->search.'%';
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('ord_code', 'like', $searchTerm)
-                    ->orWhere('shipping_name', 'like', $searchTerm);
+        // 1. ระบบค้นหา (Search)
+        if ($request->has('search') && $request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('ord_code', 'like', "%{$search}%")
+                    ->orWhere('shipping_name', 'like', "%{$search}%");
             });
         }
 
-        if ($request->has('status') && $request->status !== 'all') {
+        // 2. ระบบกรองสถานะ (Filter Status)
+        if ($request->has('status') && $request->status != 'all') {
             $query->where('status_id', $request->status);
         }
 
-        $orders = $query->paginate(15);
+        // 3. เรียงลำดับ (ล่าสุดขึ้นก่อน) และแบ่งหน้า
+        $orders = $query->orderBy('created_at', 'desc')->paginate(10);
 
+        // ส่งตัวแปร $orders ไปยัง View
         return view('admin.orders.index', compact('orders'));
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
+     * แสดงรายละเอียดออเดอร์ (สำหรับหน้า show)
+     * ✅ แก้ไข: ส่งตัวแปร $order ไปยัง View เพื่อแก้ Error "Undefined variable"
      */
-    public function show(Order $order)
+    public function show($id)
     {
-        $order->load('user', 'details.productSalepage.images');
+        // 1. ดึงข้อมูลออเดอร์ตาม ID
+        // สำคัญ: ใช้ with(...) เพื่อดึงข้อมูลสินค้าในออเดอร์และรูปภาพสินค้ามาด้วย
+        $order = Order::with([
+            'user',                             // ข้อมูลลูกค้า
+            'details.productSalepage.images',    // ข้อมูลสินค้าและรูปภาพ (สำหรับแสดงในตารางสินค้า)
+        ])->findOrFail($id);
 
-        // This could be moved to a config file or a model constant
+        // 2. รายการสถานะ สำหรับ Dropdown เปลี่ยนสถานะ
         $statuses = [
             1 => 'รอชำระเงิน',
             2 => 'แจ้งชำระเงินแล้ว',
@@ -52,23 +59,26 @@ class OrderController extends Controller
             5 => 'ยกเลิก',
         ];
 
+        // 3. ส่งข้อมูล $order และ $statuses ไปยังหน้า View
         return view('admin.orders.show', compact('order', 'statuses'));
     }
 
     /**
-     * Update the status of the specified resource in storage.
-     *
-     * @return \Illuminate\Http\Response
+     * อัปเดตสถานะออเดอร์
      */
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(Request $request, $id)
     {
+        // ตรวจสอบค่าที่ส่งมา
         $request->validate([
-            'status_id' => 'required|integer|in:1,2,3,4,5', // Validate against the available statuses
+            'status_id' => 'required|integer|in:1,2,3,4,5',
         ]);
 
-        $order->status_id = $request->input('status_id');
+        // ค้นหาและบันทึก
+        $order = Order::findOrFail($id);
+        $order->status_id = $request->status_id;
         $order->save();
 
-        return back()->with('success', 'อัปเดตสถานะออเดอร์เรียบร้อยแล้ว');
+        // เด้งกลับหน้าเดิมพร้อมแจ้งเตือน
+        return redirect()->back()->with('success', 'อัปเดตสถานะออเดอร์เรียบร้อยแล้ว');
     }
 }

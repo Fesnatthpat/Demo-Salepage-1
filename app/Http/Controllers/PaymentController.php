@@ -21,59 +21,71 @@ class PaymentController extends Controller
     public function checkout(Request $request)
     {
         $selectedItems = $request->input('selected_items', []);
+        $selectedFreebies = $request->input('selected_freebies', []);
 
         if (empty($selectedItems)) {
             return redirect()->route('cart.index')->with('error', 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
         }
 
         $cartContent = Cart::session(auth()->id())->getContent();
-        $cartItems = [];
-        $totalAmount = 0;
-        $totalDiscount = 0; // Initialize total discount
-        $totalOriginalAmount = 0; // Initialize total original amount
+        $cartItems = collect(); // Use a collection for easier manipulation
 
         foreach ($cartContent as $item) {
             if (in_array((string) $item->id, $selectedItems)) {
-                $product = ProductSalepage::find($item->id);
-                if (! $product || $product->pd_sp_stock < $item->quantity) {
-                    $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี ".($product->pd_sp_stock ?? 0).')';
-
-                    return redirect()->route('cart.index')->with('error', $errorMessage);
-                }
-
-                $cartItems[] = $item;
-                $totalAmount += ($item->price * $item->quantity);
-
-                // If the item is free, don't add its original price or discount to the totals
-                if ($item->price > 0) {
-                    $originalPrice = $item->attributes->has('original_price')
-                        ? $item->attributes->original_price
-                        : $item->price;
-
-                    $totalOriginalAmount += ($originalPrice * $item->quantity);
-                    $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
-                }
+                $cartItems->push($item);
             }
         }
+        
+        // --- New Freebie Logic ---
+        if (!empty($selectedFreebies)) {
+            $freebieProducts = ProductSalepage::with('images')->whereIn('pd_sp_id', $selectedFreebies)->get();
+
+            foreach ($freebieProducts as $freebie) {
+                // Create a dummy cart item object for preview
+                $freebieCartItem = new \Darryldecode\Cart\Item();
+                $freebieCartItem->id = $freebie->pd_sp_id;
+                $freebieCartItem->name = $freebie->pd_sp_name . ' (ของแถม)';
+                $freebieCartItem->price = 0;
+                $freebieCartItem->quantity = 1; // Assuming 1 of each is added
+                $freebieCartItem->setAttributes(new \Darryldecode\Cart\ItemAttributeCollection([
+                    'original_price' => $freebie->pd_sp_price,
+                    'cover_image_url' => $freebie->cover_image_url,
+                    'is_freebie' => true,
+                ]));
+                $cartItems->push($freebieCartItem);
+            }
+        }
+        // --- End Freebie Logic ---
+
+        // Recalculate totals based on the combined (real + freebie preview) items
+        $totalAmount = 0;
+        $totalDiscount = 0;
+        $totalOriginalAmount = 0;
 
         // Pre-check stock before showing payment page
         foreach ($cartItems as $item) {
             $product = ProductSalepage::find($item->id);
             if (! $product || $product->pd_sp_stock < $item->quantity) {
-                $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี {$product->pd_sp_stock})";
-
+                $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี ".($product->pd_sp_stock ?? 0).')';
                 return redirect()->route('cart.index')->with('error', $errorMessage);
+            }
+
+             $totalAmount += ($item->price * $item->quantity);
+             if ($item->price > 0) {
+                $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $item->price;
+                $totalOriginalAmount += ($originalPrice * $item->quantity);
+                $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
             }
         }
 
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
 
-        // Eager load product models to prevent N+1 in the view
-        $productIds = collect($cartItems)->pluck('id')->toArray();
+        // Eager load product models for the view
+        $productIds = $cartItems->pluck('id')->toArray();
         $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
 
-        return view('payment', compact('cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 'addresses', 'selectedItems', 'provinces', 'products'));
+        return view('payment', compact('cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 'addresses', 'selectedItems', 'selectedFreebies', 'provinces', 'products'));
     }
 
     // [Step 2] Process Order (Create)

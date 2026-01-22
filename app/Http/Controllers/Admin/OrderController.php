@@ -9,44 +9,41 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     /**
-     * แสดงรายการออเดอร์ทั้งหมด (สำหรับหน้า index)
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        // โหลด details.productSalepage เพื่อเอาราคาจริง (pd_sp_price) มาใช้คำนวณแก้ขัด
-        $query = Order::with(['user', 'details.productSalepage']);
+        $query = Order::with('user')->orderBy('ord_date', 'desc');
 
-        // 1. ระบบค้นหา
-        if ($request->has('search') && $request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('ord_code', 'like', "%{$search}%")
-                    ->orWhere('shipping_name', 'like', "%{$search}%");
+        if ($request->filled('search')) {
+            $searchTerm = '%'.$request->search.'%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('ord_code', 'like', $searchTerm)
+                    ->orWhere('shipping_name', 'like', $searchTerm);
             });
         }
 
-        // 2. กรองสถานะ
-        if ($request->has('status') && $request->status != 'all') {
+        if ($request->has('status') && $request->status !== 'all') {
             $query->where('status_id', $request->status);
         }
 
-        // 3. เรียงลำดับ
-        $orders = $query->orderBy('created_at', 'desc')->paginate(10);
+        $orders = $query->paginate(15);
 
         return view('admin.orders.index', compact('orders'));
     }
 
     /**
-     * แสดงรายละเอียดออเดอร์ (สำหรับหน้า show)
+     * Display the specified resource.
+     *
+     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Order $order)
     {
-        // โหลดข้อมูลสินค้าและรูปภาพมาแสดงผล
-        $order = Order::with([
-            'user',
-            'details.productSalepage.images',
-        ])->findOrFail($id);
+        $order->load('user', 'details.productSalepage.images');
 
+        // This could be moved to a config file or a model constant
         $statuses = [
             1 => 'รอชำระเงิน',
             2 => 'แจ้งชำระเงินแล้ว',
@@ -59,18 +56,19 @@ class OrderController extends Controller
     }
 
     /**
-     * อัปเดตสถานะออเดอร์
+     * Update the status of the specified resource in storage.
+     *
+     * @return \Illuminate\Http\Response
      */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status_id' => 'required|integer|in:1,2,3,4,5',
+            'status_id' => 'required|integer|in:1,2,3,4,5', // Validate against the available statuses
         ]);
 
-        $order = Order::findOrFail($id);
-        $order->status_id = $request->status_id;
+        $order->status_id = $request->input('status_id');
         $order->save();
 
-        return redirect()->back()->with('success', 'อัปเดตสถานะออเดอร์เรียบร้อยแล้ว');
+        return back()->with('success', 'อัปเดตสถานะออเดอร์เรียบร้อยแล้ว');
     }
 }

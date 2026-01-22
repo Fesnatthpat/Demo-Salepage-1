@@ -10,29 +10,26 @@ class ProductController extends Controller
 {
     /**
      * แสดงหน้ารายละเอียดสินค้า
-     *
-     * @param  int|string  $id  รหัสสินค้า (pd_sp_id)
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function show($id)
     {
-        // 1. ดึงข้อมูลสินค้า (ใช้ pd_sp_id เป็นหลัก)
+        // 1. ดึงข้อมูลสินค้าหลัก
         $salePageProduct = ProductSalepage::with([
             'images',
             'options.images',
         ])->where('pd_sp_id', $id)->first();
 
-        // 2. ถ้าไม่เจอสินค้า ให้เด้งกลับหน้าแรก
+        // 2. ถ้าไม่เจอสินค้า
         if (! $salePageProduct) {
             return redirect('/')->with('error', 'ไม่พบสินค้านี้');
         }
 
-        // --- START: Promotion Logic (แก้ไข Logic ส่วนนี้) ---
+        // --- START: Promotion Logic (รองรับ DB ของคุณ) ---
         $now = now();
-        $giftableProducts = collect(); // เตรียมตะกร้าไว้ใส่ของแถม
+        $giftableProducts = collect();
 
-        // 1. ค้นหา ID ของโปรโมชั่นที่สินค้านี้เข้าร่วม
-        // ใช้การ cast ทั้ง String และ Int เพื่อความชัวร์ในการเทียบกับ JSON
+        // ค้นหา Promotion ID ที่มี Rule ตรงกับสินค้านี้
+        // (DB เก็บ JSON rules -> "product_id": "7")
         $relevantPromotionIds = PromotionRule::where(function ($query) use ($salePageProduct) {
             $query->where('rules->product_id', (string) $salePageProduct->pd_sp_id)
                 ->orWhere('rules->product_id', (int) $salePageProduct->pd_sp_id);
@@ -41,13 +38,11 @@ class ProductController extends Controller
             ->unique();
 
         if ($relevantPromotionIds->isNotEmpty()) {
-            // 2. โหลดโปรโมชั่น พร้อมของแถมทั้ง 2 รูปแบบ
+            // โหลด Promotion ที่ Active
             $activePromotions = Promotion::with([
                 'rules',
-                // แบบ A: Fixed Gift (ระบุตัวเจาะจงใน Action)
-                'actions.productToGet.images',
-                // แบบ B: Pool Gift (มีหลายตัวให้เลือก)
-                'actions.giftableProducts.images',
+                'actions.productToGet.images',    // ของแถมแบบ Fixed
+                'actions.giftableProducts.images', // ของแถมแบบ Pool (จากตาราง promotion_action_gifts)
             ])
                 ->whereIn('id', $relevantPromotionIds)
                 ->where('is_active', true)
@@ -59,69 +54,70 @@ class ProductController extends Controller
                 })
                 ->get();
 
-            $salePageProduct->active_promotions = $activePromotions;
-
-            // 3. รวมของแถมทั้งหมดมาไว้ในตัวแปรเดียว ($giftableProducts)
+            // จัดการข้อมูลของแถม
             $giftableProducts = $activePromotions->flatMap(function ($promo) {
                 return $promo->actions->flatMap(function ($action) {
                     $gifts = collect();
 
-                    // กรณี A: มีของแถมแบบเจาะจง (ProductToGet)
+                    // กรณี 1: ของแถมแบบ Fixed (ระบุ ID ใน JSON)
                     if ($action->productToGet) {
-                        // แปะจำนวนที่แถม (gift_quantity) เข้าไปที่ตัวสินค้าเพื่อให้หน้าบ้านรู้
-                        $action->productToGet->gift_quantity = $action->quantity;
+                        $action->productToGet->gift_quantity = $action->quantity; // ใช้ Accessor: quantity_to_get
                         $gifts->push($action->productToGet);
                     }
 
-                    // กรณี B: มีของแถมแบบเลือกได้ (GiftableProducts)
+                    // กรณี 2: ของแถมแบบ Pool (เลือกจาก promotion_action_gifts)
                     if ($action->giftableProducts->isNotEmpty()) {
                         foreach ($action->giftableProducts as $poolItem) {
-                            $poolItem->gift_quantity = $action->quantity;
+                            $poolItem->gift_quantity = $action->quantity; // ใช้จำนวนจาก Action
                             $gifts->push($poolItem);
                         }
                     }
 
                     return $gifts;
                 });
-            })->unique('pd_sp_id'); // ตัดของแถมที่ซ้ำกันออก
+            })->unique('pd_sp_id'); // กรองของแถมซ้ำออก
 
         } else {
             $salePageProduct->active_promotions = collect();
         }
         // --- END: Promotion Logic ---
 
-        // 3. Logic หา "รูปปก"
+        // 3. เตรียมข้อมูลสินค้าเพื่อส่งไป View (Map ให้ตรงกับชื่อตัวแปรที่ View ใช้)
         $primaryImage = $salePageProduct->images->where('img_sort', 1)->first();
         $imagePath = $primaryImage ? $primaryImage->img_path : ($salePageProduct->images->first()->img_path ?? null);
 
-        // 4. Map ข้อมูล
+        // แปลง Path รูปภาพให้สมบูรณ์ (URL)
+        $activeImageUrl = $imagePath;
+        if ($activeImageUrl && ! filter_var($activeImageUrl, FILTER_VALIDATE_URL)) {
+            $activeImageUrl = asset('storage/'.str_replace('storage/', '', $activeImageUrl));
+        }
+
         $product = (object) [
-            // --- ID ---
+            'pd_sp_id' => $salePageProduct->pd_sp_id, // สำคัญ: ใช้สำหรับ Add to Cart
             'id' => $salePageProduct->pd_sp_id,
-            'pd_id' => $salePageProduct->pd_sp_id,
-            'pd_sp_id' => $salePageProduct->pd_sp_id,
-            // --- Details ---
             'pd_name' => $salePageProduct->pd_sp_name,
             'pd_sp_name' => $salePageProduct->pd_sp_name,
             'pd_details' => $salePageProduct->pd_sp_description,
             'pd_sp_details' => $salePageProduct->pd_sp_description,
-            // --- Price ---
             'pd_price' => $salePageProduct->pd_sp_price,
             'pd_sp_price' => $salePageProduct->pd_sp_price,
             'pd_sp_discount' => $salePageProduct->pd_sp_discount ?? 0,
-            // --- Code & Stock ---
             'pd_code' => $salePageProduct->pd_sp_code,
             'pd_sp_code' => $salePageProduct->pd_sp_code,
-            'quantity' => $salePageProduct->pd_sp_stock ?? 0,
             'pd_sp_stock' => $salePageProduct->pd_sp_stock ?? 0,
-            // --- Images ---
-            'pd_img' => $imagePath,
-            'images' => $salePageProduct->images,
-            // --- Relations ---
-            'options' => $salePageProduct->options,
-            'active_promotions' => $salePageProduct->active_promotions,
 
-            'brand_name' => null,
+            // รูปภาพ
+            'cover_image_url' => $activeImageUrl,
+            'images' => $salePageProduct->images->map(function ($img) {
+                $url = $img->img_path ?? $img->image_path;
+                if ($url && ! filter_var($url, FILTER_VALIDATE_URL)) {
+                    $url = asset('storage/'.str_replace('storage/', '', $url));
+                }
+
+                return (object) ['image_url' => $url];
+            }),
+
+            'options' => $salePageProduct->options,
         ];
 
         // ส่ง $giftableProducts ไปยัง View

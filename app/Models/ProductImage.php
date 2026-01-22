@@ -29,6 +29,21 @@ class ProductImage extends Model
     const CREATED_AT = 'created_at';
     const UPDATED_AT = null; 
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        if (!$this->img_path) {
+            return 'https://via.placeholder.com/150?text=No+Image';
+        }
+
+        if (filter_var($this->img_path, FILTER_VALIDATE_URL)) {
+            return $this->img_path;
+        }
+        
+        return asset('storage/' . ltrim($this->img_path, '/'));
+    }
+
     // (ทางเลือก) หรือถ้าไม่อยากเก็บเวลาเลย ให้ใช้: public $timestamps = false;
 
     // ความสัมพันธ์ย้อนกลับไปหาสินค้า

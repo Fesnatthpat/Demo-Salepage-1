@@ -11,74 +11,13 @@
 
         // --- Image Logic ---
         $allImagePaths = [];
-        $activeImageUrl = 'https://via.placeholder.com/600x600.png?text=No+Image';
+        $activeImageUrl = $product->cover_image_url ?? 'https://via.placeholder.com/600x600.png?text=No+Image';
 
         if (isset($product->images) && $product->images->isNotEmpty()) {
-            $sortedImages = $product->images->sortByDesc('img_sort');
-            $allImagePaths = $sortedImages
-                ->pluck('img_path')
-                ->map(fn($path) => asset('storage/' . $path))
-                ->values()
-                ->all();
-            $activeImageUrl = $allImagePaths[0] ?? $activeImageUrl;
+            $allImagePaths = $product->images->pluck('image_url')->values()->all();
         } else {
             $allImagePaths[] = $activeImageUrl;
         }
-
-        // --- Unified Promotion Logic (แก้ไขใหม่ให้แม่นยำ) ---
-        $promoName = '';
-        $freebieOptions = collect();
-        $quantityToBuy = 1; // Default
-        $quantityToGet = 0;
-        $hasActivePromotions = $product->active_promotions && $product->active_promotions->isNotEmpty();
-
-        if ($hasActivePromotions) {
-            $firstActivePromo = $product->active_promotions->first();
-            $promoName = $firstActivePromo->name;
-
-            // ★ แก้ไข: ค้นหา Rule ที่เป็นของสินค้านี้จริงๆ (ไม่เอาตัวแรกมั่วๆ)
-            $specificRule = $firstActivePromo->rules->firstWhere('product_id', $product->pd_sp_id);
-            if ($specificRule) {
-                // ใช้ Accessor getQuantityAttribute ที่เราสร้างใน Model
-                $quantityToBuy = $specificRule->quantity > 0 ? $specificRule->quantity : 1;
-            }
-
-            // Action (ของแถม) - ตรวจสอบสำหรับ 'free_gift_selection'
-            if (isset($giftableProducts) && $giftableProducts->isNotEmpty()) {
-                $freebieOptions = $giftableProducts;
-                // หาจำนวนของแถมที่เลือกได้
-                foreach ($product->active_promotions as $promo) {
-                    // ★ แก้ไข: ตรวจสอบ 'type' ของโปรโมชั่นให้ตรงกับที่ Admin บันทึก
-                    $giftAction = $promo->actions->firstWhere('type', 'buy_x_get_y');
-                    if ($giftAction) {
-                        $quantityToGet = $giftAction->actions['quantity_to_get'] ?? 0;
-                        break; // เจอแล้วหยุดเลย
-                    }
-                }
-            } else { // Logic เดิมสำหรับ BOGO
-                $firstAction = $firstActivePromo->actions->first();
-                if ($firstAction) {
-                    $quantityToGet = $firstAction->quantity > 0 ? $firstAction->quantity : 0;
-                }
-                // รวบรวมของแถมทั้งหมดจากทุก Action
-                foreach ($product->active_promotions as $promo) {
-                    if ($promo->actions->isNotEmpty()) {
-                        foreach ($promo->actions as $action) {
-                            if ($action->productToGet) {
-                                $freebieOptions->push($action->productToGet);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // กรองของแถมซ้ำ
-        $freebieOptions = $freebieOptions->unique('pd_sp_id');
-
-        // เช็คว่าจะโชว์ส่วนเลือกของแถมไหม
-        $showFreebieSelection = $quantityToGet > 0 && $quantityToBuy > 0 && $freebieOptions->isNotEmpty();
-
 
         $hasOptions = isset($product->options) && $product->options->isNotEmpty();
     @endphp
@@ -86,12 +25,6 @@
     <div x-data="productPage({
         initialImage: '{{ $activeImageUrl }}',
         allImages: {{ json_encode($allImagePaths) }},
-        hasFreebieSelection: {{ $showFreebieSelection ? 'true' : 'false' }},
-        productId: {{ $product->pd_sp_id }},
-        {{-- แก้ไข: ใช้ pd_sp_id --}}
-        quantityToBuy: {{ $quantityToBuy }},
-        quantityToGet: {{ $quantityToGet }},
-        bogoAction: '{{ route('cart.add.bogo') }}',
         standardAction: '{{ route('cart.add', ['id' => $product->pd_sp_id]) }}',
         checkoutUrl: '{{ route('payment.checkout') }}'
     })" class="container mx-auto px-4 py-8">
@@ -110,12 +43,6 @@
                                 ลด ฿{{ number_format($discountAmount) }}
                             </div>
                         @endif
-                        <template x-if="showFreebieSelectionSection">
-                            <div
-                                class="absolute top-4 right-4 badge badge-primary text-white gap-1 text-sm font-bold shadow-md px-3 py-1 animate-pulse">
-                                <i class="fas fa-gift mr-1"></i> แถม <span x-text="freebieLimit"></span> ชิ้น
-                            </div>
-                        </template>
                     </div>
 
                     {{-- Thumbnails --}}
@@ -140,7 +67,7 @@
                             รายละเอียดสินค้า
                         </h3>
                         <div class="prose prose-sm text-gray-700 leading-7">
-                            {{ $product->pd_sp_details ?? ($product->pd_details ?? $product->pd_name) }}
+                            {!! nl2br(e($product->pd_sp_details ?? ($product->pd_details ?? $product->pd_name))) !!}
                         </div>
                     </div>
                 </div>
@@ -188,6 +115,56 @@
                                 </div>
                             </div>
                         @endif
+
+                        {{-- ★★★ GIFT SECTION (เพิ่มส่วนนี้) ★★★ --}}
+                        @if (isset($giftableProducts) && $giftableProducts->isNotEmpty())
+                            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+                                <div class="flex items-center gap-2 mb-3 pb-2 border-b border-red-100">
+                                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">PROMOTION</span>
+                                    <h3 class="font-bold text-gray-800">ของแถมสุดพิเศษ</h3>
+                                </div>
+                                <div class="space-y-3">
+                                    @foreach ($giftableProducts as $gift)
+                                        <div
+                                            class="flex items-center gap-3 bg-white p-3 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                                            {{-- Gift Image --}}
+                                            <div
+                                                class="w-14 h-14 bg-gray-100 rounded border border-gray-100 flex-shrink-0 overflow-hidden">
+                                                @php
+                                                    $giftImg = $gift->images->first();
+                                                    $giftImgUrl = $giftImg
+                                                        ? $giftImg->img_path ?? $giftImg->image_path
+                                                        : null;
+                                                    if ($giftImgUrl && !filter_var($giftImgUrl, FILTER_VALIDATE_URL)) {
+                                                        $giftImgUrl = asset(
+                                                            'storage/' . str_replace('storage/', '', $giftImgUrl),
+                                                        );
+                                                    }
+                                                @endphp
+                                                <img src="{{ $giftImgUrl ?? 'https://via.placeholder.com/64?text=Gift' }}"
+                                                    class="w-full h-full object-cover" alt="Gift">
+                                            </div>
+
+                                            {{-- Gift Info --}}
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-sm font-bold text-gray-800 truncate">
+                                                    {{ $gift->pd_sp_name }}</div>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <span
+                                                        class="text-xs text-gray-400 line-through">฿{{ number_format($gift->pd_sp_price) }}</span>
+                                                    <span
+                                                        class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
+                                                        ฟรี {{ $gift->gift_quantity ?? 1 }} ชิ้น
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        {{-- ★★★ END GIFT SECTION ★★★ --}}
+
                     </div>
 
                     {{-- Add to Cart Section --}}
@@ -229,60 +206,6 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- ★★★ Freebies Selection Section ★★★ --}}
-                    <template x-if="showFreebieSelectionSection">
-                        <div class="mt-6 pt-6 border-t border-dashed border-gray-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="badge badge-primary">แถมฟรี</span>
-                                    <span class="text-sm font-bold text-gray-700">
-                                        {{ $promoName }}: เลือกของแถม <span x-text="freebieLimit"></span> ชิ้น
-                                    </span>
-                                </div>
-                                <span class="text-xs font-medium"
-                                    :class="selectedFreebies.length == freebieLimit ? 'text-emerald-600' : 'text-gray-500'">
-                                    เลือกแล้ว <span x-text="selectedFreebies.length"></span>/<span
-                                        x-text="freebieLimit"></span>
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                                @foreach ($freebieOptions as $freebie)
-                                    <div @click="toggleFreebie({{ $freebie->pd_sp_id }})"
-                                        class="relative cursor-pointer group rounded-lg overflow-hidden border-2 transition-all duration-200 bg-white shadow-sm"
-                                        :class="selectedFreebies.includes({{ $freebie->pd_sp_id }}) ?
-                                            'border-emerald-500 ring-2 ring-emerald-100 ring-offset-1 transform scale-[1.02]' :
-                                            'border-gray-100 hover:border-emerald-300'">
-
-                                        {{-- Checkmark --}}
-                                        <div x-show="selectedFreebies.includes({{ $freebie->pd_sp_id }})"
-                                            class="absolute top-1 right-1 z-10 bg-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
-                                            <i class="fas fa-check"></i>
-                                        </div>
-
-                                        {{-- Image --}}
-                                        <div class="aspect-square bg-gray-50 relative">
-                                            @php
-                                                $freebieImage = $freebie->images->sortByDesc('img_sort')->first();
-                                                $freebieImagePath = $freebieImage
-                                                    ? asset('storage/' . $freebieImage->img_path)
-                                                    : 'https://via.placeholder.com/300x300.png?text=No+Image';
-                                            @endphp
-                                            <img src="{{ $freebieImagePath }}" class="w-full h-full object-cover">
-                                            <div x-show="selectedFreebies.includes({{ $freebie->pd_sp_id }})"
-                                                class="absolute inset-0 bg-emerald-500/10"></div>
-                                        </div>
-
-                                        <div class="p-2 text-center">
-                                            <p class="text-xs font-medium text-gray-700 truncate">
-                                                {{ $freebie->pd_sp_name }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </template>
                 </div>
             </div>
         </div>
@@ -295,86 +218,11 @@
                     activeImage: config.initialImage,
                     images: config.allImages,
                     quantity: 1,
-                    selectedFreebies: [],
-                    hasFreebieSelection: config.hasFreebieSelection,
                     isLoading: false,
 
-                    quantityToBuy: parseInt(config.quantityToBuy), // Ensure Number
-                    quantityToGet: parseInt(config.quantityToGet), // Ensure Number
-
-                    get freebieLimit() {
-                        if (!this.hasFreebieSelection || this.quantityToBuy <= 0) return 0;
-                        const timesApplied = Math.floor(this.quantity / this.quantityToBuy);
-                        return timesApplied * this.quantityToGet;
-                    },
-
-                    get showFreebieSelectionSection() {
-                        return this.hasFreebieSelection && this.freebieLimit > 0;
-                    },
-
-                    init() {
-                        this.$watch('freebieLimit', (newLimit) => {
-                            if (newLimit < this.selectedFreebies.length) {
-                                this.selectedFreebies.splice(newLimit);
-                            }
-                        });
-                    },
-
-                    toggleFreebie(id) {
-                        const index = this.selectedFreebies.indexOf(id);
-                        if (index > -1) {
-                            this.selectedFreebies.splice(index, 1);
-                        } else {
-                            if (this.selectedFreebies.length < this.freebieLimit) {
-                                this.selectedFreebies.push(id);
-                            } else {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'ครบจำนวนแล้ว',
-                                    text: `คุณเลือกของแถมครบ ${this.freebieLimit} ชิ้นแล้ว`,
-                                    confirmButtonColor: '#10b981'
-                                });
-                            }
-                        }
-                    },
-
                     handleAddToCartClick(isBuyNow) {
-                        if (this.hasFreebieSelection) {
-                            if (this.quantity < this.quantityToBuy) {
-                                Swal.fire({
-                                    icon: 'info',
-                                    title: 'ซื้อเพิ่มอีกนิด',
-                                    text: `ซื้อครบ ${this.quantityToBuy} ชิ้น เพื่อรับของแถมฟรี!`,
-                                    confirmButtonColor: '#10b981'
-                                });
-                                return;
-                            }
-                            if (this.selectedFreebies.length !== this.freebieLimit) {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'เลือกของแถมไม่ครบ',
-                                    text: `กรุณาเลือกของแถมให้ครบ ${this.freebieLimit} ชิ้น (ขาดอีก ${this.freebieLimit - this.selectedFreebies.length} ชิ้น)`,
-                                    confirmButtonColor: '#10b981'
-                                });
-                                return;
-                            }
-                            this.addWithFreebies(isBuyNow);
-                        } else {
-                            this.standardAddToCart(isBuyNow);
-                        }
-                    },
-
-                    standardAddToCart(isBuyNow) {
                         this.performAjaxAddToCart(config.standardAction, {
                             quantity: this.quantity
-                        }, isBuyNow);
-                    },
-
-                    addWithFreebies(isBuyNow) {
-                        this.performAjaxAddToCart(config.bogoAction, {
-                            quantity: this.quantity,
-                            main_product_id: config.productId,
-                            free_product_ids: this.selectedFreebies
                         }, isBuyNow);
                     },
 
@@ -382,11 +230,7 @@
                         this.isLoading = true;
                         const formData = new FormData();
                         for (const key in data) {
-                            if (Array.isArray(data[key])) {
-                                data[key].forEach(val => formData.append(`${key}[]`, val));
-                            } else {
-                                formData.append(key, data[key]);
-                            }
+                            formData.append(key, data[key]);
                         }
 
                         fetch(url, {

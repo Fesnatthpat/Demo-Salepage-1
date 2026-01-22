@@ -366,6 +366,11 @@
                                 <input type="hidden" name="selected_items[]" value="{{ $id }}">
                             @endforeach
                         @endif
+                        @if (isset($selectedFreebies))
+                            @foreach ($selectedFreebies as $id)
+                                <input type="hidden" name="selected_freebies[]" value="{{ $id }}">
+                            @endforeach
+                        @endif
                         <input type="hidden" name="address_id" id="hidden_address_id">
                         <button type="submit"
                             class="btn bg-[#4F46E5] hover:bg-[#4338ca] text-white border-none w-full text-base font-normal h-11 rounded shadow-sm">

@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\CartStorage;
 use App\Models\Product;
+use App\Models\Promotion;
+use App\Models\PromotionRule;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProductSalepage;
@@ -26,12 +28,13 @@ class CartService
     public function getCartContents(): Collection
     {
         $userId = $this->getUserId();
-        $cart = Cart::session($userId);
-
-        if (Auth::check() && $cart->isEmpty()) {
+        
+        // For logged-in users, always restore from DB to ensure consistency
+        if (Auth::check()) {
             $this->restoreCartFromDatabase($userId);
         }
-        
+
+        $cart = Cart::session($userId);
         return $cart->getContent()->sort();
     }
     
@@ -83,13 +86,8 @@ class CartService
     public function addOrUpdate(int $productId, int $quantity): void
     {
         $product = ProductSalepage::find($productId);
+        if (!$product) return;
 
-        if (!$product) {
-            // Silently return if product doesn't exist
-            return;
-        }
-
-        // 1. Centralized Stock Check
         if ($product->pd_sp_stock <= 0) {
             throw new \Exception('ขออภัย, สินค้าชิ้นนี้หมดสต็อกแล้ว');
         }
@@ -102,11 +100,9 @@ class CartService
             throw new \Exception("ไม่สามารถเพิ่มสินค้าได้, มีสินค้าในสต็อกเพียง {$product->pd_sp_stock} ชิ้น");
         }
 
-        // 2. Get Product Details for Cart
         $productDetails = $this->getProductDetails($productId);
         if (!$productDetails) return;
 
-        // 3. Add to Cart (DarrylDecode handles both add & update quantity)
         $cart->add([
             'id' => $productDetails->id,
             'name' => $productDetails->name,
@@ -120,10 +116,71 @@ class CartService
             ],
         ]);
 
-        // 4. Persist to DB if logged in
         if (Auth::check()) {
-            $this->saveCartToDatabase($userId);
+            $this->saveCartToDatabase($userId, $cart->getContent());
         }
+    }
+
+    /**
+     * Finds and returns all promotions for which the user's cart meets ALL conditions.
+     */
+    public function getApplicablePromotions(Collection $cartItems): Collection
+    {
+        if ($cartItems->isEmpty()) {
+            return collect();
+        }
+
+        $now = now();
+        $cartProductIds = $cartItems->pluck('id')->toArray();
+        $cartQuantities = $cartItems->pluck('quantity', 'id');
+
+        // 1. Find all potential promotions that *could* apply based on items in the cart
+        $potentialPromotionIds = PromotionRule::whereIn('rules->product_id', $cartProductIds)
+            ->pluck('promotion_id')
+            ->unique();
+            
+        if ($potentialPromotionIds->isEmpty()) {
+            return collect();
+        }
+
+        // 2. Eager-load these promotions with all their rules and actions
+        $potentialPromotions = Promotion::with(['rules', 'actions.giftableProducts', 'actions.productToGet'])
+            ->whereIn('id', $potentialPromotionIds)
+            ->where('is_active', true)
+            ->where(fn($q) => $q->where('start_date', '<=', $now)->orWhereNull('start_date'))
+            ->where(fn($q) => $q->where('end_date', '>=', $now)->orWhereNull('end_date'))
+            ->get();
+        
+        // 3. Filter down to only promotions where ALL rules are met by the cart contents
+        $applicablePromotions = $potentialPromotions->filter(function ($promo) use ($cartQuantities) {
+            // Assume the promotion is valid until a rule fails
+            $allRulesMet = true;
+            
+            if ($promo->rules->isEmpty()) {
+                return false;
+            }
+
+            foreach ($promo->rules as $rule) {
+                // Cast the required product ID to an integer to ensure type-safe comparison
+                $requiredProductId = (int)($rule->rules['product_id'] ?? null);
+                $requiredQuantity = $rule->rules['quantity_to_buy'] ?? 1;
+
+                // Check if the cart has the product and in the required quantity
+                if (
+                    !$requiredProductId ||
+                    !$cartQuantities->has($requiredProductId) ||
+                    $cartQuantities->get($requiredProductId) < $requiredQuantity
+                ) {
+                    // If any rule is not met, this promotion is not applicable
+                    $allRulesMet = false;
+                    break; 
+                }
+            }
+            
+            return $allRulesMet;
+        });
+
+        return $applicablePromotions;
     }
 
     /**
@@ -198,7 +255,7 @@ class CartService
 
         // 5. Persist cart
         if (Auth::check()) {
-            $this->saveCartToDatabase($userId);
+            $this->saveCartToDatabase($userId, $cart->getContent());
         }
     }
 
@@ -266,8 +323,50 @@ class CartService
         ]);
 
         if (Auth::check()) {
-            $this->saveCartToDatabase($userId);
+            $this->saveCartToDatabase($userId, $cart->getContent());
         }
+    }
+
+    /**
+     * Adds an array of products to the cart as free items and persists to DB.
+     */
+    public function addFreebies(array $freebieIds): void
+    {
+        $userId = $this->getUserId();
+        if (!$userId || !Auth::check()) return;
+
+        // Ensure we're working with the latest cart state
+        $this->restoreCartFromDatabase($userId);
+        $cart = Cart::session($userId);
+
+        foreach ($freebieIds as $freebieId) {
+            $freeProduct = ProductSalepage::find($freebieId);
+            if (!$freeProduct) continue;
+
+            $currentQty = $cart->has($freebieId) ? $cart->get($freebieId)->quantity : 0;
+            if (($currentQty + 1) > $freeProduct->pd_sp_stock) {
+                throw new \Exception("ขออภัย, ของแถม '{$freeProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+            }
+
+            $freeProductDetails = $this->getProductDetails($freebieId);
+            if ($freeProductDetails) {
+                 $cart->add([
+                    'id' => $freeProductDetails->id,
+                    'name' => $freeProductDetails->name . ' (ของแถม)',
+                    'price' => 0,
+                    'quantity' => 1,
+                    'attributes' => [
+                        'image' => $freeProductDetails->image,
+                        'original_price' => $freeProductDetails->original_price,
+                        'discount' => $freeProductDetails->original_price,
+                        'pd_code' => $freeProductDetails->pd_code,
+                        'is_freebie' => true,
+                    ],
+                ]);
+            }
+        }
+        
+        $this->saveCartToDatabase($userId, $cart->getContent());
     }
 
     /**
@@ -300,7 +399,7 @@ class CartService
         }
 
         if (Auth::check()) {
-            $this->saveCartToDatabase($userId);
+            $this->saveCartToDatabase($userId, $cart->getContent());
         }
     }
 
@@ -327,7 +426,7 @@ class CartService
         }
         
         if (Auth::check()) {
-            $this->saveCartToDatabase($userId);
+            $this->saveCartToDatabase($userId, $cart->getContent());
         }
     }
 
@@ -353,16 +452,14 @@ class CartService
             }
         }
         
-        $this->saveCartToDatabase($userId);
+        $this->saveCartToDatabase($userId, $userCart->getContent());
     }
 
     /**
      * Persist the cart content to the database for the logged-in user.
      */
-    private function saveCartToDatabase(int $userId): void
+    private function saveCartToDatabase(int $userId, \Darryldecode\Cart\CartCollection $cartContent): void
     {
-        $cartContent = Cart::session($userId)->getContent();
-
         CartStorage::updateOrCreate(
             ['user_id' => $userId],
             ['cart_data' => $cartContent->toArray()]

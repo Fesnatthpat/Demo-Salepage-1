@@ -4,6 +4,7 @@
 
 @section('content')
     @php
+        // ... (PHP ส่วนบนเหมือนเดิม) ...
         $originalPrice = (float) $product->pd_price;
         $discountAmount = (float) $product->pd_sp_discount;
         $finalPrice = max(0, $originalPrice - $discountAmount);
@@ -12,7 +13,7 @@
             $allImages[] = $product->cover_image_url;
         }
 
-        // แปลงข้อมูลโปรโมชั่นเป็น JSON เพื่อส่งให้ Alpine.js
+        // แปลงข้อมูลโปรโมชั่นเป็น JSON (เพิ่ม partner_products)
         $promotionsData = [];
         if (isset($promotions) && $promotions->isNotEmpty()) {
             foreach ($promotions as $promo) {
@@ -42,25 +43,39 @@
                         })
                         ->values()
                         ->all(),
+                    // ★ เพิ่มข้อมูลสินค้าคู่ขา ★
+                    'partner_products' => $promo->partner_products
+                        ->map(function ($p) {
+                            return [
+                                'id' => $p->pd_sp_id,
+                                'name' => $p->pd_sp_name,
+                                'price' => $p->pd_sp_price,
+                                'image' => $p->display_image,
+                                'url' => route('product.show', $p->pd_sp_id), // สมมติว่ามี Route นี้
+                            ];
+                        })
+                        ->values()
+                        ->all(),
                 ];
             }
         }
     @endphp
 
     <div x-data="productPage({
+        // ... (Config เหมือนเดิม) ...
         initialImage: @js($product->cover_image_url),
         allImages: @js($allImages),
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
         checkoutUrl: @js(route('payment.checkout')),
-        promotions: @js($promotionsData) // ส่งข้อมูลโปรโมชั่นเข้าไป
+        promotions: @js($promotionsData)
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased">
 
-        {{-- ... (ส่วนแสดงรูปภาพและราคา เหมือนเดิม) ... --}}
+        {{-- ... (ส่วนแสดงสินค้า รูป ราคา เหมือนเดิม) ... --}}
 
         <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
             <div class="grid grid-cols-1 lg:grid-cols-12">
                 <div class="lg:col-span-5 p-8 bg-gray-50/50">
-                    {{-- Image Gallery Code (เหมือนเดิม) --}}
+                    {{-- Image Gallery Code --}}
                     <div class="sticky top-8">
                         <div
                             class="relative aspect-square rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100">
@@ -88,67 +103,91 @@
                             <span class="text-4xl font-black text-emerald-600">฿{{ number_format($finalPrice) }}</span>
                         </div>
 
-                        {{-- ★★★ Promotion Gifts UI (Dynamic) ★★★ --}}
+                        {{-- ★★★ Promotion UI ★★★ --}}
                         <template x-if="activePromotion">
-                            <div class="mb-10 p-6 rounded-2xl border-2 border-dashed bg-red-50/30"
-                                :class="isConditionMet ? 'border-red-300' : 'border-gray-200 opacity-75'">
+                            <div class="mb-10">
+                                {{-- 1. ส่วนแสดงของแถม (เหมือนเดิม) --}}
+                                <div class="p-6 rounded-2xl border-2 border-dashed bg-red-50/30 mb-4"
+                                    :class="isConditionMet ? 'border-red-300' : 'border-gray-200 opacity-75'">
 
-                                <h3 class="text-sm font-bold text-gray-800 mb-2">🎉 ของแถมโปรโมชั่น</h3>
+                                    <h3 class="text-sm font-bold text-gray-800 mb-2">🎉 ของแถมโปรโมชั่น</h3>
 
-                                <template x-if="isConditionMet">
-                                    <p class="text-sm text-gray-600 mb-4">
-                                        ได้รับสิทธิ์เลือกฟรี <strong class="text-red-600" x-text="giftLimit"></strong> ชิ้น
-                                        (เลือกแล้ว <span x-text="selectedGifts.length"></span>/<span
-                                            x-text="giftLimit"></span>)
-                                    </p>
-                                </template>
-
-                                <template x-if="!isConditionMet">
-                                    <div class="mb-4">
-                                        <p class="text-sm text-red-500 font-bold">
-                                            <i class="fas fa-lock mr-1"></i> ยังไม่ครบเงื่อนไข
-                                        </p>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            ต้องซื้อสินค้านี้ <strong x-text="activePromotion.logic.required_qty"></strong>
+                                    <template x-if="isConditionMet">
+                                        <p class="text-sm text-gray-600 mb-4">
+                                            ได้รับสิทธิ์เลือกฟรี <strong class="text-red-600" x-text="giftLimit"></strong>
                                             ชิ้น
-                                            (ปัจจุบัน: <span x-text="quantity + activePromotion.logic.cart_qty"></span>)
                                         </p>
+                                    </template>
+
+                                    <template x-if="!isConditionMet">
+                                        <div class="mb-4">
+                                            <p class="text-sm text-red-500 font-bold"><i class="fas fa-lock mr-1"></i>
+                                                ยังไม่ครบเงื่อนไข</p>
+                                        </div>
+                                    </template>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <template x-for="gift in activePromotion.gifts" :key="gift.id">
+                                            <label
+                                                class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
+                                                :class="{ 'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale':
+                                                        !
+                                                        isConditionMet, 'bg-white cursor-pointer border-gray-100 hover:border-gray-300': isConditionMet, 'border-emerald-500 bg-emerald-50': selectedGifts
+                                                        .includes(gift.id) }">
+                                                <input type="checkbox" :disabled="!isConditionMet"
+                                                    @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"
+                                                    class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200">
+                                                <div
+                                                    class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                                    <img :src="gift.image" class="w-full h-full object-cover">
+                                                </div>
+                                                <div class="flex-1 overflow-hidden">
+                                                    <p class="text-xs font-bold text-gray-800 truncate" x-text="gift.name">
+                                                    </p>
+                                                    <span class="text-xs text-red-500 font-bold"
+                                                        x-text="!isConditionMet ? 'ล็อค' : 'ฟรี'"></span>
+                                                </div>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- 2. ★ ส่วนแนะนำสินค้าคู่ (แสดงเฉพาะตอนเงื่อนไขยังไม่ครบ) ★ --}}
+                                <template
+                                    x-if="!activePromotion.logic.other_rules_met && activePromotion.partner_products.length > 0">
+                                    <div class="p-4 bg-orange-50 border border-orange-200 rounded-2xl">
+                                        <h3 class="text-sm font-bold text-orange-800 mb-3 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                                            </svg>
+                                            ต้องซื้อคู่กับสินค้าเหล่านี้ ถึงจะได้ของแถม:
+                                        </h3>
+                                        <div class="space-y-3">
+                                            <template x-for="partner in activePromotion.partner_products"
+                                                :key="partner.id">
+                                                <div
+                                                    class="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                    <img :src="partner.image" class="w-12 h-12 rounded-lg object-cover">
+                                                    <div class="flex-1">
+                                                        <p class="text-sm font-bold text-gray-800" x-text="partner.name">
+                                                        </p>
+                                                        <p class="text-xs text-emerald-600 font-bold">฿<span
+                                                                x-text="partner.price"></span></p>
+                                                    </div>
+                                                    <a :href="partner.url"
+                                                        class="btn btn-sm btn-outline btn-warning">ดูสินค้า</a>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </template>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <template x-for="gift in activePromotion.gifts" :key="gift.id">
-                                        <label
-                                            class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
-                                            :class="{
-                                                'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale': !
-                                                    isConditionMet,
-                                                'bg-white cursor-pointer border-gray-100 hover:border-gray-300': isConditionMet,
-                                                'border-emerald-500 bg-emerald-50': selectedGifts.includes(gift.id)
-                                            }">
-
-                                            <input type="checkbox" :disabled="!isConditionMet" @click="toggleGift(gift.id)"
-                                                :checked="selectedGifts.includes(gift.id)"
-                                                class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200">
-
-                                            <div
-                                                class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                                                <img :src="gift.image" class="w-full h-full object-cover">
-                                            </div>
-                                            <div class="flex-1 overflow-hidden">
-                                                <p class="text-xs font-bold text-gray-800 truncate" x-text="gift.name"></p>
-                                                <span class="text-xs text-red-500 font-bold"
-                                                    x-text="!isConditionMet ? 'ล็อค' : 'ฟรี'"></span>
-                                            </div>
-                                        </label>
-                                    </template>
-                                </div>
                             </div>
                         </template>
 
                     </div>
 
-                    {{-- Actions --}}
+                    {{-- Actions (เหมือนเดิม) --}}
                     <div class="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-6">
                         <div class="flex items-center bg-gray-100 rounded-2xl p-1.5 shadow-inner">
                             <button @click="quantity > 1 ? quantity-- : null"
@@ -179,6 +218,7 @@
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('productPage', (config) => ({
+                    // ... (Logic เดิมทั้งหมด) ...
                     activeImage: config.initialImage,
                     images: config.allImages,
                     quantity: 1,
@@ -186,38 +226,25 @@
                     promotions: config.promotions || [],
                     selectedGifts: [],
 
-                    // Computed Property จำลอง
                     get activePromotion() {
-                        // เลือกโปรโมชั่นแรกที่มี (สามารถปรับ Logic ให้ซับซ้อนขึ้นได้)
                         return this.promotions.length > 0 ? this.promotions[0] : null;
                     },
 
                     get isConditionMet() {
                         if (!this.activePromotion) return false;
                         const logic = this.activePromotion.logic;
-
-                        // คำนวณจำนวนรวม: ของในตะกร้า + ที่กำลังเลือก
                         const totalQty = logic.cart_qty + this.quantity;
 
-                        // เช็คเงื่อนไข
                         if (logic.condition_type === 'all') {
-                            // ต้องผ่านทั้งสินค้าชิ้นอื่น และสินค้าชิ้นนี้
                             return logic.other_rules_met && (totalQty >= logic.required_qty);
                         } else {
-                            // แบบ Any: สินค้านี้ครบ ก็ผ่านเลย
                             return totalQty >= logic.required_qty;
                         }
                     },
 
                     get giftLimit() {
                         if (!this.activePromotion || !this.isConditionMet) return 0;
-                        // คำนวณสิทธิ์: (จำนวนที่ซื้อ / จำนวนขั้นต่ำ) * จำนวนที่แถมต่อชุด
-                        // แบบง่าย: ซื้อครบ 1 ชุด ได้แถม 1 ชุด
                         return this.activePromotion.gifts_per_item;
-
-                        // *ถ้าต้องการแบบ ซื้อ 4 แถม 2 (ทวีคูณ) ให้ใช้สูตรนี้:
-                        // const sets = Math.floor((this.quantity + this.activePromotion.logic.cart_qty) / this.activePromotion.logic.required_qty);
-                        // return sets * this.activePromotion.gifts_per_item;
                     },
 
                     init() {
@@ -227,17 +254,13 @@
                     },
 
                     validateSelection() {
-                        // ถ้าเงื่อนไขไม่ผ่าน หรือสิทธิ์ลดลง ให้เอาของแถมที่เลือกเกินออก
-                        if (!this.isConditionMet) {
-                            this.selectedGifts = [];
-                        } else if (this.selectedGifts.length > this.giftLimit) {
-                            this.selectedGifts.splice(this.giftLimit);
-                        }
+                        if (!this.isConditionMet) this.selectedGifts = [];
+                        else if (this.selectedGifts.length > this.giftLimit) this.selectedGifts.splice(this
+                            .giftLimit);
                     },
 
                     toggleGift(id) {
                         if (!this.isConditionMet) return;
-
                         const index = this.selectedGifts.indexOf(id);
                         if (index > -1) {
                             this.selectedGifts.splice(index, 1);
@@ -256,7 +279,6 @@
                     },
 
                     async handleAddToCartClick(isBuyNow) {
-                        // ตรวจสอบการเลือกของแถม
                         if (this.isConditionMet && this.giftLimit > 0 && this.selectedGifts.length !==
                             this.giftLimit) {
                             Swal.fire({
@@ -267,7 +289,6 @@
                             });
                             return;
                         }
-
                         if (this.isLoading) return;
                         this.isLoading = true;
                         try {

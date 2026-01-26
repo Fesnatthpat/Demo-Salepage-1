@@ -13,6 +13,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
+        // 1. ดึงข้อมูลสินค้าหลัก
         $salePageProduct = ProductSalepage::with(['images', 'options.images'])
             ->where('pd_sp_id', $id)
             ->firstOrFail();
@@ -21,18 +22,20 @@ class ProductController extends Controller
         $activeImageUrl = $this->formatUrl($coverImg?->img_path ?? $coverImg?->image_path);
         $productImages = $salePageProduct->images->map(fn ($img) => (object) ['image_url' => $this->formatUrl($img->img_path ?? $img->image_path)]);
 
-        // 1. ดึงโปรโมชั่น
+        // 2. ดึงโปรโมชั่นที่เกี่ยวข้อง
         $promotions = $this->cartService->getPromotionsForProduct((int) $id);
 
-        // ดึงจำนวนสินค้าชิ้นนี้ที่มีอยู่ในตะกร้าแล้ว (เพื่อเอาไปคำนวณต่อ)
         $userId = Auth::check() ? Auth::id() : '_guest_'.session()->getId();
         $cartContent = Cart::session($userId)->getContent();
         $currentCartQty = $cartContent->where('id', $id)->first()->quantity ?? 0;
 
-        // 2. Map ข้อมูลโปรโมชั่นเพื่อส่งไปคำนวณหน้าบ้าน
+        // 3. Map ข้อมูลโปรโมชั่น + หาสินค้าที่ต้องซื้อคู่กัน
         $promotions->map(function ($promo) use ($id, $currentCartQty, $cartContent) {
 
-            // หาว่าสินค้านี้ (ID ปัจจุบัน) ต้องการจำนวนเท่าไหร่ในโปรโมชั่นนี้
+            // ✅ Fix: สร้าง Collection ว่างไว้ก่อนเสมอ ป้องกัน Error "Call to member function map() on null"
+            $promo->partner_products = collect();
+
+            // หาว่าสินค้านี้ต้องซื้อกี่ชิ้นในโปรโมชั่นนี้
             $myRule = $promo->rules->filter(function ($rule) use ($id) {
                 $pids = $rule->rules['product_id'] ?? [];
                 if (! is_array($pids)) {
@@ -41,12 +44,12 @@ class ProductController extends Controller
 
                 return in_array((string) $id, array_map('strval', $pids));
             })->first();
-
-            // จำนวนที่ต้องซื้อของสินค้านี้ (ถ้าหาไม่เจอให้เป็น 1)
             $requiredQty = $myRule ? ($myRule->rules['quantity_to_buy'] ?? 1) : 1;
 
-            // ตรวจสอบสินค้า *ชิ้นอื่น* ในเงื่อนไข (กรณี Buy A + B)
+            // เช็คเงื่อนไขสินค้าอื่น (Other Rules)
             $otherRulesMet = true;
+            $partnerProductIds = [];
+
             if (($promo->condition_type ?? 'any') === 'all') {
                 $cartQuantities = $cartContent->pluck('quantity', 'id')->toArray();
 
@@ -56,9 +59,11 @@ class ProductController extends Controller
                         $pids = [$pids];
                     }
 
-                    // ถ้ากฎข้อนี้เป็นของสินค้าปัจจุบัน ให้ข้ามไปก่อน (เพราะเราจะเช็ค Real-time หน้าเว็บ)
-                    if (in_array((string) $id, array_map('strval', $pids))) {
-                        continue;
+                    // เก็บ ID สินค้าอื่นที่เป็น Partner
+                    if (! in_array((string) $id, array_map('strval', $pids))) {
+                        foreach ($pids as $pid) {
+                            $partnerProductIds[] = (int) $pid;
+                        }
                     }
 
                     $reqQ = $rule->rules['quantity_to_buy'] ?? 1;
@@ -71,16 +76,27 @@ class ProductController extends Controller
                     }
                     if (! $met) {
                         $otherRulesMet = false;
-                        break;
                     }
                 }
             }
 
-            // ส่งตัวแปรพิเศษออกไปให้ JavaScript ใช้
+            // ดึงข้อมูลสินค้า Partner (ถ้ามี)
+            if (! empty($partnerProductIds)) {
+                $promo->partner_products = ProductSalepage::with('images')
+                    ->whereIn('pd_sp_id', array_unique($partnerProductIds))
+                    ->get()
+                    ->map(function ($p) {
+                        $img = $p->images->first();
+                        $p->display_image = $this->formatUrl($img?->img_path ?? $img?->image_path);
+
+                        return $p;
+                    });
+            }
+
             $promo->frontend_logic = [
-                'required_qty' => (int) $requiredQty,     // ต้องซื้อกี่ชิ้น
-                'cart_qty' => (int) $currentCartQty,      // ในตะกร้ามีแล้วกี่ชิ้น
-                'other_rules_met' => $otherRulesMet,     // เงื่อนไขสินค้าอื่นครบหรือยัง
+                'required_qty' => (int) $requiredQty,
+                'cart_qty' => (int) $currentCartQty,
+                'other_rules_met' => $otherRulesMet,
                 'condition_type' => $promo->condition_type ?? 'any',
             ];
 

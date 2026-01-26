@@ -22,6 +22,20 @@ class User extends Authenticatable
         'line_id', // เพิ่ม line_id ที่นี่
         'avatar',  // เพิ่ม avatar ที่นี่
         'password',
+        'phone',
+        'gender',
+        'date_of_birth',
+        'age',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'date_of_birth' => 'date',
     ];
 
     /**

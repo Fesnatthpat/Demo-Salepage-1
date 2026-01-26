@@ -213,35 +213,5 @@
             });
         });
     </script>
-    <script>
-        // ... (The existing script content remains here) ...
 
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('promoManager', (config) => ({
-                selectedFreebies: [],
-                freebieLimit: config.freebieLimit || 0,
-                toggleFreebie(id) {
-                    const index = this.selectedFreebies.indexOf(id);
-                    if (index > -1) {
-                        this.selectedFreebies.splice(index, 1);
-                    } else {
-                        if (this.selectedFreebies.length < this.freebieLimit) {
-                            this.selectedFreebies.push(id);
-                        } else {
-                            if (typeof Swal !== 'undefined') {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'เลือกของแถมครบแล้ว',
-                                    text: `คุณสามารถเลือกของแถมได้สูงสุด ${this.freebieLimit} ชิ้น`,
-                                    confirmButtonColor: '#10b981'
-                                });
-                            } else {
-                                alert(`คุณสามารถเลือกของแถมได้สูงสุด ${this.freebieLimit} ชิ้น`);
-                            }
-                        }
-                    }
-                }
-            }));
-        });
-    </script>
 @endsection

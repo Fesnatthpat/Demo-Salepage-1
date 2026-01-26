@@ -72,24 +72,5 @@ class CartController extends Controller
         return back()->with('success', 'ลบสินค้าแล้ว');
     }
 
-    public function addFreebiesToCart(Request $request)
-    {
-        // ส่วนนี้ใช้สำหรับเลือกของแถมทีหลังในหน้าตะกร้าสินค้า
-        $freebieLimit = $this->cartService->calculateFreebieLimit();
 
-        $request->validate([
-            'selected_freebies' => 'required|array|max:'.$freebieLimit,
-            'selected_freebies.*' => 'integer|exists:product_salepage,pd_sp_id',
-        ], [
-            'selected_freebies.max' => "คุณสามารถเลือกของแถมได้สูงสุด {$freebieLimit} ชิ้น",
-        ]);
-
-        try {
-            $this->cartService->addFreebies($request->input('selected_freebies'));
-
-            return redirect()->route('cart.index')->with('success', 'เพิ่มของแถมเรียบร้อยแล้ว');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
-        }
-    }
 }

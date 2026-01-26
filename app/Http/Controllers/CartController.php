@@ -18,11 +18,21 @@ class CartController extends Controller
 
     public function addToCart(Request $request, $productId)
     {
-        $request->validate(['quantity' => 'integer|min:1']);
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'selected_gift_ids' => 'nullable|array',
+            'selected_gift_ids.*' => 'integer|exists:product_salepage,pd_sp_id',
+        ]);
 
         try {
             $quantity = (int) $request->input('quantity', 1);
-            $this->cartService->addOrUpdate((int) $productId, $quantity);
+            $giftIds = $request->input('selected_gift_ids');
+
+            if (is_array($giftIds) && !empty($giftIds)) {
+                $this->cartService->addWithGifts((int) $productId, $quantity, $giftIds);
+            } else {
+                $this->cartService->addOrUpdate((int) $productId, $quantity);
+            }
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -59,9 +69,14 @@ class CartController extends Controller
 
     public function addFreebiesToCart(Request $request)
     {
+        // Server-side validation to ensure the user does not submit more freebies than they are entitled to.
+        $freebieLimit = $this->cartService->calculateFreebieLimit();
+
         $request->validate([
-            'selected_freebies' => 'required|array',
+            'selected_freebies'   => 'required|array|max:'.$freebieLimit,
             'selected_freebies.*' => 'integer|exists:product_salepage,pd_sp_id',
+        ], [
+            'selected_freebies.max' => "คุณสามารถเลือกของแถมได้สูงสุด {$freebieLimit} ชิ้น",
         ]);
 
         try {

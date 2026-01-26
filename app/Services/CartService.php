@@ -30,31 +30,87 @@ class CartService
         // คำนวณโปรโมชั่นที่ใช้ได้
         $applicablePromotions = $this->getApplicablePromotions($items);
 
+        // คำนวณโควต้าของแถมทั้งหมด
+        $freebieLimit = $this->calculateFreebieLimit($items);
+
         // รวบรวมรายชื่อของแถมที่ได้รับสิทธิ์
         $giftableProducts = $applicablePromotions->flatMap(function ($promo) {
             return $promo->actions->flatMap(function ($action) {
                 $gifts = collect();
-                $qtyToGet = $action->actions['quantity_to_get'] ?? 1;
+                // Note: We don't need qtyToGet here anymore as the total limit is calculated separately
+                // $qtyToGet = $action->actions['quantity_to_get'] ?? 1;
 
                 // กรณีระบุของแถมเจาะจง
                 if ($action->productToGet) {
-                    $action->productToGet->gift_quantity = $qtyToGet;
                     $gifts->push($action->productToGet);
                 }
 
                 // กรณีเลือกจากกลุ่มสินค้า (Pool)
                 if ($action->giftableProducts->isNotEmpty()) {
-                    foreach ($action->giftableProducts as $poolItem) {
-                        $poolItem->gift_quantity = $qtyToGet;
-                        $gifts->push($poolItem);
-                    }
+                    $gifts->merge($action->giftableProducts);
                 }
 
                 return $gifts;
             });
         })->unique('pd_sp_id');
 
-        return compact('items', 'total', 'products', 'applicablePromotions', 'giftableProducts');
+        return compact('items', 'total', 'products', 'applicablePromotions', 'giftableProducts', 'freebieLimit');
+    }
+
+    /**
+     * คำนวณโควต้าของแถมทั้งหมดที่สามารถเลือกได้
+     */
+    public function calculateFreebieLimit(Collection $cartItems = null): int
+    {
+        $items = $cartItems ?? $this->getCartContents();
+        $applicablePromotions = $this->getApplicablePromotions($items);
+
+        if ($applicablePromotions->isEmpty()) {
+            return 0;
+        }
+
+        // TODO: This is a simple sum. A more complex implementation might consider
+        // how many times a promotion's conditions are met (e.g., "for every 2 items, get 1 free").
+        // For now, if the condition is met once, the user gets the full quantity.
+        $limit = $applicablePromotions->sum(function ($promo) {
+            // We need to calculate how many times the promotion applies.
+            // Let's assume the simplest case: if rules are met, it applies once.
+            return $promo->actions->sum(function ($action) {
+                return (int) ($action->actions['quantity_to_get'] ?? 0);
+            });
+        });
+
+        return $limit;
+    }
+
+    /**
+     * Get all active promotions related to a single product.
+     */
+    public function getPromotionsForProduct(int $productId): Collection
+    {
+        $now = now();
+
+        // Find promotion IDs from rules that contain this product.
+        $promotionIds = PromotionRule::where(function ($q) use ($productId) {
+                $q->whereJsonContains('rules->product_id', (string) $productId)
+                ->orWhereJsonContains('rules->product_id', (int) $productId);
+            })
+            ->pluck('promotion_id')
+            ->unique();
+
+        if ($promotionIds->isEmpty()) {
+            return collect();
+        }
+
+        // Eager-load promotions with their rules and actions
+        $promotions = Promotion::with(['rules', 'actions'])
+            ->whereIn('id', $promotionIds)
+            ->where('is_active', true)
+            ->where(fn($q) => $q->where('start_date', '<=', $now)->orWhereNull('start_date'))
+            ->where(fn($q) => $q->where('end_date', '>=', $now)->orWhereNull('end_date'))
+            ->get();
+
+        return $promotions;
     }
 
     public function getUserId(): string|int
@@ -156,6 +212,42 @@ class CartService
         if (Auth::check()) {
             $this->saveCartToDatabase($userId, $cart->getContent());
         }
+    }
+
+    public function addWithGifts(int $productId, int $quantity, array $giftIds): void
+    {
+        $product = ProductSalepage::find($productId);
+        if (!$product) {
+            throw new \Exception('ไม่พบข้อมูลสินค้า');
+        }
+
+        $userId = $this->getUserId();
+        $cart = Cart::session($userId);
+
+        // 1. Check stock for main product
+        $currentProductQty = $cart->has($productId) ? $cart->get($productId)->quantity : 0;
+        if (($currentProductQty + $quantity) > $product->pd_sp_stock) {
+            throw new \Exception("สินค้า '{$product->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+        }
+
+        // 2. Check stock for all selected gifts
+        $giftCounts = array_count_values($giftIds);
+        foreach ($giftCounts as $giftId => $count) {
+            $giftProduct = ProductSalepage::find($giftId);
+            if (!$giftProduct) {
+                throw new \Exception("ไม่พบข้อมูลของแถม ID: {$giftId}");
+            }
+            $currentGiftQty = $cart->has($giftId) ? $cart->get($giftId)->quantity : 0;
+            if (($currentGiftQty + $count) > $giftProduct->pd_sp_stock) {
+                throw new \Exception("ของแถม '{$giftProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+            }
+        }
+
+        // 3. Add main product using the existing method
+        $this->addOrUpdate($productId, $quantity);
+        
+        // 4. Add all gifts using the existing method
+        $this->addFreebies($giftIds);
     }
 
     public function updateQuantity(int $productId, string $action): void

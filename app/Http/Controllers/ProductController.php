@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductSalepage;
-use App\Models\Promotion;
-use App\Models\PromotionRule;
+use App\Services\CartService;
 
 class ProductController extends Controller
 {
+    public function __construct(private CartService $cartService)
+    {
+    }
+
     public function show($id)
     {
         $salePageProduct = ProductSalepage::with(['images', 'options.images'])
@@ -19,41 +22,8 @@ class ProductController extends Controller
 
         $productImages = $salePageProduct->images->map(fn ($img) => (object) ['image_url' => $this->formatUrl($img->img_path ?? $img->image_path)]);
 
-        // Promotion Logic
-        $now = now();
-        $giftableProducts = collect();
-        $promotionName = null;
-
-        $relevantPromotionIds = PromotionRule::where(function ($query) use ($id) {
-            $query->whereJsonContains('rules->product_id', (string) $id)
-                ->orWhereJsonContains('rules->product_id', (int) $id);
-        })->pluck('promotion_id')->unique();
-
-        if ($relevantPromotionIds->isNotEmpty()) {
-            $activePromotions = Promotion::with(['actions.giftableProducts.images'])
-                ->whereIn('id', $relevantPromotionIds)
-                ->where('is_active', true)
-                ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
-                ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
-                ->get();
-
-            if ($activePromotions->isNotEmpty()) {
-                $promotionName = $activePromotions->first()->name;
-                $giftableProducts = $activePromotions->flatMap(function ($promo) {
-                    return $promo->actions->flatMap(function ($action) {
-                        $qty = $action->actions['quantity_to_get'] ?? 1;
-
-                        return $action->giftableProducts->map(function ($gift) use ($qty) {
-                            $gImg = $gift->images->first();
-                            $gift->display_image = $this->formatUrl($gImg?->img_path ?? $gImg?->image_path);
-                            $gift->gift_quantity = $qty;
-
-                            return $gift;
-                        });
-                    });
-                })->unique('pd_sp_id');
-            }
-        }
+        // === Refactored Promotion Logic ===
+        $promotions = $this->cartService->getPromotionsForProduct((int) $id);
 
         $product = (object) [
             'pd_sp_id' => $salePageProduct->pd_sp_id,
@@ -68,7 +38,7 @@ class ProductController extends Controller
             'options' => $salePageProduct->options,
         ];
 
-        return view('product', compact('product', 'giftableProducts', 'promotionName'));
+        return view('product', compact('product', 'promotions'));
     }
 
     private function formatUrl($path)

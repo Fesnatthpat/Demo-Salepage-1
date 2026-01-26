@@ -116,30 +116,41 @@
                         @endforeach
 
                         {{-- Promotions Area --}}
-                        @if (isset($applicablePromotions) && $applicablePromotions->isNotEmpty() && $giftableProducts->isNotEmpty())
-                            <div class="mt-8 mb-6">
+                        @if (isset($applicablePromotions) && $applicablePromotions->isNotEmpty() && $giftableProducts->isNotEmpty() && isset($freebieLimit) && $freebieLimit > 0)
+                            <div class="mt-8 mb-6" x-data="promoManager({ freebieLimit: {{ $freebieLimit }} })">
                                 <div class="p-6 bg-emerald-50 border-2 border-dashed border-emerald-200 rounded-lg">
-                                    <h2 class="text-xl font-bold text-emerald-800 mb-4">🎉 คุณได้รับสิทธิ์เลือกของแถม</h2>
+                                    <h2 class="text-xl font-bold text-emerald-800 mb-2">🎉 คุณได้รับสิทธิ์เลือกของแถม</h2>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        คุณสามารถเลือกของแถมได้ <span x-text="selectedFreebies.length">0</span> จากทั้งหมด <span x-text="freebieLimit">{{ $freebieLimit }}</span> ชิ้น
+                                    </p>
+
                                     <form action="{{ route('cart.addFreebies') }}" method="POST">
                                         @csrf
+                                        {{-- This hidden div will hold our actual input values for the form submission --}}
+                                        <template x-for="id in selectedFreebies" :key="id">
+                                            <input type="hidden" name="selected_freebies[]" :value="id">
+                                        </template>
+
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             @foreach ($giftableProducts as $gift)
                                                 <label
-                                                    class="relative flex flex-col items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-white hover:border-emerald-400 bg-white/50 transition-all">
-                                                    <input type="checkbox" name="selected_freebies[]"
-                                                        value="{{ $gift->pd_sp_id }}"
-                                                        class="absolute top-2 right-2 w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500">
+                                                    class="relative flex flex-col items-center p-3 border rounded-lg cursor-pointer transition-all"
+                                                    :class="selectedFreebies.includes({{ $gift->pd_sp_id }}) ? 'bg-white border-emerald-400 ring-2 ring-emerald-300' : 'bg-white/50 border-gray-200 hover:bg-white'">
+                                                    <input type="checkbox"
+                                                           class="absolute top-2 right-2 h-5 w-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                                                           :checked="selectedFreebies.includes({{ $gift->pd_sp_id }})"
+                                                           @click.prevent="toggleFreebie({{ $gift->pd_sp_id }})">
+
                                                     <img src="{{ $gift->cover_image_url ?? 'https://via.placeholder.com/150' }}"
-                                                        class="w-20 h-20 object-cover rounded bg-white">
-                                                    <p class="text-xs text-center mt-2 font-medium">{{ $gift->pd_sp_name }}
-                                                    </p>
-                                                    <span
-                                                        class="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full mt-1">ฟรี</span>
+                                                         class="w-20 h-20 object-cover rounded bg-white">
+                                                    <p class="text-xs text-center mt-2 font-medium">{{ $gift->pd_sp_name }}</p>
+                                                    <span class="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full mt-1">ฟรี</span>
                                                 </label>
                                             @endforeach
                                         </div>
                                         <button type="submit"
-                                            class="btn btn-primary mt-4 w-full md:w-auto">ยืนยันของแถม</button>
+                                                class="btn btn-primary mt-4 w-full md:w-auto"
+                                                :disabled="selectedFreebies.length === 0">ยืนยันของแถม</button>
                                     </form>
                                 </div>
                             </div>
@@ -241,6 +252,37 @@
                     form.submit();
                 });
             });
+        });
+    </script>
+    <script>
+        // ... (The existing script content remains here) ...
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('promoManager', (config) => ({
+                selectedFreebies: [],
+                freebieLimit: config.freebieLimit || 0,
+                toggleFreebie(id) {
+                    const index = this.selectedFreebies.indexOf(id);
+                    if (index > -1) {
+                        this.selectedFreebies.splice(index, 1);
+                    } else {
+                        if (this.selectedFreebies.length < this.freebieLimit) {
+                            this.selectedFreebies.push(id);
+                        } else {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'เลือกของแถมครบแล้ว',
+                                    text: `คุณสามารถเลือกของแถมได้สูงสุด ${this.freebieLimit} ชิ้น`,
+                                    confirmButtonColor: '#10b981'
+                                });
+                            } else {
+                                alert(`คุณสามารถเลือกของแถมได้สูงสุด ${this.freebieLimit} ชิ้น`);
+                            }
+                        }
+                    }
+                }
+            }));
         });
     </script>
 @endsection

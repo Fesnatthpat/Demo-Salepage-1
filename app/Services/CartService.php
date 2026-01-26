@@ -189,7 +189,7 @@ class CartService
     public function addWithGifts(int $productId, int $quantity, array $giftIds): void
     {
         $product = ProductSalepage::find($productId);
-        if (!$product) {
+        if (! $product) {
             throw new \Exception('ไม่พบข้อมูลสินค้า');
         }
 
@@ -206,7 +206,7 @@ class CartService
         $giftCounts = array_count_values($giftIds);
         foreach ($giftCounts as $giftId => $count) {
             $giftProduct = ProductSalepage::find($giftId);
-            if (!$giftProduct) {
+            if (! $giftProduct) {
                 throw new \Exception("ไม่พบข้อมูลของแถม ID: {$giftId}");
             }
             $currentGiftQty = $cart->has($giftId) ? $cart->get($giftId)->quantity : 0;
@@ -217,11 +217,11 @@ class CartService
 
         // 3. Add items with a group ID
         $promoGroupId = 'promo_'.Str::uuid();
-        
+
         // Add main product
         $productDetails = $this->getProductDetails($productId);
         if ($productDetails) {
-             $cart->add([
+            $cart->add([
                 'id' => $productDetails->id,
                 'name' => $productDetails->name,
                 'price' => $productDetails->price,
@@ -241,9 +241,9 @@ class CartService
         foreach ($giftIds as $giftId) {
             $giftDetails = $this->getProductDetails($giftId);
             if ($giftDetails) {
-                 $cart->add([
+                $cart->add([
                     'id' => $giftDetails->id,
-                    'name' => $giftDetails->name . ' (ของแถม)',
+                    'name' => $giftDetails->name.' (ของแถม)',
                     'price' => 0,
                     'quantity' => 1, // Each gift is added with quantity 1
                     'attributes' => [
@@ -284,14 +284,14 @@ class CartService
         $cart = Cart::session($userId);
         $item = $cart->get($productId);
 
-        if (!$item) {
+        if (! $item) {
             return;
         }
 
         // If the item is part of a promotion group, remove all items in that group.
         if (isset($item->attributes['promo_group_id'])) {
             $promoGroupId = $item->attributes['promo_group_id'];
-            
+
             $itemsToRemove = $cart->getContent()->filter(function ($cartItem) use ($promoGroupId) {
                 return isset($cartItem->attributes['promo_group_id']) && $cartItem->attributes['promo_group_id'] === $promoGroupId;
             });
@@ -303,7 +303,7 @@ class CartService
             // Otherwise, just remove the single item.
             $cart->remove($productId);
         }
-        
+
         // After removal, it's still good practice to validate consistency for other promos.
         $this->validateFreebieConsistency($userId);
 

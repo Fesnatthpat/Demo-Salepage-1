@@ -216,6 +216,17 @@
                     },
 
                     async handleAddToCartClick(isBuyNow) {
+                        // Force user to select the exact number of gifts if a promotion is active
+                        if (this.giftLimit > 0 && this.selectedGifts.length !== this.giftLimit) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'กรุณาเลือกของแถมให้ครบ',
+                                text: `คุณได้รับสิทธิ์เลือกของแถมจำนวน ${this.giftLimit} ชิ้น`,
+                                confirmButtonColor: '#10b981'
+                            });
+                            return;
+                        }
+
                         if (this.isLoading) return;
                         this.isLoading = true;
                         try {

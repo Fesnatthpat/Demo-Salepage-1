@@ -37,7 +37,8 @@ class PromotionController extends Controller
         $this->validatePromotion($request);
 
         DB::transaction(function () use ($request) {
-            $promotion = Promotion::create($request->only('name', 'description', 'start_date', 'end_date', 'is_active'));
+            // ✅ เพิ่ม condition_type ในการ create
+            $promotion = Promotion::create($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
 
             foreach ($request->buy_items as $item) {
                 PromotionRule::create([
@@ -76,15 +77,15 @@ class PromotionController extends Controller
 
         $buy_items = $promotion->rules->map(function ($rule) {
             return [
-                'product_id' => $rule->product_id,
-                'quantity' => $rule->quantity,
+                'product_id' => $rule->rules['product_id'] ?? '', // Access from JSON rules
+                'quantity' => $rule->rules['quantity_to_buy'] ?? 1,
             ];
         })->values()->toArray();
 
         $get_items = $promotion->actions->map(function ($action) {
             return [
-                'product_id' => $action->product_id,
-                'quantity' => $action->quantity,
+                'product_id' => $action->actions['product_id_to_get'] ?? '',
+                'quantity' => $action->actions['quantity_to_get'] ?? 1,
             ];
         })->values()->toArray();
 
@@ -104,7 +105,8 @@ class PromotionController extends Controller
 
         DB::transaction(function () use ($request, $id) {
             $promotion = Promotion::findOrFail($id);
-            $promotion->update($request->only('name', 'description', 'start_date', 'end_date', 'is_active'));
+            // ✅ เพิ่ม condition_type ในการ update
+            $promotion->update($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
 
             $promotion->rules()->delete();
             $promotion->actions()->delete();
@@ -155,6 +157,7 @@ class PromotionController extends Controller
             'name' => 'required|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'condition_type' => 'required|in:any,all', // ✅ เพิ่ม Validation
             'buy_items' => 'required|array|min:1',
             'buy_items.*.product_id' => 'required',
             'buy_items.*.quantity' => 'required|integer|min:1',

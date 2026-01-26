@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\CartService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class CartController extends Controller
 {
@@ -19,38 +18,24 @@ class CartController extends Controller
 
     public function addToCart(Request $request, $productId)
     {
-        $quantity = (int) $request->input('quantity', 1);
-
-        // Determine if gifts are required for this product and quantity
-        $promotions = $this->cartService->getPromotionsForProduct((int) $productId);
-        $giftsPerItem = $promotions->sum(function ($promo) {
-            return $promo->actions->sum(fn($action) => (int)($action->actions['quantity_to_get'] ?? 0));
-        });
-        $expectedGiftCount = $quantity * $giftsPerItem;
-
+        // ★★★ แก้ไข Validation: ไม่บังคับเลือกของแถม (nullable) ★★★
+        // เพื่อรองรับกรณีซื้อชิ้นแรกของเงื่อนไข AND (ที่ยังไม่ได้ของแถม)
         $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'selected_gift_ids' => [
-                // If gifts are expected, this field is required and must be an array.
-                Rule::requiredIf($expectedGiftCount > 0),
-                'nullable',
-                'array',
-                // If it is an array, its size must exactly match the expected count.
-                function ($attribute, $value, $fail) use ($expectedGiftCount) {
-                    if ($expectedGiftCount > 0 && is_array($value) && count($value) !== $expectedGiftCount) {
-                        $fail("กรุณาเลือกของแถมให้ครบจำนวน {$expectedGiftCount} ชิ้น");
-                    }
-                },
-            ],
-            'selected_gift_ids.*' => 'integer|exists:product_salepage,pd_sp_id',
+            'quantity' => 'integer|min:1',
+            'selected_gift_ids' => 'nullable|array',
+            'selected_gift_ids.*' => 'integer',
         ]);
 
         try {
-            $giftIds = $request->input('selected_gift_ids');
+            $quantity = (int) $request->input('quantity', 1);
+            $giftIds = $request->input('selected_gift_ids', []);
 
-            if (is_array($giftIds) && !empty($giftIds)) {
+            // ★★★ Logic: เช็คว่ามีการส่งของแถมมาด้วยหรือไม่ ★★★
+            if (! empty($giftIds)) {
+                // กรณีเลือกของแถมมาด้วย (ใช้ฟังก์ชัน addWithGifts ที่เพิ่มใน Service)
                 $this->cartService->addWithGifts((int) $productId, $quantity, $giftIds);
             } else {
+                // กรณีสินค้าปกติ หรือยังไม่ได้รับสิทธิ์ของแถม
                 $this->cartService->addOrUpdate((int) $productId, $quantity);
             }
 
@@ -89,11 +74,11 @@ class CartController extends Controller
 
     public function addFreebiesToCart(Request $request)
     {
-        // Server-side validation to ensure the user does not submit more freebies than they are entitled to.
+        // ส่วนนี้ใช้สำหรับเลือกของแถมทีหลังในหน้าตะกร้าสินค้า
         $freebieLimit = $this->cartService->calculateFreebieLimit();
 
         $request->validate([
-            'selected_freebies'   => 'required|array|max:'.$freebieLimit,
+            'selected_freebies' => 'required|array|max:'.$freebieLimit,
             'selected_freebies.*' => 'integer|exists:product_salepage,pd_sp_id',
         ], [
             'selected_freebies.max' => "คุณสามารถเลือกของแถมได้สูงสุด {$freebieLimit} ชิ้น",

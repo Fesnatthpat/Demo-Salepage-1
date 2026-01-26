@@ -15,6 +15,7 @@ class Promotion extends Model
         'start_date',
         'end_date',
         'is_active',
+        'condition_type', // ✅ เพิ่มฟิลด์นี้
     ];
 
     protected $casts = [

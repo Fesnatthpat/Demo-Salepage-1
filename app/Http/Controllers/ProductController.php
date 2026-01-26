@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductSalepage;
 use App\Services\CartService;
-use Darryldecode\Cart\Facades\CartFacade as Cart;
-use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -22,20 +20,22 @@ class ProductController extends Controller
         $activeImageUrl = $this->formatUrl($coverImg?->img_path ?? $coverImg?->image_path);
         $productImages = $salePageProduct->images->map(fn ($img) => (object) ['image_url' => $this->formatUrl($img->img_path ?? $img->image_path)]);
 
-        // 2. ดึงโปรโมชั่นที่เกี่ยวข้อง
+        // 2. ดึงโปรโมชั่น
         $promotions = $this->cartService->getPromotionsForProduct((int) $id);
 
-        $userId = Auth::check() ? Auth::id() : '_guest_'.session()->getId();
-        $cartContent = Cart::session($userId)->getContent();
+        // ★★★ จุดที่แก้ไข: ดึงตะกร้าผ่าน Service เพื่อความชัวร์ (โหลดจาก DB ถ้าจำเป็น) ★★★
+        $cartContent = $this->cartService->getCartContents();
+
+        // หาจำนวนสินค้านี้ที่มีอยู่ในตะกร้าแล้ว
         $currentCartQty = $cartContent->where('id', $id)->first()->quantity ?? 0;
 
-        // 3. Map ข้อมูลโปรโมชั่น + หาสินค้าที่ต้องซื้อคู่กัน
+        // 3. Map ข้อมูลโปรโมชั่น + ตรวจสอบเงื่อนไข
         $promotions->map(function ($promo) use ($id, $currentCartQty, $cartContent) {
 
-            // ✅ Fix: สร้าง Collection ว่างไว้ก่อนเสมอ ป้องกัน Error "Call to member function map() on null"
+            // สร้าง Collection ว่างไว้ก่อนเสมอ
             $promo->partner_products = collect();
 
-            // หาว่าสินค้านี้ต้องซื้อกี่ชิ้นในโปรโมชั่นนี้
+            // หาว่าสินค้านี้ (ID ปัจจุบัน) ต้องซื้อกี่ชิ้นในโปรโมชั่นนี้
             $myRule = $promo->rules->filter(function ($rule) use ($id) {
                 $pids = $rule->rules['product_id'] ?? [];
                 if (! is_array($pids)) {
@@ -46,7 +46,7 @@ class ProductController extends Controller
             })->first();
             $requiredQty = $myRule ? ($myRule->rules['quantity_to_buy'] ?? 1) : 1;
 
-            // เช็คเงื่อนไขสินค้าอื่น (Other Rules)
+            // เช็คเงื่อนไขสินค้าอื่น (เช่น ต้องซื้อ A คู่กับ B)
             $otherRulesMet = true;
             $partnerProductIds = [];
 
@@ -59,13 +59,17 @@ class ProductController extends Controller
                         $pids = [$pids];
                     }
 
-                    // เก็บ ID สินค้าอื่นที่เป็น Partner
-                    if (! in_array((string) $id, array_map('strval', $pids))) {
-                        foreach ($pids as $pid) {
-                            $partnerProductIds[] = (int) $pid;
-                        }
+                    // ถ้ากฎข้อนี้เป็นของสินค้าปัจจุบัน ให้ข้ามไป (เพราะเราจะเช็ค Real-time ที่หน้าเว็บ)
+                    if (in_array((string) $id, array_map('strval', $pids))) {
+                        continue;
                     }
 
+                    // ถ้าเป็นสินค้าอื่น ให้เก็บ ID ไว้แสดงเป็นสินค้าแนะนำ
+                    foreach ($pids as $pid) {
+                        $partnerProductIds[] = (int) $pid;
+                    }
+
+                    // ตรวจสอบว่าสินค้าอื่นมีในตะกร้าครบตามจำนวนหรือยัง
                     $reqQ = $rule->rules['quantity_to_buy'] ?? 1;
                     $met = false;
                     foreach ($pids as $pid) {
@@ -80,7 +84,7 @@ class ProductController extends Controller
                 }
             }
 
-            // ดึงข้อมูลสินค้า Partner (ถ้ามี)
+            // ดึงข้อมูลสินค้าคู่ขา (Partner)
             if (! empty($partnerProductIds)) {
                 $promo->partner_products = ProductSalepage::with('images')
                     ->whereIn('pd_sp_id', array_unique($partnerProductIds))
@@ -93,6 +97,7 @@ class ProductController extends Controller
                     });
             }
 
+            // ส่ง Logic ไปให้หน้าบ้านคำนวณต่อ
             $promo->frontend_logic = [
                 'required_qty' => (int) $requiredQty,
                 'cart_qty' => (int) $currentCartQty,

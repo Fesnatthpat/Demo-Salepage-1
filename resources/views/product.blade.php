@@ -12,7 +12,7 @@
             $allImages[] = $product->cover_image_url;
         }
 
-        // แปลงข้อมูลโปรโมชั่นเป็น JSON (เพิ่ม partner_products)
+        // เตรียมข้อมูลโปรโมชั่น
         $promotionsData = [];
         if (isset($promotions) && $promotions->isNotEmpty()) {
             foreach ($promotions as $promo) {
@@ -42,14 +42,12 @@
                         })
                         ->values()
                         ->all(),
-
-                    // ข้อมูลสินค้าคู่ขา (Partner Products)
                     'partner_products' => ($promo->partner_products ?? collect())
                         ->map(function ($p) {
                             return [
                                 'id' => $p->pd_sp_id,
                                 'name' => $p->pd_sp_name,
-                                'price' => number_format($p->pd_sp_price, 0), // จัดรูปแบบราคาให้สวยงาม
+                                'price' => number_format($p->pd_sp_price, 0),
                                 'image' => $p->display_image,
                                 'url' => route('product.show', $p->pd_sp_id),
                             ];
@@ -65,7 +63,6 @@
         initialImage: @js($product->cover_image_url),
         allImages: @js($allImages),
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
-        // สร้าง URL Template สำหรับเพิ่มสินค้าคู่ขา (แทนที่ ___ID___ ทีหลัง)
         cartAddUrlTemplate: @js(route('cart.add', ['id' => '___ID___'])),
         checkoutUrl: @js(route('payment.checkout')),
         promotions: @js($promotionsData)
@@ -105,24 +102,30 @@
 
                         {{-- ★★★ Promotion UI ★★★ --}}
                         <template x-if="activePromotion">
-                            <div class="mb-10">
-                                {{-- 1. ส่วนแสดงของแถม --}}
-                                <div class="p-6 rounded-2xl border-2 border-dashed bg-red-50/30 mb-4"
-                                    :class="isConditionMet ? 'border-red-300' : 'border-gray-200 opacity-75'">
+                            {{-- เพิ่ม ID เพื่อให้ JavaScript สั่ง Scroll มาที่นี่ได้ --}}
+                            <div id="promotion-section" class="mb-10 scroll-mt-24">
 
-                                    <h3 class="text-sm font-bold text-gray-800 mb-2">🎉 ของแถมโปรโมชั่น</h3>
+                                {{-- 1. ส่วนแสดงของแถม --}}
+                                <div class="p-6 rounded-2xl border-2 border-dashed bg-red-50/30 mb-4 transition-all duration-500"
+                                    :class="isConditionMet ? 'border-red-300 shadow-inner' : 'border-gray-200 opacity-75'">
+
+                                    <h3 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                                        <span>🎉 ของแถมโปรโมชั่น</span>
+                                        <span x-show="isConditionMet"
+                                            class="badge badge-success badge-sm text-white">ปลดล็อคแล้ว!</span>
+                                    </h3>
 
                                     <template x-if="isConditionMet">
-                                        <p class="text-sm text-gray-600 mb-4">
-                                            ได้รับสิทธิ์เลือกฟรี <strong class="text-red-600" x-text="giftLimit"></strong>
-                                            ชิ้น
-                                        </p>
+                                        <div class="mb-4 text-sm text-gray-700">
+                                            ✅ เงื่อนไขครบถ้วน! คุณได้รับสิทธิ์เลือกฟรี <strong class="text-red-600 text-lg"
+                                                x-text="giftLimit"></strong> ชิ้น
+                                        </div>
                                     </template>
 
                                     <template x-if="!isConditionMet">
                                         <div class="mb-4">
                                             <p class="text-sm text-red-500 font-bold"><i class="fas fa-lock mr-1"></i>
-                                                ยังไม่ครบเงื่อนไข</p>
+                                                เงื่อนไขยังไม่ครบ</p>
                                         </div>
                                     </template>
 
@@ -132,11 +135,13 @@
                                                 class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
                                                 :class="{ 'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale':
                                                         !
-                                                        isConditionMet, 'bg-white cursor-pointer border-gray-100 hover:border-gray-300': isConditionMet, 'border-emerald-500 bg-emerald-50': selectedGifts
+                                                        isConditionMet, 'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet, 'border-emerald-500 bg-emerald-50 ring-0': selectedGifts
                                                         .includes(gift.id) }">
+
                                                 <input type="checkbox" :disabled="!isConditionMet"
                                                     @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"
                                                     class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200">
+
                                                 <div
                                                     class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
                                                     <img :src="gift.image" class="w-full h-full object-cover">
@@ -144,32 +149,31 @@
                                                 <div class="flex-1 overflow-hidden">
                                                     <p class="text-xs font-bold text-gray-800 truncate" x-text="gift.name">
                                                     </p>
-                                                    <span class="text-xs text-red-500 font-bold"
-                                                        x-text="!isConditionMet ? 'ล็อค' : 'ฟรี'"></span>
+                                                    <span class="text-xs font-bold"
+                                                        :class="!isConditionMet ? 'text-gray-400' : 'text-red-500'"
+                                                        x-text="!isConditionMet ? 'ล็อค' : 'เลือกฟรี'"></span>
                                                 </div>
                                             </label>
                                         </template>
                                     </div>
                                 </div>
 
-                                {{-- 2. ส่วนแนะนำสินค้าคู่ (แสดงเฉพาะตอนเงื่อนไขยังไม่ครบ) --}}
+                                {{-- 2. ส่วนแนะนำสินค้าคู่ (Buy Together) --}}
                                 <template
                                     x-if="!activePromotion.logic.other_rules_met && activePromotion.partner_products.length > 0">
-                                    <div class="p-4 bg-orange-50 border border-orange-200 rounded-2xl">
+                                    <div class="p-5 bg-orange-50 border border-orange-200 rounded-2xl animate-pulse-once">
                                         <h3 class="text-sm font-bold text-orange-800 mb-3 flex items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20"
-                                                fill="currentColor">
-                                                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                                            </svg>
-                                            ต้องซื้อคู่กับสินค้าเหล่านี้ ถึงจะได้ของแถม:
+                                            <span class="bg-orange-200 text-orange-700 p-1 rounded mr-2"><i
+                                                    class="fas fa-exclamation"></i></span>
+                                            ซื้อคู่กับสินค้าด้านล่าง เพื่อรับของแถม:
                                         </h3>
                                         <div class="space-y-3">
                                             <template x-for="partner in activePromotion.partner_products"
                                                 :key="partner.id">
                                                 <div
-                                                    class="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                    class="flex items-center gap-4 bg-white p-3 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow">
                                                     <img :src="partner.image"
-                                                        class="w-16 h-16 rounded-lg object-cover border border-gray-200">
+                                                        class="w-16 h-16 rounded-lg object-cover border border-gray-100">
                                                     <div class="flex-1">
                                                         <p class="text-sm font-bold text-gray-800" x-text="partner.name">
                                                         </p>
@@ -177,16 +181,14 @@
                                                                 x-text="partner.price"></span></p>
                                                     </div>
 
-                                                    {{-- ปุ่ม Actions --}}
+                                                    {{-- ปุ่มกดใส่ตะกร้า --}}
                                                     <div class="flex flex-col gap-2">
                                                         <button @click="addToCartPartner(partner.id)" type="button"
-                                                            class="btn btn-sm btn-primary text-white shadow-sm flex items-center gap-1">
-                                                            <i class="fas fa-cart-plus"></i> ใส่ตะกร้า
+                                                            class="btn btn-sm btn-primary text-white shadow-sm flex items-center gap-1 border-none bg-emerald-600 hover:bg-emerald-700">
+                                                            <i class="fas fa-plus"></i> เพิ่มทันที
                                                         </button>
                                                         <a :href="partner.url"
-                                                            class="btn btn-sm btn-outline btn-ghost text-xs">
-                                                            <i class="fas fa-eye mr-1"></i> รายละเอียด
-                                                        </a>
+                                                            class="text-[10px] text-gray-400 text-center hover:text-emerald-600 underline">รายละเอียด</a>
                                                     </div>
                                                 </div>
                                             </template>
@@ -202,21 +204,21 @@
                     <div class="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-6">
                         <div class="flex items-center bg-gray-100 rounded-2xl p-1.5 shadow-inner">
                             <button @click="quantity > 1 ? quantity-- : null"
-                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors">-</button>
+                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors font-bold text-lg">-</button>
                             <input type="number" x-model.number="quantity"
-                                class="w-12 text-center bg-transparent border-none font-black text-gray-900 focus:ring-0"
+                                class="w-12 text-center bg-transparent border-none font-black text-gray-900 focus:ring-0 text-lg"
                                 readonly>
                             <button @click="quantity++"
-                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors">+</button>
+                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors font-bold text-lg">+</button>
                         </div>
                         <div class="flex-1 w-full grid grid-cols-2 gap-4">
                             <button @click="handleAddToCartClick(false)"
-                                class="h-14 rounded-2xl border-2 border-emerald-600 text-emerald-600 font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2">
+                                class="h-14 rounded-2xl border-2 border-emerald-600 text-emerald-600 font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 text-lg">
                                 <span x-show="!isLoading">ใส่ตะกร้า</span>
                                 <span x-show="isLoading" class="loading loading-spinner"></span>
                             </button>
                             <button @click="handleAddToCartClick(true)"
-                                class="h-14 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-lg transition-all">Buy
+                                class="h-14 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-lg transition-all text-lg">Buy
                                 Now</button>
                         </div>
                     </div>
@@ -224,6 +226,26 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .animate-pulse-once {
+            animation: pulse-orange 2s ease-out;
+        }
+
+        @keyframes pulse-orange {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 165, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 165, 0, 0);
+            }
+        }
+    </style>
 
     @push('scripts')
         <script>
@@ -261,6 +283,35 @@
                         this.$watch('quantity', () => {
                             this.validateSelection();
                         });
+
+                        // ★★★ ฟังก์ชัน Auto-Scroll หลังรีเฟรช ★★★
+                        // ตรวจสอบว่ามี Flag จาก LocalStorage หรือไม่
+                        if (localStorage.getItem('justAddedPartner') === 'true') {
+                            // ลบ Flag ออกเพื่อไม่ให้ทำงานซ้ำ
+                            localStorage.removeItem('justAddedPartner');
+
+                            // รอให้หน้าเว็บโหลดเสร็จแป๊บนึง แล้วเลื่อนลงไปที่โปรโมชั่น
+                            setTimeout(() => {
+                                const promoSection = document.getElementById('promotion-section');
+                                if (promoSection) {
+                                    promoSection.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'center'
+                                    });
+
+                                    // แจ้งเตือนเล็กน้อยว่าปลดล็อคแล้ว
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'ปลดล็อคของแถมแล้ว!',
+                                        text: 'คุณสามารถเลือกของแถมได้เลย',
+                                        toast: true,
+                                        position: 'top-end',
+                                        showConfirmButton: false,
+                                        timer: 3000
+                                    });
+                                }
+                            }, 500);
+                        }
                     },
 
                     validateSelection() {
@@ -292,9 +343,7 @@
                         if (this.isLoading) return;
                         this.isLoading = true;
                         try {
-                            // สร้าง URL สำหรับสินค้าคู่ขาโดยแทนที่ ID ลงใน Template
                             const url = config.cartAddUrlTemplate.replace('___ID___', id);
-
                             const response = await fetch(url, {
                                 method: 'POST',
                                 headers: {
@@ -306,19 +355,15 @@
                                 },
                                 body: JSON.stringify({
                                     quantity: 1
-                                }) // เพิ่มทีละ 1 ชิ้น
+                                })
                             });
                             const data = await response.json();
                             if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'เพิ่มสินค้าแนะนำแล้ว',
-                                    text: 'ระบบจะรีเฟรชเพื่อคำนวณสิทธิ์ของแถมใหม่...',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                });
-                                // รีเฟรชหน้าจอเพื่อเช็คเงื่อนไขโปรโมชั่นใหม่ (ถ้าครบ ของแถมจะปลดล็อคทันที)
-                                setTimeout(() => location.reload(), 1500);
+                                // ★★★ ตั้งค่า LocalStorage ก่อนรีเฟรช ★★★
+                                localStorage.setItem('justAddedPartner', 'true');
+
+                                // รีเฟรชหน้าจอทันที
+                                window.location.reload();
                             } else {
                                 throw new Error(data.message);
                             }

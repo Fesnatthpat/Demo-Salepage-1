@@ -4,7 +4,6 @@
 
 @section('content')
     @php
-        // ... (PHP ส่วนบนเหมือนเดิม) ...
         $originalPrice = (float) $product->pd_price;
         $discountAmount = (float) $product->pd_sp_discount;
         $finalPrice = max(0, $originalPrice - $discountAmount);
@@ -43,15 +42,16 @@
                         })
                         ->values()
                         ->all(),
-                    // ★ เพิ่มข้อมูลสินค้าคู่ขา ★
-                    'partner_products' => $promo->partner_products
+
+                    // ข้อมูลสินค้าคู่ขา (Partner Products)
+                    'partner_products' => ($promo->partner_products ?? collect())
                         ->map(function ($p) {
                             return [
                                 'id' => $p->pd_sp_id,
                                 'name' => $p->pd_sp_name,
-                                'price' => $p->pd_sp_price,
+                                'price' => number_format($p->pd_sp_price, 0), // จัดรูปแบบราคาให้สวยงาม
                                 'image' => $p->display_image,
-                                'url' => route('product.show', $p->pd_sp_id), // สมมติว่ามี Route นี้
+                                'url' => route('product.show', $p->pd_sp_id),
                             ];
                         })
                         ->values()
@@ -62,20 +62,19 @@
     @endphp
 
     <div x-data="productPage({
-        // ... (Config เหมือนเดิม) ...
         initialImage: @js($product->cover_image_url),
         allImages: @js($allImages),
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
+        // สร้าง URL Template สำหรับเพิ่มสินค้าคู่ขา (แทนที่ ___ID___ ทีหลัง)
+        cartAddUrlTemplate: @js(route('cart.add', ['id' => '___ID___'])),
         checkoutUrl: @js(route('payment.checkout')),
         promotions: @js($promotionsData)
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased">
 
-        {{-- ... (ส่วนแสดงสินค้า รูป ราคา เหมือนเดิม) ... --}}
-
         <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
             <div class="grid grid-cols-1 lg:grid-cols-12">
+                {{-- Image Gallery --}}
                 <div class="lg:col-span-5 p-8 bg-gray-50/50">
-                    {{-- Image Gallery Code --}}
                     <div class="sticky top-8">
                         <div
                             class="relative aspect-square rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100">
@@ -96,6 +95,7 @@
                     </div>
                 </div>
 
+                {{-- Product Details --}}
                 <div class="lg:col-span-7 p-8 lg:p-12 flex flex-col">
                     <div class="flex-1">
                         <h1 class="text-3xl font-extrabold text-gray-900 mb-6">{{ $product->pd_name }}</h1>
@@ -106,7 +106,7 @@
                         {{-- ★★★ Promotion UI ★★★ --}}
                         <template x-if="activePromotion">
                             <div class="mb-10">
-                                {{-- 1. ส่วนแสดงของแถม (เหมือนเดิม) --}}
+                                {{-- 1. ส่วนแสดงของแถม --}}
                                 <div class="p-6 rounded-2xl border-2 border-dashed bg-red-50/30 mb-4"
                                     :class="isConditionMet ? 'border-red-300' : 'border-gray-200 opacity-75'">
 
@@ -152,7 +152,7 @@
                                     </div>
                                 </div>
 
-                                {{-- 2. ★ ส่วนแนะนำสินค้าคู่ (แสดงเฉพาะตอนเงื่อนไขยังไม่ครบ) ★ --}}
+                                {{-- 2. ส่วนแนะนำสินค้าคู่ (แสดงเฉพาะตอนเงื่อนไขยังไม่ครบ) --}}
                                 <template
                                     x-if="!activePromotion.logic.other_rules_met && activePromotion.partner_products.length > 0">
                                     <div class="p-4 bg-orange-50 border border-orange-200 rounded-2xl">
@@ -168,15 +168,26 @@
                                                 :key="partner.id">
                                                 <div
                                                     class="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                                                    <img :src="partner.image" class="w-12 h-12 rounded-lg object-cover">
+                                                    <img :src="partner.image"
+                                                        class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                                     <div class="flex-1">
                                                         <p class="text-sm font-bold text-gray-800" x-text="partner.name">
                                                         </p>
-                                                        <p class="text-xs text-emerald-600 font-bold">฿<span
+                                                        <p class="text-sm text-emerald-600 font-bold">฿<span
                                                                 x-text="partner.price"></span></p>
                                                     </div>
-                                                    <a :href="partner.url"
-                                                        class="btn btn-sm btn-outline btn-warning">ดูสินค้า</a>
+
+                                                    {{-- ปุ่ม Actions --}}
+                                                    <div class="flex flex-col gap-2">
+                                                        <button @click="addToCartPartner(partner.id)" type="button"
+                                                            class="btn btn-sm btn-primary text-white shadow-sm flex items-center gap-1">
+                                                            <i class="fas fa-cart-plus"></i> ใส่ตะกร้า
+                                                        </button>
+                                                        <a :href="partner.url"
+                                                            class="btn btn-sm btn-outline btn-ghost text-xs">
+                                                            <i class="fas fa-eye mr-1"></i> รายละเอียด
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </template>
                                         </div>
@@ -187,7 +198,7 @@
 
                     </div>
 
-                    {{-- Actions (เหมือนเดิม) --}}
+                    {{-- Main Actions --}}
                     <div class="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-6">
                         <div class="flex items-center bg-gray-100 rounded-2xl p-1.5 shadow-inner">
                             <button @click="quantity > 1 ? quantity-- : null"
@@ -218,7 +229,6 @@
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('productPage', (config) => ({
-                    // ... (Logic เดิมทั้งหมด) ...
                     activeImage: config.initialImage,
                     images: config.allImages,
                     quantity: 1,
@@ -275,6 +285,46 @@
                                     confirmButtonColor: '#10b981'
                                 });
                             }
+                        }
+                    },
+
+                    async addToCartPartner(id) {
+                        if (this.isLoading) return;
+                        this.isLoading = true;
+                        try {
+                            // สร้าง URL สำหรับสินค้าคู่ขาโดยแทนที่ ID ลงใน Template
+                            const url = config.cartAddUrlTemplate.replace('___ID___', id);
+
+                            const response = await fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').content
+                                },
+                                body: JSON.stringify({
+                                    quantity: 1
+                                }) // เพิ่มทีละ 1 ชิ้น
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'เพิ่มสินค้าแนะนำแล้ว',
+                                    text: 'ระบบจะรีเฟรชเพื่อคำนวณสิทธิ์ของแถมใหม่...',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                // รีเฟรชหน้าจอเพื่อเช็คเงื่อนไขโปรโมชั่นใหม่ (ถ้าครบ ของแถมจะปลดล็อคทันที)
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        } catch (e) {
+                            Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถทำรายการได้', 'error');
+                            this.isLoading = false;
                         }
                     },
 

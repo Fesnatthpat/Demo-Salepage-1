@@ -62,6 +62,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/complete', [ProfileController::class, 'create'])->name('profile.completion');
     Route::post('/profile/complete', [ProfileController::class, 'store'])->name('profile.store');
 
+    // -- แก้ไขข้อมูลส่วนตัว --
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     // -- ระบบชำระเงิน (Checkout & Payment) --
     Route::get('/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');

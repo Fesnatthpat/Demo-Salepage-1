@@ -47,9 +47,9 @@
                             <li><a href="/allproducts" class="py-3 font-bold">สินค้าทั้งหมด</a></li>
                             @auth
                                 <li><a href="/orderhistory" class="py-3 font-bold">ประวัติการสั่งซื้อ</a></li>
-                                <li><a href="/ordertracking" class="py-3 font-bold">เช็คสถานะ</a></li>
-                                <li class="border-t mt-2 pt-2">
-                                    <div class="flex items-center gap-2 p-2">
+                                                            <li><a href="/ordertracking" class="py-3 font-bold">เช็คสถานะ</a></li>
+                                                            <li><a href="{{ route('profile.edit') }}" class="py-3 font-bold">ข้อมูลส่วนตัว</a></li>
+                                                            <li class="border-t mt-2 pt-2">                                    <div class="flex items-center gap-2 p-2">
                                         @if (auth()->user()->avatar)
                                             <img src="{{ auth()->user()->avatar }}" class="w-8 h-8 rounded-full border">
                                         @else
@@ -142,6 +142,14 @@
                                     </div>
                                 </li>
                                 <div class="divider my-1 before:bg-gray-100 after:bg-gray-100"></div>
+                                <li>
+                                    <a href="{{ route('profile.edit') }}" class="w-full text-left py-3 px-4 text-gray-700 hover:bg-gray-100 hover:text-gray-800 rounded-lg flex items-center gap-3 transition-colors duration-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        <span class="font-medium">ข้อมูลส่วนตัว</span>
+                                    </a>
+                                </li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST" class="w-full p-0 block">
                                         @csrf<button type="submit"

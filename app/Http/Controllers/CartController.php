@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductSalepage;
-use App\Models\Promotion;
 use App\Services\CartService;
 use Illuminate\Http\Request;
 
@@ -13,46 +11,20 @@ class CartController extends Controller
 
     public function index()
     {
-        $items = $this->cartService->getCartContents();
-        $total = $this->cartService->getTotal();
+        $data = $this->cartService->getCartDataForView();
 
-        // Eager load products to prevent N+1 queries in the view
-        $productIds = $items->pluck('id')->toArray();
-        $products = ProductSalepage::with('images')
-            ->whereIn('pd_sp_id', $productIds)
-            ->get()
-            ->keyBy('pd_sp_id');
-
-        // === New Multi-Condition Promotion Logic ===
-        $applicablePromotions = $this->cartService->getApplicablePromotions($items);
-
-        // Consolidate all possible giftable products from all applicable promotions
-        $giftableProducts = $applicablePromotions->flatMap(function ($promo) {
-            return $promo->actions->flatMap(function ($action) {
-                // Combine fixed gifts and pooled gifts
-                $gifts = collect();
-                if ($action->productToGet) {
-                    $gifts->push($action->productToGet);
-                }
-                if ($action->giftableProducts->isNotEmpty()) {
-                    return $gifts->merge($action->giftableProducts);
-                }
-
-                return $gifts;
-            });
-        })->unique('pd_sp_id');
-        // === End New Logic ===
-
-        return view('cart', compact('items', 'total', 'products', 'applicablePromotions', 'giftableProducts'));
+        return view('cart', $data);
     }
 
     public function addToCart(Request $request, $productId)
     {
-        try {
-            $quantity = $request->input('quantity', 1);
-            $this->cartService->addOrUpdate((int) $productId, (int) $quantity);
+        $request->validate(['quantity' => 'integer|min:1']);
 
-            if ($request->ajax() || $request->wantsJson()) {
+        try {
+            $quantity = (int) $request->input('quantity', 1);
+            $this->cartService->addOrUpdate((int) $productId, $quantity);
+
+            if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
@@ -60,13 +32,11 @@ class CartController extends Controller
                 ]);
             }
 
-            return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าลงตะกร้าแล้ว');
+            return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าแล้ว');
+
         } catch (\Exception $e) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                ], 422); // 422 Unprocessable Entity is a good status code for this
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
             }
 
             return redirect()->back()->with('error', $e->getMessage());
@@ -84,8 +54,22 @@ class CartController extends Controller
     {
         $this->cartService->removeItem((int) $productId);
 
-        return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
+        return back()->with('success', 'ลบสินค้าแล้ว');
     }
 
-    public function addPromotion(Request $request) {}
+    public function addFreebiesToCart(Request $request)
+    {
+        $request->validate([
+            'selected_freebies' => 'required|array',
+            'selected_freebies.*' => 'integer|exists:product_salepage,pd_sp_id',
+        ]);
+
+        try {
+            $this->cartService->addFreebies($request->input('selected_freebies'));
+
+            return redirect()->route('cart.index')->with('success', 'เพิ่มของแถมเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
 }

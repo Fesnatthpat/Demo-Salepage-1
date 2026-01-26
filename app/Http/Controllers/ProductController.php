@@ -10,30 +10,19 @@ class ProductController extends Controller
 {
     public function show($id)
     {
-        // 1. ดึงข้อมูลสินค้าหลักจากตาราง product_salepage
-        $salePageProduct = ProductSalepage::with([
-            'images',
-            'options.images',
-        ])->where('pd_sp_id', $id)->first();
-
-        if (! $salePageProduct) {
-            return redirect('/')->with('error', 'ไม่พบข้อมูลสินค้านี้');
-        }
-
-        // --- จัดการรูปภาพสินค้าหลัก (Fix รูปหาย) ---
-        $images = $salePageProduct->images->map(function ($img) {
-            return (object) [
-                'image_url' => $this->prepareUrl($img->img_path ?? $img->image_path),
-            ];
-        });
+        $salePageProduct = ProductSalepage::with(['images', 'options.images'])
+            ->where('pd_sp_id', $id)
+            ->firstOrFail();
 
         $coverImg = $salePageProduct->images->where('img_sort', 1)->first() ?? $salePageProduct->images->first();
-        $activeImageUrl = $this->prepareUrl($coverImg?->img_path ?? $coverImg?->image_path);
+        $activeImageUrl = $this->formatUrl($coverImg?->img_path ?? $coverImg?->image_path);
 
-        // --- Promotion & Gift Logic ---
+        $productImages = $salePageProduct->images->map(fn ($img) => (object) ['image_url' => $this->formatUrl($img->img_path ?? $img->image_path)]);
+
+        // Promotion Logic
+        $now = now();
         $giftableProducts = collect();
         $promotionName = null;
-        $now = now();
 
         $relevantPromotionIds = PromotionRule::where(function ($query) use ($id) {
             $query->whereJsonContains('rules->product_id', (string) $id)
@@ -44,12 +33,9 @@ class ProductController extends Controller
             $activePromotions = Promotion::with(['actions.giftableProducts.images'])
                 ->whereIn('id', $relevantPromotionIds)
                 ->where('is_active', true)
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
-                })
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
-                })->get();
+                ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
+                ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
+                ->get();
 
             if ($activePromotions->isNotEmpty()) {
                 $promotionName = $activePromotions->first()->name;
@@ -59,7 +45,7 @@ class ProductController extends Controller
 
                         return $action->giftableProducts->map(function ($gift) use ($qty) {
                             $gImg = $gift->images->first();
-                            $gift->display_image = $this->prepareUrl($gImg?->img_path ?? $gImg?->image_path);
+                            $gift->display_image = $this->formatUrl($gImg?->img_path ?? $gImg?->image_path);
                             $gift->gift_quantity = $qty;
 
                             return $gift;
@@ -69,24 +55,23 @@ class ProductController extends Controller
             }
         }
 
-        // 2. Map ข้อมูลให้ตรงกับ Blade (Fix รายละเอียดไม่ขึ้น)
         $product = (object) [
             'pd_sp_id' => $salePageProduct->pd_sp_id,
             'pd_name' => $salePageProduct->pd_sp_name,
             'pd_code' => $salePageProduct->pd_sp_code,
-            'pd_details' => $salePageProduct->pd_sp_description, // รายละเอียดจาก SQL
+            'pd_details' => $salePageProduct->pd_sp_description,
             'pd_price' => (float) $salePageProduct->pd_sp_price,
             'pd_sp_discount' => (float) ($salePageProduct->pd_sp_discount ?? 0),
             'pd_sp_stock' => $salePageProduct->pd_sp_stock,
             'cover_image_url' => $activeImageUrl,
-            'images' => $images,
+            'images' => $productImages,
             'options' => $salePageProduct->options,
         ];
 
         return view('product', compact('product', 'giftableProducts', 'promotionName'));
     }
 
-    private function prepareUrl($path)
+    private function formatUrl($path)
     {
         if (! $path) {
             return 'https://via.placeholder.com/600x600.png?text=No+Image';
@@ -94,8 +79,7 @@ class ProductController extends Controller
         if (filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
-        $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
 
-        return asset('storage/'.$cleanPath);
+        return asset('storage/'.ltrim(str_replace('storage/', '', $path), '/'));
     }
 }

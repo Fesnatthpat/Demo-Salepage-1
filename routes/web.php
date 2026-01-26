@@ -42,8 +42,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
-// Route สำหรับของแถม (BOGO / Promotion)
-Route::post('/cart/add-bogo', [CartController::class, 'addPromotion'])->name('cart.add.bogo');
+Route::post('/cart/add-freebies', [CartController::class, 'addFreebiesToCart'])->name('cart.addFreebies');
 
 // ==========================================
 // 3. ระบบสมาชิก (Login/Logout)

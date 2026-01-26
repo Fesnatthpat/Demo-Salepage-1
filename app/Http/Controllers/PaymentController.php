@@ -10,7 +10,9 @@ use App\Models\ProductSalepage;
 use App\Models\Province;
 use App\Services\PromptPayService;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Darryldecode\Cart\ItemCollection; // เรียกใช้ Class ให้ถูกต้อง
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -28,7 +30,7 @@ class PaymentController extends Controller
         }
 
         $cartContent = Cart::session(auth()->id())->getContent();
-        $cartItems = collect(); // Use a collection for easier manipulation
+        $cartItems = collect();
 
         foreach ($cartContent as $item) {
             if (in_array((string) $item->id, $selectedItems)) {
@@ -36,53 +38,66 @@ class PaymentController extends Controller
             }
         }
 
-        // --- New Freebie Logic ---
+        // --- Freebie Logic (Preview) ---
         if (! empty($selectedFreebies)) {
+            // ถ้า selected_freebies มาเป็น string (เช่นจาก query param) ให้แปลงเป็น array
+            if (is_string($selectedFreebies)) {
+                $selectedFreebies = explode(',', $selectedFreebies);
+            }
+
             $freebieProducts = ProductSalepage::with('images')->whereIn('pd_sp_id', $selectedFreebies)->get();
 
             foreach ($freebieProducts as $freebie) {
-                // Create a dummy cart item object for preview
-                $freebieCartItem = new \Darryldecode\Cart\Item;
-                $freebieCartItem->id = $freebie->pd_sp_id;
-                $freebieCartItem->name = $freebie->pd_sp_name.' (ของแถม)';
-                $freebieCartItem->price = 0;
-                $freebieCartItem->quantity = 1; // Assuming 1 of each is added
-                $freebieCartItem->setAttributes(new \Darryldecode\Cart\ItemAttributeCollection([
-                    'original_price' => $freebie->pd_sp_price,
-                    'cover_image_url' => $freebie->cover_image_url,
-                    'is_freebie' => true,
-                ]));
+                // จัดการ Path รูปภาพ
+                $img = $freebie->images->first();
+                $imgPath = $img ? ($img->img_path ?? $img->image_path) : null;
+                if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
+                    $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
+                }
+
+                // สร้าง Dummy Item เพื่อแสดงผลหน้า Checkout
+                $freebieCartItem = new ItemCollection([
+                    'id' => $freebie->pd_sp_id,
+                    'name' => $freebie->pd_sp_name.' (ของแถม)',
+                    'price' => 0,
+                    'quantity' => 1,
+                    'attributes' => new Collection([
+                        'original_price' => (float) $freebie->pd_sp_price,
+                        'cover_image_url' => $imgPath,
+                        'is_freebie' => true,
+                    ]),
+                    'associatedModel' => $freebie,
+                ]);
+
                 $cartItems->push($freebieCartItem);
             }
         }
-        // --- End Freebie Logic ---
 
-        // Recalculate totals based on the combined (real + freebie preview) items
+        // คำนวณยอดรวม (ของแถมราคา 0 ไม่กระทบยอดเงิน แต่กระทบส่วนลดถ้าคิดตาม Logic เดิม)
         $totalAmount = 0;
         $totalDiscount = 0;
         $totalOriginalAmount = 0;
 
-        // Pre-check stock before showing payment page
         foreach ($cartItems as $item) {
-            $product = ProductSalepage::find($item->id);
-            if (! $product || $product->pd_sp_stock < $item->quantity) {
-                $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี ".($product->pd_sp_stock ?? 0).')';
-
-                return redirect()->route('cart.index')->with('error', $errorMessage);
+            // เช็คสต็อก (เฉพาะสินค้าหลัก)
+            if (! $item->attributes->get('is_freebie')) {
+                $product = ProductSalepage::find($item->id);
+                if (! $product || $product->pd_sp_stock < $item->quantity) {
+                    return redirect()->route('cart.index')->with('error', "สินค้า '{$item->name}' หมดสต็อก");
+                }
             }
 
             $totalAmount += ($item->price * $item->quantity);
-            if ($item->price > 0) {
-                $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $item->price;
-                $totalOriginalAmount += ($originalPrice * $item->quantity);
-                $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
-            }
+
+            $originalPrice = $item->attributes['original_price'] ?? $item->price;
+            $totalOriginalAmount += ($originalPrice * $item->quantity);
+
+            // ส่วนลด = ราคาเต็ม - ราคาขายจริง
+            $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
         }
 
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
-
-        // Eager load product models for the view
         $productIds = $cartItems->pluck('id')->toArray();
         $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
 
@@ -99,38 +114,52 @@ class PaymentController extends Controller
 
         $userId = Auth::id();
         $selectedItems = $request->input('selected_items', []);
+        $selectedFreebies = $request->input('selected_freebies', []); // รับค่าของแถมมาด้วย
+
         $cartContent = Cart::session($userId)->getContent();
 
         DB::beginTransaction();
 
         try {
-            // Re-calculate totals correctly
-            $subTotalPrice = 0; // Sum of original prices of non-free items
-            $finalTotalPrice = 0; // Sum of final prices (net amount)
-            $totalDiscount = 0;
+            $subTotalPrice = 0;
+            $finalTotalPrice = 0;
             $itemsToBuy = [];
 
+            // 1. จัดการสินค้าหลักในตะกร้า
             foreach ($cartContent as $item) {
                 if (in_array((string) $item->id, $selectedItems)) {
                     $itemsToBuy[] = $item;
                     $finalTotalPrice += ($item->price * $item->quantity);
 
-                    if ($item->price > 0) {
-                        $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $item->price;
-                        $subTotalPrice += ($originalPrice * $item->quantity);
-                    }
+                    $originalPrice = $item->attributes['original_price'] ?? $item->price;
+                    $subTotalPrice += ($originalPrice * $item->quantity);
                 }
             }
 
-            // The total discount is the difference between the subtotal and the final price
+            // 2. ★★★ [แก้ไขใหม่] จัดการของแถม ★★★
+            // ดึงข้อมูลของแถมจาก Database ตาม ID ที่ส่งมา
+            $freebieItemsToSave = [];
+            if (! empty($selectedFreebies)) {
+                if (is_string($selectedFreebies)) {
+                    $selectedFreebies = explode(',', $selectedFreebies);
+                }
+
+                $freebieProducts = ProductSalepage::whereIn('pd_sp_id', $selectedFreebies)->get();
+                foreach ($freebieProducts as $freebie) {
+                    $freebieItemsToSave[] = $freebie;
+                    // ของแถม: เพิ่มราคาต้นลงไปใน subTotal แต่ไม่เพิ่มใน finalTotal (เพราะฟรี)
+                    $subTotalPrice += $freebie->pd_sp_price;
+                }
+            }
+
             $totalDiscount = $subTotalPrice - $finalTotalPrice;
 
             if (count($itemsToBuy) === 0) {
-                throw new \Exception('No items to buy.');
+                throw new \Exception('ไม่พบรายการสินค้าที่จะสั่งซื้อ');
             }
 
             $shippingCost = 0;
-            $netAmount = $finalTotalPrice; // Net amount is the final selling price
+            $netAmount = $finalTotalPrice;
 
             // ดึงที่อยู่
             $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
@@ -141,7 +170,7 @@ class PaymentController extends Controller
 
             $orderCode = 'ORD-'.date('YmdHis').'-'.rand(100, 999);
 
-            // สร้าง Order
+            // สร้าง Order หลัก
             $order = Order::create([
                 'ord_code' => $orderCode,
                 'user_id' => $userId,
@@ -156,16 +185,15 @@ class PaymentController extends Controller
                 'shipping_address' => $fullAddress,
             ]);
 
-            // บันทึก Order Detail และ **ตัดสต็อก**
+            // 3.1 บันทึก Order Detail (สินค้าหลัก) และตัดสต็อก
             foreach ($itemsToBuy as $item) {
                 $product = ProductSalepage::where('pd_sp_id', $item->id)->lockForUpdate()->first();
 
                 if (! $product) {
-                    throw new \Exception("Product with ID {$item->id} not found during transaction.");
+                    throw new \Exception("ไม่พบสินค้า ID {$item->id}");
                 }
-
                 if ($product->pd_sp_stock < $item->quantity) {
-                    throw new \Exception("Insufficient stock for product '{$item->name}'. Needed: {$item->quantity}, Have: {$product->pd_sp_stock}");
+                    throw new \Exception("สินค้า '{$item->name}' หมดสต็อก");
                 }
 
                 $product->decrement('pd_sp_stock', $item->quantity);
@@ -174,13 +202,36 @@ class PaymentController extends Controller
                     'ord_id' => $order->id,
                     'user_id' => $userId,
                     'pd_id' => $item->id,
-                    'ordd_price' => $item->price,
+                    'ordd_price' => $item->price, // ราคาขายจริง
                     'ordd_original_price' => $item->attributes['original_price'] ?? $item->price,
                     'ordd_count' => $item->quantity,
                     'ordd_discount' => ($item->attributes['original_price'] ?? $item->price) - $item->price,
                     'ordd_create_date' => now(),
                 ]);
                 Cart::session($userId)->remove($item->id);
+            }
+
+            // 3.2 ★★★ [แก้ไขใหม่] บันทึก Order Detail (ของแถม) และตัดสต็อก ★★★
+            foreach ($freebieItemsToSave as $freebie) {
+                // Lock เพื่อตัดสต็อกของแถมด้วย
+                $product = ProductSalepage::where('pd_sp_id', $freebie->pd_sp_id)->lockForUpdate()->first();
+
+                // เช็คสต็อกของแถม (สมมติแจก 1 ชิ้น)
+                if (! $product || $product->pd_sp_stock < 1) {
+                    throw new \Exception("ขออภัย ของแถม '{$freebie->pd_sp_name}' หมดสต็อก");
+                }
+                $product->decrement('pd_sp_stock', 1);
+
+                OrderDetail::create([
+                    'ord_id' => $order->id,
+                    'user_id' => $userId,
+                    'pd_id' => $freebie->pd_sp_id,
+                    'ordd_price' => 0, // ของแถมราคาขาย 0
+                    'ordd_original_price' => $freebie->pd_sp_price,
+                    'ordd_count' => 1,
+                    'ordd_discount' => $freebie->pd_sp_price, // ส่วนลดเท่าราคาเต็ม
+                    'ordd_create_date' => now(),
+                ]);
             }
 
             // Update Storage
@@ -207,30 +258,25 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
-        // ★ ตั้งเวลาหมดอายุ 15 นาที จากเวลาอัปเดตล่าสุด
         $expireTime = $order->updated_at->addMinutes(15);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
         if ($secondsRemaining < 0) {
             $secondsRemaining = 0;
         }
 
-        // สร้าง Payload พร้อมเพย์ผ่าน Service
         $promptpayTarget = env('PROMPTPAY_ACCOUNT', '0812345678');
         $payload = $promptPayService->generatePayload($promptpayTarget, $order->net_amount);
-
-        // ★ สร้าง QR เป็น SVG เพื่อแก้ปัญหา Driver Error
         $qrCodeBase64 = base64_encode(QrCode::format('svg')->size(250)->errorCorrection('H')->generate($payload));
 
         return view('qr', compact('order', 'qrCodeBase64', 'secondsRemaining'));
     }
 
-    // [New] Refresh QR Code Logic
+    // [Step 3.1] Refresh QR Code
     public function refreshQr($orderCode)
     {
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
         if ($order->status_id == 1) {
-            // อัปเดตเวลา updated_at เป็นปัจจุบัน เพื่อเริ่มนับ 15 นาทีใหม่
             $order->touch();
 
             return redirect()->route('payment.qr', ['orderId' => $orderCode])->with('success', 'รีเฟรช QR Code แล้ว');
@@ -242,22 +288,18 @@ class PaymentController extends Controller
     // [Step 4] Upload Slip
     public function uploadSlip(Request $request, $orderCode)
     {
-        $request->validate(['slip_image' => 'required|image|max:5120']); // Max 5MB
+        $request->validate(['slip_image' => 'required|image|max:5120']);
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
-        // ตรวจสอบเวลาหมดอายุ (ต้องตรงกับใน showQr)
         if (now()->greaterThan($order->updated_at->addMinutes(15))) {
             return back()->with('error', 'หมดเวลาชำระเงิน กรุณากดปุ่มรีเฟรช');
         }
 
         if ($request->hasFile('slip_image')) {
-            // ★ บันทึกไฟล์ลง Storage
             $path = $request->file('slip_image')->store('slips', 'public');
-
-            // ★ บันทึก Path ลง Database
             $order->slip_path = $path;
-            $order->status_id = 2; // แจ้งชำระเงินแล้ว
+            $order->status_id = 2;
             $order->save();
 
             return redirect()->route('order.show', ['orderCode' => $order->ord_code])

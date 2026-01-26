@@ -47,9 +47,7 @@
                             <li><a href="/allproducts" class="py-3 font-bold">สินค้าทั้งหมด</a></li>
                             <?php if(auth()->guard()->check()): ?>
                                 <li><a href="/orderhistory" class="py-3 font-bold">ประวัติการสั่งซื้อ</a></li>
-                                                            <li><a href="/ordertracking" class="py-3 font-bold">เช็คสถานะ</a></li>
-                                                            <li><a href="<?php echo e(route('profile.edit')); ?>" class="py-3 font-bold">ข้อมูลส่วนตัว</a></li>
-                                                            <li class="border-t mt-2 pt-2">                                    <div class="flex items-center gap-2 p-2">
+                                                                                        <li><a href="<?php echo e(route('profile.edit')); ?>" class="py-3 font-bold">ข้อมูลส่วนตัว</a></li>                                                            <li class="border-t mt-2 pt-2">                                    <div class="flex items-center gap-2 p-2">
                                         <?php if(auth()->user()->avatar): ?>
                                             <img src="<?php echo e(auth()->user()->avatar); ?>" class="w-8 h-8 rounded-full border">
                                         <?php else: ?>
@@ -84,8 +82,7 @@
                         <?php if(auth()->guard()->check()): ?>
                             <li><a href="/orderhistory"
                                     class="hover:text-emerald-600 hover:bg-transparent">ประวัติการสั่งซื้อ</a></li>
-                            <li><a href="/ordertracking" class="hover:text-emerald-600 hover:bg-transparent">เช็คสถานะ</a>
-                            </li>
+
                         <?php endif; ?>
                     </ul>
                 </div>

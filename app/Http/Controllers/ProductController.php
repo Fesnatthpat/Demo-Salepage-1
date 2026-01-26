@@ -8,119 +8,94 @@ use App\Models\PromotionRule;
 
 class ProductController extends Controller
 {
-    /**
-     * แสดงหน้ารายละเอียดสินค้า
-     */
     public function show($id)
     {
-        // 1. ดึงข้อมูลสินค้าหลัก
+        // 1. ดึงข้อมูลสินค้าหลักจากตาราง product_salepage
         $salePageProduct = ProductSalepage::with([
             'images',
             'options.images',
         ])->where('pd_sp_id', $id)->first();
 
-        // 2. ถ้าไม่เจอสินค้า
         if (! $salePageProduct) {
-            return redirect('/')->with('error', 'ไม่พบสินค้านี้');
+            return redirect('/')->with('error', 'ไม่พบข้อมูลสินค้านี้');
         }
 
-        // --- START: Promotion Logic (รองรับ DB ของคุณ) ---
-        $now = now();
-        $giftableProducts = collect();
+        // --- จัดการรูปภาพสินค้าหลัก (Fix รูปหาย) ---
+        $images = $salePageProduct->images->map(function ($img) {
+            return (object) [
+                'image_url' => $this->prepareUrl($img->img_path ?? $img->image_path),
+            ];
+        });
 
-        // ค้นหา Promotion ID ที่มี Rule ตรงกับสินค้านี้
-        // (DB เก็บ JSON rules -> "product_id": "7")
-        $relevantPromotionIds = PromotionRule::where(function ($query) use ($salePageProduct) {
-            $query->where('rules->product_id', (string) $salePageProduct->pd_sp_id)
-                ->orWhere('rules->product_id', (int) $salePageProduct->pd_sp_id);
-        })
-            ->pluck('promotion_id')
-            ->unique();
+        $coverImg = $salePageProduct->images->where('img_sort', 1)->first() ?? $salePageProduct->images->first();
+        $activeImageUrl = $this->prepareUrl($coverImg?->img_path ?? $coverImg?->image_path);
+
+        // --- Promotion & Gift Logic ---
+        $giftableProducts = collect();
+        $promotionName = null;
+        $now = now();
+
+        $relevantPromotionIds = PromotionRule::where(function ($query) use ($id) {
+            $query->whereJsonContains('rules->product_id', (string) $id)
+                ->orWhereJsonContains('rules->product_id', (int) $id);
+        })->pluck('promotion_id')->unique();
 
         if ($relevantPromotionIds->isNotEmpty()) {
-            // โหลด Promotion ที่ Active
-            $activePromotions = Promotion::with([
-                'rules',
-                'actions.productToGet.images',    // ของแถมแบบ Fixed
-                'actions.giftableProducts.images', // ของแถมแบบ Pool (จากตาราง promotion_action_gifts)
-            ])
+            $activePromotions = Promotion::with(['actions.giftableProducts.images'])
                 ->whereIn('id', $relevantPromotionIds)
                 ->where('is_active', true)
-                ->where(function ($query) use ($now) {
-                    $query->where('start_date', '<=', $now)->orWhereNull('start_date');
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
                 })
-                ->where(function ($query) use ($now) {
-                    $query->where('end_date', '>=', $now)->orWhereNull('end_date');
-                })
-                ->get();
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
+                })->get();
 
-            // จัดการข้อมูลของแถม
-            $giftableProducts = $activePromotions->flatMap(function ($promo) {
-                return $promo->actions->flatMap(function ($action) {
-                    $gifts = collect();
+            if ($activePromotions->isNotEmpty()) {
+                $promotionName = $activePromotions->first()->name;
+                $giftableProducts = $activePromotions->flatMap(function ($promo) {
+                    return $promo->actions->flatMap(function ($action) {
+                        $qty = $action->actions['quantity_to_get'] ?? 1;
 
-                    // กรณี 1: ของแถมแบบ Fixed (ระบุ ID ใน JSON)
-                    if ($action->productToGet) {
-                        $action->productToGet->gift_quantity = $action->quantity; // ใช้ Accessor: quantity_to_get
-                        $gifts->push($action->productToGet);
-                    }
+                        return $action->giftableProducts->map(function ($gift) use ($qty) {
+                            $gImg = $gift->images->first();
+                            $gift->display_image = $this->prepareUrl($gImg?->img_path ?? $gImg?->image_path);
+                            $gift->gift_quantity = $qty;
 
-                    // กรณี 2: ของแถมแบบ Pool (เลือกจาก promotion_action_gifts)
-                    if ($action->giftableProducts->isNotEmpty()) {
-                        foreach ($action->giftableProducts as $poolItem) {
-                            $poolItem->gift_quantity = $action->quantity; // ใช้จำนวนจาก Action
-                            $gifts->push($poolItem);
-                        }
-                    }
-
-                    return $gifts;
-                });
-            })->unique('pd_sp_id'); // กรองของแถมซ้ำออก
-
-        } else {
-            $salePageProduct->active_promotions = collect();
-        }
-        // --- END: Promotion Logic ---
-
-        // 3. เตรียมข้อมูลสินค้าเพื่อส่งไป View (Map ให้ตรงกับชื่อตัวแปรที่ View ใช้)
-        $primaryImage = $salePageProduct->images->where('img_sort', 1)->first();
-        $imagePath = $primaryImage ? $primaryImage->img_path : ($salePageProduct->images->first()->img_path ?? null);
-
-        // แปลง Path รูปภาพให้สมบูรณ์ (URL)
-        $activeImageUrl = $imagePath;
-        if ($activeImageUrl && ! filter_var($activeImageUrl, FILTER_VALIDATE_URL)) {
-            $activeImageUrl = asset('storage/'.str_replace('storage/', '', $activeImageUrl));
+                            return $gift;
+                        });
+                    });
+                })->unique('pd_sp_id');
+            }
         }
 
+        // 2. Map ข้อมูลให้ตรงกับ Blade (Fix รายละเอียดไม่ขึ้น)
         $product = (object) [
-            'pd_sp_id' => $salePageProduct->pd_sp_id, // สำคัญ: ใช้สำหรับ Add to Cart
-            'id' => $salePageProduct->pd_sp_id,
+            'pd_sp_id' => $salePageProduct->pd_sp_id,
             'pd_name' => $salePageProduct->pd_sp_name,
-            'pd_sp_name' => $salePageProduct->pd_sp_name,
-            'pd_details' => $salePageProduct->pd_sp_description,
-            'pd_sp_details' => $salePageProduct->pd_sp_description,
-            'pd_price' => $salePageProduct->pd_sp_price,
-            'pd_sp_price' => $salePageProduct->pd_sp_price,
-            'pd_sp_discount' => $salePageProduct->pd_sp_discount ?? 0,
             'pd_code' => $salePageProduct->pd_sp_code,
-            'pd_sp_code' => $salePageProduct->pd_sp_code,
-            'pd_sp_stock' => $salePageProduct->pd_sp_stock ?? 0,
-
-            // รูปภาพ
+            'pd_details' => $salePageProduct->pd_sp_description, // รายละเอียดจาก SQL
+            'pd_price' => (float) $salePageProduct->pd_sp_price,
+            'pd_sp_discount' => (float) ($salePageProduct->pd_sp_discount ?? 0),
+            'pd_sp_stock' => $salePageProduct->pd_sp_stock,
             'cover_image_url' => $activeImageUrl,
-            'images' => $salePageProduct->images->map(function ($img) {
-                $url = $img->img_path ?? $img->image_path;
-                if ($url && ! filter_var($url, FILTER_VALIDATE_URL)) {
-                    $url = asset('storage/'.str_replace('storage/', '', $url));
-                }
-
-                return (object) ['image_url' => $url];
-            }),
-
+            'images' => $images,
             'options' => $salePageProduct->options,
         ];
 
-        // ส่ง $giftableProducts ไปยัง View
-        return view('product', compact('product', 'giftableProducts'));
+        return view('product', compact('product', 'giftableProducts', 'promotionName'));
+    }
+
+    private function prepareUrl($path)
+    {
+        if (! $path) {
+            return 'https://via.placeholder.com/600x600.png?text=No+Image';
+        }
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+        $cleanPath = ltrim(str_replace('storage/', '', $path), '/');
+
+        return asset('storage/'.$cleanPath);
     }
 }

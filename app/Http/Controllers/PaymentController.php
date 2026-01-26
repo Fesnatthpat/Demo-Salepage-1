@@ -35,16 +35,16 @@ class PaymentController extends Controller
                 $cartItems->push($item);
             }
         }
-        
+
         // --- New Freebie Logic ---
-        if (!empty($selectedFreebies)) {
+        if (! empty($selectedFreebies)) {
             $freebieProducts = ProductSalepage::with('images')->whereIn('pd_sp_id', $selectedFreebies)->get();
 
             foreach ($freebieProducts as $freebie) {
                 // Create a dummy cart item object for preview
-                $freebieCartItem = new \Darryldecode\Cart\Item();
+                $freebieCartItem = new \Darryldecode\Cart\Item;
                 $freebieCartItem->id = $freebie->pd_sp_id;
-                $freebieCartItem->name = $freebie->pd_sp_name . ' (ของแถม)';
+                $freebieCartItem->name = $freebie->pd_sp_name.' (ของแถม)';
                 $freebieCartItem->price = 0;
                 $freebieCartItem->quantity = 1; // Assuming 1 of each is added
                 $freebieCartItem->setAttributes(new \Darryldecode\Cart\ItemAttributeCollection([
@@ -67,11 +67,12 @@ class PaymentController extends Controller
             $product = ProductSalepage::find($item->id);
             if (! $product || $product->pd_sp_stock < $item->quantity) {
                 $errorMessage = "ขออภัย, สินค้า '{$item->name}' มีไม่พอในสต็อก (ต้องการ {$item->quantity}, มี ".($product->pd_sp_stock ?? 0).')';
+
                 return redirect()->route('cart.index')->with('error', $errorMessage);
             }
 
-             $totalAmount += ($item->price * $item->quantity);
-             if ($item->price > 0) {
+            $totalAmount += ($item->price * $item->quantity);
+            if ($item->price > 0) {
                 $originalPrice = $item->attributes->has('original_price') ? $item->attributes->original_price : $item->price;
                 $totalOriginalAmount += ($originalPrice * $item->quantity);
                 $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
@@ -120,7 +121,7 @@ class PaymentController extends Controller
                     }
                 }
             }
-            
+
             // The total discount is the difference between the subtotal and the final price
             $totalDiscount = $subTotalPrice - $finalTotalPrice;
 

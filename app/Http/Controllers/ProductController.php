@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
-    public function __construct(private CartService $cartService)
-    {
-    }
+    public function __construct(private CartService $cartService) {}
 
     public function show($id)
     {
@@ -23,47 +21,69 @@ class ProductController extends Controller
         $activeImageUrl = $this->formatUrl($coverImg?->img_path ?? $coverImg?->image_path);
         $productImages = $salePageProduct->images->map(fn ($img) => (object) ['image_url' => $this->formatUrl($img->img_path ?? $img->image_path)]);
 
-        // 1. ดึงโปรโมชั่นที่เกี่ยวข้อง
+        // 1. ดึงโปรโมชั่น
         $promotions = $this->cartService->getPromotionsForProduct((int) $id);
 
-        // 2. ★★★ Logic ใหม่: ตรวจสอบเงื่อนไขแล้วแปะป้ายสถานะ (ไม่กรองทิ้ง) ★★★
-        $promotions->map(function ($promo) use ($id) {
-            $conditionType = $promo->condition_type ?? 'any';
-            $isMet = true;
+        // ดึงจำนวนสินค้าชิ้นนี้ที่มีอยู่ในตะกร้าแล้ว (เพื่อเอาไปคำนวณต่อ)
+        $userId = Auth::check() ? Auth::id() : '_guest_'.session()->getId();
+        $cartContent = Cart::session($userId)->getContent();
+        $currentCartQty = $cartContent->where('id', $id)->first()->quantity ?? 0;
 
-            // ถ้าเงื่อนไขเป็น 'all' (ต้องครบทุกข้อ) -> เช็คตะกร้า
-            if ($conditionType === 'all') {
-                $userId = Auth::check() ? Auth::id() : '_guest_' . session()->getId();
-                $cartContent = Cart::session($userId)->getContent();
+        // 2. Map ข้อมูลโปรโมชั่นเพื่อส่งไปคำนวณหน้าบ้าน
+        $promotions->map(function ($promo) use ($id, $currentCartQty, $cartContent) {
 
-                // จำลองตะกร้า: ของเดิม + สินค้าชิ้นนี้ 1 ชิ้น
+            // หาว่าสินค้านี้ (ID ปัจจุบัน) ต้องการจำนวนเท่าไหร่ในโปรโมชั่นนี้
+            $myRule = $promo->rules->filter(function ($rule) use ($id) {
+                $pids = $rule->rules['product_id'] ?? [];
+                if (! is_array($pids)) {
+                    $pids = [$pids];
+                }
+
+                return in_array((string) $id, array_map('strval', $pids));
+            })->first();
+
+            // จำนวนที่ต้องซื้อของสินค้านี้ (ถ้าหาไม่เจอให้เป็น 1)
+            $requiredQty = $myRule ? ($myRule->rules['quantity_to_buy'] ?? 1) : 1;
+
+            // ตรวจสอบสินค้า *ชิ้นอื่น* ในเงื่อนไข (กรณี Buy A + B)
+            $otherRulesMet = true;
+            if (($promo->condition_type ?? 'any') === 'all') {
                 $cartQuantities = $cartContent->pluck('quantity', 'id')->toArray();
-                $cartQuantities[$id] = ($cartQuantities[$id] ?? 0) + 1;
 
                 foreach ($promo->rules as $rule) {
-                    $requiredPids = $rule->rules['product_id'] ?? [];
-                    if (!is_array($requiredPids)) $requiredPids = [$requiredPids];
-                    $requiredQty = $rule->rules['quantity_to_buy'] ?? 1;
+                    $pids = $rule->rules['product_id'] ?? [];
+                    if (! is_array($pids)) {
+                        $pids = [$pids];
+                    }
 
-                    // เช็คว่ากฎข้อนี้ผ่านไหม
-                    $ruleMet = false;
-                    foreach ($requiredPids as $reqPid) {
-                        $qty = $cartQuantities[(int)$reqPid] ?? 0;
-                        if ($qty >= $requiredQty) {
-                            $ruleMet = true;
+                    // ถ้ากฎข้อนี้เป็นของสินค้าปัจจุบัน ให้ข้ามไปก่อน (เพราะเราจะเช็ค Real-time หน้าเว็บ)
+                    if (in_array((string) $id, array_map('strval', $pids))) {
+                        continue;
+                    }
+
+                    $reqQ = $rule->rules['quantity_to_buy'] ?? 1;
+                    $met = false;
+                    foreach ($pids as $pid) {
+                        if (($cartQuantities[(int) $pid] ?? 0) >= $reqQ) {
+                            $met = true;
                             break;
                         }
                     }
-
-                    if (!$ruleMet) {
-                        $isMet = false; // มีข้อใดข้อหนึ่งไม่ผ่าน -> ปรับสถานะเป็น False
-                        break; 
+                    if (! $met) {
+                        $otherRulesMet = false;
+                        break;
                     }
                 }
             }
 
-            // บันทึกสถานะลงใน Object โปรโมชั่น
-            $promo->is_condition_met = $isMet;
+            // ส่งตัวแปรพิเศษออกไปให้ JavaScript ใช้
+            $promo->frontend_logic = [
+                'required_qty' => (int) $requiredQty,     // ต้องซื้อกี่ชิ้น
+                'cart_qty' => (int) $currentCartQty,      // ในตะกร้ามีแล้วกี่ชิ้น
+                'other_rules_met' => $otherRulesMet,     // เงื่อนไขสินค้าอื่นครบหรือยัง
+                'condition_type' => $promo->condition_type ?? 'any',
+            ];
+
             return $promo;
         });
 
@@ -85,8 +105,13 @@ class ProductController extends Controller
 
     private function formatUrl($path)
     {
-        if (!$path) return 'https://via.placeholder.com/600x600.png?text=No+Image';
-        if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
+        if (! $path) {
+            return 'https://via.placeholder.com/600x600.png?text=No+Image';
+        }
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
         return asset('storage/'.ltrim(str_replace('storage/', '', $path), '/'));
     }
 }

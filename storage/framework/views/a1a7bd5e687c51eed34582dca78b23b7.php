@@ -131,10 +131,14 @@
                                         <template x-for="gift in activePromotion.gifts" :key="gift.id">
                                             <label
                                                 class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
-                                                :class="{ 'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale':
+                                                :class="{
+                                                    'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale':
                                                         !
-                                                        isConditionMet, 'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet, 'border-emerald-500 bg-emerald-50 ring-0': selectedGifts
-                                                        .includes(gift.id) }">
+                                                        isConditionMet,
+                                                    'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet,
+                                                    'border-emerald-500 bg-emerald-50 ring-0': selectedGifts
+                                                        .includes(gift.id)
+                                                }">
 
                                                 <input type="checkbox" :disabled="!isConditionMet"
                                                     @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"

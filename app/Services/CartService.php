@@ -14,6 +14,11 @@ use Illuminate\Support\Str;
 class CartService
 {
     /**
+     * ตัวแปรเช็คสถานะการโหลด เพื่อไม่ให้โหลดซ้ำใน Request เดียวกัน
+     */
+    protected bool $cartLoadedFromDb = false;
+
+    /**
      * ดึงข้อมูลทั้งหมดสำหรับแสดงผลหน้าตะกร้า (Cart View)
      */
     public function getCartDataForView(): array
@@ -21,18 +26,18 @@ class CartService
         $items = $this->getCartContents();
         $total = $this->getTotal();
 
-        // ดึงข้อมูลสินค้า (Eager Load) เพื่อป้องกัน N+1 Query
+        // ดึงข้อมูลสินค้า (Eager Load)
         $productIds = $items->pluck('id')->toArray();
         $products = ProductSalepage::with('images')
             ->whereIn('pd_sp_id', $productIds)
             ->get()
             ->keyBy('pd_sp_id');
 
-        // คำนวณโปรโมชั่นที่ใช้ได้
+        // คำนวณโปรโมชั่น
         $applicablePromotions = $this->getApplicablePromotions($items);
 
-        // คำนวณโควต้าของแถมทั้งหมด
-        $freebieLimit = $this->calculateFreebieLimit($items);
+        // คำนวณ Limit ของแถม (ส่ง $applicablePromotions ไปด้วย ลด Query)
+        $freebieLimit = $this->calculateFreebieLimit($items, $applicablePromotions);
 
         // รวบรวมรายชื่อของแถมที่ได้รับสิทธิ์
         $giftableProducts = $applicablePromotions->flatMap(function ($promo) {
@@ -78,22 +83,25 @@ class CartService
     /**
      * คำนวณโควต้าของแถมทั้งหมดที่สามารถเลือกได้
      */
-    public function calculateFreebieLimit(?Collection $cartItems = null): int
+    public function calculateFreebieLimit(?Collection $cartItems = null, ?Collection $applicablePromotions = null): int
     {
         $items = $cartItems ?? $this->getCartContents();
-        $applicablePromotions = $this->getApplicablePromotions($items);
+        $promos = $applicablePromotions ?? $this->getApplicablePromotions($items);
 
-        if ($applicablePromotions->isEmpty()) {
+        if ($promos->isEmpty()) {
             return 0;
         }
 
-        $limit = $applicablePromotions->sum(function ($promo) {
-            return $promo->actions->sum(function ($action) {
-                return (int) ($action->actions['quantity_to_get'] ?? 0);
+        // Logic ใหม่: คูณด้วย Multiplier (จำนวนชุดที่ได้รับสิทธิ์)
+        return $promos->sum(function ($promo) {
+            $multiplier = $promo->multiplier ?? 1;
+
+            return $promo->actions->sum(function ($action) use ($multiplier) {
+                $qtyPerSet = (int) ($action->actions['quantity_to_get'] ?? 0);
+
+                return $qtyPerSet * $multiplier;
             });
         });
-
-        return $limit;
     }
 
     public function getUserId(): string|int
@@ -101,11 +109,20 @@ class CartService
         return Auth::check() ? Auth::id() : '_guest_'.session()->getId();
     }
 
+    /**
+     * ดึงข้อมูลตะกร้า (แก้ไขให้โหลดจาก DB แค่ครั้งเดียว)
+     */
     public function getCartContents(): Collection
     {
         $userId = $this->getUserId();
-        if (Auth::check()) {
-            $this->restoreCartFromDatabase($userId);
+
+        if (Auth::check() && ! $this->cartLoadedFromDb) {
+            $sessionCart = Cart::session($userId)->getContent();
+            // โหลดใหม่เฉพาะถ้า Session ว่างเปล่า
+            if ($sessionCart->isEmpty()) {
+                $this->restoreCartFromDatabase($userId);
+            }
+            $this->cartLoadedFromDb = true;
         }
 
         return Cart::session($userId)->getContent()->sort();
@@ -150,24 +167,35 @@ class CartService
         ];
     }
 
-    public function addOrUpdate(int $productId, int $quantity): void
+    /**
+     * ฟังก์ชันเช็คสต็อก (Helper)
+     */
+    private function checkStockAndGetProduct(int $productId, int $quantity)
     {
         $product = ProductSalepage::find($productId);
-        if (! $product || $product->pd_sp_stock <= 0) {
-            return;
+        if (! $product) {
+            throw new \Exception("ไม่พบสินค้า ID: {$productId}");
         }
 
         $userId = $this->getUserId();
         $cart = Cart::session($userId);
-        $currentQuantity = $cart->has($productId) ? $cart->get($productId)->quantity : 0;
+        $currentQty = $cart->has($productId) ? $cart->get($productId)->quantity : 0;
 
-        if (($currentQuantity + $quantity) > $product->pd_sp_stock) {
-            throw new \Exception("สินค้ามีไม่เพียงพอ (เหลือ {$product->pd_sp_stock} ชิ้น)");
+        if (($currentQty + $quantity) > $product->pd_sp_stock) {
+            throw new \Exception("สินค้า '{$product->pd_sp_name}' มีไม่เพียงพอ (เหลือ {$product->pd_sp_stock})");
         }
 
+        return $product;
+    }
+
+    public function addOrUpdate(int $productId, int $quantity): void
+    {
+        $product = $this->checkStockAndGetProduct($productId, $quantity);
         $details = $this->getProductDetails($productId);
+
         if ($details) {
-            $cart->add([
+            $userId = $this->getUserId();
+            Cart::session($userId)->add([
                 'id' => $details->id,
                 'name' => $details->name,
                 'price' => $details->price,
@@ -180,45 +208,104 @@ class CartService
                 ],
                 'associatedModel' => $product,
             ]);
+
             if (Auth::check()) {
-                $this->saveCartToDatabase($userId, $cart->getContent());
+                $this->saveCartToDatabase($userId, Cart::session($userId)->getContent());
             }
         }
     }
 
-    public function addWithGifts(int $productId, int $quantity, array $giftIds): void
+    /**
+     * เพิ่มสินค้าแบบซื้อคู่ (Bundle) A+B แถม C
+     */
+    public function addBundle(int $mainProductId, int $secondaryProductId, array $giftIds = []): void
     {
-        $product = ProductSalepage::find($productId);
-        if (! $product) {
-            throw new \Exception('ไม่พบข้อมูลสินค้า');
+        $userId = $this->getUserId();
+        $cart = Cart::session($userId);
+        $promoGroupId = 'bundle_'.Str::uuid(); // Group ID เดียวกันทั้งชุด
+
+        // 1. Add Main
+        $this->checkStockAndGetProduct($mainProductId, 1);
+        $mainDetails = $this->getProductDetails($mainProductId);
+        if ($mainDetails) {
+            $cart->add([
+                'id' => $mainDetails->id,
+                'name' => $mainDetails->name,
+                'price' => $mainDetails->price,
+                'quantity' => 1,
+                'attributes' => [
+                    'image' => $mainDetails->image,
+                    'pd_code' => $mainDetails->pd_code,
+                    'promo_group_id' => $promoGroupId,
+                    'is_condition_item' => true, // ✅ เป็นสินค้าเงื่อนไข
+                    'item_type' => 'main',
+                ],
+                'associatedModel' => ProductSalepage::find($mainProductId),
+            ]);
         }
 
+        // 2. Add Secondary
+        $this->checkStockAndGetProduct($secondaryProductId, 1);
+        $secDetails = $this->getProductDetails($secondaryProductId);
+        if ($secDetails) {
+            $cart->add([
+                'id' => $secDetails->id,
+                'name' => $secDetails->name,
+                'price' => $secDetails->price,
+                'quantity' => 1,
+                'attributes' => [
+                    'image' => $secDetails->image,
+                    'pd_code' => $secDetails->pd_code,
+                    'promo_group_id' => $promoGroupId,
+                    'is_condition_item' => true, // ✅ เป็นสินค้าเงื่อนไข
+                    'item_type' => 'secondary',
+                ],
+                'associatedModel' => ProductSalepage::find($secondaryProductId),
+            ]);
+        }
+
+        // 3. Add Freebies
+        foreach ($giftIds as $giftId) {
+            $this->checkStockAndGetProduct($giftId, 1);
+            $giftDetails = $this->getProductDetails($giftId);
+            if ($giftDetails) {
+                $cart->add([
+                    'id' => $giftDetails->id,
+                    'name' => $giftDetails->name.' (ของแถม)',
+                    'price' => 0,
+                    'quantity' => 1,
+                    'attributes' => [
+                        'image' => $giftDetails->image,
+                        'pd_code' => $giftDetails->pd_code,
+                        'is_freebie' => true, // ✅ เป็นของแถม
+                        'promo_group_id' => $promoGroupId,
+                    ],
+                ]);
+            }
+        }
+
+        if (Auth::check()) {
+            $this->saveCartToDatabase($userId, $cart->getContent());
+        }
+    }
+
+    /**
+     * เพิ่มสินค้าพร้อมของแถม (Logic เดิม ปรับปรุง Attributes)
+     */
+    public function addWithGifts(int $productId, int $quantity, array $giftIds): void
+    {
         $userId = $this->getUserId();
         $cart = Cart::session($userId);
 
-        // 1. Check stock for main product
-        $currentProductQty = $cart->has($productId) ? $cart->get($productId)->quantity : 0;
-        if (($currentProductQty + $quantity) > $product->pd_sp_stock) {
-            throw new \Exception("สินค้า '{$product->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
+        // Check Stocks
+        $product = $this->checkStockAndGetProduct($productId, $quantity);
+        foreach (array_count_values($giftIds) as $gId => $count) {
+            $this->checkStockAndGetProduct($gId, $count);
         }
 
-        // 2. Check stock for all selected gifts
-        $giftCounts = array_count_values($giftIds);
-        foreach ($giftCounts as $giftId => $count) {
-            $giftProduct = ProductSalepage::find($giftId);
-            if (! $giftProduct) {
-                throw new \Exception("ไม่พบข้อมูลของแถม ID: {$giftId}");
-            }
-            $currentGiftQty = $cart->has($giftId) ? $cart->get($giftId)->quantity : 0;
-            if (($currentGiftQty + $count) > $giftProduct->pd_sp_stock) {
-                throw new \Exception("ของแถม '{$giftProduct->pd_sp_name}' มีในสต็อกไม่เพียงพอ");
-            }
-        }
-
-        // 3. Add items with a group ID
         $promoGroupId = 'promo_'.Str::uuid();
 
-        // Add main product
+        // Add Main Product
         $productDetails = $this->getProductDetails($productId);
         if ($productDetails) {
             $cart->add([
@@ -232,12 +319,13 @@ class CartService
                     'discount' => $productDetails->discount,
                     'pd_code' => $productDetails->pd_code,
                     'promo_group_id' => $promoGroupId,
+                    'is_condition_item' => true, // ✅ เป็นสินค้าเงื่อนไข
                 ],
                 'associatedModel' => $product,
             ]);
         }
 
-        // Add gifts
+        // Add Gifts
         foreach ($giftIds as $giftId) {
             $giftDetails = $this->getProductDetails($giftId);
             if ($giftDetails) {
@@ -245,13 +333,13 @@ class CartService
                     'id' => $giftDetails->id,
                     'name' => $giftDetails->name.' (ของแถม)',
                     'price' => 0,
-                    'quantity' => 1, // Each gift is added with quantity 1
+                    'quantity' => 1,
                     'attributes' => [
                         'image' => $giftDetails->image,
                         'original_price' => $giftDetails->original_price,
                         'discount' => $giftDetails->original_price,
                         'pd_code' => $giftDetails->pd_code,
-                        'is_freebie' => true,
+                        'is_freebie' => true, // ✅ เป็นของแถม
                         'promo_group_id' => $promoGroupId,
                     ],
                 ]);
@@ -278,6 +366,12 @@ class CartService
         }
     }
 
+    /**
+     * ⚠️ Logic การลบสินค้า:
+     * - ถ้าสินค้าที่ถูกลบเป็นส่วนหนึ่งของโปรโมชั่น (เช่น สินค้าที่ต้องซื้อเพื่อรับของแถม)
+     *   ระบบจะทำการลบสินค้าอื่นๆ ทั้งหมดที่อยู่ในกลุ่มโปรโมชั่นเดียวกันออกไปด้วย (ทั้งของแถมและสินค้าเงื่อนไขอื่นๆ)
+     * - ถ้าสินค้าที่ถูกลบเป็นของแถม หรือเป็นสินค้าเดี่ยวๆ ที่ไม่เกี่ยวกับโปรโมชั่น ระบบจะลบแค่สินค้านั้นๆ
+     */
     public function removeItem(int $productId): void
     {
         $userId = $this->getUserId();
@@ -288,23 +382,29 @@ class CartService
             return;
         }
 
-        // If the item is part of a promotion group, remove all items in that group.
-        if (isset($item->attributes['promo_group_id'])) {
-            $promoGroupId = $item->attributes['promo_group_id'];
+        $promoGroupId = $item->attributes['promo_group_id'] ?? null;
+        $isConditionItem = $item->attributes['is_condition_item'] ?? false; // สินค้าจ่ายเงิน (หลัก/รอง)
 
-            $itemsToRemove = $cart->getContent()->filter(function ($cartItem) use ($promoGroupId) {
-                return isset($cartItem->attributes['promo_group_id']) && $cartItem->attributes['promo_group_id'] === $promoGroupId;
+        // New Logic: If the removed item is part of a promotional group (bundle, etc.)
+        // and is a core condition item, remove the ENTIRE group.
+        if ($promoGroupId && $isConditionItem) {
+            // Find ALL items in the same promo group
+            $itemsInGroup = $cart->getContent()->filter(function ($cartItem) use ($promoGroupId) {
+                return isset($cartItem->attributes['promo_group_id'])
+                    && $cartItem->attributes['promo_group_id'] === $promoGroupId;
             });
 
-            foreach ($itemsToRemove as $itemToRemove) {
-                $cart->remove($itemToRemove->id);
+            // Remove all of them
+            foreach ($itemsInGroup as $groupItem) {
+                $cart->remove($groupItem->id);
             }
         } else {
-            // Otherwise, just remove the single item.
+            // Original behavior: If it's a standalone item, or just a freebie being removed,
+            // only remove the item itself.
             $cart->remove($productId);
         }
 
-        // After removal, it's still good practice to validate consistency for other promos.
+        // ตรวจสอบความถูกต้องของแถมอื่นๆ ในตะกร้า
         $this->validateFreebieConsistency($userId);
 
         if (Auth::check()) {
@@ -313,28 +413,27 @@ class CartService
     }
 
     /**
-     * ฟังก์ชันหัวใจสำคัญ: ตรวจสอบว่าของแถมเกินสิทธิ์หรือไม่ ถ้าเกินให้ลบออก
+     * ฟังก์ชันตรวจสอบสิทธิ์ของแถม (ใช้ Multiplier Logic ใหม่)
      */
-    private function validateFreebieConsistency(int $userId): void
+    private function validateFreebieConsistency(int|string $userId): void
     {
         $cart = Cart::session($userId);
-        $items = $cart->getContent(); // ดึงตะกร้าปัจจุบัน (หลังลบสินค้าหลักแล้ว)
+        $items = $cart->getContent();
 
-        // 1. คำนวณสิทธิ์ของแถมที่ควรได้รับจริง ณ ตอนนี้ (จากสินค้าที่เหลืออยู่)
+        // คำนวณ Limit ที่ถูกต้อง (รวม Multiplier แล้ว)
         $limit = $this->calculateFreebieLimit($items);
 
-        // 2. นับจำนวนของแถมที่มีอยู่ในตะกร้าตอนนี้ (ดูจาก attribute is_freebie)
+        // ของแถมที่มีอยู่ในตะกร้า
         $freebies = $items->filter(function ($item) {
             return $item->attributes->is_freebie ?? false;
         })->sort();
 
         $currentFreebieQty = $freebies->sum('quantity');
 
-        // 3. ถ้าของแถมที่มี (current) มากกว่า สิทธิ์ที่ควรได้ (limit) -> ลบส่วนเกินออก
+        // ถ้าของแถมเกินสิทธิ์ ให้ลบออก
         if ($currentFreebieQty > $limit) {
             $diff = $currentFreebieQty - $limit;
 
-            // วนลูปไล่ลบของแถม (เริ่มจากตัวท้ายๆ)
             foreach ($freebies->reverse() as $freebie) {
                 if ($diff <= 0) {
                     break;
@@ -343,11 +442,9 @@ class CartService
                 $qtyToRemove = min($diff, $freebie->quantity);
 
                 if ($qtyToRemove >= $freebie->quantity) {
-                    $cart->remove($freebie->id); // ลบทั้งรายการถ้าต้องเอาออกหมด
+                    $cart->remove($freebie->id);
                 } else {
-                    $cart->update($freebie->id, [
-                        'quantity' => -$qtyToRemove, // ลดจำนวนลง
-                    ]);
+                    $cart->update($freebie->id, ['quantity' => -$qtyToRemove]);
                 }
 
                 $diff -= $qtyToRemove;
@@ -355,13 +452,10 @@ class CartService
         }
     }
 
-    // ... (ส่วนอื่นๆ คงเดิม) ...
     public function addFreebies(array $freebieIds): void
     {
         $userId = $this->getUserId();
-        if (Auth::check()) {
-            $this->restoreCartFromDatabase($userId);
-        }
+        $this->getCartContents(); // Ensure cart loaded
         $cart = Cart::session($userId);
 
         foreach ($freebieIds as $freebieId) {
@@ -369,6 +463,7 @@ class CartService
             if (! $product || $product->pd_sp_stock <= 0) {
                 continue;
             }
+
             $details = $this->getProductDetails($freebieId);
             if ($details) {
                 $cart->add([
@@ -379,16 +474,22 @@ class CartService
                     'attributes' => [
                         'image' => $details->image, 'original_price' => $details->original_price,
                         'discount' => $details->original_price, 'pd_code' => $details->pd_code,
-                        'is_freebie' => true,
+                        'is_freebie' => true, // ✅
                     ],
                 ]);
             }
         }
+
+        $this->validateFreebieConsistency($userId);
+
         if (Auth::check()) {
             $this->saveCartToDatabase($userId, $cart->getContent());
         }
     }
 
+    /**
+     * คำนวณโปรโมชั่น และหา "ตัวคูณ" (Multiplier)
+     */
     private function getApplicablePromotions(Collection $cartItems): Collection
     {
         if ($cartItems->isEmpty()) {
@@ -422,38 +523,55 @@ class CartService
             }
 
             $conditionType = $promo->condition_type ?? 'any';
-            $totalRules = $promo->rules->count();
-            $rulesMetCount = 0;
+            $promoMultipliers = [];
 
             foreach ($promo->rules as $rule) {
                 $pids = $rule->rules['product_id'] ?? [];
                 if (! is_array($pids)) {
                     $pids = [$pids];
                 }
-                $reqQty = $rule->rules['quantity_to_buy'] ?? 1;
+                $reqQty = (int) ($rule->rules['quantity_to_buy'] ?? 1);
 
-                $isRuleMet = false;
+                $totalQtyMatched = 0;
                 foreach ($pids as $pid) {
-                    if ($cartQuantities->has((int) $pid) && $cartQuantities->get((int) $pid) >= $reqQty) {
-                        $isRuleMet = true;
-                        break;
+                    if ($cartQuantities->has((int) $pid)) {
+                        $totalQtyMatched += $cartQuantities->get((int) $pid);
                     }
                 }
-                if ($isRuleMet) {
-                    $rulesMetCount++;
+
+                if ($reqQty > 0 && $totalQtyMatched >= $reqQty) {
+                    // คำนวณว่าผ่านกี่รอบ (ซื้อ 5 ชุด ได้ 5 สิทธิ์)
+                    $promoMultipliers[] = floor($totalQtyMatched / $reqQty);
+                } else {
+                    $promoMultipliers[] = 0;
                 }
             }
 
+            $finalMultiplier = 0;
             if ($conditionType === 'all') {
-                return $rulesMetCount === $totalRules;
+                $minMultiplier = empty($promoMultipliers) ? 0 : min($promoMultipliers);
+                if ($minMultiplier > 0) {
+                    $finalMultiplier = $minMultiplier;
+                }
             } else {
-                return $rulesMetCount > 0;
+                $finalMultiplier = array_sum($promoMultipliers);
             }
+
+            if ($finalMultiplier > 0) {
+                $promo->multiplier = $finalMultiplier; // ✅ เก็บค่าตัวคูณ
+
+                return true;
+            }
+
+            return false;
         });
     }
 
-    private function saveCartToDatabase(int $userId, $cartContent): void
+    private function saveCartToDatabase(int|string $userId, $cartContent): void
     {
+        if (is_string($userId)) {
+            return;
+        }
         CartStorage::updateOrCreate(['user_id' => $userId], ['cart_data' => $cartContent]);
     }
 

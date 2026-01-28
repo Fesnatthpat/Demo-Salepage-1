@@ -367,7 +367,7 @@
                                 },
                                 body: JSON.stringify({
                                     main_product_id: config
-                                    .currentProductId, // สินค้าหลัก (หน้าปัจจุบัน)
+                                        .currentProductId, // สินค้าหลัก (หน้าปัจจุบัน)
                                     secondary_product_id: partnerId, // สินค้าคู่ (ที่กดเพิ่ม)
                                     gift_ids: this.selectedGifts // ของแถม (ถ้าเลือกไว้)
                                 })

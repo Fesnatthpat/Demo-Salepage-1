@@ -57,11 +57,13 @@
         }
     ?>
 
+    
     <div x-data="productPage({
+        currentProductId: <?php echo \Illuminate\Support\Js::from($product->pd_sp_id)->toHtml() ?>,
         initialImage: <?php echo \Illuminate\Support\Js::from($product->cover_image_url)->toHtml() ?>,
         allImages: <?php echo \Illuminate\Support\Js::from($allImages)->toHtml() ?>,
         standardAction: <?php echo \Illuminate\Support\Js::from(route('cart.add', ['id' => $product->pd_sp_id]))->toHtml() ?>,
-        cartAddUrlTemplate: <?php echo \Illuminate\Support\Js::from(route('cart.add', ['id' => '___ID___']))->toHtml() ?>,
+        bundleAddUrl: <?php echo \Illuminate\Support\Js::from(route('cart.addBundle'))->toHtml() ?>,
         checkoutUrl: <?php echo \Illuminate\Support\Js::from(route('payment.checkout'))->toHtml() ?>,
         promotions: <?php echo \Illuminate\Support\Js::from($promotionsData)->toHtml() ?>
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased">
@@ -94,8 +96,7 @@
                 <div class="lg:col-span-7 p-8 lg:p-12 flex flex-col">
                     <div class="flex-1">
                         <h1 class="text-3xl font-extrabold text-gray-900 mb-6"><?php echo e($product->pd_name); ?></h1>
-                        
-                        
+
                         <?php if($product->pd_details): ?>
                             <div class="prose max-w-none text-gray-600 mb-8">
                                 <?php echo nl2br(e($product->pd_details)); ?>
@@ -105,7 +106,7 @@
 
                         
                         <div class="mb-4 text-sm font-semibold">
-                            จำนวนสินค้าคงเหลือ: 
+                            จำนวนสินค้าคงเหลือ:
                             <span class="<?php echo e($product->pd_sp_stock > 0 ? 'text-emerald-600' : 'text-red-500'); ?>">
                                 <?php echo e(number_format($product->pd_sp_stock)); ?> ชิ้น
                             </span>
@@ -115,17 +116,18 @@
                             <div class="flex items-baseline gap-2">
                                 <span class="text-4xl font-black text-emerald-600">฿<?php echo e(number_format($finalPrice)); ?></span>
                                 <?php if($discountAmount > 0): ?>
-                                    <span class="text-lg text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
+                                    <span
+                                        class="text-lg text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
                                 <?php endif; ?>
                             </div>
                             <?php if($discountAmount > 0): ?>
-                                <span class="text-sm font-semibold text-red-500 mt-1">ประหยัด ฿<?php echo e(number_format($discountAmount)); ?></span>
+                                <span class="text-sm font-semibold text-red-500 mt-1">ประหยัด
+                                    ฿<?php echo e(number_format($discountAmount)); ?></span>
                             <?php endif; ?>
                         </div>
 
                         
                         <template x-if="activePromotion">
-                            
                             <div id="promotion-section" class="mb-10 scroll-mt-24">
 
                                 
@@ -159,17 +161,20 @@
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <template x-for="gift in activePromotion.gifts" :key="gift.id">
-                                                                                            <label
-                                                                                                class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
-                                                                                                :class="{
-                                                                                                    'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale': isGiftDisabled(gift.id) && !selectedGifts.includes(gift.id),
-                                                                                                    'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet && !isGiftDisabled(gift.id),
-                                                                                                    'border-emerald-500 bg-emerald-50 ring-0': selectedGifts.includes(gift.id)
-                                                                                                }">
-                                                <input type="checkbox" 
-                                                    :disabled="!isConditionMet || (selectedGifts.length >= giftLimit && !selectedGifts.includes(gift.id))"
-                                                    @click="toggleGift(gift.id)" 
-                                                    :checked="selectedGifts.includes(gift.id)"
+                                            <label
+                                                class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
+                                                :class="{
+                                                    'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale': isGiftDisabled(
+                                                        gift.id) && !selectedGifts.includes(gift.id),
+                                                    'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet &&
+                                                        !isGiftDisabled(gift.id),
+                                                    'border-emerald-500 bg-emerald-50 ring-0': selectedGifts.includes(
+                                                        gift.id)
+                                                }">
+                                                <input type="checkbox"
+                                                    :disabled="!isConditionMet || (selectedGifts.length >= giftLimit && !
+                                                        selectedGifts.includes(gift.id))"
+                                                    @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"
                                                     class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200 disabled:cursor-not-allowed">
 
                                                 <div
@@ -257,26 +262,6 @@
         </div>
     </div>
 
-    <style>
-        .animate-pulse-once {
-            animation: pulse-orange 2s ease-out;
-        }
-
-        @keyframes pulse-orange {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(255, 165, 0, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 165, 0, 0);
-            }
-        }
-    </style>
-
     <?php $__env->startPush('scripts'); ?>
         <script>
             document.addEventListener('alpine:init', () => {
@@ -296,7 +281,6 @@
                         if (!this.activePromotion) return false;
                         const logic = this.activePromotion.logic;
                         const totalQty = logic.cart_qty + this.quantity;
-
                         if (logic.condition_type === 'all') {
                             return logic.other_rules_met && (totalQty >= logic.required_qty);
                         } else {
@@ -310,23 +294,17 @@
                     },
 
                     isGiftDisabled(giftId) {
-                        if (!this.isConditionMet) return true; // Condition not met, so all are disabled
-                        if (this.selectedGifts.includes(giftId)) return false; // Already selected, so not disabled
-                        return this.selectedGifts.length >= this.giftLimit; // Limit reached, and this is not selected
+                        if (!this.isConditionMet) return true;
+                        if (this.selectedGifts.includes(giftId)) return false;
+                        return this.selectedGifts.length >= this.giftLimit;
                     },
 
                     init() {
                         this.$watch('quantity', () => {
                             this.validateSelection();
                         });
-
-                        // ★★★ ฟังก์ชัน Auto-Scroll หลังรีเฟรช ★★★
-                        // ตรวจสอบว่ามี Flag จาก LocalStorage หรือไม่
                         if (localStorage.getItem('justAddedPartner') === 'true') {
-                            // ลบ Flag ออกเพื่อไม่ให้ทำงานซ้ำ
                             localStorage.removeItem('justAddedPartner');
-
-                            // รอให้หน้าเว็บโหลดเสร็จแป๊บนึง แล้วเลื่อนลงไปที่โปรโมชั่น
                             setTimeout(() => {
                                 const promoSection = document.getElementById('promotion-section');
                                 if (promoSection) {
@@ -334,8 +312,6 @@
                                         behavior: 'smooth',
                                         block: 'center'
                                     });
-
-                                    // แจ้งเตือนเล็กน้อยว่าปลดล็อคแล้ว
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'ปลดล็อคของแถมแล้ว!',
@@ -368,19 +344,19 @@
                                 Swal.fire({
                                     icon: 'warning',
                                     title: 'เลือกของแถมครบแล้ว',
-                                    text: `คุณได้รับสิทธิ์ ${this.giftLimit} ชิ้น`,
                                     confirmButtonColor: '#10b981'
                                 });
                             }
                         }
                     },
 
-                    async addToCartPartner(id) {
+                    // ✅ UPDATE: แก้ไขให้ยิงเข้า Route Bundle
+                    async addToCartPartner(partnerId) {
                         if (this.isLoading) return;
                         this.isLoading = true;
                         try {
-                            const url = config.cartAddUrlTemplate.replace('___ID___', id);
-                            const response = await fetch(url, {
+                            // ใช้ URL ใหม่ (cart.addBundle)
+                            const response = await fetch(config.bundleAddUrl, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -390,15 +366,15 @@
                                         'meta[name="csrf-token"]').content
                                 },
                                 body: JSON.stringify({
-                                    quantity: 1
+                                    main_product_id: config
+                                    .currentProductId, // สินค้าหลัก (หน้าปัจจุบัน)
+                                    secondary_product_id: partnerId, // สินค้าคู่ (ที่กดเพิ่ม)
+                                    gift_ids: this.selectedGifts // ของแถม (ถ้าเลือกไว้)
                                 })
                             });
                             const data = await response.json();
                             if (data.success) {
-                                // ★★★ ตั้งค่า LocalStorage ก่อนรีเฟรช ★★★
                                 localStorage.setItem('justAddedPartner', 'true');
-
-                                // รีเฟรชหน้าจอทันที
                                 window.location.reload();
                             } else {
                                 throw new Error(data.message);
@@ -415,7 +391,6 @@
                             Swal.fire({
                                 icon: 'warning',
                                 title: 'กรุณาเลือกของแถม',
-                                text: `คุณได้รับสิทธิ์เลือกของแถมฟรี ${this.giftLimit} ชิ้น`,
                                 confirmButtonColor: '#10b981'
                             });
                             return;

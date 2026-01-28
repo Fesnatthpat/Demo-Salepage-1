@@ -40,6 +40,10 @@ Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.s
 // ==========================================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+// ✅ เพิ่ม Route นี้ครับ: สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่)
+Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('cart.addBundle'); 
+Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 

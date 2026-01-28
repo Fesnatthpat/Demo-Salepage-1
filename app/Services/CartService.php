@@ -195,22 +195,44 @@ class CartService
 
         if ($details) {
             $userId = $this->getUserId();
-            Cart::session($userId)->add([
+            $cart = Cart::session($userId);
+
+            // --- START NEW LOGIC ---
+            $existingItem = $cart->get($productId);
+            $newAttributes = [
+                'image' => $details->image,
+                'original_price' => $details->original_price,
+                'discount' => $details->discount,
+                'pd_code' => $details->pd_code,
+            ];
+
+            if ($existingItem) {
+                // Preserve existing promotional attributes
+                $promoAttributes = [
+                    'promo_group_id',
+                    'is_condition_item',
+                    'item_type',
+                    'is_freebie',
+                ];
+                foreach ($promoAttributes as $attr) {
+                    if (isset($existingItem->attributes[$attr])) {
+                        $newAttributes[$attr] = $existingItem->attributes[$attr];
+                    }
+                }
+            }
+            // --- END NEW LOGIC ---
+
+            $cart->add([
                 'id' => $details->id,
                 'name' => $details->name,
                 'price' => $details->price,
                 'quantity' => $quantity,
-                'attributes' => [
-                    'image' => $details->image,
-                    'original_price' => $details->original_price,
-                    'discount' => $details->discount,
-                    'pd_code' => $details->pd_code,
-                ],
+                'attributes' => $newAttributes, // Use the merged attributes
                 'associatedModel' => $product,
             ]);
 
             if (Auth::check()) {
-                $this->saveCartToDatabase($userId, Cart::session($userId)->getContent());
+                $this->saveCartToDatabase($userId, $cart->getContent());
             }
         }
     }
@@ -383,24 +405,21 @@ class CartService
         }
 
         $promoGroupId = $item->attributes['promo_group_id'] ?? null;
-        $isConditionItem = $item->attributes['is_condition_item'] ?? false; // สินค้าจ่ายเงิน (หลัก/รอง)
+        $isFreebie = $item->attributes['is_freebie'] ?? false;
 
-        // New Logic: If the removed item is part of a promotional group (bundle, etc.)
-        // and is a core condition item, remove the ENTIRE group.
-        if ($promoGroupId && $isConditionItem) {
-            // Find ALL items in the same promo group
+        // If the item is part of a promotion group, AND it's NOT a freebie
+        // (meaning it must be a condition item, either main or secondary)
+        if ($promoGroupId && ! $isFreebie) {
+            // Remove the entire group associated with this promotion
             $itemsInGroup = $cart->getContent()->filter(function ($cartItem) use ($promoGroupId) {
-                return isset($cartItem->attributes['promo_group_id'])
-                    && $cartItem->attributes['promo_group_id'] === $promoGroupId;
+                return ($cartItem->attributes['promo_group_id'] ?? null) === $promoGroupId;
             });
 
-            // Remove all of them
             foreach ($itemsInGroup as $groupItem) {
                 $cart->remove($groupItem->id);
             }
         } else {
-            // Original behavior: If it's a standalone item, or just a freebie being removed,
-            // only remove the item itself.
+            // Otherwise, it's a standalone item OR a freebie. Just remove the item itself.
             $cart->remove($productId);
         }
 

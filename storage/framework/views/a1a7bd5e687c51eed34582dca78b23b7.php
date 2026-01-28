@@ -138,20 +138,18 @@
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <template x-for="gift in activePromotion.gifts" :key="gift.id">
-                                            <label
-                                                class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
-                                                :class="{
-                                                    'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale':
-                                                        !
-                                                        isConditionMet,
-                                                    'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet,
-                                                    'border-emerald-500 bg-emerald-50 ring-0': selectedGifts
-                                                        .includes(gift.id)
-                                                }">
-
-                                                <input type="checkbox" :disabled="!isConditionMet"
-                                                    @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"
-                                                    class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200">
+                                                                                            <label
+                                                                                                class="flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-300"
+                                                                                                :class="{
+                                                                                                    'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale': isGiftDisabled(gift.id) && !selectedGifts.includes(gift.id),
+                                                                                                    'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet && !isGiftDisabled(gift.id),
+                                                                                                    'border-emerald-500 bg-emerald-50 ring-0': selectedGifts.includes(gift.id)
+                                                                                                }">
+                                                <input type="checkbox" 
+                                                    :disabled="!isConditionMet || (selectedGifts.length >= giftLimit && !selectedGifts.includes(gift.id))"
+                                                    @click="toggleGift(gift.id)" 
+                                                    :checked="selectedGifts.includes(gift.id)"
+                                                    class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200 disabled:cursor-not-allowed">
 
                                                 <div
                                                     class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
@@ -288,6 +286,12 @@
                     get giftLimit() {
                         if (!this.activePromotion || !this.isConditionMet) return 0;
                         return this.activePromotion.gifts_per_item;
+                    },
+
+                    isGiftDisabled(giftId) {
+                        if (!this.isConditionMet) return true; // Condition not met, so all are disabled
+                        if (this.selectedGifts.includes(giftId)) return false; // Already selected, so not disabled
+                        return this.selectedGifts.length >= this.giftLimit; // Limit reached, and this is not selected
                     },
 
                     init() {

@@ -14,7 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->boolean('is_recommended')->default(false)->after('pd_sp_active')->comment('สินค้าแนะนำ');
+            if (! Schema::hasColumn('product_salepage', 'is_recommended')) {
+                $table->boolean('is_recommended')->default(false)->after('pd_sp_active')->comment('สินค้าแนะนำ');
+            }
         });
     }
 
@@ -26,7 +28,9 @@ return new class extends Migration
     public function down()
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->dropColumn('is_recommended');
+            if (Schema::hasColumn('product_salepage', 'is_recommended')) {
+                $table->dropColumn('is_recommended');
+            }
         });
     }
 };

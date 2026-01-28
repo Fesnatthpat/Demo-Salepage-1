@@ -10,6 +10,7 @@ class ProductOption extends Model
     use HasFactory;
 
     protected $table = 'product_options';      // ชื่อตาราง
+
     protected $primaryKey = 'option_id';       // PK ของตารางนี้
 
     // ระบุฟิลด์ที่ให้บันทึกได้
@@ -18,12 +19,12 @@ class ProductOption extends Model
         'option_name',
         'option_price',
         'option_stock',
-        'option_active'
+        'option_active',
     ];
-    
+
     // ปิด Timestamp ถ้าในตารางไม่มี created_at, updated_at
     // แต่ถ้ามีแล้วก็ลบบรรทัดข้างล่างนี้ออกได้เลยครับ
-    public $timestamps = false; 
+    public $timestamps = false;
 
     // เชื่อมกลับไปหาสินค้าหลัก
     public function product()

@@ -19,29 +19,30 @@ class ProductImage extends Model
     // ใส่ img_path และ img_sort เพื่อให้ Create ข้อมูลได้
     protected $fillable = [
         'pd_sp_id',
-        'img_path', 
-        'img_sort'
+        'img_path',
+        'img_sort',
     ];
 
     // 4. ✅ แก้ปัญหา Error 'Unknown column updated_at'
     // เนื่องจากตารางคุณมีแค่ created_at แต่ไม่มี updated_at
     // เราจึงต้องบอก Laravel ว่าไม่ต้องอัปเดต updated_at
     const CREATED_AT = 'created_at';
-    const UPDATED_AT = null; 
+
+    const UPDATED_AT = null;
 
     protected $appends = ['image_url'];
 
     public function getImageUrlAttribute()
     {
-        if (!$this->img_path) {
+        if (! $this->img_path) {
             return 'https://via.placeholder.com/150?text=No+Image';
         }
 
         if (filter_var($this->img_path, FILTER_VALIDATE_URL)) {
             return $this->img_path;
         }
-        
-        return asset('storage/' . ltrim($this->img_path, '/'));
+
+        return asset('storage/'.ltrim($this->img_path, '/'));
     }
 
     // (ทางเลือก) หรือถ้าไม่อยากเก็บเวลาเลย ให้ใช้: public $timestamps = false;

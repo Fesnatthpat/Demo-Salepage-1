@@ -43,7 +43,6 @@ Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('ca
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
-
 // ==========================================
 // 3. ระบบสมาชิก (Login/Logout)
 // ==========================================
@@ -129,4 +128,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('promotions', PromotionController::class);
 
 });
-    

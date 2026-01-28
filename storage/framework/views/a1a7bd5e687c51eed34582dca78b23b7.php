@@ -94,6 +94,15 @@
                 <div class="lg:col-span-7 p-8 lg:p-12 flex flex-col">
                     <div class="flex-1">
                         <h1 class="text-3xl font-extrabold text-gray-900 mb-6"><?php echo e($product->pd_name); ?></h1>
+                        
+                        
+                        <?php if($product->pd_details): ?>
+                            <div class="prose max-w-none text-gray-600 mb-8">
+                                <?php echo nl2br(e($product->pd_details)); ?>
+
+                            </div>
+                        <?php endif; ?>
+
                         <div class="inline-flex items-center bg-gray-50 rounded-2xl p-4 mb-8">
                             <span class="text-4xl font-black text-emerald-600">฿<?php echo e(number_format($finalPrice)); ?></span>
                         </div>

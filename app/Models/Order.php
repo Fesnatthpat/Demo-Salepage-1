@@ -15,10 +15,10 @@ class Order extends Model
 
     // ★ 1. แก้ไข Primary Key ให้เป็น 'id' ตามฐานข้อมูลใหม่
     // (ถ้าใส่เป็น ord_id จะเกิด error "Unknown column 'ord_id' in 'where clause'")
-    protected $primaryKey = 'id'; 
-    
+    protected $primaryKey = 'id';
+
     // เปิดใช้งาน timestamps (created_at, updated_at)
-    public $timestamps = true; 
+    public $timestamps = true;
 
     // ★ 2. อนุญาตให้บันทึกข้อมูลลงฟิลด์เหล่านี้
     protected $fillable = [
@@ -35,7 +35,7 @@ class Order extends Model
         'shipping_address',
         'slip_path',      // ที่เก็บรูปสลิป
         'transfer_date',  // (เผื่อมี) วันที่โอน
-        'transfer_amount' // (เผื่อมี) ยอดที่โอนจริง
+        'transfer_amount', // (เผื่อมี) ยอดที่โอนจริง
     ];
 
     /**

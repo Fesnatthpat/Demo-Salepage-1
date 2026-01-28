@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Check if the 'avatar' column doesn't exist before adding it.
-            if (!Schema::hasColumn('users', 'avatar')) {
+            if (! Schema::hasColumn('users', 'avatar')) {
                 $table->string('avatar')->nullable()->after('email');
             }
 

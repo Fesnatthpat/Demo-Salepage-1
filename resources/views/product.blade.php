@@ -96,6 +96,14 @@
                 <div class="lg:col-span-7 p-8 lg:p-12 flex flex-col">
                     <div class="flex-1">
                         <h1 class="text-3xl font-extrabold text-gray-900 mb-6">{{ $product->pd_name }}</h1>
+                        
+                        {{-- ★★★ Display Product Description ★★★ --}}
+                        @if ($product->pd_details)
+                            <div class="prose max-w-none text-gray-600 mb-8">
+                                {!! nl2br(e($product->pd_details)) !!}
+                            </div>
+                        @endif
+
                         <div class="inline-flex items-center bg-gray-50 rounded-2xl p-4 mb-8">
                             <span class="text-4xl font-black text-emerald-600">฿{{ number_format($finalPrice) }}</span>
                         </div>

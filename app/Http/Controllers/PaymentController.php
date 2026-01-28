@@ -2,23 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartStorage;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
-use App\Models\OrderDetail;
 use App\Models\ProductSalepage;
 use App\Models\Province;
+use App\Services\OrderService;
 use App\Services\PromptPayService;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Darryldecode\Cart\ItemCollection; // เรียกใช้ Class ให้ถูกต้อง
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PaymentController extends Controller
 {
+    protected OrderService $orderService;
+
+    protected PromptPayService $promptPayService;
+
+    public function __construct(OrderService $orderService, PromptPayService $promptPayService)
+    {
+        $this->orderService = $orderService;
+        $this->promptPayService = $promptPayService;
+    }
+
     // [Step 1] Checkout Page
     public function checkout(Request $request)
     {
@@ -108,147 +116,27 @@ class PaymentController extends Controller
     public function process(Request $request)
     {
         $request->validate([
-            'address_id' => 'required|exists:delivery_addresses,id',
+            'delivery_address_id' => 'required|exists:delivery_addresses,id',
             'selected_items' => 'required|array|min:1',
+            // Add validation for payment_method if needed
         ]);
 
-        $userId = Auth::id();
-        $selectedItems = $request->input('selected_items', []);
-        $selectedFreebies = $request->input('selected_freebies', []); // รับค่าของแถมมาด้วย
-
-        $cartContent = Cart::session($userId)->getContent();
-
-        DB::beginTransaction();
+        $user = Auth::user();
+        $guestSessionKey = '_guest_'.session()->getId();
 
         try {
-            $subTotalPrice = 0;
-            $finalTotalPrice = 0;
-            $itemsToBuy = [];
+            $order = $this->orderService->createOrder(
+                [
+                    'delivery_address_id' => $request->input('delivery_address_id'),
+                    'payment_method' => 'promptpay', // Assuming promptpay for now, adjust as needed
+                ],
+                $user,
+                $guestSessionKey
+            );
 
-            // 1. จัดการสินค้าหลักในตะกร้า
-            foreach ($cartContent as $item) {
-                if (in_array((string) $item->id, $selectedItems)) {
-                    $itemsToBuy[] = $item;
-                    $finalTotalPrice += ($item->price * $item->quantity);
-
-                    $originalPrice = $item->attributes['original_price'] ?? $item->price;
-                    $subTotalPrice += ($originalPrice * $item->quantity);
-                }
-            }
-
-            // 2. ★★★ [แก้ไขใหม่] จัดการของแถม ★★★
-            // ดึงข้อมูลของแถมจาก Database ตาม ID ที่ส่งมา
-            $freebieItemsToSave = [];
-            if (! empty($selectedFreebies)) {
-                if (is_string($selectedFreebies)) {
-                    $selectedFreebies = explode(',', $selectedFreebies);
-                }
-
-                $freebieProducts = ProductSalepage::whereIn('pd_sp_id', $selectedFreebies)->get();
-                foreach ($freebieProducts as $freebie) {
-                    $freebieItemsToSave[] = $freebie;
-                    // ของแถม: เพิ่มราคาต้นลงไปใน subTotal แต่ไม่เพิ่มใน finalTotal (เพราะฟรี)
-                    $subTotalPrice += $freebie->pd_sp_price;
-                }
-            }
-
-            $totalDiscount = $subTotalPrice - $finalTotalPrice;
-
-            if (count($itemsToBuy) === 0) {
-                throw new \Exception('ไม่พบรายการสินค้าที่จะสั่งซื้อ');
-            }
-
-            $shippingCost = 0;
-            $netAmount = $finalTotalPrice;
-
-            // ดึงที่อยู่
-            $address = DeliveryAddress::with(['province', 'amphure', 'district'])->find($request->address_id);
-            $fullAddress = $address->address_line1.' '.($address->address_line2 ?? '').' '.($address->district->name_th ?? '').' '.($address->amphure->name_th ?? '').' '.($address->province->name_th ?? '').' '.$address->zipcode;
-            if (! empty($address->note)) {
-                $fullAddress .= "\nหมายเหตุ: ".$address->note;
-            }
-
-            $orderCode = 'ORD-'.date('YmdHis').'-'.rand(100, 999);
-
-            // สร้าง Order หลัก
-            $order = Order::create([
-                'ord_code' => $orderCode,
-                'user_id' => $userId,
-                'total_price' => $subTotalPrice,
-                'shipping_cost' => $shippingCost,
-                'total_discount' => $totalDiscount,
-                'net_amount' => $netAmount,
-                'ord_date' => now(),
-                'status_id' => 1,
-                'shipping_name' => $address->fullname,
-                'shipping_phone' => $address->phone,
-                'shipping_address' => $fullAddress,
-            ]);
-
-            // 3.1 บันทึก Order Detail (สินค้าหลัก) และตัดสต็อก
-            foreach ($itemsToBuy as $item) {
-                $product = ProductSalepage::where('pd_sp_id', $item->id)->lockForUpdate()->first();
-
-                if (! $product) {
-                    throw new \Exception("ไม่พบสินค้า ID {$item->id}");
-                }
-                if ($product->pd_sp_stock < $item->quantity) {
-                    throw new \Exception("สินค้า '{$item->name}' หมดสต็อก");
-                }
-
-                $product->decrement('pd_sp_stock', $item->quantity);
-
-                OrderDetail::create([
-                    'ord_id' => $order->id,
-                    'user_id' => $userId,
-                    'pd_id' => $item->id,
-                    'ordd_price' => $item->price, // ราคาขายจริง
-                    'ordd_original_price' => $item->attributes['original_price'] ?? $item->price,
-                    'ordd_count' => $item->quantity,
-                    'ordd_discount' => ($item->attributes['original_price'] ?? $item->price) - $item->price,
-                    'ordd_create_date' => now(),
-                ]);
-                Cart::session($userId)->remove($item->id);
-            }
-
-            // 3.2 ★★★ [แก้ไขใหม่] บันทึก Order Detail (ของแถม) และตัดสต็อก ★★★
-            foreach ($freebieItemsToSave as $freebie) {
-                // Lock เพื่อตัดสต็อกของแถมด้วย
-                $product = ProductSalepage::where('pd_sp_id', $freebie->pd_sp_id)->lockForUpdate()->first();
-
-                // เช็คสต็อกของแถม (สมมติแจก 1 ชิ้น)
-                if (! $product || $product->pd_sp_stock < 1) {
-                    throw new \Exception("ขออภัย ของแถม '{$freebie->pd_sp_name}' หมดสต็อก");
-                }
-                $product->decrement('pd_sp_stock', 1);
-
-                OrderDetail::create([
-                    'ord_id' => $order->id,
-                    'user_id' => $userId,
-                    'pd_id' => $freebie->pd_sp_id,
-                    'ordd_price' => 0, // ของแถมราคาขาย 0
-                    'ordd_original_price' => $freebie->pd_sp_price,
-                    'ordd_count' => 1,
-                    'ordd_discount' => $freebie->pd_sp_price, // ส่วนลดเท่าราคาเต็ม
-                    'ordd_create_date' => now(),
-                ]);
-            }
-
-            // Update Storage
-            $remaining = Cart::session($userId)->getContent();
-            if ($remaining->isEmpty()) {
-                CartStorage::where('user_id', $userId)->delete();
-            } else {
-                CartStorage::updateOrCreate(['user_id' => $userId], ['cart_data' => $remaining]);
-            }
-
-            DB::commit();
-
-            return redirect()->route('payment.qr', ['orderId' => $orderCode]);
+            return redirect()->route('payment.qr', ['orderId' => $order->ord_code]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }
     }

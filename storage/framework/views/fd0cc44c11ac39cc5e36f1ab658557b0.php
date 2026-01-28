@@ -378,7 +378,7 @@
                                 <input type="hidden" name="selected_freebies[]" value="<?php echo e($id); ?>">
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <?php endif; ?>
-                        <input type="hidden" name="address_id" id="hidden_address_id">
+                        <input type="hidden" name="delivery_address_id" id="hidden_address_id">
                         <button type="submit"
                             class="btn bg-[#4F46E5] hover:bg-[#4338ca] text-white border-none w-full text-base font-normal h-11 rounded shadow-sm">
                             ชำระเงิน

@@ -10,7 +10,9 @@ return new class extends Migration
     {
         Schema::table('order_detail', function (Blueprint $table) {
             // ลบคอลัมน์ quantity ออก เพราะเราใช้ ordd_count แทนแล้ว
-            $table->dropColumn('quantity');
+            if (Schema::hasColumn('order_detail', 'quantity')) {
+                $table->dropColumn('quantity');
+            }
         });
     }
 
@@ -18,7 +20,9 @@ return new class extends Migration
     {
         Schema::table('order_detail', function (Blueprint $table) {
             // สร้างคืนเผื่อ rollback (กำหนดประเภทเป็น integer)
-            $table->integer('quantity')->nullable();
+            if (! Schema::hasColumn('order_detail', 'quantity')) {
+                $table->integer('quantity')->nullable();
+            }
         });
     }
 };

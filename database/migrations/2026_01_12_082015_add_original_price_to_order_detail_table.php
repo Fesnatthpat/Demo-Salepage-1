@@ -12,7 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('order_detail', function (Blueprint $table) {
-            $table->decimal('pd_original_price', 10, 2)->after('pd_price')->nullable();
+            if (! Schema::hasColumn('order_detail', 'ordd_original_price')) {
+                if (Schema::hasColumn('order_detail', 'ordd_price')) {
+                    $table->decimal('ordd_original_price', 10, 2)->after('ordd_price')->nullable();
+                } else {
+                    // Fallback if ordd_price doesn't exist, just add it
+                    $table->decimal('ordd_original_price', 10, 2)->nullable();
+                }
+            }
         });
     }
 
@@ -22,7 +29,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('order_detail', function (Blueprint $table) {
-            $table->dropColumn('pd_original_price');
+            if (Schema::hasColumn('order_detail', 'ordd_original_price')) {
+                $table->dropColumn('ordd_original_price');
+            }
         });
     }
 };

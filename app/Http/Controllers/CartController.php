@@ -71,6 +71,4 @@ class CartController extends Controller
 
         return back()->with('success', 'ลบสินค้าแล้ว');
     }
-
-
 }

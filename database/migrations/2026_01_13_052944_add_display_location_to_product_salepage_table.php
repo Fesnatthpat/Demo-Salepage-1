@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->enum('pd_sp_display_location', ['homepage', 'general'])->default('general')->after('pd_sp_active');
+            if (! Schema::hasColumn('product_salepage', 'pd_sp_display_location')) {
+                $table->enum('pd_sp_display_location', ['homepage', 'general'])->default('general')->after('pd_sp_active');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->dropColumn('pd_sp_display_location');
+            if (Schema::hasColumn('product_salepage', 'pd_sp_display_location')) {
+                $table->dropColumn('pd_sp_display_location');
+            }
         });
     }
 };

@@ -34,7 +34,7 @@ class AuthController extends Controller
     public function redirectToLine()
     {
         return Socialite::driver('line')
-            ->with(['scope' => 'profile openid email', 'guzzle' => ['verify' => false]])
+            ->with(['scope' => 'profile openid email'])
             ->redirect();
     }
 

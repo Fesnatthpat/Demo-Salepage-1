@@ -128,6 +128,14 @@ class CartService
         return Cart::session($userId)->getContent()->sort();
     }
 
+    /**
+     * Alias for getCartContents to support legacy calls.
+     */
+    public function getCartItems(): Collection
+    {
+        return $this->getCartContents();
+    }
+
     public function getTotal(): float
     {
         return Cart::session($this->getUserId())->getTotal();
@@ -608,5 +616,65 @@ class CartService
                 $userCart->add($data);
             }
         }
+    }
+
+    /**
+     * รวมตะกร้าของ Guest เข้ากับตะกร้าของผู้ใช้ที่ล็อกอิน
+     */
+    public function mergeGuestCart(string $guestSessionKey, int $userId): void
+    {
+        $guestCartId = '_guest_'.$guestSessionKey;
+        $guestCart = Cart::session($guestCartId);
+        $guestItems = $guestCart->getContent();
+
+        if ($guestItems->isEmpty()) {
+            return; // ไม่มีอะไรต้องรวม
+        }
+
+        // โหลดตะกร้าของผู้ใช้จากฐานข้อมูลก่อน
+        $this->restoreCartFromDatabase($userId);
+        $userCart = Cart::session($userId);
+
+        foreach ($guestItems as $guestItem) {
+            try {
+                // 1. เช็คสต็อกก่อนเพิ่ม
+                $this->checkStockAndGetProduct($guestItem->id, $guestItem->quantity);
+
+                // 2. เช็คว่าสินค้ามีในตะกร้าผู้ใช้แล้วหรือยัง
+                if ($userCart->has($guestItem->id)) {
+                    // ถ้ามี ให้อัปเดตจำนวน (แบบบวกเพิ่ม)
+                    $userCart->update($guestItem->id, [
+                        'quantity' => $guestItem->quantity,
+                    ]);
+                } else {
+                    // ถ้าไม่มี ให้เพิ่มเข้าไปใหม่
+                    $details = $this->getProductDetails($guestItem->id);
+                    if ($details) {
+                        $userCart->add([
+                            'id' => $details->id,
+                            'name' => $details->name,
+                            'price' => $details->price,
+                            'quantity' => $guestItem->quantity,
+                            'attributes' => [
+                                'image' => $details->image,
+                                'original_price' => $details->original_price,
+                                'discount' => $details->discount,
+                                'pd_code' => $details->pd_code,
+                            ],
+                            'associatedModel' => ProductSalepage::find($guestItem->id),
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                // หากสินค้าหมดสต็อก หรือมีปัญหาอื่นๆ ให้ข้ามไปทำรายการถัดไป
+                continue;
+            }
+        }
+
+        // บันทึกตะกร้าที่รวมแล้วลงฐานข้อมูล
+        $this->saveCartToDatabase($userId, $userCart->getContent());
+
+        // ล้างตะกร้าของ Guest
+        $guestCart->clear();
     }
 }

@@ -10,6 +10,7 @@ class ProductSalepage extends Model
     use HasFactory;
 
     protected $table = 'product_salepage';
+
     protected $primaryKey = 'pd_sp_id';
 
     protected $fillable = [
@@ -39,7 +40,7 @@ class ProductSalepage extends Model
         // The relationship is already ordered by 'img_sort', so the first item is the intended cover.
         $image = $this->images->first();
 
-        if (!$image || !$image->img_path) {
+        if (! $image || ! $image->img_path) {
             return $placeholder;
         }
 
@@ -48,8 +49,8 @@ class ProductSalepage extends Model
         if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
             return $rawPath;
         }
-        
-        return asset('storage/' . ltrim($rawPath, '/'));
+
+        return asset('storage/'.ltrim($rawPath, '/'));
     }
 
     // 1. รูปภาพ
@@ -63,7 +64,7 @@ class ProductSalepage extends Model
     {
         // เชื่อมตัวเอง (ProductSalepage) กับ ตัวเอง ผ่านตารางกลาง product_options
         return $this->belongsToMany(ProductSalepage::class, 'product_options', 'parent_id', 'child_id')
-                    ->withPivot('price_modifier'); 
+            ->withPivot('price_modifier');
     }
 
     // 3. ของแถม (BOGO)

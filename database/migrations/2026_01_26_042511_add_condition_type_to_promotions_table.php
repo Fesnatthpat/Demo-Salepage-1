@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('promotions', function (Blueprint $table) {
-            $table->string('condition_type')->default('any')->after('is_active')->comment('Determines how rules are evaluated: any (OR) or all (AND)');
+            if (! Schema::hasColumn('promotions', 'condition_type')) {
+                $table->string('condition_type')->default('any')->after('is_active')->comment('Determines how rules are evaluated: any (OR) or all (AND)');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('promotions', function (Blueprint $table) {
-            $table->dropColumn('condition_type');
+            if (Schema::hasColumn('promotions', 'condition_type')) {
+                $table->dropColumn('condition_type');
+            }
         });
     }
 };

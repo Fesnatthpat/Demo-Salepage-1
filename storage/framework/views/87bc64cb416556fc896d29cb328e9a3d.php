@@ -92,6 +92,11 @@
 
                                                     </div>
                                                 <?php endif; ?>
+                                                <?php if($product->gifts_per_item): ?>
+                                                    <div class="absolute top-2 right-2 bg-emerald-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
+                                                        แถม <?php echo e($product->gifts_per_item); ?> ชิ้น
+                                                    </div>
+                                                <?php endif; ?>
                                             </figure>
                                         </a>
 

@@ -103,8 +103,24 @@
                             </div>
                         <?php endif; ?>
 
-                        <div class="inline-flex items-center bg-gray-50 rounded-2xl p-4 mb-8">
-                            <span class="text-4xl font-black text-emerald-600">฿<?php echo e(number_format($finalPrice)); ?></span>
+                        
+                        <div class="mb-4 text-sm font-semibold">
+                            จำนวนสินค้าคงเหลือ: 
+                            <span class="<?php echo e($product->pd_sp_stock > 0 ? 'text-emerald-600' : 'text-red-500'); ?>">
+                                <?php echo e(number_format($product->pd_sp_stock)); ?> ชิ้น
+                            </span>
+                        </div>
+
+                        <div class="inline-flex flex-col items-start bg-gray-50 rounded-2xl p-4 mb-8">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl font-black text-emerald-600">฿<?php echo e(number_format($finalPrice)); ?></span>
+                                <?php if($discountAmount > 0): ?>
+                                    <span class="text-lg text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if($discountAmount > 0): ?>
+                                <span class="text-sm font-semibold text-red-500 mt-1">ประหยัด ฿<?php echo e(number_format($discountAmount)); ?></span>
+                            <?php endif; ?>
                         </div>
 
                         
@@ -118,6 +134,11 @@
 
                                     <h3 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
                                         <span>🎉 ของแถมโปรโมชั่น</span>
+                                        <template x-if="activePromotion && activePromotion.gifts_per_item > 0">
+                                            <span class="badge badge-lg badge-success text-white font-bold ml-2">
+                                                แถม <span x-text="activePromotion.gifts_per_item"></span> ชิ้น
+                                            </span>
+                                        </template>
                                         <span x-show="isConditionMet"
                                             class="badge badge-success badge-sm text-white">ปลดล็อคแล้ว!</span>
                                     </h3>

@@ -93,6 +93,11 @@
                                                         ลด ฿{{ number_format($discountAmount) }}
                                                     </div>
                                                 @endif
+                                                @if ($product->gifts_per_item)
+                                                    <div class="absolute top-2 right-2 bg-emerald-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
+                                                        แถม {{ $product->gifts_per_item }} ชิ้น
+                                                    </div>
+                                                @endif
                                             </figure>
                                         </a>
 

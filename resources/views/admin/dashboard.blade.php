@@ -5,6 +5,14 @@
 
 @section('content')
 
+    {{-- Page Header --}}
+    <div class="flex justify-end mb-4">
+        <a href="{{ route('admin.dashboard.export') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+            <i class="fas fa-file-csv mr-2"></i>
+            <span>Export to CSV</span>
+        </a>
+    </div>
+
     {{-- Stat Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {{-- Total Revenue --}}

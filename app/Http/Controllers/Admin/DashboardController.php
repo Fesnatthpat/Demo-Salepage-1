@@ -8,6 +8,7 @@ use App\Models\OrderDetail;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DashboardController extends Controller
 {
@@ -53,5 +54,44 @@ class DashboardController extends Controller
         ];
 
         return view('admin.dashboard', compact('stats', 'recentOrders', 'topSellingProducts'));
+    }
+
+    /**
+     * Export recent orders to a CSV file.
+     *
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function export()
+    {
+        $fileName = 'recent-orders-'.date('Y-m-d').'.csv';
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $orders = Order::with('user')->orderBy('ord_date', 'desc')->limit(100)->get(); // Get more for export
+        $columns = ['Order Code', 'Customer Name', 'Total Amount', 'Status', 'Order Date'];
+
+        $callback = function() use($orders, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($orders as $order) {
+                $row['Order Code']    = $order->ord_code;
+                $row['Customer Name'] = $order->user->name ?? 'N/A';
+                $row['Total Amount']  = $order->net_amount;
+                $row['Status']        = $order->status_id; // You might want a more descriptive status
+                $row['Order Date']    = $order->ord_date;
+
+                fputcsv($file, array_values($row));
+            }
+
+            fclose($file);
+        };
+
+        return new StreamedResponse($callback, 200, $headers);
     }
 }

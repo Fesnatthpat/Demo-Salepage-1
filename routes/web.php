@@ -119,6 +119,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
 
     // Order Management (จัดการออเดอร์)
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');

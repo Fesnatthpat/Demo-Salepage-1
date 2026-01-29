@@ -96,6 +96,9 @@ class ProductController extends Controller
         $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
         $this->validateSalePage($request, $productSalepage);
 
+        // 1. Get original state
+        $originalData = $productSalepage->toArray();
+
         $updateData = [
             'pd_sp_name' => $request->pd_sp_name,
             'pd_sp_price' => $request->pd_sp_price,
@@ -110,12 +113,8 @@ class ProductController extends Controller
         $productSalepage->fill($updateData);
         
         if ($productSalepage->isDirty()) {
-            $newChanges = $productSalepage->getDirty();
-            $originalData = [];
-            foreach ($newChanges as $key => $value) {
-                $originalData[$key] = $productSalepage->getOriginal($key);
-            }
-            $this->logActivity($productSalepage, 'updated', $originalData, $newChanges);
+            // 2. Log the full original and new states
+            $this->logActivity($productSalepage, 'updated', $originalData, $productSalepage->toArray());
         }
         
         $productSalepage->save();

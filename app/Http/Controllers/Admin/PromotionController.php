@@ -72,16 +72,15 @@ class PromotionController extends Controller
 
         DB::transaction(function () use ($request, $id) {
             $promotion = Promotion::findOrFail($id);
+
+            // 1. Get original state
+            $originalData = $promotion->toArray();
             
             $promotion->fill($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
             
             if ($promotion->isDirty()) {
-                $newChanges = $promotion->getDirty();
-                $originalData = [];
-                foreach ($newChanges as $key => $value) {
-                    $originalData[$key] = $promotion->getOriginal($key);
-                }
-                $this->logActivity($promotion, 'updated', $originalData, $newChanges);
+                // 2. Log the full original and new states
+                $this->logActivity($promotion, 'updated', $originalData, $promotion->toArray());
             }
 
             $promotion->save();

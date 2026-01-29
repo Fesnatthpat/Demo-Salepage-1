@@ -89,19 +89,23 @@
                     <i class="fas fa-users mr-3 w-5 text-center"></i>
                     ลูกค้า
                 </a>
-                <a href="<?php echo e(route('admin.promotions.index')); ?>"
-                    class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.promotions.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100'); ?>">
-                    <i class="fas fa-tags mr-3 w-5 text-center"></i>
-                    โปรโมชั่น
-                </a>
-                 <?php if(auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin'): ?>
-                <a href="<?php echo e(route('admin.admins.index')); ?>"
-                    class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.admins.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100'); ?>">
-                    <i class="fas fa-user-shield mr-3 w-5 text-center"></i>
-                    จัดการแอดมิน
-                </a>
-                <?php endif; ?>
-            </nav>
+                                <a href="<?php echo e(route('admin.promotions.index')); ?>"
+                                    class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.promotions.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100'); ?>">
+                                    <i class="fas fa-tags mr-3 w-5 text-center"></i>
+                                    โปรโมชั่น
+                                </a>
+                                <?php if(auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin'): ?>
+                                <a href="<?php echo e(route('admin.activity-log.index')); ?>"
+                                    class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.activity-log.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100'); ?>">
+                                    <i class="fas fa-history mr-3 w-5 text-center"></i>
+                                    ประวัติกิจกรรม
+                                </a>
+                                <a href="<?php echo e(route('admin.admins.index')); ?>"
+                                    class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.admins.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100'); ?>">
+                                    <i class="fas fa-user-shield mr-3 w-5 text-center"></i>
+                                    จัดการแอดมิน
+                                </a>
+                                <?php endif; ?>            </nav>
 
             <div class="px-4 py-4 border-t bg-gray-50">
                 <a href="<?php echo e(route('home')); ?>"
@@ -132,6 +136,7 @@
                 </div>
 
                 <div class="flex items-center">
+                    <?php if(auth()->guard('admin')->check()): ?>
                     <div x-data="{ dropdownOpen: false }" class="relative">
                         <button @click="dropdownOpen = !dropdownOpen"
                             class="flex items-center space-x-2 relative focus:outline-none hover:opacity-80 transition-opacity">
@@ -167,6 +172,7 @@
                             </a>
                         </div>
                     </div>
+                    <?php endif; ?>
                 </div>
             </header>
 

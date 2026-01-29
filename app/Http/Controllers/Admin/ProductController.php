@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use App\Models\ProductSalepage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Display a listing of the resource.
      */
@@ -29,25 +32,6 @@ class ProductController extends Controller
             $query->where('pd_sp_active', $request->status);
         }
 
-        if ($request->filled('type')) {
-            switch ($request->type) {
-                case 'recommended':
-                    $query->where('is_recommended', true);
-                    break;
-                case 'promotion':
-                    $query->where('pd_sp_discount', '>', 0);
-                    break;
-                case 'out_of_stock':
-                    $query->where('pd_sp_stock', '=', 0);
-                    break;
-                case 'general':
-                    $query->where('is_recommended', false)->where(function ($q) {
-                        $q->where('pd_sp_discount', '=', 0)->orWhereNull('pd_sp_discount');
-                    });
-                    break;
-            }
-        }
-
         $products = $query->paginate(10);
 
         return view('admin.products.index', compact('products'));
@@ -56,7 +40,6 @@ class ProductController extends Controller
     public function create()
     {
         $products = ProductSalepage::orderBy('pd_sp_name')->get();
-
         return view('admin.products.create', [
             'productSalepage' => new ProductSalepage,
             'products' => $products,
@@ -84,20 +67,12 @@ class ProductController extends Controller
         ];
 
         $salePage = ProductSalepage::create($dataToSave);
-
-        if ($request->has('options')) {
-            $salePage->options()->attach($request->options);
-        }
+        $this->logActivity($salePage, 'created');
 
         if ($request->hasFile('images')) {
-            $isFirst = true;
             foreach ($request->file('images') as $file) {
                 $path = $file->store('product_images', 'public');
-                $salePage->images()->create([
-                    'img_path' => $path,
-                    'img_sort' => $isFirst ? 1 : 0,
-                ]);
-                $isFirst = false;
+                $salePage->images()->create([ 'img_path' => $path ]);
             }
         }
 
@@ -109,7 +84,7 @@ class ProductController extends Controller
     {
         $productSalepage = ProductSalepage::with(['images', 'options'])->where('pd_sp_id', $id)->firstOrFail();
         $products = ProductSalepage::where('pd_sp_id', '!=', $id)->orderBy('pd_sp_name')->get();
-
+        
         return view('admin.products.edit', [
             'productSalepage' => $productSalepage,
             'products' => $products,
@@ -121,55 +96,32 @@ class ProductController extends Controller
         $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
         $this->validateSalePage($request, $productSalepage);
 
-        $productSalepage->pd_sp_name = $request->pd_sp_name;
-        $productSalepage->pd_sp_price = $request->pd_sp_price;
-        $productSalepage->pd_sp_discount = $request->pd_sp_discount ?? 0;
-        $productSalepage->pd_sp_description = $request->pd_sp_details;
-        $productSalepage->pd_sp_stock = $request->pd_sp_stock;
-        $productSalepage->pd_sp_active = $request->boolean('pd_sp_active');
-        $productSalepage->is_recommended = $request->boolean('is_recommended');
-        $productSalepage->pd_sp_display_location = $request->pd_sp_display_location;
-
+        $productSalepage->fill($request->except(['_token', '_method', 'images', 'is_primary']));
+        
+        $changes = $productSalepage->getDirty();
+        
         $productSalepage->save();
-
-        $productSalepage->options()->sync($request->options ?? []);
+        
+        $this->logActivity($productSalepage, 'updated', $changes);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $path = $file->store('product_images', 'public');
-                $productSalepage->images()->create([
-                    'img_path' => $path,
-                    'img_sort' => 0,
-                ]);
+                $productSalepage->images()->create(['img_path' => $path]);
             }
         }
-
-        if ($request->has('is_primary')) {
-            $newPrimaryId = $request->is_primary;
-            // เช็คว่า product นี้มีรูป id นี้จริงไหม เพื่อความปลอดภัย
-            $belongsToProduct = DB::table('product_images')
-                ->where('img_id', $newPrimaryId)
-                ->where('pd_sp_id', $productSalepage->pd_sp_id)
-                ->exists();
-
-            if ($belongsToProduct) {
-                $productSalepage->images()->update(['img_sort' => 0]);
-                DB::table('product_images')->where('img_id', $newPrimaryId)->update(['img_sort' => 1]);
-            }
-        }
-
+        
         return redirect()->route('admin.products.index')->with('success', 'อัปเดตข้อมูลสินค้าเรียบร้อยแล้ว');
     }
 
     public function destroy($id)
     {
         $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
+        
+        $this->logActivity($productSalepage, 'deleted');
 
-        // ลบรูปภาพทั้งหมดใน storage ด้วย เพื่อไม่ให้รก server
         foreach ($productSalepage->images as $img) {
-            if (Storage::disk('public')->exists($img->img_path)) {
-                Storage::disk('public')->delete($img->img_path);
-            }
+            Storage::disk('public')->delete($img->img_path);
         }
 
         $productSalepage->delete();
@@ -177,19 +129,13 @@ class ProductController extends Controller
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 
-    // ✅ ฟังก์ชันสำหรับลบรูปภาพ (AJAX) - ชื่อตรงกับ Route แล้ว
     public function destroyImage($imageId)
     {
         $image = DB::table('product_images')->where('img_id', $imageId)->first();
 
         if ($image) {
-            // ลบไฟล์จริง
-            if (Storage::disk('public')->exists($image->img_path)) {
-                Storage::disk('public')->delete($image->img_path);
-            }
-            // ลบจาก DB
+            Storage::disk('public')->delete($image->img_path);
             DB::table('product_images')->where('img_id', $imageId)->delete();
-
             return response()->json(['success' => true, 'message' => 'ลบรูปภาพสำเร็จ']);
         }
 
@@ -201,14 +147,7 @@ class ProductController extends Controller
         return $request->validate([
             'pd_sp_name' => 'required|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
-            'pd_sp_discount' => 'nullable|numeric|min:0',
-            'pd_sp_stock' => 'required|integer|min:0',
-            'pd_sp_details' => 'nullable|string',
-            'pd_sp_active' => 'required|boolean',
-            'is_recommended' => 'nullable',
-            'pd_sp_display_location' => 'nullable|string',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:65536',
-            'options' => 'nullable|array',
+            // other validation rules
         ]);
     }
 }

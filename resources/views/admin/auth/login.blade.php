@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.guest-admin')
 
 @section('title', 'Admin Login | Salepage Demo')
 

@@ -10,10 +10,11 @@
                 <p class="text-sm text-gray-600">A log of all changes made to products and promotions by admins.</p>
             </div>
 
-            @if($filter_admin_name)
+            @if ($filter_admin_name)
                 <div class="mt-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
                     <p class="font-bold">Filtering by: {{ $filter_admin_name }}</p>
-                    <a href="{{ route('admin.activity-log.index') }}" class="text-sm text-blue-600 hover:text-blue-800">Clear Filter</a>
+                    <a href="{{ route('admin.activity-log.index') }}" class="text-sm text-blue-600 hover:text-blue-800">Clear
+                        Filter</a>
                 </div>
             @endif
 
@@ -38,7 +39,7 @@
                                     class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Changes
                                 </th>
-                                 <th
+                                <th
                                     class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     IP Address
                                 </th>
@@ -52,24 +53,29 @@
                             @forelse ($activities as $activity)
                                 <tr>
                                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        @if($activity->admin)
-                                        <a href="{{ route('admin.activity-log.index', ['admin_id' => $activity->admin->id]) }}" class="text-blue-600 hover:underline whitespace-no-wrap">
-                                            {{ $activity->admin->name }}
-                                        </a>
+                                        @if ($activity->admin)
+                                            <a href="{{ route('admin.activity-log.index', ['admin_id' => $activity->admin->id]) }}"
+                                                class="text-blue-600 hover:underline whitespace-no-wrap">
+                                                {{ $activity->admin->name }}
+                                            </a>
                                         @else
                                             <p class="text-gray-500 whitespace-no-wrap">N/A</p>
                                         @endif
                                     </td>
                                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <span class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-                                             @if($activity->action === 'created')
-                                                <span aria-hidden class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
+                                        <span
+                                            class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
+                                            @if ($activity->action === 'created')
+                                                <span aria-hidden
+                                                    class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
                                                 <span class="relative">Created</span>
                                             @elseif($activity->action === 'updated')
-                                                <span aria-hidden class="absolute inset-0 bg-yellow-200 opacity-50 rounded-full"></span>
+                                                <span aria-hidden
+                                                    class="absolute inset-0 bg-yellow-200 opacity-50 rounded-full"></span>
                                                 <span class="relative">Updated</span>
                                             @elseif($activity->action === 'deleted')
-                                                <span aria-hidden class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
+                                                <span aria-hidden
+                                                    class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
                                                 <span class="relative">Deleted</span>
                                             @endif
                                         </span>
@@ -77,15 +83,17 @@
                                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <p class="text-gray-900 whitespace-no-wrap">
                                             {{ Str::afterLast($activity->loggable_type, '\\') }}:
-                                            {{ $activity->loggable->pd_sp_name ?? $activity->loggable->name ?? $activity->loggable_id }}
+                                            {{ $activity->loggable->pd_sp_name ?? ($activity->loggable->name ?? $activity->loggable_id) }}
                                         </p>
                                         @if ($activity->loggable)
                                             @if ($activity->loggable_type === 'App\Models\ProductSalepage')
-                                                <a href="{{ route('admin.products.edit', $activity->loggable_id) }}" class="text-xs text-blue-600 hover:underline">
+                                                <a href="{{ route('admin.products.edit', $activity->loggable_id) }}"
+                                                    class="text-xs text-blue-600 hover:underline">
                                                     View Details &rarr;
                                                 </a>
                                             @elseif ($activity->loggable_type === 'App\Models\Promotion')
-                                                <a href="{{ route('admin.promotions.edit', $activity->loggable_id) }}" class="text-xs text-blue-600 hover:underline">
+                                                <a href="{{ route('admin.promotions.edit', $activity->loggable_id) }}"
+                                                    class="text-xs text-blue-600 hover:underline">
                                                     View Details &rarr;
                                                 </a>
                                             @endif
@@ -94,17 +102,23 @@
                                         @endif
                                     </td>
                                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                       @if($activity->changes)
+                                        @if ($activity->changes)
                                             <div class="whitespace-pre-wrap text-xs bg-gray-50 p-2 rounded">
-                                                @if(isset($activity->changes['original']) && isset($activity->changes['new']))
+                                                @if (isset($activity->changes['original']) && isset($activity->changes['new']))
                                                     <p class="font-semibold mb-1">Changes:</p>
-                                                    @foreach($activity->changes['new'] as $attribute => $newValue)
-                                                        @if(isset($activity->changes['original'][$attribute]))
-                                                            @if($activity->changes['original'][$attribute] != $newValue)
-                                                                <p><strong>{{ $attribute }}:</strong> <span class="text-red-600">{{ $activity->changes['original'][$attribute] }}</span> &rarr; <span class="text-green-600">{{ $newValue }}</span></p>
+                                                    @foreach ($activity->changes['new'] as $attribute => $newValue)
+                                                        @if (isset($activity->changes['original'][$attribute]))
+                                                            @if ($activity->changes['original'][$attribute] != $newValue)
+                                                                <p><strong>{{ $attribute }}:</strong> <span
+                                                                        class="text-red-600">{{ $activity->changes['original'][$attribute] }}</span>
+                                                                    &rarr; <span
+                                                                        class="text-green-600">{{ $newValue }}</span>
+                                                                </p>
                                                             @endif
                                                         @else
-                                                            <p><strong>{{ $attribute }}:</strong> <span class="text-green-600">Added: {{ $newValue }}</span></p>
+                                                            <p><strong>{{ $attribute }}:</strong> <span
+                                                                    class="text-green-600">Added:
+                                                                    {{ $newValue }}</span></p>
                                                         @endif
                                                     @endforeach
                                                 @elseif(isset($activity->changes['new']))
@@ -117,21 +131,24 @@
                                                     <pre><code>{{ json_encode($activity->changes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
                                                 @endif
                                             </div>
-                                       @else
+                                        @else
                                             <span class="text-gray-500">N/A</span>
-                                       @endif
+                                        @endif
                                     </td>
                                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         <p class="text-gray-900 whitespace-no-wrap">{{ $activity->ip_address }}</p>
                                     </td>
                                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p class="text-gray-900 whitespace-no-wrap">{{ $activity->created_at->diffForHumans() }}</p>
-                                        <p class="text-gray-600 whitespace-no-wrap text-xs">{{ $activity->created_at->format('Y-m-d H:i:s') }}</p>
+                                        <p class="text-gray-900 whitespace-no-wrap">
+                                            {{ $activity->created_at->diffForHumans() }}</p>
+                                        <p class="text-gray-600 whitespace-no-wrap text-xs">
+                                            {{ $activity->created_at->format('Y-m-d H:i:s') }}</p>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                    <td colspan="6"
+                                        class="text-center px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                         No activities logged yet.
                                     </td>
                                 </tr>

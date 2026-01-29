@@ -39,12 +39,18 @@ class AdminManagementController extends Controller
             'role' => 'required|in:admin,superadmin',
         ]);
 
-        $admin = new Admin();
-        $admin->name = $request->name;
-        $admin->username = $request->username;
-        $admin->password = Hash::make($request->password);
-        $admin->role = $request->role;
-        $admin->save();
+        // Generate unique 6-digit code
+        do {
+            $code = rand(100000, 999999);
+        } while (Admin::where('admin_code', $code)->exists());
+
+        Admin::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'admin_code' => $code,
+        ]);
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin created successfully.');
     }

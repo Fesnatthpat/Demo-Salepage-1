@@ -53,6 +53,7 @@
                             class="bg-gray-50 border-b border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <th class="px-5 py-3">ชื่อ - นามสกุล</th>
                             <th class="px-5 py-3">ชื่อผู้ใช้ (Username)</th>
+                            <th class="px-5 py-3">รหัสประจำตัว</th>
                             <th class="px-5 py-3 text-center">ระดับสิทธิ์ (Role)</th>
                             <th class="px-5 py-3">วันที่สร้าง</th>
                             <th class="px-5 py-3 text-center">จัดการ</th>
@@ -78,6 +79,9 @@
                                 </td>
                                 <td class="px-5 py-4 text-sm text-gray-700">
                                     {{ $admin->username }}
+                                </td>
+                                <td class="px-5 py-4 text-sm text-gray-700 font-mono">
+                                    {{ $admin->admin_code }}
                                 </td>
                                 <td class="px-5 py-4 text-sm text-center">
                                     @if ($admin->role === 'superadmin')
@@ -117,7 +121,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5"
+                                <td colspan="6"
                                     class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-500">
                                     ไม่พบข้อมูลผู้ดูแลระบบ
                                 </td>

@@ -72,11 +72,19 @@ class PromotionController extends Controller
 
         DB::transaction(function () use ($request, $id) {
             $promotion = Promotion::findOrFail($id);
+            
             $promotion->fill($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
-            $changes = $promotion->getDirty();
+            
+            if ($promotion->isDirty()) {
+                $newChanges = $promotion->getDirty();
+                $originalData = [];
+                foreach ($newChanges as $key => $value) {
+                    $originalData[$key] = $promotion->getOriginal($key);
+                }
+                $this->logActivity($promotion, 'updated', $originalData, $newChanges);
+            }
 
             $promotion->save();
-            $this->logActivity($promotion, 'updated', $changes);
 
             $promotion->rules()->delete();
             $promotion->actions()->delete();
@@ -104,7 +112,7 @@ class PromotionController extends Controller
     public function destroy($id)
     {
         $promotion = Promotion::findOrFail($id);
-
+        // Log activity BEFORE deleting the model within the transaction
         $this->logActivity($promotion, 'deleted');
         
         DB::transaction(function () use ($promotion) {

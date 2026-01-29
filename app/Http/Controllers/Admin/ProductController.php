@@ -96,13 +96,29 @@ class ProductController extends Controller
         $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
         $this->validateSalePage($request, $productSalepage);
 
-        $productSalepage->fill($request->except(['_token', '_method', 'images', 'is_primary']));
+        $updateData = [
+            'pd_sp_name' => $request->pd_sp_name,
+            'pd_sp_price' => $request->pd_sp_price,
+            'pd_sp_discount' => $request->pd_sp_discount ?? 0,
+            'pd_sp_description' => $request->pd_sp_details, // Correctly map details to description
+            'pd_sp_stock' => $request->pd_sp_stock,
+            'pd_sp_active' => $request->boolean('pd_sp_active'),
+            'is_recommended' => $request->boolean('is_recommended'),
+            'pd_sp_display_location' => $request->pd_sp_display_location,
+        ];
         
-        $changes = $productSalepage->getDirty();
+        $productSalepage->fill($updateData);
+        
+        if ($productSalepage->isDirty()) {
+            $newChanges = $productSalepage->getDirty();
+            $originalData = [];
+            foreach ($newChanges as $key => $value) {
+                $originalData[$key] = $productSalepage->getOriginal($key);
+            }
+            $this->logActivity($productSalepage, 'updated', $originalData, $newChanges);
+        }
         
         $productSalepage->save();
-        
-        $this->logActivity($productSalepage, 'updated', $changes);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {

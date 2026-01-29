@@ -9,21 +9,6 @@ use Illuminate\Http\Request;
 class CustomerController extends Controller
 {
     /**
-     * Instantiate a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (auth()->guard('admin')->user()->role !== 'superadmin') {
-                return redirect()->route('admin.products.index')->with('info', 'You do not have permission to access this page.');
-            }
-            return $next($request);
-        });
-    }
-
-    /**
      * Display a listing of the customers.
      *
      * @return \Illuminate\Http\Response

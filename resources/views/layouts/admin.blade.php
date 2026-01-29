@@ -94,11 +94,13 @@
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
                 </a>
-                 <a href="{{ route('admin.admins.index') }}"
+                 @if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin')
+                <a href="{{ route('admin.admins.index') }}"
                     class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors {{ request()->routeIs('admin.admins.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100' }}">
                     <i class="fas fa-user-shield mr-3 w-5 text-center"></i>
                     จัดการแอดมิน
                 </a>
+                @endif
             </nav>
 
             <div class="px-4 py-4 border-t bg-gray-50">

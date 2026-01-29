@@ -18,11 +18,6 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Restrict access to superadmins only
-        if (auth()->guard('admin')->user()->role !== 'superadmin') {
-            return redirect()->route('admin.products.index')->with('info', 'You have been redirected to the product management page.');
-        }
-
         // For stats, we'll consider completed orders. Let's assume a status_id > 2 means paid/shipped/complete
         $completedOrdersScope = Order::where('status_id', '>', 1);
 

@@ -60,7 +60,7 @@
                             </div>
 
                             {{-- Username --}}
-                            <div class="col-span-2">
+                            <div class="col-span-2 sm:col-span-1">
                                 <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">ชื่อผู้ใช้
                                     (Username) <span class="text-red-500">*</span></label>
                                 <input type="text" name="username" id="username"
@@ -71,6 +71,16 @@
                                     <p class="mt-2 text-sm text-red-600 flex items-center"><i
                                             class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
                                 @enderror
+                            </div>
+
+                            {{-- Admin Code --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label for="admin_code" class="block text-sm font-semibold text-gray-700 mb-2">รหัสประจำตัว
+                                </label>
+                                <input type="text" name="admin_code" id="admin_code"
+                                    value="{{ old('admin_code', $admin->admin_code) }}"
+                                    class="block w-full px-4 py-3 rounded-lg border-gray-300 bg-gray-100 text-gray-900 text-base shadow-sm"
+                                    readonly>
                             </div>
 
                             <div class="col-span-2 border-b border-gray-100"></div>

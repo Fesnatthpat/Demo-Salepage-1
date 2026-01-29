@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'profile.completed' => \App\Http\Middleware\CheckUserProfileCompletion::class,
+            'is.superadmin' => \App\Http\Middleware\IsSuperadmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -15,6 +15,10 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        if (auth()->guard('admin')->user()->role !== 'superadmin') {
+            return redirect()->route('admin.products.index')->with('info', 'You have been redirected to the product management page.');
+        }
+
         $query = Order::with('user')->orderBy('ord_date', 'desc');
 
         if ($request->filled('search')) {
@@ -41,6 +45,10 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
+        if (auth()->guard('admin')->user()->role !== 'superadmin') {
+            return redirect()->route('admin.products.index')->with('info', 'You have been redirected to the product management page.');
+        }
+
         $order->load('user', 'details.productSalepage.images');
 
         // This could be moved to a config file or a model constant
@@ -62,6 +70,10 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, Order $order)
     {
+        if (auth()->guard('admin')->user()->role !== 'superadmin') {
+            return redirect()->route('admin.products.index')->with('info', 'You have been redirected to the product management page.');
+        }
+
         $request->validate([
             'status_id' => 'required|integer|in:1,2,3,4,5', // Validate against the available statuses
         ]);

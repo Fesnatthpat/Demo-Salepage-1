@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\DB;
 
 class PromotionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (auth()->guard('admin')->user()->role !== 'superadmin') {
+                return redirect()->route('admin.products.index')->with('info', 'You do not have permission to access this page.');
+            }
+            return $next($request);
+        });
+    }
+
     public function index()
     {
         $promotions = Promotion::with(['rules', 'actions.giftableProducts'])

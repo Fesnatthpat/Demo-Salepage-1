@@ -3,88 +3,128 @@
 @section('title', 'Admin Management')
 
 @section('content')
-    <div class="container mx-auto px-4 sm:px-8">
-        <div class="py-8">
+    <div class="container mx-auto px-4 sm:px-8 py-8">
+        {{-- Header Section --}}
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
             <div>
-                <h2 class="text-2xl font-semibold leading-tight">Admin Management</h2>
+                <h2 class="text-2xl font-bold text-gray-800">ผู้ดูแลระบบ (Admins)</h2>
+                <p class="text-gray-500 text-sm mt-1">จัดการรายชื่อและสิทธิ์การเข้าใช้งานของผู้ดูแลระบบ</p>
             </div>
-            <div class="my-2 flex sm:flex-row flex-col">
-                <div class="flex flex-row mb-1 sm:mb-0">
-                    {{-- Search input if needed --}}
-                </div>
-                <div class="block relative">
-                    <a href="{{ route('admin.admins.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Create Admin
-                    </a>
+            <div class="mt-4 md:mt-0">
+                <a href="{{ route('admin.admins.create') }}"
+                    class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition ease-in-out duration-150">
+                    <i class="fas fa-plus mr-2"></i> เพิ่มผู้ดูแลระบบ
+                </a>
+            </div>
+        </div>
+
+        {{-- Alerts --}}
+        @if (session('success'))
+            <div class="mb-4 bg-green-50 border-l-4 border-green-500 p-4 rounded-md shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">{{ session('success') }}</p>
+                    </div>
                 </div>
             </div>
-             @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
+        @endif
+        @if (session('error'))
+            <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">{{ session('error') }}</p>
+                    </div>
                 </div>
-            @endif
-            @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
-                </div>
-            @endif
-            <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
-                    <table class="min-w-full leading-normal">
-                        <thead>
-                            <tr>
-                                <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Username
-                                </th>
-                                <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Role
-                                </th>
-                                <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Created At
-                                </th>
-                                <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($admins as $admin)
-                                <tr>
-                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p class="text-gray-900 whitespace-no-wrap">{{ $admin->name }}</p>
-                                    </td>
-                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p class="text-gray-900 whitespace-no-wrap">{{ $admin->username }}</p>
-                                    </td>
-                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p class="text-gray-900 whitespace-no-wrap">{{ $admin->role }}</p>
-                                    </td>
-                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <p class="text-gray-900 whitespace-no-wrap">
-                                            {{ $admin->created_at->format('d/m/Y') }}
-                                        </p>
-                                    </td>
-                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <a href="{{ route('admin.admins.edit', $admin->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                        <form action="{{ route('admin.admins.destroy', $admin->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this admin?');">
+            </div>
+        @endif
+
+        {{-- Table Section --}}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal">
+                    <thead>
+                        <tr
+                            class="bg-gray-50 border-b border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-5 py-3">ชื่อ - นามสกุล</th>
+                            <th class="px-5 py-3">ชื่อผู้ใช้ (Username)</th>
+                            <th class="px-5 py-3 text-center">ระดับสิทธิ์ (Role)</th>
+                            <th class="px-5 py-3">วันที่สร้าง</th>
+                            <th class="px-5 py-3 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse ($admins as $admin)
+                            <tr class="hover:bg-gray-50 transition duration-150">
+                                <td class="px-5 py-4 text-sm">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div
+                                                class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold text-lg uppercase">
+                                                {{ substr($admin->name, 0, 1) }}
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-gray-900 font-medium whitespace-no-wrap">
+                                                {{ $admin->name }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4 text-sm text-gray-700">
+                                    {{ $admin->username }}
+                                </td>
+                                <td class="px-5 py-4 text-sm text-center">
+                                    @if ($admin->role === 'superadmin')
+                                        <span
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                            Super Admin
+                                        </span>
+                                    @else
+                                        <span
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            Admin
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 text-sm text-gray-500">
+                                    {{ $admin->created_at->format('d M Y') }}
+                                </td>
+                                <td class="px-5 py-4 text-sm text-center">
+                                    <div class="flex justify-center space-x-3">
+                                        <a href="{{ route('admin.admins.edit', $admin->id) }}"
+                                            class="text-indigo-600 hover:text-indigo-900 transition" title="Edit">
+                                            <i class="fas fa-edit text-lg"></i>
+                                        </a>
+                                        <form action="{{ route('admin.admins.destroy', $admin->id) }}" method="POST"
+                                            class="inline-block"
+                                            onsubmit="return confirm('ยืนยันการลบผู้ดูแลระบบรายนี้?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                                            <button type="submit"
+                                                class="text-red-600 hover:text-red-900 transition focus:outline-none"
+                                                title="Delete">
+                                                <i class="fas fa-trash-alt text-lg"></i>
+                                            </button>
                                         </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5"
+                                    class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center text-gray-500">
+                                    ไม่พบข้อมูลผู้ดูแลระบบ
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

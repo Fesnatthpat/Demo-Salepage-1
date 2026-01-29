@@ -140,6 +140,6 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::resource('promotions', PromotionController::class);
 
     // Admin Management
-    Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class);
+    Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class)->middleware('is.superadmin');
 
 });

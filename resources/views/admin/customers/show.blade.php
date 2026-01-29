@@ -18,18 +18,42 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- ชื่อ --}}
                 <div>
                     <p class="text-sm text-gray-500">ชื่อ</p>
                     <p class="text-lg font-bold text-gray-800">{{ $customer->name }}</p>
                 </div>
+                
+                {{-- อีเมล (แก้ไข: จัดให้ปุ่มอยู่ติดข้อความ) --}}
                 <div>
                     <p class="text-sm text-gray-500">อีเมล</p>
-                    <p class="text-lg font-bold text-gray-800">{{ $customer->email ?? '-' }}</p>
+                    <div class="flex items-center justify-start gap-2">
+                        <span class="text-lg font-bold text-gray-800">{{ $customer->email ?? '-' }}</span>
+                        @if($customer->email)
+                            <button onclick="copyToClipboard('{{ $customer->email }}', this)" 
+                                    class="btn btn-xs btn-circle btn-ghost text-gray-400 hover:text-gray-800"
+                                    title="คัดลอกอีเมล">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        @endif
+                    </div>
                 </div>
+
+                {{-- เบอร์โทรศัพท์ (แก้ไข: จัดให้ปุ่มอยู่ติดข้อความ) --}}
                 <div>
                     <p class="text-sm text-gray-500">เบอร์โทรศัพท์</p>
-                    <p class="text-lg font-bold text-gray-800">{{ $customer->phone ?? '-' }}</p>
+                    <div class="flex items-center justify-start gap-2">
+                        <span class="text-lg font-bold text-gray-800">{{ $customer->phone ?? '-' }}</span>
+                        @if($customer->phone)
+                            <button onclick="copyToClipboard('{{ $customer->phone }}', this)" 
+                                    class="btn btn-xs btn-circle btn-ghost text-gray-400 hover:text-gray-800"
+                                    title="คัดลอกเบอร์โทรศัพท์">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        @endif
+                    </div>
                 </div>
+
                 <div>
                     <p class="text-sm text-gray-500">อายุ</p>
                     <p class="text-lg font-bold text-gray-800">{{ $customer->age ?? '-' }}</p>
@@ -44,16 +68,27 @@
                         {{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : '-' }}
                     </p>
                 </div>
+                
+                {{-- สถานะ LINE (Tooltip + Copy) --}}
                 <div>
                     <p class="text-sm text-gray-500">สถานะ LINE</p>
-                    <p class="text-lg font-bold text-gray-800">
+                    <div class="text-lg font-bold text-gray-800 flex items-center justify-start gap-2">
                         @if ($customer->line_id)
-                            <span class="badge badge-success">เชื่อมต่อแล้ว (LINE ID: {{ $customer->line_id }})</span>
+                            <span class="badge badge-success">เชื่อมต่อแล้ว</span>
+                            
+                            {{-- Tooltip แสดง Line ID เมื่อเอาเมาส์ชี้ --}}
+                            <div class="tooltip" data-tip="{{ $customer->line_id }}">
+                                <button onclick="copyToClipboard('{{ $customer->line_id }}', this)" 
+                                        class="btn btn-xs btn-circle btn-ghost text-gray-500 hover:text-gray-800">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
                         @else
                             <span class="badge badge-warning">ไม่ได้เชื่อมต่อ</span>
                         @endif
-                    </p>
+                    </div>
                 </div>
+
                 <div>
                     <p class="text-sm text-gray-500">วันที่ลงทะเบียน</p>
                     <p class="text-lg font-bold text-gray-800">{{ $customer->created_at->format('d M Y, H:i') }}</p>
@@ -129,4 +164,28 @@
 
         </div>
     </div>
+
+    {{-- Script สำหรับฟังก์ชัน Copy --}}
+    <script>
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(function() {
+                // เก็บ HTML เดิมของปุ่มไว้
+                let originalContent = btn.innerHTML;
+                
+                // เปลี่ยนไอคอนให้เป็นสีเขียวและเป็นเครื่องหมายถูก
+                btn.classList.remove('text-gray-400', 'text-gray-500');
+                btn.classList.add('text-green-600');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                
+                // คืนค่าไอคอนเดิมหลังจาก 2 วินาที
+                setTimeout(function() {
+                    btn.classList.remove('text-green-600');
+                    btn.classList.add('text-gray-400'); // หรือ class สีเดิมที่คุณต้องการ
+                    btn.innerHTML = originalContent;
+                }, 2000);
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    </script>
 @endsection

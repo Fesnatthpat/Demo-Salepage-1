@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
 use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class AdminManagementController extends Controller
 {
@@ -34,17 +34,17 @@ class AdminManagementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:admins',
+            'username' => ['required', 'string', 'max:255', Rule::unique('admins')->whereNull('deleted_at')],
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,superadmin',
         ]);
 
-        Admin::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        $admin = new Admin();
+        $admin->name = $request->name;
+        $admin->username = $request->username;
+        $admin->password = Hash::make($request->password);
+        $admin->role = $request->role;
+        $admin->save();
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin created successfully.');
     }
@@ -72,7 +72,7 @@ class AdminManagementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:admins,username,' . $admin->id,
+            'username' => ['required', 'string', 'max:255', Rule::unique('admins')->ignore($admin->id)->whereNull('deleted_at')],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:admin,superadmin',
         ]);

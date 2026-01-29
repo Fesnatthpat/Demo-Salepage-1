@@ -94,6 +94,11 @@
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
                 </a>
+                 <a href="{{ route('admin.admins.index') }}"
+                    class="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors {{ request()->routeIs('admin.admins.*') ? 'bg-emerald-100 text-emerald-700 font-semibold' : 'hover:bg-gray-100' }}">
+                    <i class="fas fa-user-shield mr-3 w-5 text-center"></i>
+                    จัดการแอดมิน
+                </a>
             </nav>
 
             <div class="px-4 py-4 border-t bg-gray-50">
@@ -102,13 +107,13 @@
                     <i class="fas fa-globe mr-3 w-5 text-center"></i>
                     ไปหน้าเว็บไซต์
                 </a>
-                <a href="{{ route('logout') }}"
+                <a href="{{ route('admin.logout') }}"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                     class="flex items-center px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md mt-2 transition-colors">
                     <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i>
                     ออกจากระบบ
                 </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
             </div>

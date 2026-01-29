@@ -108,7 +108,14 @@ Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistric
 // ==========================================
 // 7. Admin Panel (ระบบหลังบ้าน)
 // ==========================================
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::get('admin/login', [App\Http\Controllers\Admin\AdminController::class, 'showLoginForm'])->name('admin.login');
+Route::post('admin/login', [App\Http\Controllers\Admin\AdminController::class, 'login']);
+Route::post('admin/logout', [App\Http\Controllers\Admin\AdminController::class, 'logout'])->name('admin.logout');
+
+Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    });
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -131,5 +138,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Promotion Management (จัดการโปรโมชั่น)
     Route::resource('promotions', PromotionController::class);
+
+    // Admin Management
+    Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class);
 
 });

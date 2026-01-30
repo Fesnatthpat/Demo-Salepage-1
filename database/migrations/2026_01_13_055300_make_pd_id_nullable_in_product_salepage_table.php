@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('product_salepage', function (Blueprint $table) {
             // Changed the column to be nullable
-            $table->unsignedBigInteger('pd_id')->nullable()->change();
+            // $table->unsignedBigInteger('pd_id')->nullable()->change();
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('product_salepage', function (Blueprint $table) {
-            $table->unsignedBigInteger('pd_id')->nullable(false)->change();
+            // $table->unsignedBigInteger('pd_id')->nullable(false)->change();
         });
     }
 };

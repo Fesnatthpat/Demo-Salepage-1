@@ -44,18 +44,26 @@ class CartService
 
     public function addOrUpdate(int $productId, int $quantity): void
     {
-        $this->getCartContents(); // ✅ Ensure Cart Loaded
+        $this->getCartContents(); // Ensure Cart Loaded
+
+        $userId = $this->getUserId();
+        $cart = Cart::session($userId);
+
+        // --- NEW FIX: Remove existing items before adding to SET the quantity ---
+        $existingKeys = $this->findCartKeys($productId);
+        foreach ($existingKeys as $key) {
+            // We only remove simple products, not bundled/promo items
+            $item = $cart->get($key);
+            if (empty($item->attributes['promo_group_id'])) {
+                $cart->remove($key);
+            }
+        }
+        // --- END NEW FIX ---
 
         $product = $this->checkStockAndGetProduct($productId, $quantity);
         $details = $this->getProductDetails($productId);
 
         if ($details) {
-            $userId = $this->getUserId();
-            $cart = Cart::session($userId);
-
-            $existingKeys = $this->findCartKeys($productId);
-            $existingItem = ! empty($existingKeys) ? $cart->get($existingKeys[0]) : null;
-
             $newAttributes = [
                 'image' => $details->image,
                 'original_price' => $details->original_price,
@@ -63,14 +71,7 @@ class CartService
                 'pd_code' => $details->pd_code,
             ];
 
-            if ($existingItem) {
-                foreach (['promo_group_id', 'is_condition_item', 'item_type', 'is_freebie'] as $attr) {
-                    if (isset($existingItem->attributes[$attr])) {
-                        $newAttributes[$attr] = $existingItem->attributes[$attr];
-                    }
-                }
-            }
-
+            // Now, add the item fresh. It will either be new, or have a clean slate.
             $cart->add([
                 'id' => $details->id,
                 'name' => $details->name,
@@ -133,7 +134,10 @@ class CartService
                 'id' => $mainDetails->id,
                 'name' => $mainDetails->name,
                 'price' => $mainDetails->price,
-                'quantity' => $qty,
+                'quantity' => [
+                    'relative' => false,
+                    'value' => $qty
+                ],
                 'attributes' => [
                     'image' => $mainDetails->image,
                     'pd_code' => $mainDetails->pd_code,
@@ -154,7 +158,10 @@ class CartService
                     'id' => $secDetails->id,
                     'name' => $secDetails->name,
                     'price' => $secDetails->price,
-                    'quantity' => 1,
+                    'quantity' => [
+                        'relative' => false,
+                        'value' => 1
+                    ],
                     'attributes' => [
                         'image' => $secDetails->image,
                         'pd_code' => $secDetails->pd_code,
@@ -176,7 +183,10 @@ class CartService
                     'id' => $giftDetails->id,
                     'name' => $giftDetails->name.' (ของแถม)',
                     'price' => 0,
-                    'quantity' => 1,
+                    'quantity' => [
+                        'relative' => false,
+                        'value' => 1
+                    ],
                     'attributes' => [
                         'image' => $giftDetails->image,
                         'pd_code' => $giftDetails->pd_code,

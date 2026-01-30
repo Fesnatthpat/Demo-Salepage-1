@@ -20,7 +20,8 @@ class PromotionController extends Controller
         $promotions = Promotion::with(['rules', 'actions.giftableProducts'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        return view('admin.promotions.index', compact('promotions'));
+        $products = ProductSalepage::get()->keyBy('pd_sp_id');
+        return view('admin.promotions.index', compact('promotions', 'products'));
     }
 
     public function create()
@@ -35,24 +36,55 @@ class PromotionController extends Controller
 
         $promotion = DB::transaction(function () use ($request) {
             $promotion = Promotion::create($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
-            $this->logActivity($promotion, 'created');
-
-            foreach ($request->buy_items as $item) {
-                PromotionRule::create([
-                    'promotion_id' => $promotion->id,
-                    'type' => 'buy_x_get_y',
-                    'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
-                ]);
-            }
-
-            foreach ($request->get_items as $item) {
-                PromotionAction::create([
-                    'promotion_id' => $promotion->id,
-                    'type' => 'buy_x_get_y',
-                    'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
-                ]);
-            }
-            return $promotion;
+                            $this->logActivity($promotion, 'created');
+            
+                            foreach ($request->buy_items as $item) {
+                                PromotionRule::create([
+                                    'promotion_id' => $promotion->id,
+                                    'type' => 'buy_x_get_y',
+                                    'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
+                                ]);
+                            }
+            
+                                                $createdActions = [];
+            
+                                                foreach ($request->get_items as $item) {
+            
+                                                    $createdActions[] = PromotionAction::create([
+            
+                                                        'promotion_id' => $promotion->id,
+            
+                                                        'type' => 'buy_x_get_y',
+            
+                                                        'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
+            
+                                                    ]);
+            
+                                                }
+            
+                                    
+            
+                                                // Sync giftable products if they exist in the request
+            
+                                                if ($request->has('giftable_product_ids') && !empty($request->giftable_product_ids)) {
+            
+                                                    // Find the first action that is a 'selectable gift' type
+            
+                                                    $selectableGiftAction = collect($createdActions)->first(function ($action) {
+            
+                                                        return empty($action->actions['product_id_to_get']);
+            
+                                                    });
+            
+                                    
+            
+                                                    if ($selectableGiftAction) {
+            
+                                                        $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
+            
+                                                    }
+            
+                                                }            return $promotion;
         });
 
         return redirect()->route('admin.promotions.index')->with('success', 'สร้างโปรโมชั่นเรียบร้อยแล้ว');
@@ -63,7 +95,23 @@ class PromotionController extends Controller
         $promotion = Promotion::with(['rules', 'actions.giftableProducts'])->findOrFail($id);
         $products = ProductSalepage::orderBy('pd_sp_name')->get();
 
-        return view('admin.promotions.edit', compact('promotion', 'products'));
+        $buy_items = $promotion->rules->map(function ($rule) {
+            return [
+                'product_id' => $rule->rules['product_id'] ?? '',
+                'quantity' => $rule->rules['quantity_to_buy'] ?? 1,
+            ];
+        });
+
+        $get_items = $promotion->actions->map(function ($action) {
+            return [
+                // Note: This only handles specific gifts, not selectable ones for the row quantity.
+                // The selectable gifts are handled separately by the TomSelect input.
+                'product_id' => $action->actions['product_id_to_get'] ?? '',
+                'quantity' => $action->actions['quantity_to_get'] ?? 1,
+            ];
+        });
+
+        return view('admin.promotions.edit', compact('promotion', 'products', 'buy_items', 'get_items'));
     }
 
     public function update(Request $request, $id)
@@ -96,12 +144,25 @@ class PromotionController extends Controller
                 ]);
             }
 
+            $createdActions = [];
             foreach ($request->get_items as $item) {
-                PromotionAction::create([
+                $createdActions[] = PromotionAction::create([
                     'promotion_id' => $promotion->id,
                     'type' => 'buy_x_get_y',
                     'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
                 ]);
+            }
+
+            // Sync giftable products if they exist in the request
+            if ($request->has('giftable_product_ids') && !empty($request->giftable_product_ids)) {
+                // Find the first action that is a 'selectable gift' type
+                $selectableGiftAction = collect($createdActions)->first(function ($action) {
+                    return empty($action->actions['product_id_to_get']);
+                });
+
+                if ($selectableGiftAction) {
+                    $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
+                }
             }
         });
 

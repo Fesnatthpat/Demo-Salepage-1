@@ -47,8 +47,6 @@ class CartController extends Controller
                 ]);
             }
 
-            return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าแล้ว');
-
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -57,11 +55,6 @@ class CartController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
-
-    /**
-     * ★★★ ฟังก์ชันใหม่: สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่) ★★★
-     * ต้องใช้ฟังก์ชันนี้เท่านั้น เพื่อให้สินค้า A และ B ผูกติดกัน เวลาลบจะได้หายพร้อมกัน
-     */
     public function addBundleToCart(Request $request)
     {
         $request->validate([

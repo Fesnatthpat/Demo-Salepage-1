@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="emerald">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
 
 <head>
     <meta charset="utf-8">
@@ -18,12 +18,13 @@
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
-            background-color: #f0f2f5; /* Admin background color */
+            background-color: #111827;
+            /* gray-900 */
         }
     </style>
 </head>
 
-<body class="antialiased">
+<body class="antialiased bg-gray-900 text-gray-100">
     <div class="flex items-center justify-center min-h-screen">
         @yield('content')
     </div>

@@ -10,25 +10,32 @@
             cursor: pointer;
             border-radius: 4px;
             transition: transform 0.2s;
+            border: 1px solid #4b5563;
+            /* gray-600 */
         }
 
         .slip-thumbnail:hover {
             transform: scale(1.1);
+            border-color: #10b981;
+            /* emerald-500 */
         }
     </style>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('content'); ?>
-    <div class="card bg-white shadow-md">
+    <div class="card bg-gray-800 shadow-lg border border-gray-700">
         <div class="card-body">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                <h2 class="card-title">ออเดอร์ทั้งหมด (<?php echo e($orders->total()); ?>)</h2>
+                <h2 class="card-title text-gray-100">ออเดอร์ทั้งหมด <span
+                        class="text-gray-500 text-sm font-normal">(<?php echo e($orders->total()); ?>)</span></h2>
                 <form action="<?php echo e(route('admin.orders.index')); ?>" method="GET">
                     <div class="form-control">
                         <div class="relative">
-                            <input type="text" name="search" placeholder="ค้นหา รหัสออเดอร์, ชื่อลูกค้า..."
-                                class="input input-bordered w-full sm:w-64 pr-10" value="<?php echo e(request('search')); ?>">
-                            <button type="submit" class="absolute top-0 right-0 rounded-l-none btn btn-square btn-primary">
+                            <input type="text" name="search" placeholder="ค้นหา รหัส, ชื่อลูกค้า..."
+                                class="input input-bordered w-full sm:w-64 pr-10 bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
+                                value="<?php echo e(request('search')); ?>">
+                            <button type="submit"
+                                class="absolute top-0 right-0 rounded-l-none btn btn-square btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -40,11 +47,11 @@
                 </form>
             </div>
 
-            <div class="mb-4">
-                <div class="join">
+            <div class="mb-4 overflow-x-auto">
+                <div class="join bg-gray-700 p-1 rounded-lg border border-gray-600">
                     
                     <a href="<?php echo e(route('admin.orders.index', array_merge(request()->except('status'), ['status' => 'all']))); ?>"
-                        class="join-item btn btn-sm <?php echo e(!request('status') || request('status') == 'all' ? 'btn-active' : ''); ?>">
+                        class="join-item btn btn-sm border-none <?php echo e(!request('status') || request('status') == 'all' ? 'bg-emerald-600 text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-600'); ?>">
                         ทั้งหมด
                     </a>
                     
@@ -59,7 +66,7 @@
                     ?>
                     <?php $__currentLoopData = $statusOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $text): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <a href="<?php echo e(route('admin.orders.index', array_merge(request()->except('status'), ['status' => $id]))); ?>"
-                            class="join-item btn btn-sm <?php echo e(request('status') == $id ? 'btn-active' : ''); ?>">
+                            class="join-item btn btn-sm border-none <?php echo e(request('status') == $id ? 'bg-emerald-600 text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-600'); ?>">
                             <?php echo e($text); ?>
 
                         </a>
@@ -68,9 +75,9 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="table w-full">
+                <table class="table w-full text-gray-300">
                     <thead>
-                        <tr>
+                        <tr class="border-b border-gray-700 bg-gray-900/50 text-gray-400">
                             <th>รหัสออเดอร์</th>
                             <th>ลูกค้า</th>
                             <th class="text-right">ยอดรวม</th>
@@ -93,15 +100,13 @@
                             ];
                         ?>
                         <?php $__empty_1 = true; $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                            <tr class="hover group">
+                            <tr class="border-b border-gray-700 hover:bg-gray-700/50 transition-colors group">
                                 <td class="align-middle">
-                                    
                                     <div class="flex items-center gap-2">
-                                        <span class="font-mono font-semibold text-gray-700"><?php echo e($order->ord_code); ?></span>
+                                        <span class="font-mono font-semibold text-emerald-400"><?php echo e($order->ord_code); ?></span>
                                         <button onclick="copyToClipboard('<?php echo e($order->ord_code); ?>')"
-                                            class="btn btn-ghost btn-xs btn-square text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                                            class="btn btn-ghost btn-xs btn-square text-gray-500 hover:text-emerald-400 hover:bg-gray-700"
                                             title="คลิกเพื่อคัดลอก">
-                                            
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -111,44 +116,45 @@
                                     </div>
                                 </td>
                                 <td class="align-middle">
-                                    <div class="font-bold"><?php echo e($order->shipping_name); ?></div>
-                                    <div class="text-sm opacity-50"><?php echo e($order->user->email ?? 'N/A'); ?></div>
+                                    <div class="font-bold text-gray-200"><?php echo e($order->shipping_name); ?></div>
+                                    <div class="text-sm text-gray-500"><?php echo e($order->user->email ?? 'N/A'); ?></div>
                                 </td>
-                                <td class="align-middle text-right">฿<?php echo e(number_format($order->total_price, 2)); ?></td>
-                                <td class="align-middle text-right text-red-500">
+                                <td class="align-middle text-right text-gray-400">
+                                    ฿<?php echo e(number_format($order->total_price, 2)); ?></td>
+                                <td class="align-middle text-right text-red-400">
                                     -฿<?php echo e(number_format($order->total_discount, 2)); ?></td>
-                                <td class="align-middle text-right font-bold">฿<?php echo e(number_format($order->net_amount, 2)); ?>
+                                <td class="align-middle text-right font-bold text-emerald-400">
+                                    ฿<?php echo e(number_format($order->net_amount, 2)); ?>
 
                                 </td>
                                 <td class="align-middle text-center">
                                     <?php if($order->slip_path): ?>
                                         <img src="<?php echo e(asset('storage/' . $order->slip_path)); ?>" alt="Slip"
-                                            class="slip-thumbnail"
+                                            class="slip-thumbnail bg-gray-700"
                                             data-slip-src="<?php echo e(asset('storage/' . $order->slip_path)); ?>">
                                     <?php else: ?>
-                                        <span class="text-gray-400">ไม่มีรูป</span>
+                                        <span class="text-xs text-gray-600">ไม่มีรูป</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="align-middle text-center">
                                     <span
-                                        class="badge
+                                        class="badge border-none text-xs font-medium px-3 py-3
                                     <?php switch($order->status_id):
-                                        case (1): ?> badge-warning <?php break; ?>
-                                        <?php case (2): ?> badge-info <?php break; ?>
-                                        <?php case (3): ?> badge-success <?php break; ?>
-                                        <?php case (4): ?> badge-primary <?php break; ?>
-                                        <?php case (5): ?> badge-error <?php break; ?>
-                                        <?php default: ?> badge-ghost
-                                    <?php endswitch; ?>
-                                ">
+                                        case (1): ?> bg-yellow-900/50 text-yellow-300 <?php break; ?>
+                                        <?php case (2): ?> bg-blue-900/50 text-blue-300 <?php break; ?>
+                                        <?php case (3): ?> bg-indigo-900/50 text-indigo-300 <?php break; ?>
+                                        <?php case (4): ?> bg-emerald-900/50 text-emerald-300 <?php break; ?>
+                                        <?php case (5): ?> bg-red-900/50 text-red-300 <?php break; ?>
+                                        <?php default: ?> bg-gray-700 text-gray-400
+                                    <?php endswitch; ?>">
                                         <?php echo e($statusMap[$order->status_id] ?? 'ไม่ทราบสถานะ'); ?>
 
                                     </span>
                                 </td>
-                                <td class="align-middle"><?php echo e($order->ord_date->format('d M Y, H:i')); ?></td>
+                                <td class="align-middle text-gray-400"><?php echo e($order->ord_date->format('d M Y, H:i')); ?></td>
                                 <td class="align-middle">
                                     <a href="<?php echo e(route('admin.orders.show', $order)); ?>"
-                                        class="text-blue-600 font-semibold hover:underline flex items-center gap-1">
+                                        class="text-blue-400 font-semibold hover:text-blue-300 hover:underline flex items-center gap-1 transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -156,18 +162,25 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
-                                        ดูรายละเอียด
+                                        ดู
                                     </a>
                                 </td>
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
-                                <td colspan="9" class="text-center py-8 text-gray-500">
-                                    <?php if(request('search')): ?>
-                                        ไม่พบออเดอร์ที่ตรงกับคำค้นหา "<?php echo e(request('search')); ?>"
-                                    <?php else: ?>
-                                        ยังไม่มีข้อมูลออเดอร์ในระบบ
-                                    <?php endif; ?>
+                                <td colspan="9" class="text-center py-12 text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-700 mb-3"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        <?php if(request('search')): ?>
+                                            ไม่พบออเดอร์ที่ตรงกับ "<?php echo e(request('search')); ?>"
+                                        <?php else: ?>
+                                            ยังไม่มีข้อมูลออเดอร์ในระบบ
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -182,18 +195,16 @@
         </div>
     </div>
 
-    <div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; transition: opacity 0.2s;">
+    
+    <div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; pointer-events: none;">
         <img src="" alt="Slip Preview"
-            style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); background-color: white;">
+            style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); background-color: #1f2937; border: 2px solid #374151;">
     </div>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startPush('scripts'); ?>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        // ฟังก์ชันสำหรับคัดลอก
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 const Toast = Swal.mixin({
@@ -201,19 +212,18 @@
                     position: 'top-end',
                     showConfirmButton: false,
                     timer: 2000,
+                    background: '#1f2937',
+                    color: '#fff',
                     timerProgressBar: false,
                     didOpen: (toast) => {
                         toast.addEventListener('mouseenter', Swal.stopTimer)
                         toast.addEventListener('mouseleave', Swal.resumeTimer)
                     }
                 });
-
                 Toast.fire({
                     icon: 'success',
                     title: 'คัดลอกรหัสออเดอร์แล้ว'
                 });
-            }).catch(err => {
-                console.error('ไม่สามารถคัดลอกได้: ', err);
             });
         }
 
@@ -232,6 +242,7 @@
                     modalImage.src = e.target.dataset.slipSrc;
                     modal.style.opacity = 0;
                     modal.style.display = 'block';
+                    modal.style.transition = 'opacity 0.2s ease-in-out';
 
                     setTimeout(() => {
                         const modalRect = modal.getBoundingClientRect();
@@ -245,23 +256,16 @@
                         if (left + modalRect.width > viewportWidth - margin) {
                             left = rect.left - modalRect.width - margin;
                         }
-
                         if (top + modalRect.height > viewportHeight - margin) {
                             top = viewportHeight - modalRect.height - margin;
                         }
-
-                        if (top < margin) {
-                            top = margin;
-                        }
-
-                        if (left < margin) {
-                            left = margin;
-                        }
+                        if (top < margin) top = margin;
+                        if (left < margin) left = margin;
 
                         modal.style.top = `${top}px`;
                         modal.style.left = `${left}px`;
                         modal.style.opacity = 1;
-                    }, 50);
+                    }, 10);
                 });
 
                 thumb.addEventListener('mouseleave', () => {
@@ -271,17 +275,6 @@
                     }, 100);
                 });
             });
-
-            modal.addEventListener('mouseenter', () => {
-                clearTimeout(hideTimeout);
-            });
-            modal.addEventListener('mouseleave', () => {
-                hideTimeout = setTimeout(() => {
-                    modal.style.opacity = 0;
-                    setTimeout(() => modal.style.display = 'none', 200);
-                }, 100);
-            });
-
         });
     </script>
 <?php $__env->stopPush(); ?>

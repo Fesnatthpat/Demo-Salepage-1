@@ -1,4 +1,4 @@
-@php
+<?php
     $buyData = old('buy_items', $buy_items ?? [['product_id' => '', 'quantity' => 1]]);
     if (empty($buyData)) {
         $buyData = [['product_id' => '', 'quantity' => 1]];
@@ -8,9 +8,9 @@
     if (empty($getData)) {
         $getData = [['product_id' => '', 'quantity' => 1]];
     }
-@endphp
+?>
 
-{{-- Custom Style for TomSelect in Dark Mode --}}
+
 <style>
     .ts-control {
         background-color: #374151 !important;
@@ -65,23 +65,23 @@
 
 <div x-data="promotionForm">
 
-    @if ($errors->any())
+    <?php if($errors->any()): ?>
         <div class="alert alert-error bg-red-900/50 border border-red-800 text-red-200 shadow-sm mb-8">
             <i class="fas fa-exclamation-triangle"></i>
             <div>
                 <h3 class="font-bold">ข้อมูลไม่ถูกต้อง</h3>
                 <ul class="text-xs mt-1 list-disc list-inside opacity-80">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-        {{-- LEFT COL: BASIC INFO --}}
+        
         <div class="lg:col-span-4 space-y-6">
             <div class="card bg-gray-800 shadow-lg border border-gray-700">
                 <div class="card-body p-6 gap-5">
@@ -95,19 +95,19 @@
                                     class="text-red-400">*</span></span></label>
                         <input type="text" name="name"
                             class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                            value="{{ old('name', $promotion->name ?? '') }}" required />
+                            value="<?php echo e(old('name', $promotion->name ?? '')); ?>" required />
                     </div>
 
-                    {{-- Condition Type --}}
+                    
                     <div class="form-control w-full">
                         <label class="label"><span
                                 class="label-text font-semibold text-gray-300">รูปแบบเงื่อนไขการซื้อ</span></label>
                         <div class="flex flex-col gap-2">
                             <label
-                                class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors {{ old('condition_type', $promotion->condition_type ?? 'any') == 'any' ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700' }}">
+                                class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'any' ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700'); ?>">
                                 <input type="radio" name="condition_type" value="any"
                                     class="radio radio-success radio-sm"
-                                    {{ old('condition_type', $promotion->condition_type ?? 'any') == 'any' ? 'checked' : '' }} />
+                                    <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'any' ? 'checked' : ''); ?> />
                                 <div>
                                     <span class="font-bold text-sm text-gray-200">อย่างใดอย่างหนึ่ง (OR)</span>
                                     <p class="text-xs text-gray-400">ซื้อสินค้า A ครบ หรือ สินค้า B ครบ ก็ได้รับสิทธิ์
@@ -116,10 +116,10 @@
                             </label>
 
                             <label
-                                class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors {{ old('condition_type', $promotion->condition_type ?? 'any') == 'all' ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700' }}">
+                                class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'all' ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700'); ?>">
                                 <input type="radio" name="condition_type" value="all"
                                     class="radio radio-success radio-sm"
-                                    {{ old('condition_type', $promotion->condition_type ?? 'any') == 'all' ? 'checked' : '' }} />
+                                    <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'all' ? 'checked' : ''); ?> />
                                 <div>
                                     <span class="font-bold text-sm text-gray-200">ต้องครบทุกข้อ (AND)</span>
                                     <p class="text-xs text-gray-400">ต้องซื้อทั้งสินค้า A และ สินค้า B ให้ครบตามจำนวน
@@ -133,7 +133,7 @@
                         <label class="label"><span
                                 class="label-text font-semibold text-gray-300">รายละเอียด</span></label>
                         <textarea name="description"
-                            class="textarea textarea-bordered h-24 resize-none bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">{{ old('description', $promotion->description ?? '') }}</textarea>
+                            class="textarea textarea-bordered h-24 resize-none bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"><?php echo e(old('description', $promotion->description ?? '')); ?></textarea>
                     </div>
 
                     <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 space-y-3">
@@ -143,14 +143,14 @@
                                     class="label-text text-xs text-gray-400">วันเริ่มต้น</span></label>
                             <input type="datetime-local" name="start_date"
                                 class="input input-bordered input-sm w-full bg-gray-700 border-gray-600 text-gray-100"
-                                value="{{ old('start_date', isset($promotion->start_date) ? \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i') : '') }}" />
+                                value="<?php echo e(old('start_date', isset($promotion->start_date) ? \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i') : '')); ?>" />
                         </div>
                         <div class="form-control w-full">
                             <label class="label py-0"><span
                                     class="label-text text-xs text-gray-400">วันสิ้นสุด</span></label>
                             <input type="datetime-local" name="end_date"
                                 class="input input-bordered input-sm w-full bg-gray-700 border-gray-600 text-gray-100"
-                                value="{{ old('end_date', isset($promotion->end_date) ? \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i') : '') }}" />
+                                value="<?php echo e(old('end_date', isset($promotion->end_date) ? \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i') : '')); ?>" />
                         </div>
                     </div>
 
@@ -159,7 +159,7 @@
                             <span class="label-text font-semibold text-gray-300">เปิดใช้งานโปรโมชั่น</span>
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" class="toggle toggle-success"
-                                {{ old('is_active', $promotion->is_active ?? true) ? 'checked' : '' }} />
+                                <?php echo e(old('is_active', $promotion->is_active ?? true) ? 'checked' : ''); ?> />
                         </label>
                     </div>
                 </div>
@@ -170,12 +170,12 @@
                     class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none w-full shadow-lg font-bold text-lg text-white">
                     <i class="fas fa-save"></i> บันทึกข้อมูล
                 </button>
-                <a href="{{ route('admin.promotions.index') }}"
+                <a href="<?php echo e(route('admin.promotions.index')); ?>"
                     class="btn btn-ghost w-full text-gray-400 hover:text-white hover:bg-gray-700">ยกเลิก</a>
             </div>
         </div>
 
-        {{-- RIGHT COL: LOGIC ENGINE --}}
+        
         <div class="lg:col-span-8 space-y-6">
             <div class="card bg-gray-800 shadow-lg border border-gray-700 overflow-visible">
                 <div class="card-body p-0">
@@ -187,7 +187,7 @@
                     <div class="p-6 bg-gray-900/50">
                         <div class="flex flex-col xl:flex-row gap-4 items-stretch relative">
 
-                            {{-- BUY --}}
+                            
                             <div
                                 class="flex-1 w-full card bg-gray-800 border border-emerald-500/30 shadow-sm relative overflow-visible group hover:shadow-md transition-shadow">
                                 <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500 rounded-t-lg"></div>
@@ -222,10 +222,10 @@
                                                             class="select select-bordered select-sm w-full bg-gray-800 border-gray-500 text-gray-200"
                                                             required>
                                                             <option value="" disabled>-- เลือกสินค้า --</option>
-                                                            @foreach ($products as $p)
-                                                                <option value="{{ $p->pd_sp_id }}">
-                                                                    {{ $p->pd_sp_name }}</option>
-                                                            @endforeach
+                                                            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                                <option value="<?php echo e($p->pd_sp_id); ?>">
+                                                                    <?php echo e($p->pd_sp_name); ?></option>
+                                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                         </select>
                                                     </div>
                                                     <div class="col-span-4">
@@ -243,14 +243,14 @@
                                 </div>
                             </div>
 
-                            {{-- ARROW --}}
+                            
                             <div class="flex items-center justify-center py-2 xl:py-0">
                                 <div class="bg-gray-700 p-2 rounded-full shadow border border-gray-600 z-10">
                                     <i class="fas fa-arrow-down xl:fa-arrow-right text-2xl text-gray-400"></i>
                                 </div>
                             </div>
 
-                            {{-- GET --}}
+                            
                             <div
                                 class="flex-1 w-full card bg-gray-800 border border-pink-500/30 shadow-sm relative overflow-visible group hover:shadow-md transition-shadow">
                                 <div class="absolute top-0 left-0 w-full h-1 bg-pink-500 rounded-t-lg"></div>
@@ -288,14 +288,14 @@
 
                                     <div class="divider text-xs text-gray-500 my-3">เลือกจาก</div>
 
-                                    {{-- Gift Pool --}}
+                                    
                                     <div class="form-control w-full">
                                         <label class="label pt-0 pb-1"><span
                                                 class="label-text text-[10px] font-bold text-gray-400 uppercase">สินค้าของแถม
                                                 (Pool)</span></label>
                                         <select id="giftable-products-select" name="giftable_product_ids[]" multiple
                                             placeholder="ค้นหาของแถม..." autocomplete="off">
-                                            @php
+                                            <?php
                                                 $selectedGiftIds = collect(
                                                     old(
                                                         'giftable_product_ids',
@@ -306,13 +306,14 @@
                                                             : [],
                                                     ),
                                                 )->map(fn($id) => (string) $id);
-                                            @endphp
-                                            @foreach ($products as $p)
-                                                <option value="{{ $p->pd_sp_id }}"
-                                                    {{ $selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : '' }}>
-                                                    {{ $p->pd_sp_name }}
+                                            ?>
+                                            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($p->pd_sp_id); ?>"
+                                                    <?php echo e($selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : ''); ?>>
+                                                    <?php echo e($p->pd_sp_name); ?>
+
                                                 </option>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </select>
                                     </div>
                                 </div>
@@ -323,9 +324,9 @@
                 </div>
             </div>
 
-            {{-- Mobile Actions --}}
+            
             <div class="lg:hidden flex justify-end items-center gap-3 pt-4 border-t border-gray-700 mt-4">
-                <a href="{{ route('admin.promotions.index') }}"
+                <a href="<?php echo e(route('admin.promotions.index')); ?>"
                     class="btn btn-ghost text-gray-400 hover:text-white">ยกเลิก</a>
                 <button type="submit"
                     class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 text-white px-8 shadow-lg border-none">บันทึกข้อมูล</button>
@@ -337,8 +338,8 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('promotionForm', () => ({
-            buys: @json($buyData),
-            gets: @json($getData),
+            buys: <?php echo json_encode($buyData, 15, 512) ?>,
+            gets: <?php echo json_encode($getData, 15, 512) ?>,
             init() {
                 if (typeof TomSelect !== 'undefined') {
                     new TomSelect('#giftable-products-select', {
@@ -371,3 +372,4 @@
         }))
     });
 </script>
+<?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/promotions/_form.blade.php ENDPATH**/ ?>

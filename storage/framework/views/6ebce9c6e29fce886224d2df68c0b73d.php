@@ -1,9 +1,9 @@
-{{-- resources/views/admin/products/_form.blade.php --}}
+
 
 <script src="//unpkg.com/alpinejs" defer></script>
 
-{{-- Display All Validation Errors --}}
-@if ($errors->any())
+
+<?php if($errors->any()): ?>
     <div class="alert alert-error shadow-lg mb-6 bg-red-900/50 border-red-800 text-red-200">
         <div>
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
@@ -14,16 +14,16 @@
             <div>
                 <h3 class="font-bold">พบข้อผิดพลาด!</h3>
                 <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
         </div>
     </div>
-@endif
+<?php endif; ?>
 
-{{-- ส่วนที่ 1: ข้อมูลหลัก --}}
+
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
@@ -31,27 +31,27 @@
         </h3>
 
         <div class="flex items-center gap-4">
-            {{-- สถานะ เปิด/ปิด สินค้า --}}
+            
             <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
                 <span class="text-sm font-medium text-gray-300">สถานะการขาย:</span>
                 <input type="hidden" name="pd_sp_active" value="0">
                 <input type="checkbox" name="pd_sp_active" value="1" class="toggle toggle-success toggle-sm"
-                    {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : '' }} />
+                    <?php echo e(old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : ''); ?> />
                 <span class="text-xs text-gray-500">(เปิด/ปิด)</span>
             </div>
 
-            {{-- สินค้าแนะนำ --}}
+            
             <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
                 <span class="text-sm font-medium text-gray-300">สินค้าแนะนำ:</span>
                 <div class="flex items-center gap-4">
                     <label class="label cursor-pointer gap-1 p-0">
                         <input type="radio" name="is_recommended" value="1" class="radio radio-primary radio-xs"
-                            {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : '' }} />
+                            <?php echo e(old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : ''); ?> />
                         <span class="label-text text-xs text-gray-400">ใช่</span>
                     </label>
                     <label class="label cursor-pointer gap-1 p-0">
                         <input type="radio" name="is_recommended" value="0" class="radio radio-primary radio-xs"
-                            {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 0 ? 'checked' : '' }} />
+                            <?php echo e(old('is_recommended', $productSalepage->is_recommended ?? 0) == 0 ? 'checked' : ''); ?> />
                         <span class="label-text text-xs text-gray-400">ไม่ใช่</span>
                     </label>
                 </div>
@@ -60,45 +60,59 @@
     </div>
 
     <div class="card-body p-6">
-        {{-- รหัสสินค้า --}}
-        @if (isset($productSalepage->pd_sp_code) || isset($productSalepage->pd_code))
+        
+        <?php if(isset($productSalepage->pd_sp_code) || isset($productSalepage->pd_code)): ?>
             <div
                 class="mb-6 flex items-center gap-2 text-sm text-blue-300 bg-blue-900/30 p-3 rounded-lg border border-blue-800">
                 <i class="fas fa-tag"></i>
-                <span>รหัสสินค้า: <strong>{{ $productSalepage->pd_sp_code ?? $productSalepage->pd_code }}</strong>
+                <span>รหัสสินค้า: <strong><?php echo e($productSalepage->pd_sp_code ?? $productSalepage->pd_code); ?></strong>
                     (สร้างอัตโนมัติ)</span>
             </div>
-        @endif
+        <?php endif; ?>
 
-        {{-- ชื่อสินค้า --}}
+        
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">ชื่อสินค้า <span class="text-red-400">*</span></label>
             <input type="text" name="pd_sp_name"
                 class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="ระบุชื่อสินค้า (เช่น เสื้อยืด Cotton 100%)"
-                value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}" />
-            @error('pd_sp_name')
-                <span class="text-red-400 text-sm mt-1">{{ $message }}</span>
-            @enderror
+                value="<?php echo e(old('pd_sp_name', $productSalepage->pd_sp_name ?? '')); ?>" />
+            <?php $__errorArgs = ['pd_sp_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                <span class="text-red-400 text-sm mt-1"><?php echo e($message); ?></span>
+            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
         </div>
 
-        {{-- Grid: ราคา และ การแสดงผล --}}
+        
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
-            {{-- ราคาขาย --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ราคาขาย (บาท) <span class="text-red-400">*</span></label>
                 <div class="relative">
                     <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
                     <input type="number" step="0.01" name="pd_sp_price"
                         class="input input-bordered w-full pl-10 font-mono text-xl font-bold bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                        placeholder="0.00" value="{{ old('pd_sp_price', $productSalepage->pd_sp_price ?? '') }}" />
+                        placeholder="0.00" value="<?php echo e(old('pd_sp_price', $productSalepage->pd_sp_price ?? '')); ?>" />
                 </div>
-                @error('pd_sp_price')
-                    <span class="text-red-400 text-sm mt-1">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['pd_sp_price'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-red-400 text-sm mt-1"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- ส่วนลด --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ส่วนลด (บาท)</label>
                 <div class="relative">
@@ -106,51 +120,58 @@
                     <input type="number" step="0.01" name="pd_sp_discount"
                         class="input input-bordered w-full pl-10 font-mono text-xl text-red-400 bg-gray-700 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
                         placeholder="0.00"
-                        value="{{ old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '') }}" />
+                        value="<?php echo e(old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '')); ?>" />
                 </div>
                 <label class="label py-0 mt-1"><span class="label-text-alt text-gray-500">ใส่ 0 หากไม่มี</span></label>
             </div>
 
-            {{-- จำนวนสินค้าในคลัง --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">จำนวนสินค้าในคลัง <span
                         class="text-red-400">*</span></label>
                 <input type="number" name="pd_sp_stock"
                     class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0" value="{{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? '') }}" />
-                @error('pd_sp_stock')
-                    <span class="text-red-400 text-sm mt-1">{{ $message }}</span>
-                @enderror
+                    placeholder="0" value="<?php echo e(old('pd_sp_stock', $productSalepage->pd_sp_stock ?? '')); ?>" />
+                <?php $__errorArgs = ['pd_sp_stock'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="text-red-400 text-sm mt-1"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- ตำแหน่งแสดงผล --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ตำแหน่งแสดงผล</label>
                 <select name="pd_sp_display_location"
                     class="select select-bordered w-full text-base bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
                     <option value="general"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'general' ? 'selected' : '' }}>
+                        <?php echo e(old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'general' ? 'selected' : ''); ?>>
                         📦 สินค้าทั่วไป
                     </option>
                     <option value="homepage"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage' ? 'selected' : '' }}>
+                        <?php echo e(old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage' ? 'selected' : ''); ?>>
                         ⭐ สินค้าแนะนำ (หน้าแรก)
                     </option>
                 </select>
             </div>
         </div>
 
-        {{-- รายละเอียดสินค้า --}}
+        
         <div class="form-control w-full">
             <label class="label font-bold text-gray-300">รายละเอียดสินค้า</label>
             <textarea name="pd_sp_details" rows="5"
                 class="textarea textarea-bordered h-32 text-base leading-relaxed bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้...">{{ old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? '')) }}</textarea>
+                placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้..."><?php echo e(old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? ''))); ?></textarea>
         </div>
     </div>
 </div>
 
-{{-- ส่วนที่ 1.5: ตัวเลือกสินค้า --}}
+
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
@@ -161,14 +182,14 @@
         <div class="form-control w-full">
             <label class="label font-bold text-gray-300">เลือกสินค้าที่เป็นตัวเลือก (เช่น สี, ขนาด)</label>
             <select name="options[]" id="product-options" multiple class="bg-gray-700 border-gray-600 text-gray-100">
-                @foreach ($products as $product)
-                    @if (!isset($productSalepage) || $product->pd_sp_id !== $productSalepage->pd_sp_id)
-                        <option value="{{ $product->pd_sp_id }}"
-                            {{ in_array($product->pd_sp_id, old('options', isset($productSalepage) && $productSalepage->exists ? $productSalepage->options->pluck('pd_sp_id')->toArray() : [])) ? 'selected' : '' }}>
-                            {{ $product->pd_sp_name }} ({{ $product->pd_sp_code ?? $product->pd_code }})
+                <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(!isset($productSalepage) || $product->pd_sp_id !== $productSalepage->pd_sp_id): ?>
+                        <option value="<?php echo e($product->pd_sp_id); ?>"
+                            <?php echo e(in_array($product->pd_sp_id, old('options', isset($productSalepage) && $productSalepage->exists ? $productSalepage->options->pluck('pd_sp_id')->toArray() : [])) ? 'selected' : ''); ?>>
+                            <?php echo e($product->pd_sp_name); ?> (<?php echo e($product->pd_sp_code ?? $product->pd_code); ?>)
                         </option>
-                    @endif
-                @endforeach
+                    <?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </select>
             <label class="label">
                 <span
@@ -180,7 +201,7 @@
     </div>
 </div>
 
-{{-- ส่วนที่ 2: รูปภาพ --}}
+
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
@@ -209,43 +230,44 @@
 
         <div id="new-image-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4"></div>
 
-        @if (isset($productSalepage) && $productSalepage->images->count() > 0)
+        <?php if(isset($productSalepage) && $productSalepage->images->count() > 0): ?>
             <div class="divider text-gray-500 text-sm">รูปภาพปัจจุบัน</div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                @foreach ($productSalepage->images as $image)
+                <?php $__currentLoopData = $productSalepage->images; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="relative group rounded-lg overflow-hidden border border-gray-600 shadow-sm aspect-square bg-gray-900"
-                        id="image-card-{{ $image->img_id }}">
+                        id="image-card-<?php echo e($image->img_id); ?>">
 
-                        <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
+                        <img src="<?php echo e(asset('storage/' . $image->img_path)); ?>" class="w-full h-full object-cover">
 
-                        @if ($image->img_sort == 1)
+                        <?php if($image->img_sort == 1): ?>
                             <div class="absolute top-2 right-2 badge badge-primary shadow-md z-10">ปก</div>
-                        @endif
+                        <?php endif; ?>
 
                         <div
                             class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2">
                             <label
                                 class="btn btn-xs btn-outline text-white hover:bg-white hover:text-black w-full gap-2 border-white">
-                                <input type="radio" name="is_primary" value="{{ $image->img_id }}"
-                                    {{ $image->img_sort == 1 ? 'checked' : '' }}
+                                <input type="radio" name="is_primary" value="<?php echo e($image->img_id); ?>"
+                                    <?php echo e($image->img_sort == 1 ? 'checked' : ''); ?>
+
                                     class="radio radio-xs checked:bg-emerald-500">
                                 ตั้งเป็นปก
                             </label>
 
                             <button type="button" class="btn btn-xs btn-error w-full text-white delete-image"
-                                data-image-id="{{ $image->img_id }}">
+                                data-image-id="<?php echo e($image->img_id); ?>">
                                 <i class="fas fa-trash"></i> ลบ
                             </button>
                         </div>
                     </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 </div>
 
-{{-- Scripts --}}
-@push('scripts')
+
+<?php $__env->startPush('scripts'); ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const uploadInput = document.getElementById('images');
@@ -308,7 +330,7 @@
                         fetch(`/admin/products/image/${id}`, {
                             method: 'DELETE',
                             headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                                 'Content-Type': 'application/json'
                             }
                         }).then(r => r.json()).then(data => {
@@ -341,4 +363,5 @@
             }
         });
     </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/products/_form.blade.php ENDPATH**/ ?>

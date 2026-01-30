@@ -7,11 +7,11 @@
         
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800 tracking-tight">รายการโปรโมชั่น</h1>
-                <p class="text-gray-500 mt-1">จัดการแคมเปญและเงื่อนไขการส่งเสริมการขายทั้งหมด</p>
+                <h1 class="text-3xl font-bold text-gray-100 tracking-tight">รายการโปรโมชั่น</h1>
+                <p class="text-gray-400 mt-1">จัดการแคมเปญและเงื่อนไขการส่งเสริมการขายทั้งหมด</p>
             </div>
             <a href="<?php echo e(route('admin.promotions.create')); ?>"
-                class="btn btn-primary btn-md shadow-lg shadow-primary/20 gap-2 font-medium transition-transform hover:scale-105">
+                class="btn btn-primary btn-md bg-emerald-600 hover:bg-emerald-700 border-none text-white shadow-lg shadow-emerald-900/20 gap-2 font-medium transition-transform hover:scale-105">
                 <i class="fas fa-plus"></i> เพิ่มโปรโมชั่นใหม่
             </a>
         </div>
@@ -19,17 +19,18 @@
         
         <?php if(session('success')): ?>
             <div role="alert"
-                class="alert alert-success bg-green-50 border border-green-200 text-green-800 shadow-sm mb-6 flex items-center">
-                <i class="fas fa-check-circle text-xl text-green-500"></i>
+                class="alert alert-success bg-green-900/50 border border-green-800 text-green-200 shadow-sm mb-6 flex items-center">
+                <i class="fas fa-check-circle text-xl text-emerald-500"></i>
                 <span class="font-medium"><?php echo e(session('success')); ?></span>
             </div>
         <?php endif; ?>
 
         
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gray-800 rounded-2xl shadow-lg border border-gray-700 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="table w-full">
-                    <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
+                <table class="table w-full text-gray-300">
+                    <thead
+                        class="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider border-b border-gray-700">
                         <tr>
                             <th class="py-4 pl-6 w-[25%]">รายละเอียดแคมเปญ</th>
                             <th class="py-4 text-center w-[40%]">เงื่อนไข (ซื้อ <i
@@ -39,14 +40,15 @@
                             <th class="py-4 text-center">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-gray-700">
                         <?php $__empty_1 = true; $__currentLoopData = $promotions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $promo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                            <tr class="hover:bg-gray-50/50 transition-colors duration-200 group">
+                            <tr
+                                class="hover:bg-gray-700/50 transition-colors duration-200 group border-b border-gray-700 last:border-0">
                                 
                                 <td class="pl-6 align-top py-4">
                                     <div class="flex flex-col">
                                         <span
-                                            class="font-bold text-gray-800 text-base group-hover:text-primary transition-colors">
+                                            class="font-bold text-gray-200 text-base group-hover:text-emerald-400 transition-colors">
                                             <?php echo e($promo->name); ?>
 
                                         </span>
@@ -56,7 +58,7 @@
 
                                             </span>
                                         <?php else: ?>
-                                            <span class="text-xs text-gray-400 italic mt-1">- ไม่มีรายละเอียด -</span>
+                                            <span class="text-xs text-gray-600 italic mt-1">- ไม่มีรายละเอียด -</span>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -64,22 +66,22 @@
                                 
                                 <td class="align-middle py-4">
                                     <div
-                                        class="flex items-center justify-center gap-3 bg-gray-50/80 rounded-xl p-3 border border-dashed border-gray-200">
+                                        class="flex items-center justify-center gap-3 bg-gray-900/50 rounded-xl p-3 border border-dashed border-gray-600">
                                         <div class="flex flex-col gap-1 items-end min-w-[40%] text-right">
                                             <?php $__currentLoopData = $promo->rules; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $rule): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                <div class="text-xs text-gray-600 flex items-center justify-end gap-2">
+                                                <div class="text-xs text-gray-400 flex items-center justify-end gap-2">
                                                     <span class="truncate max-w-[120px]"
-                                                        title="<?php echo e($products[$rule->product_id] ?? 'Unknown'); ?>">
-                                                        <?php echo e($products[$rule->product_id] ?? 'สินค้าถูกลบ'); ?>
+                                                        title="<?php echo e($products[$rule->product_id]->pd_sp_name ?? 'Unknown'); ?>">
+                                                        <?php echo e($products[$rule->product_id]->pd_sp_name ?? 'สินค้าถูกลบ'); ?>
 
                                                     </span>
                                                     <span
-                                                        class="badge badge-sm badge-primary badge-outline font-mono">x<?php echo e($rule->quantity); ?></span>
+                                                        class="badge badge-sm badge-outline border-emerald-500 text-emerald-400 font-mono">x<?php echo e($rule->quantity); ?></span>
                                                 </div>
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>
 
-                                        <div class="text-gray-300">
+                                        <div class="text-gray-500">
                                             <i class="fas fa-arrow-circle-right text-lg"></i>
                                         </div>
 
@@ -87,14 +89,16 @@
                                             <?php $__currentLoopData = $promo->actions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $action): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                 <?php
                                                     if ($action->product_id) {
-                                                        $getName = $products[$action->product_id] ?? 'สินค้าถูกลบ';
+                                                        $getName =
+                                                            $products[$action->product_id]->pd_sp_name ?? 'สินค้าถูกลบ';
                                                     } else {
                                                         $count = $action->giftableProducts->count();
                                                         $getName = "เลือกได้ ($count รายการ)";
                                                     }
                                                 ?>
-                                                <div class="text-xs text-gray-600 flex items-center gap-2">
-                                                    <span class="badge badge-sm badge-secondary text-white font-mono">ฟรี
+                                                <div class="text-xs text-gray-400 flex items-center gap-2">
+                                                    <span
+                                                        class="badge badge-sm border-none bg-pink-600 text-white font-mono">ฟรี
                                                         <?php echo e($action->quantity); ?></span>
                                                     <span class="truncate max-w-[120px]" title="<?php echo e($getName); ?>">
                                                         <?php echo e($getName); ?>
@@ -110,33 +114,36 @@
                                 <td class="text-center align-middle py-4">
                                     <?php if($promo->start_date): ?>
                                         <div
-                                            class="flex flex-col text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-2 py-1 inline-block text-left w-fit mx-auto shadow-sm">
-                                            <div class="flex items-center gap-2 border-b border-gray-100 pb-1 mb-1">
-                                                <span class="text-green-600 w-4 text-center"><i
+                                            class="flex flex-col text-xs font-medium text-gray-400 bg-gray-900 border border-gray-600 rounded-lg px-2 py-1 inline-block text-left w-fit mx-auto shadow-sm">
+                                            <div class="flex items-center gap-2 border-b border-gray-700 pb-1 mb-1">
+                                                <span class="text-emerald-500 w-4 text-center"><i
                                                         class="fas fa-play text-[10px]"></i></span>
                                                 <span
                                                     class="font-mono"><?php echo e(\Carbon\Carbon::parse($promo->start_date)->format('d/m/y H:i')); ?></span>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <span class="text-red-500 w-4 text-center"><i
+                                                <span class="text-red-400 w-4 text-center"><i
                                                         class="fas fa-stop text-[10px]"></i></span>
                                                 <span
                                                     class="font-mono"><?php echo e(\Carbon\Carbon::parse($promo->end_date)->format('d/m/y H:i')); ?></span>
                                             </div>
                                         </div>
                                     <?php else: ?>
-                                        <div class="badge badge-ghost text-xs">ตลอดไป</div>
+                                        <div class="badge badge-ghost text-xs text-gray-400 bg-gray-700 border-gray-600">
+                                            ตลอดไป</div>
                                     <?php endif; ?>
                                 </td>
 
                                 
                                 <td class="text-center align-middle py-4">
                                     <?php if($promo->is_active): ?>
-                                        <span class="badge badge-success gap-1 text-white shadow-sm px-3 py-2">
+                                        <span
+                                            class="badge badge-success gap-1 text-white shadow-sm px-3 py-2 border-none bg-emerald-600">
                                             <i class="fas fa-check"></i> ใช้งาน
                                         </span>
                                     <?php else: ?>
-                                        <span class="badge badge-ghost gap-1 text-gray-400 bg-gray-200 px-3 py-2">
+                                        <span
+                                            class="badge badge-ghost gap-1 text-gray-400 bg-gray-700 px-3 py-2 border-gray-600">
                                             <i class="fas fa-times"></i> ปิด
                                         </span>
                                     <?php endif; ?>
@@ -144,9 +151,9 @@
 
                                 
                                 <td class="text-center align-middle py-4">
-                                    <div class="join shadow-sm border border-gray-200 rounded-lg">
+                                    <div class="join shadow-sm border border-gray-600 rounded-lg bg-gray-700">
                                         <a href="<?php echo e(route('admin.promotions.edit', $promo->id)); ?>"
-                                            class="btn btn-sm btn-ghost join-item text-yellow-600 hover:bg-yellow-50 tooltip"
+                                            class="btn btn-sm btn-ghost join-item text-yellow-500 hover:bg-yellow-900/30 hover:text-yellow-400 tooltip tooltip-bottom"
                                             data-tip="แก้ไข">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -155,7 +162,7 @@
                                             onsubmit="return confirm('ยืนยันลบโปรโมชั่นนี้? ข้อมูลจะไม่สามารถกู้คืนได้');">
                                             <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                             <button type="submit"
-                                                class="btn btn-sm btn-ghost text-red-500 hover:bg-red-50 tooltip"
+                                                class="btn btn-sm btn-ghost text-red-400 hover:bg-red-900/30 hover:text-red-300 tooltip tooltip-bottom"
                                                 data-tip="ลบ">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
@@ -167,13 +174,13 @@
                             <tr>
                                 <td colspan="5" class="py-20 text-center">
                                     <div class="flex flex-col items-center justify-center opacity-60">
-                                        <div class="bg-gray-100 rounded-full p-4 mb-4">
-                                            <i class="fas fa-tag text-4xl text-gray-400"></i>
+                                        <div class="bg-gray-700 rounded-full p-4 mb-4">
+                                            <i class="fas fa-tag text-4xl text-gray-500"></i>
                                         </div>
-                                        <h3 class="font-bold text-lg text-gray-600">ยังไม่มีโปรโมชั่น</h3>
+                                        <h3 class="font-bold text-lg text-gray-400">ยังไม่มีโปรโมชั่น</h3>
                                         <p class="text-sm text-gray-500 mb-4">เริ่มต้นสร้างแคมเปญแรกของคุณได้เลย</p>
                                         <a href="<?php echo e(route('admin.promotions.create')); ?>"
-                                            class="btn btn-sm btn-primary">สร้างโปรโมชั่น</a>
+                                            class="btn btn-sm btn-primary bg-emerald-600 border-none text-white">สร้างโปรโมชั่น</a>
                                     </div>
                                 </td>
                             </tr>
@@ -183,7 +190,7 @@
             </div>
 
             <?php if($promotions->hasPages()): ?>
-                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <div class="px-6 py-4 border-t border-gray-700 bg-gray-900/30">
                     <?php echo e($promotions->links()); ?>
 
                 </div>

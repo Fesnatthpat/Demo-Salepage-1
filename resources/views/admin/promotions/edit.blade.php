@@ -7,13 +7,14 @@
         <div class="mb-8 flex justify-between items-end">
             <div>
                 <a href="{{ route('admin.promotions.index') }}"
-                    class="btn btn-ghost btn-sm gap-2 pl-0 text-gray-500 hover:text-primary mb-2">
+                    class="btn btn-ghost btn-sm gap-2 pl-0 text-gray-400 hover:text-emerald-400 mb-2">
                     <i class="fas fa-arrow-left"></i> กลับหน้ารายการ
                 </a>
-                <h1 class="text-3xl font-bold text-gray-800">แก้ไขโปรโมชั่น</h1>
+                <h1 class="text-3xl font-bold text-gray-100">แก้ไขโปรโมชั่น</h1>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="badge badge-neutral badge-sm">ID: {{ $promotion->id }}</span>
-                    <span class="text-sm text-gray-500">{{ $promotion->name }}</span>
+                    <span class="badge badge-neutral badge-sm bg-gray-700 text-gray-300 border-none">ID:
+                        {{ $promotion->id }}</span>
+                    <span class="text-sm text-gray-400">{{ $promotion->name }}</span>
                 </div>
             </div>
         </div>

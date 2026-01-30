@@ -17,25 +17,47 @@ class CartController extends Controller
     }
 
     /**
-     * สำหรับเพิ่มสินค้าปกติ หรือ สินค้าที่มีของแถมแบบ 1 ชิ้น (Buy X Get Y)
+     * สำหรับเพิ่มสินค้าปกติ
      */
     public function addToCart(Request $request, $productId)
     {
+        // 🔥 ขั้นตอนที่ 1: บังคับแปลงข้อมูลให้เป็นตัวเลขทันที (แก้ปัญหาถาวร)
+        // ไม่ว่าหน้าบ้านจะส่งอะไรมา เราจะแปลงเป็นตัวเลขก่อนตรวจสอบ
+        $quantity = (int) $request->input('quantity', 1);
+        if ($quantity < 1) {
+            $quantity = 1;
+        } // กันเหนียว
+
+        // แปลงของแถมให้เป็น Array เสมอ
+        $gifts = $request->input('selected_gift_ids');
+        if (! is_array($gifts)) {
+            $gifts = [];
+        }
+
+        // ยัดข้อมูลที่แปลงแล้วกลับเข้าไปใน Request
+        $request->merge([
+            'quantity' => $quantity,
+            'selected_gift_ids' => $gifts,
+        ]);
+
+        // 🔥 ขั้นตอนที่ 2: ตรวจสอบข้อมูล (Validation)
+        // ตอนนี้ quantity เป็นตัวเลขแน่นอนแล้ว Error validation.numeric จะไม่มีทางเกิดขึ้น
         $request->validate([
             'quantity' => 'integer|min:1',
-            'selected_gift_ids' => 'nullable|array',
+            'selected_gift_ids' => 'array',
             'selected_gift_ids.*' => 'integer',
+        ], [
+            // ใส่ข้อความภาษาไทยกันไว้ (เผื่อกรณีอื่น)
+            'quantity.min' => 'ต้องสั่งซื้ออย่างน้อย 1 ชิ้น',
+            'integer' => 'ข้อมูลต้องเป็นตัวเลขจำนวนเต็ม',
+            'array' => 'ข้อมูลไม่ถูกต้อง',
         ]);
 
         try {
-            $quantity = (int) $request->input('quantity', 1);
-            $giftIds = $request->input('selected_gift_ids', []);
-
-            if (! empty($giftIds)) {
-                // กรณีมีของแถม (จะถูกผูก Group ID เดียวกัน)
-                $this->cartService->addWithGifts((int) $productId, $quantity, $giftIds);
+            // ทำงานต่อได้เลย เพราะเราเตรียมข้อมูลไว้ในตัวแปรข้างบนแล้ว
+            if (! empty($gifts)) {
+                $this->cartService->addWithGifts((int) $productId, $quantity, $gifts);
             } else {
-                // กรณีสินค้าปกติ
                 $this->cartService->addOrUpdate((int) $productId, $quantity);
             }
 
@@ -47,6 +69,8 @@ class CartController extends Controller
                 ]);
             }
 
+            return back()->with('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
+
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -55,22 +79,42 @@ class CartController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
+    /**
+     * สำหรับสินค้าโปรโมชั่น (Bundle)
+     */
     public function addBundleToCart(Request $request)
     {
+        // 🔥 ขั้นตอนที่ 1: บังคับแปลงข้อมูล Bundle เหมือนกัน
+        $mainId = (int) $request->input('main_product_id');
+        $secId = (int) $request->input('secondary_product_id');
+
+        $gifts = $request->input('gift_ids');
+        if (! is_array($gifts)) {
+            $gifts = [];
+        }
+
+        $request->merge([
+            'main_product_id' => $mainId,
+            'secondary_product_id' => $secId,
+            'gift_ids' => $gifts,
+        ]);
+
+        // 🔥 ขั้นตอนที่ 2: ตรวจสอบ
         $request->validate([
-            'main_product_id' => 'required|integer',      // สินค้าหลัก (เช่น ราคา 1000)
-            'secondary_product_id' => 'required|integer', // สินค้ารอง (เช่น ราคา 400)
-            'gift_ids' => 'nullable|array',               // ของแถม
+            'main_product_id' => 'required|integer|min:1',
+            'secondary_product_id' => 'required|integer|min:1',
+            'gift_ids' => 'array',
             'gift_ids.*' => 'integer',
+        ], [
+            'main_product_id.required' => 'ไม่พบข้อมูลสินค้าหลัก',
+            'main_product_id.min' => 'รหัสสินค้าไม่ถูกต้อง',
+            'secondary_product_id.required' => 'กรุณาเลือกสินค้าคู่โปรโมชั่น',
+            'integer' => 'ข้อมูลต้องเป็นตัวเลข',
         ]);
 
         try {
-            $mainId = (int) $request->input('main_product_id');
-            $secId = (int) $request->input('secondary_product_id');
-            $giftIds = $request->input('gift_ids', []);
-
-            // เรียกใช้ addBundle ใน Service (สินค้าทุกชิ้นจะได้ Group ID เดียวกัน)
-            $this->cartService->addBundle($mainId, $secId, $giftIds);
+            $this->cartService->addBundle($mainId, $secId, $gifts);
 
             if ($request->wantsJson()) {
                 return response()->json([

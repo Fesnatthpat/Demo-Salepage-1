@@ -350,12 +350,10 @@
                         }
                     },
 
-                    // ✅ UPDATE: แก้ไขให้ยิงเข้า Route Bundle
                     async addToCartPartner(partnerId) {
                         if (this.isLoading) return;
                         this.isLoading = true;
                         try {
-                            // ใช้ URL ใหม่ (cart.addBundle)
                             const response = await fetch(config.bundleAddUrl, {
                                 method: 'POST',
                                 headers: {
@@ -366,10 +364,10 @@
                                         'meta[name="csrf-token"]').content
                                 },
                                 body: JSON.stringify({
-                                    main_product_id: config
-                                        .currentProductId, // สินค้าหลัก (หน้าปัจจุบัน)
-                                    secondary_product_id: partnerId, // สินค้าคู่ (ที่กดเพิ่ม)
-                                    gift_ids: this.selectedGifts // ของแถม (ถ้าเลือกไว้)
+                                    // ✅ แก้ไข: บังคับแปลงเป็นตัวเลข (Integer) ก่อนส่ง
+                                    main_product_id: parseInt(config.currentProductId),
+                                    secondary_product_id: parseInt(partnerId),
+                                    gift_ids: this.selectedGifts
                                 })
                             });
                             const data = await response.json();
@@ -408,7 +406,8 @@
                                         'meta[name="csrf-token"]').content
                                 },
                                 body: JSON.stringify({
-                                    quantity: this.quantity,
+                                    // ✅ แก้ไข: บังคับแปลงเป็นตัวเลข (Integer) ก่อนส่ง
+                                    quantity: parseInt(this.quantity),
                                     selected_gift_ids: this.selectedGifts
                                 })
                             });

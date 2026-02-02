@@ -1,7 +1,5 @@
 {{-- resources/views/admin/products/_form.blade.php --}}
 
-<script src="//unpkg.com/alpinejs" defer></script>
-
 {{-- Display All Validation Errors --}}
 @if ($errors->any())
     <div class="alert alert-error shadow-lg mb-6 bg-red-900/50 border-red-800 text-red-200">
@@ -37,7 +35,6 @@
                 <input type="hidden" name="pd_sp_active" value="0">
                 <input type="checkbox" name="pd_sp_active" value="1" class="toggle toggle-success toggle-sm"
                     {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : '' }} />
-                <span class="text-xs text-gray-500">(เปิด/ปิด)</span>
             </div>
 
             {{-- สินค้าแนะนำ --}}
@@ -61,12 +58,11 @@
 
     <div class="card-body p-6">
         {{-- รหัสสินค้า --}}
-        @if (isset($productSalepage->pd_sp_code) || isset($productSalepage->pd_code))
+        @if (isset($productSalepage->pd_sp_code))
             <div
                 class="mb-6 flex items-center gap-2 text-sm text-blue-300 bg-blue-900/30 p-3 rounded-lg border border-blue-800">
                 <i class="fas fa-tag"></i>
-                <span>รหัสสินค้า: <strong>{{ $productSalepage->pd_sp_code ?? $productSalepage->pd_code }}</strong>
-                    (สร้างอัตโนมัติ)</span>
+                <span>รหัสสินค้า: <strong>{{ $productSalepage->pd_sp_code }}</strong></span>
             </div>
         @endif
 
@@ -74,12 +70,9 @@
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">ชื่อสินค้า <span class="text-red-400">*</span></label>
             <input type="text" name="pd_sp_name"
-                class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                 placeholder="ระบุชื่อสินค้า (เช่น เสื้อยืด Cotton 100%)"
                 value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}" />
-            @error('pd_sp_name')
-                <span class="text-red-400 text-sm mt-1">{{ $message }}</span>
-            @enderror
         </div>
 
         {{-- Grid: ราคา และ การแสดงผล --}}
@@ -93,9 +86,6 @@
                         class="input input-bordered w-full pl-10 font-mono text-xl font-bold bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                         placeholder="0.00" value="{{ old('pd_sp_price', $productSalepage->pd_sp_price ?? '') }}" />
                 </div>
-                @error('pd_sp_price')
-                    <span class="text-red-400 text-sm mt-1">{{ $message }}</span>
-                @enderror
             </div>
 
             {{-- ส่วนลด --}}
@@ -108,7 +98,6 @@
                         placeholder="0.00"
                         value="{{ old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '') }}" />
                 </div>
-                <label class="label py-0 mt-1"><span class="label-text-alt text-gray-500">ใส่ 0 หากไม่มี</span></label>
             </div>
 
             {{-- จำนวนสินค้าในคลัง --}}
@@ -118,9 +107,6 @@
                 <input type="number" name="pd_sp_stock"
                     class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                     placeholder="0" value="{{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? '') }}" />
-                @error('pd_sp_stock')
-                    <span class="text-red-400 text-sm mt-1">{{ $message }}</span>
-                @enderror
             </div>
 
             {{-- ตำแหน่งแสดงผล --}}
@@ -129,7 +115,7 @@
                 <select name="pd_sp_display_location"
                     class="select select-bordered w-full text-base bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
                     <option value="general"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'general' ? 'selected' : '' }}>
+                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? 'general') == 'general' ? 'selected' : '' }}>
                         📦 สินค้าทั่วไป
                     </option>
                     <option value="homepage"
@@ -150,32 +136,67 @@
     </div>
 </div>
 
-{{-- ส่วนที่ 1.5: ตัวเลือกสินค้า --}}
-<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6">
-    <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700">
+{{-- ส่วนที่ 1.5: ตัวเลือกสินค้า (Dynamic Options) --}}
+<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6" x-data="{
+    options: {{ json_encode(old('product_options', isset($productSalepage) && $productSalepage->options ? $productSalepage->options : [])) }}
+}">
+    <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
-            <i class="fas fa-cogs text-emerald-500"></i> ตัวเลือกสินค้า
+            <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
         </h3>
+        <button type="button" @click="options.push({ id: Date.now(), option_name: '', option_price: '', option_stock: '' })"
+            class="btn btn-sm btn-emerald bg-emerald-600 hover:bg-emerald-700 border-none text-white">
+            <i class="fas fa-plus mr-1"></i> เพิ่มตัวเลือก
+        </button>
     </div>
+
     <div class="card-body p-6">
-        <div class="form-control w-full">
-            <label class="label font-bold text-gray-300">เลือกสินค้าที่เป็นตัวเลือก (เช่น สี, ขนาด)</label>
-            <select name="options[]" id="product-options" multiple class="bg-gray-700 border-gray-600 text-gray-100">
-                @foreach ($products as $product)
-                    @if (!isset($productSalepage) || $product->pd_sp_id !== $productSalepage->pd_sp_id)
-                        <option value="{{ $product->pd_sp_id }}"
-                            {{ in_array($product->pd_sp_id, old('options', isset($productSalepage) && $productSalepage->exists ? $productSalepage->options->pluck('pd_sp_id')->toArray() : [])) ? 'selected' : '' }}>
-                            {{ $product->pd_sp_name }} ({{ $product->pd_sp_code ?? $product->pd_code }})
-                        </option>
-                    @endif
-                @endforeach
-            </select>
-            <label class="label">
-                <span
-                    class="label-text-alt text-gray-500">ใช้สำหรับจัดกลุ่มสินค้าที่มีลักษณะเดียวกันแต่มีรายละเอียดต่างกัน
-                    เช่น
-                    เสื้อคนละสี</span>
-            </label>
+        <p class="text-sm text-gray-400 mb-4 italic">เพิ่มตัวเลือกสินค้า เช่น ขวดเล็ก, ขวดใหญ่ หรือ สีขาว, สีดำ
+            (หากไม่มี ให้ข้ามส่วนนี้)</p>
+
+        <div class="space-y-3">
+            <template x-for="(option, index) in options" :key="option.id || index">
+                <div
+                    class="flex flex-wrap md:flex-nowrap gap-3 p-4 bg-gray-900/30 rounded-xl border border-gray-700 items-end">
+
+                    {{-- ชื่อตัวเลือก --}}
+                    <div class="form-control w-full md:flex-1">
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">ชื่อตัวเลือก (เช่น สีดำ,
+                                ไซส์ L)</span></label>
+                        <input type="text" :name="`product_options[${index}][option_name]`" x-model="option.option_name" required
+                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
+                            placeholder="ระบุชื่อตัวเลือก">
+                    </div>
+
+                    {{-- ราคาเฉพาะ --}}
+                    <div class="form-control w-full md:w-40">
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา (บาท)</span></label>
+                        <input type="number" step="0.01" :name="`product_options[${index}][option_price]`"
+                            x-model="option.option_price"
+                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                            placeholder="ใช้ราคาหลัก">
+                    </div>
+
+                    {{-- สต็อก --}}
+                    <div class="form-control w-full md:w-32">
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">สต็อก</span></label>
+                        <input type="number" :name="`product_options[${index}][option_stock]`" x-model="option.option_stock"
+                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                            placeholder="0">
+                    </div>
+
+                    {{-- ปุ่มลบ --}}
+                    <button type="button" @click="options = options.filter(o => o.id !== option.id)"
+                        class="btn btn-square btn-error btn-outline border-red-800 hover:bg-red-600 text-red-500 hover:text-white">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </template>
+
+            <div x-show="options.length === 0"
+                class="text-center py-8 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/50">
+                <p class="text-gray-500">ยังไม่มีตัวเลือกสินค้า คลิกปุ่ม "เพิ่มตัวเลือก" ด้านบนเพื่อเริ่มสร้าง</p>
+            </div>
         </div>
     </div>
 </div>
@@ -218,20 +239,8 @@
 
                         <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
 
-                        @if ($image->img_sort == 1)
-                            <div class="absolute top-2 right-2 badge badge-primary shadow-md z-10">ปก</div>
-                        @endif
-
                         <div
                             class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2">
-                            <label
-                                class="btn btn-xs btn-outline text-white hover:bg-white hover:text-black w-full gap-2 border-white">
-                                <input type="radio" name="is_primary" value="{{ $image->img_id }}"
-                                    {{ $image->img_sort == 1 ? 'checked' : '' }}
-                                    class="radio radio-xs checked:bg-emerald-500">
-                                ตั้งเป็นปก
-                            </label>
-
                             <button type="button" class="btn btn-xs btn-error w-full text-white delete-image"
                                 data-image-id="{{ $image->img_id }}">
                                 <i class="fas fa-trash"></i> ลบ
@@ -244,14 +253,13 @@
     </div>
 </div>
 
-{{-- Scripts --}}
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Image Upload Logic
             const uploadInput = document.getElementById('images');
             const previewContainer = document.getElementById('new-image-preview');
             const uploadZone = document.getElementById('upload-zone');
-            const form = document.querySelector('form');
 
             if (uploadZone) {
                 ['dragenter', 'dragover'].forEach(eName => {
@@ -266,20 +274,22 @@
                         uploadZone.classList.remove('border-emerald-500', 'bg-gray-600');
                     });
                 });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    const files = e.dataTransfer.files;
+                    uploadInput.files = files; // assign dropped files to input
+                    // trigger change event manually if needed
+                    const event = new Event('change');
+                    uploadInput.dispatchEvent(event);
+                });
             }
 
             if (uploadInput) {
                 uploadInput.addEventListener('change', function() {
                     previewContainer.innerHTML = '';
                     const files = Array.from(this.files);
-                    const MAX_SIZE = 64 * 1024 * 1024;
 
                     files.forEach(file => {
-                        if (file.size > MAX_SIZE) {
-                            alert(`ไฟล์ "${file.name}" ใหญ่เกินไป! (ต้องไม่เกิน 64MB)`);
-                            this.value = '';
-                            return;
-                        }
                         if (file.type.startsWith('image/')) {
                             const reader = new FileReader();
                             reader.onload = function(e) {
@@ -296,6 +306,7 @@
                 });
             }
 
+            // Delete Image Logic
             document.querySelectorAll('.delete-image').forEach(btn => {
                 btn.addEventListener('click', function() {
                     if (confirm('ยืนยันที่จะลบรูปภาพนี้?')) {
@@ -328,17 +339,6 @@
                     }
                 });
             });
-
-            if (document.getElementById('product-options')) {
-                new TomSelect('#product-options', {
-                    plugins: ['remove_button'],
-                    create: false,
-                    sortField: {
-                        field: "text",
-                        direction: "asc"
-                    }
-                });
-            }
         });
     </script>
 @endpush

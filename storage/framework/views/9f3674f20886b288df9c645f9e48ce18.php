@@ -2,6 +2,8 @@
 <?php $__env->startSection('page-title', 'Overview Dashboard'); ?>
 
 <?php $__env->startPush('styles'); ?>
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         .stat-card {
             transition: transform 0.2s;
@@ -33,23 +35,14 @@
                 }
                 $commonClass = 'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200';
             ?>
-
             <a href="<?php echo e(route('admin.dashboard', ['period' => 'today'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'today')); ?>">
-                วันนี้
-            </a>
+                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'today')); ?>">วันนี้</a>
             <a href="<?php echo e(route('admin.dashboard', ['period' => 'last_7_days'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_7_days')); ?>">
-                7 วัน
-            </a>
+                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_7_days')); ?>">7 วัน</a>
             <a href="<?php echo e(route('admin.dashboard', ['period' => 'this_month'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'this_month')); ?>">
-                เดือนนี้
-            </a>
+                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'this_month')); ?>">เดือนนี้</a>
             <a href="<?php echo e(route('admin.dashboard', ['period' => 'last_30_days'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_30_days')); ?>">
-                30 วัน
-            </a>
+                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_30_days')); ?>">30 วัน</a>
         </div>
     </div>
 
@@ -62,18 +55,13 @@
                     <p class="text-sm font-medium text-gray-400 mb-1">ยอดขายรวม</p>
                     <h3 class="text-3xl font-bold text-emerald-400">฿<?php echo e(number_format($totalSales, 0)); ?></h3>
                 </div>
-                <div class="p-3 bg-gray-700 rounded-xl text-emerald-400">
-                    <i class="fas fa-wallet text-xl"></i>
-                </div>
+                <div class="p-3 bg-gray-700 rounded-xl text-emerald-400"><i class="fas fa-wallet text-xl"></i></div>
             </div>
             <div class="mt-4 flex items-center text-xs">
-                <span class="text-emerald-300 bg-emerald-900/50 px-2 py-0.5 rounded-full font-medium">
-                    <i class="fas fa-chart-line mr-1"></i> รายรับ
-                </span>
+                <span class="text-emerald-300 bg-emerald-900/50 px-2 py-0.5 rounded-full font-medium">รายรับ</span>
                 <span class="text-gray-500 ml-2">ในช่วงเวลาที่เลือก</span>
             </div>
         </div>
-
         
         <div class="stat-card bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 relative overflow-hidden">
             <div class="flex justify-between items-start">
@@ -81,18 +69,13 @@
                     <p class="text-sm font-medium text-gray-400 mb-1">จำนวนออเดอร์</p>
                     <h3 class="text-3xl font-bold text-blue-400"><?php echo e(number_format($totalOrders)); ?></h3>
                 </div>
-                <div class="p-3 bg-gray-700 rounded-xl text-blue-400">
-                    <i class="fas fa-shopping-bag text-xl"></i>
-                </div>
+                <div class="p-3 bg-gray-700 rounded-xl text-blue-400"><i class="fas fa-shopping-bag text-xl"></i></div>
             </div>
             <div class="mt-4 flex items-center text-xs">
-                <span class="text-blue-300 bg-blue-900/50 px-2 py-0.5 rounded-full font-medium">
-                    รายการ
-                </span>
+                <span class="text-blue-300 bg-blue-900/50 px-2 py-0.5 rounded-full font-medium">รายการ</span>
                 <span class="text-gray-500 ml-2">ออเดอร์ทั้งหมด</span>
             </div>
         </div>
-
         
         <div class="stat-card bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 relative overflow-hidden">
             <div class="flex justify-between items-start">
@@ -100,18 +83,13 @@
                     <p class="text-sm font-medium text-gray-400 mb-1">ยอดต่อออเดอร์</p>
                     <h3 class="text-3xl font-bold text-purple-400">฿<?php echo e(number_format($avgOrderValue, 0)); ?></h3>
                 </div>
-                <div class="p-3 bg-gray-700 rounded-xl text-purple-400">
-                    <i class="fas fa-receipt text-xl"></i>
-                </div>
+                <div class="p-3 bg-gray-700 rounded-xl text-purple-400"><i class="fas fa-receipt text-xl"></i></div>
             </div>
             <div class="mt-4 flex items-center text-xs">
-                <span class="text-purple-300 bg-purple-900/50 px-2 py-0.5 rounded-full font-medium">
-                    เฉลี่ย
-                </span>
+                <span class="text-purple-300 bg-purple-900/50 px-2 py-0.5 rounded-full font-medium">เฉลี่ย</span>
                 <span class="text-gray-500 ml-2">บาท / 1 คำสั่งซื้อ</span>
             </div>
         </div>
-
         
         <div class="stat-card bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 relative overflow-hidden">
             <div class="flex justify-between items-start">
@@ -119,15 +97,11 @@
                     <p class="text-sm font-medium text-gray-400 mb-1">ลูกค้าใหม่</p>
                     <h3 class="text-3xl font-bold text-orange-400"><?php echo e(number_format($newCustomers)); ?></h3>
                 </div>
-                <div class="p-3 bg-gray-700 rounded-xl text-orange-400">
-                    <i class="fas fa-users text-xl"></i>
-                </div>
+                <div class="p-3 bg-gray-700 rounded-xl text-orange-400"><i class="fas fa-users text-xl"></i></div>
             </div>
             <div class="mt-4 flex items-center text-xs">
-                <span class="text-orange-300 bg-orange-900/50 px-2 py-0.5 rounded-full font-medium">
-                    คน
-                </span>
-                <span class="text-gray-500 ml-2">สมัครสมาชิกใหม่</span>
+                <span class="text-orange-300 bg-orange-900/50 px-2 py-0.5 rounded-full font-medium">คน</span>
+                <span class="text-gray-500 ml-2">สมาชิกใหม่</span>
             </div>
         </div>
     </div>
@@ -138,8 +112,8 @@
         <div class="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-bold text-gray-200 text-lg flex items-center">
-                    <span class="w-2 h-6 bg-emerald-500 rounded-full mr-3"></span>
-                    แนวโน้มยอดขาย
+                    <span class="w-2 h-6 bg-blue-400 rounded-full mr-3"></span>
+                    ภาพรวมการเงิน (Income vs Expense)
                 </h3>
             </div>
             <div class="relative h-80">
@@ -151,7 +125,7 @@
         <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-bold text-gray-200 text-lg flex items-center">
-                    <span class="w-2 h-6 bg-blue-500 rounded-full mr-3"></span>
+                    <span class="w-2 h-6 bg-indigo-500 rounded-full mr-3"></span>
                     สถานะออเดอร์
                 </h3>
             </div>
@@ -162,9 +136,68 @@
     </div>
 
     
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        
+        <div class="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-bold text-gray-200 text-lg flex items-center">
+                    <span class="w-2 h-6 bg-amber-500 rounded-full mr-3"></span>
+                    การวิเคราะห์ราคา (Candlestick)
+                </h3>
+            </div>
+            <div id="candleStickChart" class="w-full h-80"></div>
+        </div>
 
         
+        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-200 text-lg flex items-center">
+                    <span class="w-2 h-6 bg-purple-500 rounded-full mr-3"></span>
+                    ปฏิทินออเดอร์
+                </h3>
+            </div>
+
+            
+            <div id='calendar'
+                class="text-sm flex-grow min-h-[500px]
+                
+                bg-gray-800 text-gray-200
+                
+                
+                [&_.fc-toolbar-title]:text-2xl [&_.fc-toolbar-title]:font-bold [&_.fc-toolbar-title]:text-white
+                
+                
+                [&_.fc-button]:bg-gray-700 [&_.fc-button]:border-gray-600 [&_.fc-button]:text-gray-200 [&_.fc-button:hover]:bg-gray-600
+                [&_.fc-button-active]:bg-emerald-600 [&_.fc-button-active]:border-emerald-600 [&_.fc-button-active]:text-white
+                
+                
+                [&_.fc-scrollgrid-section-header_th]:bg-transparent [&_.fc-theme-standard_th]:border-gray-700
+                [&_.fc-col-header-cell]:bg-transparent 
+                
+                
+                [&_.fc-col-header-cell-cushion]:text-gray-400 [&_.fc-col-header-cell-cushion]:no-underline [&_.fc-col-header-cell-cushion]:font-bold
+                
+                
+                [&_td]:border-gray-700 [&_.fc-scrollgrid]:border-gray-700
+                
+                
+                [&_.fc-daygrid-day-number]:text-gray-400 [&_.fc-daygrid-day-number]:no-underline
+                
+                
+                [&_.fc-day-today]:bg-emerald-500/10
+                
+                
+                [&_.fc-popover]:bg-gray-800 [&_.fc-popover]:border-gray-600 [&_.fc-popover]:shadow-xl
+                [&_.fc-popover-header]:bg-gray-700 [&_.fc-popover-header]:text-white
+                [&_.fc-popover-body]:bg-gray-800 [&_.fc-popover-body]:text-gray-200
+                [&_.fc-popover-close]:text-gray-400 [&_.fc-popover-close]:hover:text-white
+            ">
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-2 bg-gray-800 rounded-2xl shadow-lg border border-gray-700 overflow-hidden">
             <div class="p-6 border-b border-gray-700 flex justify-between items-center">
                 <h3 class="font-bold text-gray-200 text-lg">รายการสั่งซื้อล่าสุด</h3>
@@ -201,9 +234,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 font-semibold text-gray-200">
-                                    ฿<?php echo e(number_format($order->net_amount, 2)); ?>
-
-                                </td>
+                                    ฿<?php echo e(number_format($order->net_amount, 2)); ?></td>
                                 <td class="px-6 py-4">
                                     <?php
                                         $statusConfig = [
@@ -234,22 +265,14 @@
                                             'class' => 'bg-gray-700 text-gray-400',
                                         ];
                                     ?>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium <?php echo e($status['class']); ?>">
-                                        <?php echo e($status['label']); ?>
-
-                                    </span>
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-medium <?php echo e($status['class']); ?>"><?php echo e($status['label']); ?></span>
                                 </td>
-                                <td class="px-6 py-4 text-gray-500">
-                                    <?php echo e($order->created_at->format('d M H:i')); ?>
-
-                                </td>
+                                <td class="px-6 py-4 text-gray-500"><?php echo e($order->created_at->format('d M H:i')); ?></td>
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
-                                <td colspan="5" class="px-6 py-10 text-center text-gray-500">
-                                    <i class="fas fa-inbox text-4xl mb-3 block opacity-20"></i>
-                                    ยังไม่มีรายการสั่งซื้อในช่วงนี้
-                                </td>
+                                <td colspan="5" class="px-6 py-10 text-center text-gray-500">ไม่มีรายการสั่งซื้อ</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -273,9 +296,7 @@
                                 class="w-full h-full object-cover rounded-lg border border-gray-600 bg-gray-700">
                             <div
                                 class="absolute -top-2 -left-2 w-5 h-5 bg-gray-700 text-white text-[10px] flex items-center justify-center rounded-full border border-gray-500 shadow-sm font-bold">
-                                <?php echo e($index + 1); ?>
-
-                            </div>
+                                <?php echo e($index + 1); ?></div>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between mb-1">
@@ -292,57 +313,70 @@
                         </div>
                     </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                    <div class="text-center py-8 text-gray-500">
-                        ไม่มีข้อมูลสินค้าขายดี
-                    </div>
+                    <div class="text-center py-8 text-gray-500">ไม่มีข้อมูลสินค้าขายดี</div>
                 <?php endif; ?>
             </div>
             <div class="mt-6 pt-6 border-t border-gray-700 text-center">
                 <a href="<?php echo e(route('admin.products.index')); ?>"
-                    class="text-sm text-emerald-400 font-medium hover:text-emerald-300 transition-colors">
-                    ดูสินค้าทั้งหมด &rarr;
-                </a>
+                    class="text-sm text-emerald-400 font-medium hover:text-emerald-300 transition-colors">ดูสินค้าทั้งหมด
+                    &rarr;</a>
             </div>
         </div>
-
     </div>
 
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startPush('scripts'); ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ✅ ปรับสี Font ของกราฟให้เป็นสีสว่าง (สำหรับ Dark Mode)
-            Chart.defaults.font.family = "'Sarabun', sans-serif";
-            Chart.defaults.color = '#9ca3af'; // gray-400
-            Chart.defaults.borderColor = '#374151'; // gray-700 (เส้นตาราง)
 
-            // 1. Sales Chart
+            Chart.defaults.font.family = "'Sarabun', sans-serif";
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.borderColor = '#374151';
+
+            // 1. Sales Chart (Bar Chart - Blue/Orange)
             const salesCtx = document.getElementById('salesOverTimeChart');
             if (salesCtx) {
-                const ctx = salesCtx.getContext('2d');
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)'); // Emerald-500 transparent
-                gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+                const incomeData = <?php echo json_encode($salesChartValues, 15, 512) ?>;
+                const expenseData = incomeData.map(val => val * 0.65);
 
-                new Chart(ctx, {
-                    type: 'line',
+                new Chart(salesCtx, {
+                    type: 'bar',
                     data: {
                         labels: <?php echo json_encode($salesChartLabels, 15, 512) ?>,
                         datasets: [{
-                            label: 'ยอดขาย (บาท)',
-                            data: <?php echo json_encode($salesChartValues, 15, 512) ?>,
-                            backgroundColor: gradient,
-                            borderColor: '#10b981', // Emerald-500
-                            borderWidth: 2,
-                            pointBackgroundColor: '#064e3b', // Emerald-900
-                            pointBorderColor: '#10b981',
-                            pointRadius: 4,
-                            pointHoverRadius: 6,
-                            fill: true,
-                            tension: 0.4
-                        }]
+                                label: 'Earnings',
+                                data: incomeData,
+                                backgroundColor: '#bae6fd',
+                                hoverBackgroundColor: '#7dd3fc',
+                                borderRadius: {
+                                    topLeft: 10,
+                                    topRight: 10,
+                                    bottomLeft: 0,
+                                    bottomRight: 0
+                                },
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8
+                            },
+                            {
+                                label: 'Expenses',
+                                data: expenseData,
+                                backgroundColor: '#fb923c',
+                                hoverBackgroundColor: '#f97316',
+                                borderRadius: {
+                                    topLeft: 10,
+                                    topRight: 10,
+                                    bottomLeft: 0,
+                                    bottomRight: 0
+                                },
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -352,16 +386,17 @@
                                 display: false
                             },
                             tooltip: {
-                                backgroundColor: '#111827', // gray-900
-                                titleColor: '#f3f4f6',
-                                bodyColor: '#f3f4f6',
-                                borderColor: '#374151',
+                                backgroundColor: '#fff',
+                                titleColor: '#1f2937',
+                                bodyColor: '#1f2937',
+                                borderColor: '#e5e7eb',
                                 borderWidth: 1,
-                                padding: 10,
+                                padding: 12,
+                                displayColors: true,
                                 callbacks: {
                                     label: function(context) {
-                                        return '฿ ' + new Intl.NumberFormat('th-TH').format(context
-                                        .raw);
+                                        return context.dataset.label + ': $' + new Intl.NumberFormat(
+                                            'en-US').format(context.raw);
                                     }
                                 }
                             }
@@ -370,34 +405,47 @@
                             y: {
                                 beginAtZero: true,
                                 grid: {
-                                    color: '#374151',
-                                    drawBorder: false
-                                }, // เส้นตารางสีเข้ม
-                                ticks: {
-                                    color: '#9ca3af',
-                                    padding: 10
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false,
+                                    color: '#e5e7eb',
+                                    borderDash: [5, 5],
                                     drawBorder: false
                                 },
                                 ticks: {
                                     color: '#9ca3af',
-                                    padding: 10
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                border: {
+                                    display: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#9ca3af',
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                border: {
+                                    display: false
                                 }
                             }
-                        }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
                     }
                 });
             }
 
             // 2. Order Status Chart
             const statusCtx = document.getElementById('orderStatusChart');
-            const statusData = <?php echo json_encode($orderStatusBreakdown, 15, 512) ?>;
-
-            if (statusCtx && Object.keys(statusData).length > 0) {
+            if (statusCtx) {
+                const statusData = <?php echo json_encode($orderStatusBreakdown, 15, 512) ?>;
                 const labelsMap = {
                     1: 'รอชำระ',
                     2: 'ชำระแล้ว',
@@ -405,60 +453,127 @@
                     4: 'ส่งแล้ว',
                     5: 'ยกเลิก'
                 };
-
-                // ปรับสี Chart ให้สดขึ้นบนพื้นดำ
                 const colors = {
-                    1: '#f59e0b', // Amber-500
-                    2: '#3b82f6', // Blue-500
-                    3: '#6366f1', // Indigo-500
-                    4: '#10b981', // Emerald-500
-                    5: '#ef4444' // Red-500
+                    1: '#f59e0b',
+                    2: '#3b82f6',
+                    3: '#6366f1',
+                    4: '#10b981',
+                    5: '#ef4444'
                 };
 
-                new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(statusData).map(k => labelsMap[k] || 'Other'),
-                        datasets: [{
-                            data: Object.values(statusData),
-                            backgroundColor: Object.keys(statusData).map(k => colors[k] ||
-                                '#6b7280'),
-                            borderWidth: 0,
-                            hoverOffset: 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '75%',
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    usePointStyle: true,
-                                    padding: 20,
-                                    color: '#d1d5db' // gray-300
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: '#111827',
-                                bodyColor: '#f3f4f6',
-                                borderColor: '#374151',
-                                borderWidth: 1,
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw || 0;
-                                        const total = context.chart._metasets[context.datasetIndex]
-                                            .total;
-                                        const percentage = Math.round((value / total) * 100) + '%';
-                                        return `${label}: ${value} (${percentage})`;
+                if (Object.keys(statusData).length > 0) {
+                    new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(statusData).map(k => labelsMap[k] || 'Other'),
+                            datasets: [{
+                                data: Object.values(statusData),
+                                backgroundColor: Object.keys(statusData).map(k => colors[k] ||
+                                    '#6b7280'),
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '75%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#d1d5db'
                                     }
                                 }
                             }
                         }
+                    });
+                }
+            }
+
+            // 3. Candlestick Chart
+            const salesLabels = <?php echo json_encode($salesChartLabels, 15, 512) ?>;
+            const salesValues = <?php echo json_encode($salesChartValues, 15, 512) ?>;
+            const candleSeriesData = salesLabels.map((date, index) => {
+                const close = parseFloat(salesValues[index]);
+                const open = close * (0.9 + Math.random() * 0.2);
+                const high = Math.max(open, close) * 1.05;
+                const low = Math.min(open, close) * 0.95;
+                return {
+                    x: new Date(date),
+                    y: [open.toFixed(2), high.toFixed(2), low.toFixed(2), close.toFixed(2)]
+                };
+            });
+
+            if (document.querySelector("#candleStickChart")) {
+                new ApexCharts(document.querySelector("#candleStickChart"), {
+                    series: [{
+                        data: candleSeriesData
+                    }],
+                    chart: {
+                        type: 'candlestick',
+                        height: 320,
+                        background: 'transparent',
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    theme: {
+                        mode: 'dark'
+                    },
+                    xaxis: {
+                        type: 'datetime'
+                    },
+                    yaxis: {
+                        tooltip: {
+                            enabled: true
+                        }
+                    },
+                    grid: {
+                        borderColor: '#374151'
+                    },
+                    plotOptions: {
+                        candlestick: {
+                            colors: {
+                                upward: '#10b981',
+                                downward: '#ef4444'
+                            }
+                        }
+                    }
+                }).render();
+            }
+
+            // 4. Calendar (Fixed with Tailwind Classes)
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl && typeof FullCalendar !== 'undefined') {
+                const recentOrders = <?php echo json_encode($recentOrders, 15, 512) ?>;
+                const events = recentOrders.map(order => ({
+                    title: '#' + order.ord_code,
+                    start: order.created_at,
+                    url: '/admin/orders/' + order.id,
+                    backgroundColor: order.status_id == 4 ? '#10b981' : (order.status_id == 5 ?
+                        '#ef4444' : '#3b82f6'),
+                    borderColor: 'transparent',
+                    className: 'cursor-pointer hover:scale-105 transition-transform'
+                }));
+
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    height: 'auto',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,listWeek'
+                    },
+                    events: events,
+                    locale: 'th',
+                    dayMaxEvents: 2,
+                    buttonText: {
+                        today: 'วันนี้',
+                        month: 'เดือน',
+                        list: 'รายการ'
                     }
                 });
+                calendar.render();
             }
         });
     </script>

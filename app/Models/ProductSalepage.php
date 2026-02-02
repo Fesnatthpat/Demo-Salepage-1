@@ -13,6 +13,7 @@ class ProductSalepage extends Model
 
     protected $primaryKey = 'pd_sp_id';
 
+    // ✅ ต้องมีบรรทัดนี้เพื่อแก้ Error 1364 (Field doesn't have default value)
     protected $fillable = [
         'pd_sp_code',
         'pd_sp_name',
@@ -28,46 +29,34 @@ class ProductSalepage extends Model
 
     protected $appends = ['cover_image_url'];
 
-    // ACCESSOR for getting a clean cover image URL
     public function getCoverImageUrlAttribute()
     {
         $placeholder = 'https://via.placeholder.com/150?text=No+Image';
-
         if ($this->images->isEmpty()) {
             return $placeholder;
         }
 
-        // The relationship is already ordered by 'img_sort', so the first item is the intended cover.
-        $image = $this->images->first();
-
+        $image = $this->images->sortBy('img_sort')->first();
         if (! $image || ! $image->img_path) {
             return $placeholder;
         }
 
         $rawPath = $image->img_path;
 
-        if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-            return $rawPath;
-        }
-
-        return asset('storage/'.ltrim($rawPath, '/'));
+        return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/'.ltrim($rawPath, '/'));
     }
 
-    // 1. รูปภาพ
     public function images()
     {
         return $this->hasMany(ProductImage::class, 'pd_sp_id', 'pd_sp_id')->orderBy('img_sort', 'asc');
     }
 
-    // 2. ✅ แก้ไข: เปลี่ยนกลับเป็น belongsToMany (เพื่อให้ใช้ attach/sync ได้)
+    // ✅ แก้ไข: เปลี่ยนเป็น hasMany เพื่อเชื่อมกับ ProductOption
     public function options()
     {
-        // เชื่อมตัวเอง (ProductSalepage) กับ ตัวเอง ผ่านตารางกลาง product_options
-        return $this->belongsToMany(ProductSalepage::class, 'product_options', 'parent_id', 'child_id')
-            ->withPivot('price_modifier');
+        return $this->hasMany(ProductOption::class, 'parent_id', 'pd_sp_id');
     }
 
-    // 3. ของแถม (BOGO)
     public function bogoFreeOptions()
     {
         return $this->belongsToMany(ProductSalepage::class, 'product_bogo_options', 'parent_id', 'child_id');

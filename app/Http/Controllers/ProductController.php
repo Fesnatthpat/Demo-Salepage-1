@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function show($id)
     {
         // 1. ดึงข้อมูลสินค้าหลัก
-        $salePageProduct = ProductSalepage::with(['images', 'options.images'])
+        $salePageProduct = ProductSalepage::with(['images', 'options'])
             ->where('pd_sp_id', $id)
             ->firstOrFail();
 
@@ -133,6 +133,6 @@ class ProductController extends Controller
             return $path;
         }
 
-        return asset('storage/'.ltrim(str_replace('storage/', '', $path), '/'));
+        return asset('storage/'.ltrim($path, '/'));
     }
 }

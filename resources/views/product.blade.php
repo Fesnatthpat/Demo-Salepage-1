@@ -57,6 +57,15 @@
                 ];
             }
         }
+
+        $optionsData = $product->options->map(function ($option) {
+            return [
+                'id' => $option->id,
+                'name' => $option->option_name,
+                'price' => (float) $option->option_price,
+                'stock' => (int) $option->option_stock,
+            ];
+        });
     @endphp
 
     {{-- ✅ Config: ส่งค่าต่างๆ เข้าไปใน Alpine.js --}}
@@ -64,6 +73,8 @@
         currentProductId: @js($product->pd_sp_id),
         initialImage: @js($product->cover_image_url),
         allImages: @js($allImages),
+        basePrice: @js($finalPrice),
+        options: @js($optionsData),
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
         bundleAddUrl: @js(route('cart.addBundle')),
         checkoutUrl: @js(route('payment.checkout')),
@@ -108,14 +119,13 @@
                         {{-- Stock --}}
                         <div class="mb-4 text-sm font-semibold">
                             จำนวนสินค้าคงเหลือ:
-                            <span class="{{ $product->pd_sp_stock > 0 ? 'text-emerald-600' : 'text-red-500' }}">
-                                {{ number_format($product->pd_sp_stock) }} ชิ้น
+                            <span :class="currentStock > 0 ? 'text-emerald-600' : 'text-red-500'" x-text="currentStock.toLocaleString() + ' ชิ้น'">
                             </span>
                         </div>
 
                         <div class="inline-flex flex-col items-start bg-gray-50 rounded-2xl p-4 mb-8">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-black text-emerald-600">฿{{ number_format($finalPrice) }}</span>
+                                <span class="text-4xl font-black text-emerald-600" x-text="'฿' + finalPrice.toLocaleString()"></span>
                                 @if ($discountAmount > 0)
                                     <span
                                         class="text-lg text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
@@ -126,6 +136,28 @@
                                     ฿{{ number_format($discountAmount) }}</span>
                             @endif
                         </div>
+
+                        {{-- Product Options --}}
+                        <template x-if="options.length > 0">
+                            <div class="mb-8">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">เลือกตัวเลือก:</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <template x-for="option in options" :key="option.id">
+                                        <label class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer"
+                                            :class="selectedOption == option.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-white hover:border-emerald-200'">
+                                            <input type="radio" name="product_option" x-model="selectedOption" :value="option.id" class="h-5 w-5 rounded-full border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                            <div class="flex-1">
+                                                <p class="font-bold text-gray-800" x-text="option.name"></p>
+                                                <p class="text-sm text-emerald-600 font-bold" x-text="'฿' + option.price.toLocaleString(undefined, {minimumFractionDigits: 2})"></p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm font-semibold text-gray-600" x-text="'สต็อก: ' + option.stock"></p>
+                                            </div>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
 
                         {{-- Promotion UI --}}
                         <template x-if="activePromotion">
@@ -271,8 +303,29 @@
                     images: config.allImages,
                     quantity: 1,
                     isLoading: false,
+                    basePrice: config.basePrice || 0,
+                    options: config.options || [],
+                    selectedOption: null,
                     promotions: config.promotions || [],
                     selectedGifts: [],
+
+                    get finalPrice() {
+                        if (this.selectedOption) {
+                            const option = this.options.find(o => o.id === this.selectedOption);
+                            if (option) {
+                                return parseFloat(option.price);
+                            }
+                        }
+                        return this.basePrice;
+                    },
+                    
+                    get currentStock() {
+                        if (this.selectedOption) {
+                            const option = this.options.find(o => o.id === this.selectedOption);
+                            return option ? option.stock : 0;
+                        }
+                        return {{ $product->pd_sp_stock }};
+                    },
 
                     get activePromotion() {
                         return this.promotions.length > 0 ? this.promotions[0] : null;
@@ -301,6 +354,9 @@
                     },
 
                     init() {
+                        if (this.options.length > 0) {
+                            this.selectedOption = this.options[0].id;
+                        }
                         this.$watch('quantity', () => {
                             this.validateSelection();
                         });
@@ -385,6 +441,10 @@
                     },
 
                     async handleAddToCartClick(isBuyNow) {
+                        if (this.options.length > 0 && !this.selectedOption) {
+                            Swal.fire('กรุณาเลือกตัวเลือก', 'กรุณาเลือกตัวเลือกสินค้าก่อนดำเนินการต่อ', 'warning');
+                            return;
+                        }
                         if (this.isConditionMet && this.giftLimit > 0 && this.selectedGifts.length !==
                             this.giftLimit) {
                             Swal.fire({
@@ -407,9 +467,9 @@
                                         'meta[name="csrf-token"]').content
                                 },
                                 body: JSON.stringify({
-                                    // ✅ แก้ไข: บังคับแปลงเป็นตัวเลข (Integer) ก่อนส่ง
                                     quantity: parseInt(this.quantity),
-                                    selected_gift_ids: this.selectedGifts
+                                    selected_gift_ids: this.selectedGifts,
+                                    selected_option_id: this.selectedOption
                                 })
                             });
                             const data = await response.json();

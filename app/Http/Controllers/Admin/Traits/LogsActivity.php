@@ -11,14 +11,13 @@ trait LogsActivity
     /**
      * Log an activity for a given model.
      *
-     * @param Model $model
-     * @param string $action ('created', 'updated', 'deleted')
-     * @param array|null $originalData For 'updated' action, the original values of changed attributes.
-     * @param array|null $newData For 'updated' action, the new values of changed attributes.
+     * @param  string  $action  ('created', 'updated', 'deleted')
+     * @param  array|null  $originalData  For 'updated' action, the original values of changed attributes.
+     * @param  array|null  $newData  For 'updated' action, the new values of changed attributes.
      */
     protected function logActivity(Model $model, string $action, ?array $originalData = null, ?array $newData = null): void
     {
-        if (!Auth::guard('admin')->check()) {
+        if (! Auth::guard('admin')->check()) {
             return;
         }
 

@@ -56,17 +56,23 @@ class OrderController extends Controller
             // 2. บันทึกรายละเอียดสินค้า
             foreach ($request->cart_items as $item) {
                 $item = (object) $item;
+                $attributes = (object) ($item->attributes ?? []);
+
+                // Extract option name from cart item name if it exists
+                $optionName = null;
+                if (str_contains($item->name, '(') && str_contains($item->name, ')')) {
+                    preg_match('/\((.*?)\)/', $item->name, $matches);
+                    $optionName = $matches[1] ?? null;
+                }
 
                 OrderDetail::create([
                     'ord_id' => $order->id,
-                    'pd_id' => $item->id,
-
-                    // ✅ ใช้ชื่อคอลัมน์ที่ถูกต้องจากรูปภาพ
+                    'pd_id' => $attributes->product_id ?? $item->id,
+                    'option_name' => $optionName,
                     'ordd_price' => $item->price,
-                    'ordd_original_price' => $item->original_price ?? $item->price,
+                    'ordd_original_price' => $attributes->original_price ?? $item->price,
                     'ordd_count' => $item->quantity,
-                    'ordd_discount' => $item->discount ?? 0,
-
+                    'ordd_discount' => $attributes->discount ?? 0,
                     'ordd_create_date' => now(),
                 ]);
             }

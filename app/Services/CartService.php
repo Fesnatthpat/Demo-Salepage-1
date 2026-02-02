@@ -24,7 +24,7 @@ class CartService
     /**
      * ค้นหา "Cart Keys" ทั้งหมดที่ตรงกับ Product ID
      */
-    private function findCartKeys(int $productId): array
+    private function findCartKeys(string|int $productId): array
     {
         $userId = $this->getUserId();
         $keys = [];
@@ -42,48 +42,78 @@ class CartService
     //  Main Features
     // -------------------------------------------------------------------------
 
-    public function addOrUpdate(int $productId, int $quantity): void
+    public function addOrUpdate(int $productId, int $quantity, ?int $optionId = null): void
     {
         $this->getCartContents(); // Ensure Cart Loaded
-
         $userId = $this->getUserId();
         $cart = Cart::session($userId);
 
-        // --- NEW FIX: Remove existing items before adding to SET the quantity ---
-        $existingKeys = $this->findCartKeys($productId);
-        foreach ($existingKeys as $key) {
-            // We only remove simple products, not bundled/promo items
-            $item = $cart->get($key);
-            if (empty($item->attributes['promo_group_id'])) {
-                $cart->remove($key);
+        if ($optionId) {
+            $option = \App\Models\ProductOption::find($optionId);
+            if (! $option || $option->parent_id !== $productId) {
+                throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
+            }
+            if ($quantity > $option->option_stock) {
+                throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ");
+            }
+
+            $cartId = "{$productId}-{$optionId}";
+            $cart->remove($cartId); // Remove existing to reset quantity
+
+            $details = $this->getProductDetails($productId);
+            $product = $this->checkStockAndGetProduct($productId, 0); // Check base product exists
+
+            if ($details) {
+                $cart->add([
+                    'id' => $cartId, // Use composite ID
+                    'name' => $details->name.' ('.$option->option_name.')',
+                    'price' => $option->option_price,
+                    'quantity' => $quantity,
+                    'attributes' => [
+                        'image' => $details->image,
+                        'original_price' => $option->option_price,
+                        'discount' => 0, // Options have final price
+                        'pd_code' => $details->pd_code,
+                        'product_id' => $productId, // Store original product ID
+                        'option_id' => $optionId,
+                    ],
+                    'associatedModel' => $product,
+                ]);
+            }
+        } else {
+            // --- EXISTING LOGIC for products without options ---
+            $existingKeys = $this->findCartKeys($productId);
+            foreach ($existingKeys as $key) {
+                $item = $cart->get($key);
+                if (empty($item->attributes['promo_group_id'])) {
+                    $cart->remove($key);
+                }
+            }
+
+            $product = $this->checkStockAndGetProduct($productId, $quantity);
+            $details = $this->getProductDetails($productId);
+
+            if ($details) {
+                $newAttributes = [
+                    'image' => $details->image,
+                    'original_price' => $details->original_price,
+                    'discount' => $details->discount,
+                    'pd_code' => $details->pd_code,
+                ];
+
+                $cart->add([
+                    'id' => $details->id,
+                    'name' => $details->name,
+                    'price' => $details->price,
+                    'quantity' => $quantity,
+                    'attributes' => $newAttributes,
+                    'associatedModel' => $product,
+                ]);
             }
         }
-        // --- END NEW FIX ---
 
-        $product = $this->checkStockAndGetProduct($productId, $quantity);
-        $details = $this->getProductDetails($productId);
-
-        if ($details) {
-            $newAttributes = [
-                'image' => $details->image,
-                'original_price' => $details->original_price,
-                'discount' => $details->discount,
-                'pd_code' => $details->pd_code,
-            ];
-
-            // Now, add the item fresh. It will either be new, or have a clean slate.
-            $cart->add([
-                'id' => $details->id,
-                'name' => $details->name,
-                'price' => $details->price,
-                'quantity' => $quantity,
-                'attributes' => $newAttributes,
-                'associatedModel' => $product,
-            ]);
-
-            if (Auth::check()) {
-                $this->saveCartToDatabase($userId, $cart->getContent());
-            }
+        if (Auth::check()) {
+            $this->saveCartToDatabase($userId, $cart->getContent());
         }
     }
 
@@ -136,7 +166,7 @@ class CartService
                 'price' => $mainDetails->price,
                 'quantity' => [
                     'relative' => false,
-                    'value' => $qty
+                    'value' => $qty,
                 ],
                 'attributes' => [
                     'image' => $mainDetails->image,
@@ -160,7 +190,7 @@ class CartService
                     'price' => $secDetails->price,
                     'quantity' => [
                         'relative' => false,
-                        'value' => 1
+                        'value' => 1,
                     ],
                     'attributes' => [
                         'image' => $secDetails->image,
@@ -175,27 +205,35 @@ class CartService
         }
 
         // Freebies
+        $giftProducts = ProductSalepage::whereIn('pd_sp_id', $giftIds)->with('images')->get()->keyBy('pd_sp_id');
+
         foreach ($giftIds as $giftId) {
-            $giftProduct = ProductSalepage::find($giftId);
-            $giftDetails = $this->getProductDetails($giftId);
-            if ($giftDetails && $giftProduct) {
-                $cart->add([
-                    'id' => $giftDetails->id,
-                    'name' => $giftDetails->name.' (ของแถม)',
-                    'price' => 0,
-                    'quantity' => [
-                        'relative' => false,
-                        'value' => 1
-                    ],
-                    'attributes' => [
-                        'image' => $giftDetails->image,
-                        'pd_code' => $giftDetails->pd_code,
-                        'is_freebie' => true,
-                        'promo_group_id' => $promoGroupId,
-                    ],
-                    'associatedModel' => $giftProduct,
-                ]);
+            $giftProduct = $giftProducts->get($giftId);
+            if (! $giftProduct) {
+                continue; // Skip if product not found
             }
+
+            $imgPath = $giftProduct->images->first()?->img_path;
+            if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
+                $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
+            }
+
+            $cart->add([
+                'id' => $giftProduct->pd_sp_id,
+                'name' => $giftProduct->pd_sp_name.' (ของแถม)',
+                'price' => 0,
+                'quantity' => [
+                    'relative' => false,
+                    'value' => 1,
+                ],
+                'attributes' => [
+                    'image' => $imgPath,
+                    'pd_code' => $giftProduct->pd_sp_code,
+                    'is_freebie' => true,
+                    'promo_group_id' => $promoGroupId,
+                ],
+                'associatedModel' => $giftProduct,
+            ]);
         }
 
         if (Auth::check()) {
@@ -206,7 +244,7 @@ class CartService
     /**
      * ✅ Remove Item: แก้ปัญหาลบแล้วข้ามบางตัว (ใช้ Keys Collection)
      */
-    public function removeItem(int $productId): void
+    public function removeItem(string|int $productId): void
     {
         $userId = $this->getUserId();
         $this->getCartContents(); // ✅ Ensure Loaded
@@ -249,7 +287,7 @@ class CartService
         }
     }
 
-    public function updateQuantity(int $productId, string $action): void
+    public function updateQuantity(string|int $productId, string $action): void
     {
         $userId = $this->getUserId();
         $this->getCartContents();
@@ -372,7 +410,7 @@ class CartService
         $img = $product->images->first();
         $imgPath = $img ? ($img->img_path ?? $img->image_path) : null;
         if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
-            $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
+            $imgPath = asset('storage/'.ltrim($imgPath, '/'));
         }
 
         return (object) [
@@ -412,25 +450,48 @@ class CartService
         $this->restoreCartFromDatabase($userId);
         $userCart = Cart::session($userId);
 
+        // Eager load all guest products to avoid N+1 problem
+        $guestProductIds = $guestItems->pluck('id')->toArray();
+        $guestProducts = ProductSalepage::whereIn('pd_sp_id', $guestProductIds)->with('images')->get()->keyBy('pd_sp_id');
+
         foreach ($guestItems as $guestItem) {
             try {
-                $this->checkStockAndGetProduct($guestItem->id, $guestItem->quantity);
+                // Find the product from the pre-loaded collection
+                $product = $guestProducts->get($guestItem->id);
+
+                // If product is not found or stock is insufficient, skip it
+                if (! $product || $guestItem->quantity > $product->pd_sp_stock) {
+                    continue;
+                }
+
                 if ($userCart->has($guestItem->id)) {
                     $userCart->update($guestItem->id, ['quantity' => $guestItem->quantity]);
                 } else {
-                    $details = $this->getProductDetails($guestItem->id);
-                    if ($details) {
-                        $userCart->add([
-                            'id' => $details->id, 'name' => $details->name, 'price' => $details->price, 'quantity' => $guestItem->quantity,
-                            'attributes' => [
-                                'image' => $details->image, 'original_price' => $details->original_price,
-                                'discount' => $details->discount, 'pd_code' => $details->pd_code,
-                            ],
-                            'associatedModel' => ProductSalepage::find($guestItem->id),
-                        ]);
+                    // Manually construct details similar to getProductDetails but using pre-loaded product
+                    $price = max(0, (float) $product->pd_sp_price - (float) $product->pd_sp_discount);
+                    $img = $product->images->first();
+                    $imgPath = $img ? ($img->img_path ?? $img->image_path) : null;
+                    if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
+                        $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
                     }
+
+                    $userCart->add([
+                        'id' => $product->pd_sp_id,
+                        'name' => $product->pd_sp_name,
+                        'price' => $price,
+                        'quantity' => $guestItem->quantity,
+                        'attributes' => [
+                            'image' => $imgPath,
+                            'original_price' => (float) $product->pd_sp_price,
+                            'discount' => (float) $product->pd_sp_discount,
+                            'pd_code' => $product->pd_code,
+                        ],
+                        'associatedModel' => $product,
+                    ]);
                 }
             } catch (Exception $e) {
+                // Log the exception if needed, but continue merging other items
+                Log::warning('Skipping guest cart item due to error: '.$e->getMessage(), ['guestItem' => $guestItem]);
                 continue;
             }
         }

@@ -22,43 +22,38 @@ class CartController extends Controller
     public function addToCart(Request $request, $productId)
     {
         // 🔥 ขั้นตอนที่ 1: บังคับแปลงข้อมูลให้เป็นตัวเลขทันที (แก้ปัญหาถาวร)
-        // ไม่ว่าหน้าบ้านจะส่งอะไรมา เราจะแปลงเป็นตัวเลขก่อนตรวจสอบ
         $quantity = (int) $request->input('quantity', 1);
         if ($quantity < 1) {
             $quantity = 1;
-        } // กันเหนียว
-
-        // แปลงของแถมให้เป็น Array เสมอ
-        $gifts = $request->input('selected_gift_ids');
-        if (! is_array($gifts)) {
-            $gifts = [];
         }
 
-        // ยัดข้อมูลที่แปลงแล้วกลับเข้าไปใน Request
+        $gifts = $request->input('selected_gift_ids', []);
+        $optionId = $request->input('selected_option_id') ? (int) $request->input('selected_option_id') : null;
+
         $request->merge([
             'quantity' => $quantity,
             'selected_gift_ids' => $gifts,
+            'selected_option_id' => $optionId,
         ]);
 
         // 🔥 ขั้นตอนที่ 2: ตรวจสอบข้อมูล (Validation)
-        // ตอนนี้ quantity เป็นตัวเลขแน่นอนแล้ว Error validation.numeric จะไม่มีทางเกิดขึ้น
         $request->validate([
             'quantity' => 'integer|min:1',
             'selected_gift_ids' => 'array',
             'selected_gift_ids.*' => 'integer',
+            'selected_option_id' => 'nullable|integer|exists:product_options,id',
         ], [
-            // ใส่ข้อความภาษาไทยกันไว้ (เผื่อกรณีอื่น)
             'quantity.min' => 'ต้องสั่งซื้ออย่างน้อย 1 ชิ้น',
             'integer' => 'ข้อมูลต้องเป็นตัวเลขจำนวนเต็ม',
             'array' => 'ข้อมูลไม่ถูกต้อง',
+            'selected_option_id.exists' => 'ตัวเลือกสินค้าไม่ถูกต้อง',
         ]);
 
         try {
-            // ทำงานต่อได้เลย เพราะเราเตรียมข้อมูลไว้ในตัวแปรข้างบนแล้ว
             if (! empty($gifts)) {
                 $this->cartService->addWithGifts((int) $productId, $quantity, $gifts);
             } else {
-                $this->cartService->addOrUpdate((int) $productId, $quantity);
+                $this->cartService->addOrUpdate((int) $productId, $quantity, $optionId);
             }
 
             if ($request->wantsJson()) {
@@ -137,14 +132,14 @@ class CartController extends Controller
 
     public function updateQuantity($productId, $action)
     {
-        $this->cartService->updateQuantity((int) $productId, $action);
+        $this->cartService->updateQuantity($productId, $action);
 
         return back();
     }
 
     public function removeItem($productId)
     {
-        $this->cartService->removeItem((int) $productId);
+        $this->cartService->removeItem($productId);
 
         return back()->with('success', 'ลบสินค้าแล้ว');
     }

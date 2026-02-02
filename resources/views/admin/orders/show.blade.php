@@ -52,11 +52,14 @@
                                                             $displayImage =
                                                                 'https://via.placeholder.com/64?text=No+Image';
                                                             $product = $detail->productSalepage;
+
+                                                            // Logic ดึงรูปภาพ
                                                             if ($product && $product->images->isNotEmpty()) {
                                                                 $imgObj =
                                                                     $product->images->sortBy('img_sort')->first() ??
                                                                     $product->images->first();
                                                                 $rawPath = $imgObj->img_path ?? $imgObj->image_path;
+
                                                                 if ($rawPath) {
                                                                     $displayImage = filter_var(
                                                                         $rawPath,
@@ -87,23 +90,40 @@
                                                     <div class="font-bold text-gray-200">
                                                         {{ $product->pd_sp_name ?? 'สินค้าถูกลบไปแล้ว' }}
                                                     </div>
-                                                    <div class="text-xs text-gray-500">
-                                                        SKU: {{ $product->pd_code ?? '-' }}
+
+                                                    {{-- ✅ เพิ่มส่วนแสดงตัวเลือกสินค้า (ถ้ามี) --}}
+                                                    @if (isset($detail->ordd_option_name) && $detail->ordd_option_name)
+                                                        <div class="text-xs text-emerald-400 mt-0.5">
+                                                            <i class="fas fa-tag mr-1"></i>ตัวเลือก:
+                                                            {{ $detail->ordd_option_name }}
+                                                        </div>
+                                                    @endif
+
+                                                    <div class="text-xs text-gray-500 mt-0.5">
+                                                        SKU: {{ $product->pd_sp_code ?? ($product->pd_code ?? '-') }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
+
+                                        {{-- ✅ แก้ไข: ใช้ตัวแปร ordd_price แทน pd_price --}}
                                         <td class="text-right">
-                                            @if ($detail->pd_original_price > $detail->pd_price)
+                                            @if (($detail->ordd_original_price ?? 0) > ($detail->ordd_price ?? 0))
                                                 <div class="text-xs text-gray-500 line-through">
-                                                    ฿{{ number_format($detail->pd_original_price, 2) }}</div>
+                                                    ฿{{ number_format($detail->ordd_original_price, 2) }}
+                                                </div>
                                             @endif
-                                            <span
-                                                class="font-medium text-gray-300">฿{{ number_format($detail->pd_price, 2) }}</span>
+                                            <span class="font-medium text-gray-300">
+                                                ฿{{ number_format($detail->ordd_price, 2) }}
+                                            </span>
                                         </td>
+
                                         <td class="text-center font-mono text-gray-300">{{ $detail->ordd_count }}</td>
+
+                                        {{-- ✅ แก้ไข: คำนวณราคารวมจาก ordd_price --}}
                                         <td class="text-right font-bold text-emerald-400">
-                                            ฿{{ number_format($detail->pd_price * $detail->ordd_count, 2) }}</td>
+                                            ฿{{ number_format($detail->ordd_price * $detail->ordd_count, 2) }}
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

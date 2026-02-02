@@ -19,14 +19,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-// --- เช็คการเชื่อมต่อ Database (Optional) ---
-Route::get('/db-check', function () {
-    try {
-        return 'DB Connected: '.DB::connection()->getDatabaseName();
-    } catch (\Exception $e) {
-        return 'DB Connection Failed: '.$e->getMessage();
-    }
-});
+
+
+
 
 // ==========================================
 // 1. หน้าทั่วไป (Public Routes)
@@ -42,7 +37,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 
 // ✅ Route สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่) - ต้องมีบรรทัดนี้
-Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('cart.addBundle'); 
+Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('cart.addBundle');
 
 // Route สำหรับอัปเดตและลบสินค้า (เหลือชุดเดียว ไม่ซ้ำซ้อนแล้ว)
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');

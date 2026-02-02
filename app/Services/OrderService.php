@@ -35,8 +35,8 @@ class OrderService
                 ->firstOrFail();
 
             // --- Start Fix ---
-                                    // 1. Generate Order Code
-                                    $ord_code = 'ORD-' . now()->format('YmdHis') . '-' . str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
+            // 1. Generate Order Code
+            $ord_code = 'ORD-'.now()->format('YmdHis').'-'.str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
             // 2. Create the order with fields matching the Order model's $fillable property
             $order = Order::create([
                 'ord_code' => $ord_code,
@@ -65,8 +65,9 @@ class OrderService
             $netAmount = 0;
 
             foreach ($cartItems as $cartItem) {
+                $productId = $cartItem->attributes->get('product_id', $cartItem->id);
                 // Ensure cart item details are available
-                $product = ProductSalepage::lockForUpdate()->find($cartItem->id);
+                $product = ProductSalepage::lockForUpdate()->find($productId);
                 if (! $product) {
                     continue; // Skip if product not found
                 }
@@ -83,9 +84,17 @@ class OrderService
                 $netAmount += $finalItemPrice * $cartItem->quantity;
                 $totalDiscount += ($originalPrice * $cartItem->quantity) - ($finalItemPrice * $cartItem->quantity);
 
+                // Extract option name from cart item name if it exists
+                $optionName = null;
+                if (str_contains($cartItem->name, '(') && str_contains($cartItem->name, ')')) {
+                    preg_match('/\((.*?)\)/', $cartItem->name, $matches);
+                    $optionName = $matches[1] ?? null;
+                }
+
                 OrderDetail::create([
-                    'ord_id' => $order->id, // Use the new order's ID
-                    'pd_id' => $cartItem->id,
+                    'ord_id' => $order->id,
+                    'pd_id' => $cartItem->attributes->get('product_id', $cartItem->id),
+                    'option_name' => $optionName,
                     'ordd_price' => $finalItemPrice,
                     'ordd_original_price' => $originalPrice,
                     'ordd_count' => $cartItem->quantity,

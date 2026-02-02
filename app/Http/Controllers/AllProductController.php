@@ -26,11 +26,12 @@ class AllProductController extends Controller
             $promotions = $this->cartService->getPromotionsForProduct($product->pd_sp_id);
             if ($promotions->isNotEmpty()) {
                 // Assuming only one applicable promotion for simplicity
-                $giftsPerItem = $promotions->first()->actions->sum(fn($a) => (int) ($a->actions['quantity_to_get'] ?? 0));
+                $giftsPerItem = $promotions->first()->actions->sum(fn ($a) => (int) ($a->actions['quantity_to_get'] ?? 0));
                 $product->gifts_per_item = $giftsPerItem > 0 ? $giftsPerItem : null;
             } else {
                 $product->gifts_per_item = null;
             }
+
             return $product;
         });
 

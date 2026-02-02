@@ -43,10 +43,7 @@
                                 $summaryTotalPrice += $totalPrice;
                                 $summaryTotalOriginal += $totalOriginalPrice;
 
-                                $productModel = $products[$item->id] ?? null;
-                                $displayImage = $productModel
-                                    ? $productModel->cover_image_url
-                                    : 'https://via.placeholder.com/150?text=No+Image';
+                                $displayImage = $item->attributes->image ?? 'https://via.placeholder.com/150?text=No+Image';
                             ?>
 
                             <div

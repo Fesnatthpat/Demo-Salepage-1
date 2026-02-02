@@ -9,26 +9,21 @@ class ProductOption extends Model
 {
     use HasFactory;
 
-    protected $table = 'product_options';      // ชื่อตาราง
+    protected $table = 'product_options';
 
-    protected $primaryKey = 'option_id';       // PK ของตารางนี้
-
-    // ระบุฟิลด์ที่ให้บันทึกได้
     protected $fillable = [
-        'pd_sp_id',
+        'parent_id',
         'option_name',
         'option_price',
         'option_stock',
         'option_active',
     ];
 
-    // ปิด Timestamp ถ้าในตารางไม่มี created_at, updated_at
-    // แต่ถ้ามีแล้วก็ลบบรรทัดข้างล่างนี้ออกได้เลยครับ
-    public $timestamps = false;
+    public $timestamps = true;
 
-    // เชื่อมกลับไปหาสินค้าหลัก
+    // Relationship to the parent product
     public function product()
     {
-        return $this->belongsTo(ProductSalepage::class, 'pd_sp_id', 'pd_sp_id');
+        return $this->belongsTo(ProductSalepage::class, 'parent_id', 'pd_sp_id');
     }
 }

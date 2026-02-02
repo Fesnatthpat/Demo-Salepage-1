@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Admin;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -16,6 +16,7 @@ class AdminManagementController extends Controller
     public function index()
     {
         $admins = Admin::all();
+
         return view('admin.admins.index', compact('admins'));
     }
 
@@ -114,6 +115,7 @@ class AdminManagementController extends Controller
         }
 
         $admin->delete();
+
         return redirect()->route('admin.admins.index')->with('success', 'Admin deleted successfully.');
     }
 }

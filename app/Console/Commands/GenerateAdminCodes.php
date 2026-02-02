@@ -32,6 +32,7 @@ class GenerateAdminCodes extends Command
 
         if ($adminsWithoutCode->isEmpty()) {
             $this->info('All admins already have a code. Nothing to do.');
+
             return 0;
         }
 
@@ -52,6 +53,7 @@ class GenerateAdminCodes extends Command
 
         $bar->finish();
         $this->info("\nSuccessfully generated codes for all admins.");
+
         return 0;
     }
 }

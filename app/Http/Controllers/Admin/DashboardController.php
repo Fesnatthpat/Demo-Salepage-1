@@ -46,7 +46,7 @@ class DashboardController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        $salesChartLabels = $salesOverTimeData->pluck('date')->map(fn($date) => Carbon::parse($date)->format('d M'));
+        $salesChartLabels = $salesOverTimeData->pluck('date')->map(fn ($date) => Carbon::parse($date)->format('d M'));
         $salesChartValues = $salesOverTimeData->pluck('total_sales');
 
         // 5. สัดส่วนสถานะ
@@ -100,7 +100,7 @@ class DashboardController extends Controller
                     $order->user->name ?? 'N/A',
                     $order->net_amount,
                     $order->status_id,
-                    $order->ord_date
+                    $order->ord_date,
                 ]);
             }
             fclose($file);

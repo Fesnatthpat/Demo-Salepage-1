@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Traits\LogsActivity;
+use App\Http\Controllers\Controller;
 use App\Models\ProductSalepage;
 use App\Models\Promotion;
 use App\Models\PromotionAction;
@@ -21,12 +21,14 @@ class PromotionController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         $products = ProductSalepage::get()->keyBy('pd_sp_id');
+
         return view('admin.promotions.index', compact('promotions', 'products'));
     }
 
     public function create()
     {
         $products = ProductSalepage::orderBy('pd_sp_name')->get();
+
         return view('admin.promotions.create', compact('products'));
     }
 
@@ -36,55 +38,53 @@ class PromotionController extends Controller
 
         $promotion = DB::transaction(function () use ($request) {
             $promotion = Promotion::create($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
-                            $this->logActivity($promotion, 'created');
-            
-                            foreach ($request->buy_items as $item) {
-                                PromotionRule::create([
-                                    'promotion_id' => $promotion->id,
-                                    'type' => 'buy_x_get_y',
-                                    'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
-                                ]);
-                            }
-            
-                                                $createdActions = [];
-            
-                                                foreach ($request->get_items as $item) {
-            
-                                                    $createdActions[] = PromotionAction::create([
-            
-                                                        'promotion_id' => $promotion->id,
-            
-                                                        'type' => 'buy_x_get_y',
-            
-                                                        'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
-            
-                                                    ]);
-            
-                                                }
-            
-                                    
-            
-                                                // Sync giftable products if they exist in the request
-            
-                                                if ($request->has('giftable_product_ids') && !empty($request->giftable_product_ids)) {
-            
-                                                    // Find the first action that is a 'selectable gift' type
-            
-                                                    $selectableGiftAction = collect($createdActions)->first(function ($action) {
-            
-                                                        return empty($action->actions['product_id_to_get']);
-            
-                                                    });
-            
-                                    
-            
-                                                    if ($selectableGiftAction) {
-            
-                                                        $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
-            
-                                                    }
-            
-                                                }            return $promotion;
+            $this->logActivity($promotion, 'created');
+
+            foreach ($request->buy_items as $item) {
+                PromotionRule::create([
+                    'promotion_id' => $promotion->id,
+                    'type' => 'buy_x_get_y',
+                    'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
+                ]);
+            }
+
+            $createdActions = [];
+
+            foreach ($request->get_items as $item) {
+
+                $createdActions[] = PromotionAction::create([
+
+                    'promotion_id' => $promotion->id,
+
+                    'type' => 'buy_x_get_y',
+
+                    'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
+
+                ]);
+
+            }
+
+            // Sync giftable products if they exist in the request
+
+            if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
+
+                // Find the first action that is a 'selectable gift' type
+
+                $selectableGiftAction = collect($createdActions)->first(function ($action) {
+
+                    return empty($action->actions['product_id_to_get']);
+
+                });
+
+                if ($selectableGiftAction) {
+
+                    $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
+
+                }
+
+            }
+
+return $promotion;
         });
 
         return redirect()->route('admin.promotions.index')->with('success', 'สร้างโปรโมชั่นเรียบร้อยแล้ว');
@@ -123,9 +123,9 @@ class PromotionController extends Controller
 
             // 1. Get original state
             $originalData = $promotion->toArray();
-            
+
             $promotion->fill($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type'));
-            
+
             if ($promotion->isDirty()) {
                 // 2. Log the full original and new states
                 $this->logActivity($promotion, 'updated', $originalData, $promotion->toArray());
@@ -154,7 +154,7 @@ class PromotionController extends Controller
             }
 
             // Sync giftable products if they exist in the request
-            if ($request->has('giftable_product_ids') && !empty($request->giftable_product_ids)) {
+            if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
                 // Find the first action that is a 'selectable gift' type
                 $selectableGiftAction = collect($createdActions)->first(function ($action) {
                     return empty($action->actions['product_id_to_get']);
@@ -174,7 +174,7 @@ class PromotionController extends Controller
         $promotion = Promotion::findOrFail($id);
         // Log activity BEFORE deleting the model within the transaction
         $this->logActivity($promotion, 'deleted');
-        
+
         DB::transaction(function () use ($promotion) {
             $promotion->rules()->delete();
             $promotion->actions()->delete();

@@ -50,11 +50,14 @@
                                                             $displayImage =
                                                                 'https://via.placeholder.com/64?text=No+Image';
                                                             $product = $detail->productSalepage;
+
+                                                            // Logic ดึงรูปภาพ
                                                             if ($product && $product->images->isNotEmpty()) {
                                                                 $imgObj =
                                                                     $product->images->sortBy('img_sort')->first() ??
                                                                     $product->images->first();
                                                                 $rawPath = $imgObj->img_path ?? $imgObj->image_path;
+
                                                                 if ($rawPath) {
                                                                     $displayImage = filter_var(
                                                                         $rawPath,
@@ -86,24 +89,45 @@
                                                         <?php echo e($product->pd_sp_name ?? 'สินค้าถูกลบไปแล้ว'); ?>
 
                                                     </div>
-                                                    <div class="text-xs text-gray-500">
-                                                        SKU: <?php echo e($product->pd_code ?? '-'); ?>
+
+                                                    
+                                                    <?php if(isset($detail->ordd_option_name) && $detail->ordd_option_name): ?>
+                                                        <div class="text-xs text-emerald-400 mt-0.5">
+                                                            <i class="fas fa-tag mr-1"></i>ตัวเลือก:
+                                                            <?php echo e($detail->ordd_option_name); ?>
+
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <div class="text-xs text-gray-500 mt-0.5">
+                                                        SKU: <?php echo e($product->pd_sp_code ?? ($product->pd_code ?? '-')); ?>
 
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
+
+                                        
                                         <td class="text-right">
-                                            <?php if($detail->pd_original_price > $detail->pd_price): ?>
+                                            <?php if(($detail->ordd_original_price ?? 0) > ($detail->ordd_price ?? 0)): ?>
                                                 <div class="text-xs text-gray-500 line-through">
-                                                    ฿<?php echo e(number_format($detail->pd_original_price, 2)); ?></div>
+                                                    ฿<?php echo e(number_format($detail->ordd_original_price, 2)); ?>
+
+                                                </div>
                                             <?php endif; ?>
-                                            <span
-                                                class="font-medium text-gray-300">฿<?php echo e(number_format($detail->pd_price, 2)); ?></span>
+                                            <span class="font-medium text-gray-300">
+                                                ฿<?php echo e(number_format($detail->ordd_price, 2)); ?>
+
+                                            </span>
                                         </td>
+
                                         <td class="text-center font-mono text-gray-300"><?php echo e($detail->ordd_count); ?></td>
+
+                                        
                                         <td class="text-right font-bold text-emerald-400">
-                                            ฿<?php echo e(number_format($detail->pd_price * $detail->ordd_count, 2)); ?></td>
+                                            ฿<?php echo e(number_format($detail->ordd_price * $detail->ordd_count, 2)); ?>
+
+                                        </td>
                                     </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody>

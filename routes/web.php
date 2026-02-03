@@ -100,6 +100,11 @@ Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('ord
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
 
+// Temporary route for logging test
+Route::get('/log-test', function () {
+    Illuminate\Support\Facades\Log::info('This is a test log message from /log-test route.');
+    return 'Log message sent. Check your storage/logs/laravel.log file.';
+});
 // ==========================================
 // 7. Admin Panel (ระบบหลังบ้าน)
 // ==========================================

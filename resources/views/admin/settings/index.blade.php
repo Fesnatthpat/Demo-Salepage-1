@@ -152,64 +152,69 @@
                                     placeholder="คำอธิบายสั้นๆ เกี่ยวกับเว็บไซต์ของคุณ">{{ $settings['site_description'] ?? '' }}</textarea>
                             </div>
 
-                            {{-- Site Menu Builder (Updated) --}}
+                            {{-- Service Bar Builder --}}
                             <div class="form-control w-full">
                                 <div class="flex justify-between items-end mb-2">
                                     <label class="label p-0">
-                                        <span class="label-text font-bold text-gray-300">เมนูนำทาง</span>
+                                        <span class="label-text font-bold text-gray-300">Service Bar Items</span>
                                     </label>
                                 </div>
 
                                 {{-- Hidden Input to store JSON --}}
-                                <input type="hidden" name="site_menu" id="site_menu_input"
-                                    value="{{ old('site_menu', $settings['site_menu'] ?? '[]') }}">
+                                <input type="hidden" name="service_bar_items" id="service_bar_items_input"
+                                    value="{{ old('service_bar_items', $settings['service_bar_items'] ?? '[]') }}">
 
                                 <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
                                     {{-- Header --}}
                                     <div
                                         class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                        <div class="col-span-5">ชื่อเมนู</div>
-                                        <div class="col-span-6">ลิงก์ URL</div>
+                                        <div class="col-span-4">Icon (FontAwesome Class)</div>
+                                        <div class="col-span-7">ข้อความ (Text)</div>
                                         <div class="col-span-1 text-center">ลบ</div>
                                     </div>
 
                                     {{-- List Container --}}
-                                    <div id="menu-builder-list" class="space-y-2">
+                                    <div id="service-builder-list" class="space-y-2">
                                         {{-- Items will be rendered here by JS --}}
                                     </div>
 
                                     {{-- Empty State --}}
-                                    <div id="menu-empty-state"
+                                    <div id="service-empty-state"
                                         class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                        ยังไม่มีรายการเมนู
+                                        ยังไม่มีรายการ Service Bar
                                     </div>
 
                                     {{-- Add New Item Form --}}
                                     <div
                                         class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                        <div class="col-span-5">
-                                            <input type="text" id="new_menu_name"
-                                                class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                                placeholder="เช่น หน้าแรก">
+                                        <div class="col-span-4">
+                                            <div class="relative">
+                                                <input type="text" id="new_service_icon"
+                                                    class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500 pl-8"
+                                                    placeholder="fa-check-circle">
+                                                <i class="fas fa-icons absolute left-2.5 top-2 text-gray-500"></i>
+                                            </div>
                                         </div>
-                                        <div class="col-span-5">
-                                            <input type="text" id="new_menu_url"
+                                        <div class="col-span-6">
+                                            <input type="text" id="new_service_text"
                                                 class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                                placeholder="เช่น /products">
+                                                placeholder="เช่น สินค้าแท้ 100%">
                                         </div>
                                         <div class="col-span-2">
-                                            <button type="button" onclick="addMenuItem()"
+                                            <button type="button" onclick="addServiceItem()"
                                                 class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
                                                 <i class="fas fa-plus"></i> <span
                                                     class="hidden sm:inline ml-1">เพิ่ม</span>
                                             </button>
                                         </div>
                                     </div>
+                                    <div class="text-xs text-gray-500 mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i> ใช้ชื่อคลาสจาก <a
+                                            href="https://fontawesome.com/v5/search" target="_blank"
+                                            class="text-blue-400 hover:underline">FontAwesome 5</a> เช่น <code>fas
+                                            fa-shipping-fast</code>, <code>fas fa-shield-alt</code>
+                                    </div>
                                 </div>
-                                <label class="label">
-                                    <span class="label-text-alt text-gray-500">ระบบจะแปลงเป็น JSON
-                                        โดยอัตโนมัติเมื่อกดบันทึก</span>
-                                </label>
                             </div>
                         </div>
                     </div>
@@ -327,50 +332,68 @@
 
 @push('scripts')
     <script>
-        // --- Menu Builder Logic ---
-        let menuItems = [];
+        // --- Service Bar Builder Logic ---
+        let serviceItems = [];
 
-        // Initialize Menu
-        function initMenuBuilder() {
-            const input = document.getElementById('site_menu_input');
+        // Initialize
+        function initServiceBuilder() {
+            const input = document.getElementById('service_bar_items_input');
             try {
-                // Check if input has value, otherwise default to empty array
                 const rawValue = input.value.trim();
-                menuItems = rawValue ? JSON.parse(rawValue) : [];
+                // Handle potentially malformed JSON from previous manual edits
+                serviceItems = rawValue ? JSON.parse(rawValue) : [];
+
+                // Convert old format (SVG string) to new format (Icon Class) if necessary
+                // This is a basic migration, assumes user will fix manually if complex
+                serviceItems = serviceItems.map(item => {
+                    if (item.icon && item.icon.includes('<svg')) {
+                        return {
+                            icon: 'fas fa-check-circle',
+                            text: item.text
+                        }; // Default icon for migration
+                    }
+                    return item;
+                });
+
             } catch (e) {
-                console.error('Invalid JSON for menu:', e);
-                menuItems = [];
+                console.error('Invalid JSON for service bar:', e);
+                serviceItems = [];
             }
-            renderMenuBuilder();
+            renderServiceBuilder();
         }
 
         // Render List
-        function renderMenuBuilder() {
-            const container = document.getElementById('menu-builder-list');
-            const emptyState = document.getElementById('menu-empty-state');
+        function renderServiceBuilder() {
+            const container = document.getElementById('service-builder-list');
+            const emptyState = document.getElementById('service-empty-state');
             container.innerHTML = '';
 
-            if (menuItems.length === 0) {
+            if (serviceItems.length === 0) {
                 emptyState.classList.remove('hidden');
             } else {
                 emptyState.classList.add('hidden');
-                menuItems.forEach((item, index) => {
+                serviceItems.forEach((item, index) => {
                     const row = document.createElement('div');
                     row.className =
                         'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+
+                    // Icon Preview logic
+                    let iconPreview = `<i class="${item.icon} text-emerald-400"></i>`;
+
                     row.innerHTML = `
-                    <div class="col-span-5">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0 font-medium" 
-                            value="${item.name}" 
-                            onchange="updateMenuItem(${index}, 'name', this.value)" placeholder="ชื่อเมนู">
+                    <div class="col-span-4 flex items-center gap-2">
+                        <div class="w-6 h-6 flex items-center justify-center bg-gray-700 rounded">${iconPreview}</div>
+                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-blue-300 focus:ring-0 px-0 font-mono" 
+                            value="${item.icon}" 
+                            onchange="updateServiceItem(${index}, 'icon', this.value)" placeholder="Icon Class">
                     </div>
-                    <div class="col-span-6 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-blue-400 focus:ring-0 px-0 font-mono" 
-                            value="${item.url}" 
-                            onchange="updateMenuItem(${index}, 'url', this.value)" placeholder="URL">
+                    <div class="col-span-7 border-l border-gray-700 pl-2">
+                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0" 
+                            value="${item.text}" 
+                            onchange="updateServiceItem(${index}, 'text', this.value)" placeholder="Text">
                     </div>
                     <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeMenuItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
+                        <button type="button" onclick="removeServiceItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -378,59 +401,65 @@
                     container.appendChild(row);
                 });
             }
-            updateHiddenInput();
+            updateServiceHiddenInput();
         }
 
         // Add Item
-        window.addMenuItem = function() {
-            const nameInput = document.getElementById('new_menu_name');
-            const urlInput = document.getElementById('new_menu_url');
-            const name = nameInput.value.trim();
-            const url = urlInput.value.trim();
+        window.addServiceItem = function() {
+            const iconInput = document.getElementById('new_service_icon');
+            const textInput = document.getElementById('new_service_text');
 
-            if (!name || !url) {
-                alert('กรุณากรอกทั้ง "ชื่อเมนู" และ "ลิงก์ URL"');
+            // Add "fas " prefix if user forgets it but types something like "fa-check"
+            let icon = iconInput.value.trim();
+            if (icon && !icon.startsWith('fas ') && !icon.startsWith('far ') && !icon.startsWith('fab ')) {
+                icon = 'fas ' + icon;
+            }
+
+            const text = textInput.value.trim();
+
+            if (!text) {
+                alert('กรุณากรอกข้อความ (Text)');
                 return;
             }
 
-            menuItems.push({
-                name,
-                url
+            serviceItems.push({
+                icon: icon || 'fas fa-check-circle', // Default icon if empty
+                text: text
             });
 
-            // Clear inputs and focus on name
-            nameInput.value = '';
-            urlInput.value = '';
-            nameInput.focus();
+            // Clear inputs
+            iconInput.value = '';
+            textInput.value = '';
+            iconInput.focus();
 
-            renderMenuBuilder();
+            renderServiceBuilder();
         }
 
         // Remove Item
-        window.removeMenuItem = function(index) {
-            if (confirm('ต้องการลบเมนูนี้ใช่หรือไม่?')) {
-                menuItems.splice(index, 1);
-                renderMenuBuilder();
+        window.removeServiceItem = function(index) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                serviceItems.splice(index, 1);
+                renderServiceBuilder();
             }
         }
 
         // Update Item
-        window.updateMenuItem = function(index, field, value) {
-            menuItems[index][field] = value;
-            updateHiddenInput();
+        window.updateServiceItem = function(index, field, value) {
+            serviceItems[index][field] = value;
+            renderServiceBuilder(); // Re-render to update icon preview
         }
 
         // Sync to Hidden Input
-        function updateHiddenInput() {
-            const input = document.getElementById('site_menu_input');
-            input.value = JSON.stringify(menuItems);
+        function updateServiceHiddenInput() {
+            const input = document.getElementById('service_bar_items_input');
+            input.value = JSON.stringify(serviceItems);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Start Menu Builder
-            initMenuBuilder();
+            // Start Service Builder
+            initServiceBuilder();
 
-            // --- Image Deletion Logic ---
+            // --- Image Deletion Logic (Existing) ---
             document.querySelectorAll('.delete-setting').forEach(button => {
                 button.addEventListener('click', function() {
                     const key = this.dataset.key;
@@ -440,7 +469,7 @@
                         return;
                     }
 
-                    // เปลี่ยนปุ่มเป็น Loading
+                    // Change button to loading state
                     const originalContent = this.innerHTML;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     this.disabled = true;

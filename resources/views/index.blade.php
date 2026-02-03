@@ -50,44 +50,46 @@
         </div>
     </div>
 
-    {{-- SERVICE BAR (คงเดิม) --}}
+    {{-- SERVICE BAR --}}
     <div class="bg-white border-b border-gray-100 py-6">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
-                <div class="flex flex-col items-center gap-2 group">
-                    <svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                    <span class="text-sm font-semibold text-gray-700">สินค้าของแท้ 100%</span>
-                </div>
-                <div class="flex flex-col items-center gap-2 group">
-                    <svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span class="text-sm font-semibold text-gray-700">จัดส่งไวใน 24 ชม.</span>
-                </div>
-                <div class="flex flex-col items-center gap-2 group">
-                    <svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
-                        </path>
-                    </svg>
-                    <span class="text-sm font-semibold text-gray-700">ชำระเงินปลอดภัย</span>
-                </div>
-                <div class="flex flex-col items-center gap-2 group">
-                    <svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
-                    </svg>
-                    <span class="text-sm font-semibold text-gray-700">บริการหลังการขาย</span>
-                </div>
+                @php
+                    $serviceBarItems = [];
+                    if (isset($settings['service_bar_items'])) {
+                        $decodedItems = json_decode($settings['service_bar_items'], true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedItems)) {
+                            $serviceBarItems = $decodedItems;
+                        }
+                    }
+                    if (empty($serviceBarItems)) {
+                        $serviceBarItems = [
+                            [
+                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>',
+                                'text' => 'สินค้าของแท้ 100%',
+                            ],
+                            [
+                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                                'text' => 'จัดส่งไวใน 24 ชม.',
+                            ],
+                            [
+                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>',
+                                'text' => 'ชำระเงินปลอดภัย',
+                            ],
+                            [
+                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
+                                'text' => 'บริการหลังการขาย',
+                            ],
+                        ];
+                    }
+                @endphp
+
+                @foreach($serviceBarItems as $item)
+                    <div class="flex flex-col items-center gap-2 group">
+                        {!! $item['icon'] !!}
+                        <span class="text-sm font-semibold text-gray-700">{{ $item['text'] }}</span>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>

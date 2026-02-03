@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\Traits\LogsActivity;
 use App\Http\Controllers\Controller;
-use App\Models\ProductOption;
-use App\Models\ProductSalepage; // อย่าลืม use Model นี้
+use App\Models\ProductSalepage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -68,15 +67,18 @@ class ProductController extends Controller
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
             ]);
 
-            // 3. บันทึกรูปภาพ
+            // 3. บันทึกรูปภาพ (พร้อมกำหนด Sort Order) [แก้ตรงนี้]
             if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $file) {
+                foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('product_images', 'public');
-                    $salePage->images()->create(['img_path' => $path]);
+                    $salePage->images()->create([
+                        'img_path' => $path,
+                        'img_sort' => $index, // เริ่มต้นที่ 0, 1, 2...
+                    ]);
                 }
             }
 
-            // 4. บันทึกตัวเลือกสินค้า (Mapping Fields ให้ตรงกับ ProductOption Model)
+            // 4. บันทึกตัวเลือกสินค้า
             if ($request->has('product_options')) {
                 foreach ($request->product_options as $option) {
                     if (! empty($option['option_name'])) {
@@ -128,15 +130,21 @@ class ProductController extends Controller
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
             ]);
 
-            // 2. รูปภาพ
+            // 2. รูปภาพ (อัปโหลดเพิ่ม)
             if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $file) {
+                // หาค่า sort สูงสุดเดิมก่อน
+                $maxSort = $productSalepage->images()->max('img_sort') ?? -1;
+
+                foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('product_images', 'public');
-                    $productSalepage->images()->create(['img_path' => $path]);
+                    $productSalepage->images()->create([
+                        'img_path' => $path,
+                        'img_sort' => $maxSort + 1 + $index, // ต่อท้ายอันเดิม
+                    ]);
                 }
             }
 
-            // 3. จัดการตัวเลือกสินค้า (ลบเก่า -> สร้างใหม่)
+            // 3. จัดการตัวเลือกสินค้า
             $productSalepage->options()->delete();
 
             if ($request->has('product_options')) {
@@ -167,14 +175,12 @@ class ProductController extends Controller
             Storage::disk('public')->delete($img->img_path);
         }
 
-        // ลบ Options ที่เกี่ยวข้อง (ถ้าไม่ได้ตั้ง Cascade ใน DB ต้องลบ Manual ตรงนี้)
         $productSalepage->options()->delete();
         $productSalepage->delete();
 
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 
-    // ... destroyImage and validation methods keep same ...
     public function destroyImage($imageId)
     {
         $image = DB::table('product_images')->where('img_id', $imageId)->first();
@@ -186,6 +192,36 @@ class ProductController extends Controller
         }
 
         return response()->json(['success' => false], 404);
+    }
+
+    // ✅ Method สำหรับตั้งรูปหลัก (Self-Healing Logic)
+    public function setMainImage($imageId)
+    {
+        return DB::transaction(function () use ($imageId) {
+            $image = \App\Models\ProductImage::find($imageId);
+
+            if (! $image) {
+                return response()->json(['success' => false, 'message' => 'Image not found.'], 404);
+            }
+
+            // 1. รีเซ็ตรูปทั้งหมดของสินค้านี้ให้เป็นค่าสูงๆ ไว้ก่อน (เช่น 99)
+            \App\Models\ProductImage::where('pd_sp_id', $image->pd_sp_id)
+                ->update(['img_sort' => 99]);
+
+            // 2. ตั้งรูปที่เลือกให้เป็น 0 (หลัก)
+            $image->img_sort = 0;
+            $image->save();
+
+            // 3. เรียงลำดับรูปที่เหลือใหม่ (Clean Data)
+            \App\Models\ProductImage::where('pd_sp_id', $image->pd_sp_id)
+                ->where('img_id', '!=', $imageId)
+                ->orderBy('img_id')
+                ->each(function ($img, $index) {
+                    $img->update(['img_sort' => $index + 1]);
+                });
+
+            return response()->json(['success' => true]);
+        });
     }
 
     private function validateSalePage(Request $request, ?ProductSalepage $salePage = null): array

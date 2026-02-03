@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CustomerController;
-// --- Controllers ฝั่งหน้าบ้าน (Frontend) ---
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -10,18 +9,23 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\HomeController; // Controller ฝั่งหน้าบ้าน (Order History)
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
-// --- Controllers ฝั่งหลังบ้าน (Admin) ---
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProductController; // ตั้งชื่อใหม่กันชนกับ OrderController หน้าบ้าน
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-
-
-
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
 
 // ==========================================
 // 1. หน้าทั่วไป (Public Routes)
@@ -35,11 +39,9 @@ Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.s
 // ==========================================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
-
-// ✅ Route สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่) - ต้องมีบรรทัดนี้
+// ✅ Route สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่)
 Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('cart.addBundle');
-
-// Route สำหรับอัปเดตและลบสินค้า (เหลือชุดเดียว ไม่ซ้ำซ้อนแล้ว)
+// Route สำหรับอัปเดตและลบสินค้า
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
@@ -100,11 +102,6 @@ Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('ord
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
 
-// Temporary route for logging test
-Route::get('/log-test', function () {
-    Illuminate\Support\Facades\Log::info('This is a test log message from /log-test route.');
-    return 'Log message sent. Check your storage/logs/laravel.log file.';
-});
 // ==========================================
 // 7. Admin Panel (ระบบหลังบ้าน)
 // ==========================================
@@ -123,7 +120,6 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
 
     // Order Management (จัดการออเดอร์)
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-    // Route นี้จะส่ง {order} (ซึ่งคือ ID) ไปให้ method show($id) ใน Controller
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
@@ -134,16 +130,19 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::resource('products', AdminProductController::class)->parameters([
         'products' => 'product',
     ]);
+
     // Route สำหรับลบรูปสินค้า (Ajax)
     Route::delete('/products/image/{product_image}', [AdminProductController::class, 'destroyImage'])->name('products.image.destroy');
+
+    // ✅ Route สำหรับตั้งค่ารูปหลัก (ใหม่)
+    Route::post('/products/image/{image}/set-main', [AdminProductController::class, 'setMainImage'])->name('products.setMainImage');
 
     // Promotion Management (จัดการโปรโมชั่น)
     Route::resource('promotions', PromotionController::class);
 
-    // Admin Management
+    // Admin Management (จัดการผู้ดูแลระบบ)
     Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class)->middleware('is.superadmin');
 
-    // Activity Log
+    // Activity Log (ประวัติการใช้งาน)
     Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
-
 });

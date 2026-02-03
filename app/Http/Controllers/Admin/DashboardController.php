@@ -7,26 +7,44 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // 1. รับค่า Filter และกำหนดช่วงเวลา
-        $period = request()->get('period', 'this_month');
+        $period = $request->get('period', 'this_month');
+
+        // ค่าเริ่มต้น (วันนี้)
         $startDate = now()->startOfDay();
         $endDate = now()->endOfDay();
 
-        if ($period === 'last_7_days') {
+        // Logic การคำนวณช่วงเวลา
+        if ($period === 'today') {
+            $startDate = now()->startOfDay();
+            $endDate = now()->endOfDay();
+        } elseif ($period === 'last_7_days') {
             $startDate = now()->subDays(6)->startOfDay();
+            $endDate = now()->endOfDay();
         } elseif ($period === 'this_month') {
             $startDate = now()->startOfMonth()->startOfDay();
+            $endDate = now()->endOfDay();
         } elseif ($period === 'last_30_days') {
             $startDate = now()->subDays(29)->startOfDay();
-        } elseif ($period === 'today') {
-            // today uses default logic
+            $endDate = now()->endOfDay();
+        } elseif ($period === 'custom') {
+            // Logic สำหรับเลือกวันเอง
+            if ($request->has('start_date') && $request->has('end_date')) {
+                try {
+                    $startDate = Carbon::parse($request->start_date)->startOfDay();
+                    $endDate = Carbon::parse($request->end_date)->endOfDay();
+                } catch (\Exception $e) {
+                    // ถ้าวันที่ผิด format ให้กลับไปใช้ default
+                }
+            }
         }
 
         // 2. เตรียม Query หลัก
@@ -46,7 +64,9 @@ class DashboardController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
+        // [แก้ไข] สร้างตัวแปร salesChartRawDates เพื่อส่งวันที่แบบเต็ม (YYYY-MM-DD) ไปให้กราฟ
         $salesChartLabels = $salesOverTimeData->pluck('date')->map(fn ($date) => Carbon::parse($date)->format('d M'));
+        $salesChartRawDates = $salesOverTimeData->pluck('date'); // ✅ เพิ่มบรรทัดนี้
         $salesChartValues = $salesOverTimeData->pluck('total_sales');
 
         // 5. สัดส่วนสถานะ
@@ -55,10 +75,9 @@ class DashboardController extends Controller
             ->groupBy('status_id')
             ->pluck('count', 'status_id');
 
-        // 6. สินค้าขายดี (Top Selling Products) - ★★★ แก้ไขจุดนี้ ★★★
-        // ใช้ join ตรงๆ เพื่อแก้ปัญหา Laravel หา column orders.ord_id ไม่เจอ
+        // 6. สินค้าขายดี (Top Selling Products)
         $topSellingProducts = OrderDetail::select('order_detail.pd_id', DB::raw('SUM(order_detail.ordd_count) as total_quantity'))
-            ->join('orders', 'order_detail.ord_id', '=', 'orders.id') // ระบุ FK = PK ให้ชัดเจน
+            ->join('orders', 'order_detail.ord_id', '=', 'orders.id')
             ->where('orders.status_id', '>', 1)
             ->whereBetween('orders.created_at', [$startDate, $endDate])
             ->with('productSalepage.images')
@@ -67,12 +86,26 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // คำนวณ % บาร์กราฟสินค้าขายดี
+        $maxQty = $topSellingProducts->max('total_quantity');
+        $topSellingProducts->transform(function ($item) use ($maxQty) {
+            $item->percent = $maxQty > 0 ? ($item->total_quantity / $maxQty) * 100 : 0;
+
+            return $item;
+        });
+
         // 7. ออเดอร์ล่าสุด
         $recentOrders = Order::with('user')->latest()->take(10)->get();
 
+        // ส่งตัวแปรวันที่กลับไปหน้า View เพื่อแสดงใน Input
+        $currentStartDate = $startDate->format('Y-m-d');
+        $currentEndDate = $endDate->format('Y-m-d');
+
+        // [แก้ไข] อย่าลืมใส่ 'salesChartRawDates' ใน compact
         return view('admin.dashboard', compact(
-            'period', 'totalSales', 'totalOrders', 'avgOrderValue', 'newCustomers',
-            'salesChartLabels', 'salesChartValues', 'orderStatusBreakdown',
+            'period', 'currentStartDate', 'currentEndDate',
+            'totalSales', 'totalOrders', 'avgOrderValue', 'newCustomers',
+            'salesChartLabels', 'salesChartRawDates', 'salesChartValues', 'orderStatusBreakdown', // ✅ เพิ่มตรงนี้
             'topSellingProducts', 'recentOrders'
         ));
     }
@@ -93,6 +126,7 @@ class DashboardController extends Controller
 
         $callback = function () use ($orders, $columns) {
             $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF"); // Add BOM for Excel Thai support
             fputcsv($file, $columns);
             foreach ($orders as $order) {
                 fputcsv($file, [

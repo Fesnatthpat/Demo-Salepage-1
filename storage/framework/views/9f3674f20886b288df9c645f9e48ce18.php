@@ -2,8 +2,7 @@
 <?php $__env->startSection('page-title', 'Overview Dashboard'); ?>
 
 <?php $__env->startPush('styles'); ?>
-    
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         .stat-card {
             transition: transform 0.2s;
@@ -12,37 +11,75 @@
         .stat-card:hover {
             transform: translateY(-4px);
         }
+
+        /* ปรับแต่ง Input Date ให้สวยงามบน Dark Mode */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
     </style>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
 
     
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-8">
         <div>
             <h1 class="text-2xl font-bold text-gray-100">ยินดีต้อนรับกลับ, Admin 👋</h1>
-            <p class="text-sm text-gray-400 mt-1">นี่คือภาพรวมร้านค้าของคุณในช่วงเวลาที่เลือก</p>
+            <p class="text-sm text-gray-400 mt-1">
+                ข้อมูลช่วง: <span
+                    class="text-emerald-400 font-medium"><?php echo e(\Carbon\Carbon::parse($currentStartDate)->format('d/m/Y')); ?></span>
+                ถึง <span
+                    class="text-emerald-400 font-medium"><?php echo e(\Carbon\Carbon::parse($currentEndDate)->format('d/m/Y')); ?></span>
+            </p>
         </div>
 
         
-        <div class="flex flex-wrap items-center gap-2 bg-gray-800 p-1.5 rounded-xl shadow-md border border-gray-700">
-            <?php
-                function getBtnClass($isActive)
-                {
-                    return $isActive
-                        ? 'bg-emerald-600 text-white shadow-md'
-                        : 'text-gray-400 hover:bg-gray-700 hover:text-white';
-                }
-                $commonClass = 'px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200';
-            ?>
-            <a href="<?php echo e(route('admin.dashboard', ['period' => 'today'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'today')); ?>">วันนี้</a>
-            <a href="<?php echo e(route('admin.dashboard', ['period' => 'last_7_days'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_7_days')); ?>">7 วัน</a>
-            <a href="<?php echo e(route('admin.dashboard', ['period' => 'this_month'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'this_month')); ?>">เดือนนี้</a>
-            <a href="<?php echo e(route('admin.dashboard', ['period' => 'last_30_days'])); ?>"
-                class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_30_days')); ?>">30 วัน</a>
+        <div
+            class="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-gray-800 p-2 rounded-xl shadow-md border border-gray-700">
+
+            
+            <div class="flex items-center gap-1">
+                <?php
+                    function getBtnClass($isActive)
+                    {
+                        return $isActive
+                            ? 'bg-emerald-600 text-white shadow-md'
+                            : 'text-gray-400 hover:bg-gray-700 hover:text-white';
+                    }
+                    $commonClass = 'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200';
+                ?>
+                <a href="<?php echo e(route('admin.dashboard', ['period' => 'today'])); ?>"
+                    class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'today')); ?>">วันนี้</a>
+                <a href="<?php echo e(route('admin.dashboard', ['period' => 'last_7_days'])); ?>"
+                    class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'last_7_days')); ?>">7 วัน</a>
+                <a href="<?php echo e(route('admin.dashboard', ['period' => 'this_month'])); ?>"
+                    class="<?php echo e($commonClass); ?> <?php echo e(getBtnClass($period == 'this_month')); ?>">เดือนนี้</a>
+            </div>
+
+            <div class="hidden sm:block w-px h-6 bg-gray-700 mx-1"></div>
+
+            
+            <form action="<?php echo e(route('admin.dashboard')); ?>" method="GET" class="flex items-center gap-2">
+                <input type="hidden" name="period" value="custom">
+
+                <div class="relative">
+                    <input type="date" name="start_date" value="<?php echo e(request('start_date', $currentStartDate)); ?>"
+                        class="bg-gray-900 border border-gray-600 text-gray-200 text-xs rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-2 pr-1 py-1.5"
+                        required>
+                </div>
+                <span class="text-gray-500 text-xs">ถึง</span>
+                <div class="relative">
+                    <input type="date" name="end_date" value="<?php echo e(request('end_date', $currentEndDate)); ?>"
+                        class="bg-gray-900 border border-gray-600 text-gray-200 text-xs rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-2 pr-1 py-1.5"
+                        required>
+                </div>
+
+                <button type="submit"
+                    class="btn btn-xs btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -136,68 +173,23 @@
     </div>
 
     
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        
-        <div class="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
+    <div class="mb-8">
+        <div class="w-full bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-bold text-gray-200 text-lg flex items-center">
                     <span class="w-2 h-6 bg-amber-500 rounded-full mr-3"></span>
-                    การวิเคราะห์ราคา (Candlestick)
+                    การวิเคราะห์แนวโน้มยอดขาย (Candlestick)
                 </h3>
             </div>
-            <div id="candleStickChart" class="w-full h-80"></div>
-        </div>
-
-        
-        <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex flex-col">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-gray-200 text-lg flex items-center">
-                    <span class="w-2 h-6 bg-purple-500 rounded-full mr-3"></span>
-                    ปฏิทินออเดอร์
-                </h3>
-            </div>
-
-            
-            <div id='calendar'
-                class="text-sm flex-grow min-h-[500px]
-                
-                bg-gray-800 text-gray-200
-                
-                
-                [&_.fc-toolbar-title]:text-2xl [&_.fc-toolbar-title]:font-bold [&_.fc-toolbar-title]:text-white
-                
-                
-                [&_.fc-button]:bg-gray-700 [&_.fc-button]:border-gray-600 [&_.fc-button]:text-gray-200 [&_.fc-button:hover]:bg-gray-600
-                [&_.fc-button-active]:bg-emerald-600 [&_.fc-button-active]:border-emerald-600 [&_.fc-button-active]:text-white
-                
-                
-                [&_.fc-scrollgrid-section-header_th]:bg-transparent [&_.fc-theme-standard_th]:border-gray-700
-                [&_.fc-col-header-cell]:bg-transparent 
-                
-                
-                [&_.fc-col-header-cell-cushion]:text-gray-400 [&_.fc-col-header-cell-cushion]:no-underline [&_.fc-col-header-cell-cushion]:font-bold
-                
-                
-                [&_td]:border-gray-700 [&_.fc-scrollgrid]:border-gray-700
-                
-                
-                [&_.fc-daygrid-day-number]:text-gray-400 [&_.fc-daygrid-day-number]:no-underline
-                
-                
-                [&_.fc-day-today]:bg-emerald-500/10
-                
-                
-                [&_.fc-popover]:bg-gray-800 [&_.fc-popover]:border-gray-600 [&_.fc-popover]:shadow-xl
-                [&_.fc-popover-header]:bg-gray-700 [&_.fc-popover-header]:text-white
-                [&_.fc-popover-body]:bg-gray-800 [&_.fc-popover-body]:text-gray-200
-                [&_.fc-popover-close]:text-gray-400 [&_.fc-popover-close]:hover:text-white
-            ">
+            <div id="candleStickChartContainer" class="w-full h-80">
+                <div id="candleStickChart"></div>
             </div>
         </div>
     </div>
 
     
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
         <div class="xl:col-span-2 bg-gray-800 rounded-2xl shadow-lg border border-gray-700 overflow-hidden">
             <div class="p-6 border-b border-gray-700 flex justify-between items-center">
                 <h3 class="font-bold text-gray-200 text-lg">รายการสั่งซื้อล่าสุด</h3>
@@ -328,9 +320,6 @@
 
 <?php $__env->startPush('scripts'); ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -342,7 +331,7 @@
             const salesCtx = document.getElementById('salesOverTimeChart');
             if (salesCtx) {
                 const incomeData = <?php echo json_encode($salesChartValues, 15, 512) ?>;
-                const expenseData = incomeData.map(val => val * 0.65);
+                const expenseData = incomeData.map(val => val * 0.65); // Dummy expense logic
 
                 new Chart(salesCtx, {
                     type: 'bar',
@@ -490,90 +479,76 @@
                 }
             }
 
-            // 3. Candlestick Chart
-            const salesLabels = <?php echo json_encode($salesChartLabels, 15, 512) ?>;
-            const salesValues = <?php echo json_encode($salesChartValues, 15, 512) ?>;
-            const candleSeriesData = salesLabels.map((date, index) => {
-                const close = parseFloat(salesValues[index]);
-                const open = close * (0.9 + Math.random() * 0.2);
-                const high = Math.max(open, close) * 1.05;
-                const low = Math.min(open, close) * 0.95;
-                return {
-                    x: new Date(date),
-                    y: [open.toFixed(2), high.toFixed(2), low.toFixed(2), close.toFixed(2)]
-                };
-            });
+            // 3. Candlestick Chart (แก้ไขใหม่)
+            // ✅ เปลี่ยนมารับค่า Raw Dates แทน Labels
+            const salesRawDates = <?php echo json_encode($salesChartRawDates ?? [], 15, 512) ?>;
+            const salesValues = <?php echo json_encode($salesChartValues ?? [], 15, 512) ?>;
 
-            if (document.querySelector("#candleStickChart")) {
-                new ApexCharts(document.querySelector("#candleStickChart"), {
-                    series: [{
-                        data: candleSeriesData
-                    }],
-                    chart: {
-                        type: 'candlestick',
-                        height: 320,
-                        background: 'transparent',
-                        toolbar: {
-                            show: false
-                        }
-                    },
-                    theme: {
-                        mode: 'dark'
-                    },
-                    xaxis: {
-                        type: 'datetime'
-                    },
-                    yaxis: {
-                        tooltip: {
-                            enabled: true
-                        }
-                    },
-                    grid: {
-                        borderColor: '#374151'
-                    },
-                    plotOptions: {
-                        candlestick: {
-                            colors: {
-                                upward: '#10b981',
-                                downward: '#ef4444'
+            if (salesRawDates && salesRawDates.length > 0) {
+                const candleSeriesData = salesRawDates.map((date, index) => {
+                    const close = parseFloat(salesValues[index]);
+
+                    // Simulation Logic: จำลองราคา Open, High, Low จาก Close (ยอดขายจริง)
+                    // เนื่องจากเรามียอดขายแค่ค่าเดียวต่อวัน จึงต้องจำลองความผันผวนเพื่อให้เป็นกราฟแท่งเทียน
+                    const open = close * (0.9 + Math.random() * 0.2);
+                    const high = Math.max(open, close) * 1.05;
+                    const low = Math.min(open, close) * 0.95;
+
+                    return {
+                        x: new Date(date), // ✅ ใช้ date format มาตรฐาน (YYYY-MM-DD) รับรองว่าไม่ error
+                        y: [open.toFixed(2), high.toFixed(2), low.toFixed(2), close.toFixed(2)]
+                    };
+                });
+
+                if (document.querySelector("#candleStickChart")) {
+                    new ApexCharts(document.querySelector("#candleStickChart"), {
+                        series: [{
+                            data: candleSeriesData
+                        }],
+                        chart: {
+                            type: 'candlestick',
+                            height: 320,
+                            background: 'transparent',
+                            toolbar: {
+                                show: false
+                            }
+                        },
+                        theme: {
+                            mode: 'dark'
+                        },
+                        xaxis: {
+                            type: 'datetime'
+                        },
+                        yaxis: {
+                            tooltip: {
+                                enabled: true
+                            },
+                            labels: {
+                                formatter: (value) => {
+                                    return "฿" + value.toFixed(0)
+                                }
+                            }
+                        },
+                        grid: {
+                            borderColor: '#374151'
+                        },
+                        plotOptions: {
+                            candlestick: {
+                                colors: {
+                                    upward: '#10b981',
+                                    downward: '#ef4444'
+                                }
                             }
                         }
-                    }
-                }).render();
-            }
-
-            // 4. Calendar (Fixed with Tailwind Classes)
-            const calendarEl = document.getElementById('calendar');
-            if (calendarEl && typeof FullCalendar !== 'undefined') {
-                const recentOrders = <?php echo json_encode($recentOrders, 15, 512) ?>;
-                const events = recentOrders.map(order => ({
-                    title: '#' + order.ord_code,
-                    start: order.created_at,
-                    url: '/admin/orders/' + order.id,
-                    backgroundColor: order.status_id == 4 ? '#10b981' : (order.status_id == 5 ?
-                        '#ef4444' : '#3b82f6'),
-                    borderColor: 'transparent',
-                    className: 'cursor-pointer hover:scale-105 transition-transform'
-                }));
-
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    height: 'auto',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,listWeek'
-                    },
-                    events: events,
-                    locale: 'th',
-                    dayMaxEvents: 2,
-                    buttonText: {
-                        today: 'วันนี้',
-                        month: 'เดือน',
-                        list: 'รายการ'
-                    }
-                });
-                calendar.render();
+                    }).render();
+                }
+            } else {
+                // กรณีไม่มีข้อมูล ให้แสดงข้อความแจ้งเตือน
+                const chartDiv = document.querySelector("#candleStickChartContainer");
+                if (chartDiv) {
+                    chartDiv.innerHTML =
+                        '<div class="flex items-center justify-center h-full text-gray-500 border border-dashed border-gray-700 rounded-xl bg-gray-800/50">ยังไม่มีข้อมูลยอดขายในช่วงเวลานี้</div>';
+                }
             }
         });
     </script>

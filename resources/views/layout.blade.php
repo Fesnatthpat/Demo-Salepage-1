@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="{{ $settings['site_description'] ?? 'Salepage Demo - เว็บไซต์ขายสินค้าออนไลน์' }}">
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {{-- SweetAlert2 สำหรับแจ้งเตือนสวยๆ --}}
@@ -24,6 +25,8 @@
             $cartSessionId = '_guest_' . session()->getId();
         }
         $cartCount = \Cart::session($cartSessionId)->getTotalQuantity();
+
+        $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo_hm.png';
     @endphp
 
     <div class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
@@ -43,8 +46,24 @@
                         </div>
                         <ul tabindex="-1"
                             class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg">
-                            <li><a href="/" class="py-3 font-bold">หน้าหลัก</a></li>
-                            <li><a href="/allproducts" class="py-3 font-bold">สินค้าทั้งหมด</a></li>
+                            @php
+                                $menuItems = [];
+                                if (isset($settings['site_menu'])) {
+                                    $decodedMenu = json_decode($settings['site_menu'], true);
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedMenu)) {
+                                        $menuItems = $decodedMenu;
+                                    }
+                                }
+                                if (empty($menuItems)) {
+                                    $menuItems = [
+                                        ['name' => 'หน้าหลัก', 'url' => '/'],
+                                        ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts']
+                                    ];
+                                }
+                            @endphp
+                            @foreach ($menuItems as $item)
+                                <li><a href="{{ $item['url'] }}" class="py-3 font-bold">{{ $item['name'] }}</a></li>
+                            @endforeach
                             @auth
                                 <li><a href="/orderhistory" class="py-3 font-bold">ประวัติการสั่งซื้อ</a></li>
                                                                                         <li><a href="{{ route('profile.edit') }}" class="py-3 font-bold">ข้อมูลส่วนตัว</a></li>                                                            <li class="border-t mt-2 pt-2">                                    <div class="flex items-center gap-2 p-2">
@@ -69,16 +88,16 @@
                         </ul>
                     </div>
                     <a href="/" class="hidden md:flex btn btn-ghost text-xl p-0 hover:bg-transparent"><img
-                            src="/images/logo_hm.png" alt="Logo" class="h-10 md:h-12 w-auto object-contain"></a>
+                            src="{{ $siteLogo }}" alt="Logo" class="h-10 md:h-12 w-auto object-contain"></a>
                 </div>
 
                 <div class="navbar-center">
                     <a href="/" class="md:hidden btn btn-ghost text-xl p-0 hover:bg-transparent"><img
-                            src="/images/logo_hm.png" alt="Logo" class="h-10 w-auto object-contain"></a>
+                            src="{{ $siteLogo }}" alt="Logo" class="h-10 w-auto object-contain"></a>
                     <ul class="menu menu-horizontal px-1 gap-6 text-base font-medium text-gray-600 hidden md:flex">
-                        <li><a href="/" class="hover:text-emerald-600 hover:bg-transparent">หน้าหลัก</a></li>
-                        <li><a href="/allproducts" class="hover:text-emerald-600 hover:bg-transparent">สินค้าทั้งหมด</a>
-                        </li>
+                        @foreach ($menuItems as $item)
+                            <li><a href="{{ $item['url'] }}" class="hover:text-emerald-600 hover:bg-transparent">{{ $item['name'] }}</a></li>
+                        @endforeach
                         @auth
                             <li><a href="/orderhistory"
                                     class="hover:text-emerald-600 hover:bg-transparent">ประวัติการสั่งซื้อ</a></li>

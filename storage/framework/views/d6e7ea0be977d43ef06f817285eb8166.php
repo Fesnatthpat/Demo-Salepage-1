@@ -3,9 +3,14 @@
 <?php $__env->startSection('content'); ?>
 
     
+    <?php
+        $heroImage = isset($settings['site_cover_image']) 
+            ? asset('storage/' . $settings['site_cover_image']) 
+            : 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop';
+    ?>
     <div class="relative w-full h-[600px] lg:h-[700px] bg-gray-900 overflow-hidden">
         <div class="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop"
+            <img src="<?php echo e($heroImage); ?>"
                 class="w-full h-full object-cover opacity-60 hover:scale-105 transition-transform duration-1000 ease-in-out"
                 alt="Sale Background">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
@@ -13,15 +18,17 @@
         <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
             <span
                 class="inline-block py-1 px-3 rounded-full bg-red-600 text-white text-xs font-bold tracking-widest mb-4 animate-bounce">
-                ซื้อก่อน ลดก่อน
+                <?php echo e($settings['hero_section_tagline'] ?? 'ซื้อก่อน ลดก่อน'); ?>
+
             </span>
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
-                <span class="block text-gray-300 text-2xl md:text-3xl font-light mb-2">สมาชิกช้อปสินค้า</span>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">SALE</span>
-                ก่อนใคร
+                <span class="block text-gray-300 text-2xl md:text-3xl font-light mb-2"><?php echo e($settings['hero_section_title_prefix'] ?? 'สมาชิกช้อปสินค้า'); ?></span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500"><?php echo e($settings['hero_section_title_highlight'] ?? 'SALE'); ?></span>
+                <?php echo e($settings['hero_section_title_suffix'] ?? 'ก่อนใคร'); ?>
+
             </h1>
             <p class="text-gray-200 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed font-light">
-                ลดสูงสุด <span class="text-yellow-400 font-bold text-xl">50%</span> | ที่ร้านและออนไลน์ <br
+                <?php echo e($settings['hero_section_description'] ?? 'ลดสูงสุด 50% | ที่ร้านและออนไลน์'); ?> <br
                     class="hidden md:block">
                 เฉพาะสินค้าที่ร่วมรายการ จนกว่าสินค้าจะหมด
             </p>
@@ -38,7 +45,8 @@
                 </a>
             </div>
             <p class="mt-8 text-xs text-gray-400 opacity-80 max-w-lg">
-                *สินค้าและราคาของที่ร้านและออนไลน์อาจแตกต่างกัน ลงชื่อเข้าใช้เพื่อรับสิทธิพิเศษ
+                <?php echo e($settings['hero_section_small_text'] ?? '*สินค้าและราคาของที่ร้านและออนไลน์อาจแตกต่างกัน ลงชื่อเข้าใช้เพื่อรับสิทธิพิเศษ'); ?>
+
             </p>
         </div>
     </div>

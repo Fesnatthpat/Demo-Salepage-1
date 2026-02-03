@@ -35,9 +35,8 @@
     31 => 'Termwind\\Laravel\\TermwindServiceProvider',
     32 => 'SimpleSoftwareIO\\QrCode\\QrCodeServiceProvider',
     33 => 'SocialiteProviders\\Manager\\ServiceProvider',
-    34 => 'App\\Providers\\ViewServiceProvider',
-    35 => 'App\\Providers\\AppServiceProvider',
-    36 => 'App\\Providers\\ViewServiceProvider',
+    34 => 'App\\Providers\\AppServiceProvider',
+    35 => 'App\\Providers\\ViewServiceProvider',
   ),
   'eager' => 
   array (
@@ -58,9 +57,8 @@
     14 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     15 => 'Termwind\\Laravel\\TermwindServiceProvider',
     16 => 'SimpleSoftwareIO\\QrCode\\QrCodeServiceProvider',
-    17 => 'App\\Providers\\ViewServiceProvider',
-    18 => 'App\\Providers\\AppServiceProvider',
-    19 => 'App\\Providers\\ViewServiceProvider',
+    17 => 'App\\Providers\\AppServiceProvider',
+    18 => 'App\\Providers\\ViewServiceProvider',
   ),
   'deferred' => 
   array (

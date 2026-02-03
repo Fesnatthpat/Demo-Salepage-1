@@ -134,6 +134,11 @@
                         <i class="fas fa-user-shield mr-3 w-5 text-center"></i>
                         จัดการแอดมิน
                     </a>
+                    <a href="{{ route('admin.settings.index') }}"
+                        class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.settings.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
+                        <i class="fas fa-cogs mr-3 w-5 text-center"></i>
+                        ตั้งค่าเว็บไซต์
+                    </a>
                 @endif
             </nav>
 

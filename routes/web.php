@@ -143,6 +143,12 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // Admin Management (จัดการผู้ดูแลระบบ)
     Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class)->middleware('is.superadmin');
 
-    // Activity Log (ประวัติการใช้งาน)
+    // Activity Log
     Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
+
+    // Settings
+    Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::delete('/settings/{key}', [App\Http\Controllers\Admin\SettingController::class, 'destroy'])->name('settings.destroy');
+
 });

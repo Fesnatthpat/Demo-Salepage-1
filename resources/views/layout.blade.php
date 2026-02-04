@@ -15,7 +15,7 @@
     {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- ★★★ 1. CSS ของ Swiper ★★★ --}}
+    {{-- ★★★ CSS ของ Swiper (จำเป็นสำหรับสไลด์) ★★★ --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
@@ -28,14 +28,13 @@
             color: #ffffff !important;
             background: rgba(0, 0, 0, 0.3);
             width: 40px;
-            /* ขนาดในมือถือ */
             height: 40px;
             border-radius: 50%;
             backdrop-filter: blur(4px);
             transition: all 0.3s ease;
         }
 
-        /* ปรับขนาดปุ่มใหญ่ขึ้นในจอ PC */
+        /* ปรับปุ่มให้ใหญ่ขึ้นในจอคอม */
         @media (min-width: 768px) {
 
             .swiper-button-next,
@@ -183,7 +182,7 @@
         </footer>
     </div>
 
-    {{-- ★★★ 2. JS ของ Swiper ★★★ --}}
+    {{-- ★★★ JS ของ Swiper (ต้องมีบรรทัดนี้ สไลด์ถึงจะเลื่อนได้) ★★★ --}}
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
@@ -198,8 +197,8 @@
         };
     </script>
 
-    {{-- ★★★ [แก้ไขสำคัญ] ใช้ @yield('scripts') เพื่อให้ตรงกับ @section('scripts') ในหน้า index ★★★ --}}
-    @stack('scripts')
+    {{-- ★★★ ใช้ @yield แทน @stack เพื่อความชัวร์ ★★★ --}}
+    @yield('scripts')
 </body>
 
 </html>

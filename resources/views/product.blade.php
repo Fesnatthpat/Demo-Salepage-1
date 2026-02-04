@@ -88,7 +88,9 @@
                     <div class="sticky top-8">
                         <div
                             class="relative aspect-square rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100">
-                            <img :src="activeImage" class="w-full h-full object-contain p-4 transition-all duration-300">
+                            {{-- รูปหลัก --}}
+                            <img :src="activeImage" class="w-full h-full object-contain p-4 transition-all duration-300"
+                                onerror="this.src='https://via.placeholder.com/600?text=Image+Error'">
                         </div>
                         @if (count($allImages) > 1)
                             <div class="grid grid-cols-5 gap-3 mt-6">
@@ -119,13 +121,15 @@
                         {{-- Stock --}}
                         <div class="mb-4 text-sm font-semibold">
                             จำนวนสินค้าคงเหลือ:
-                            <span :class="currentStock > 0 ? 'text-emerald-600' : 'text-red-500'" x-text="currentStock.toLocaleString() + ' ชิ้น'">
+                            <span :class="currentStock > 0 ? 'text-emerald-600' : 'text-red-500'"
+                                x-text="currentStock.toLocaleString() + ' ชิ้น'">
                             </span>
                         </div>
 
                         <div class="inline-flex flex-col items-start bg-gray-50 rounded-2xl p-4 mb-8">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-black text-red-600" x-text="'฿' + finalPrice.toLocaleString()"></span>
+                                <span class="text-4xl font-black text-red-600"
+                                    x-text="'฿' + finalPrice.toLocaleString()"></span>
                                 @if ($discountAmount > 0)
                                     <span
                                         class="text-lg text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
@@ -143,15 +147,22 @@
                                 <h3 class="text-lg font-bold text-gray-800 mb-4">เลือกตัวเลือก:</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <template x-for="option in options" :key="option.id">
-                                        <label class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer"
-                                            :class="selectedOption == option.id ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-white hover:border-red-200'">
-                                            <input type="radio" name="product_option" x-model="selectedOption" :value="option.id" class="h-5 w-5 rounded-full border-gray-300 text-red-600 focus:ring-red-500">
+                                        <label
+                                            class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer"
+                                            :class="selectedOption == option.id ? 'border-red-500 bg-red-50' :
+                                                'border-gray-200 bg-white hover:border-red-200'">
+                                            <input type="radio" name="product_option" x-model="selectedOption"
+                                                :value="option.id"
+                                                class="h-5 w-5 rounded-full border-gray-300 text-red-600 focus:ring-red-500">
                                             <div class="flex-1">
                                                 <p class="font-bold text-gray-800" x-text="option.name"></p>
-                                                <p class="text-sm text-red-600 font-bold" x-text="'฿' + option.price.toLocaleString(undefined, {minimumFractionDigits: 2})"></p>
+                                                <p class="text-sm text-red-600 font-bold"
+                                                    x-text="'฿' + option.price.toLocaleString(undefined, {minimumFractionDigits: 2})">
+                                                </p>
                                             </div>
                                             <div class="text-right">
-                                                <p class="text-sm font-semibold text-gray-600" x-text="'สต็อก: ' + option.stock"></p>
+                                                <p class="text-sm font-semibold text-gray-600"
+                                                    x-text="'สต็อก: ' + option.stock"></p>
                                             </div>
                                         </label>
                                     </template>
@@ -295,203 +306,204 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('productPage', (config) => ({
-                    activeImage: config.initialImage,
-                    images: config.allImages,
-                    quantity: 1,
-                    isLoading: false,
-                    basePrice: config.basePrice || 0,
-                    options: config.options || [],
-                    selectedOption: null,
-                    promotions: config.promotions || [],
-                    selectedGifts: [],
+    {{-- ★★★ แก้ไขตรงนี้: ใช้ @section แทน @push เพื่อให้ตรงกับ @yield ใน layout ★★★ --}}
+@section('scripts')
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('productPage', (config) => ({
+                activeImage: config.initialImage,
+                images: config.allImages,
+                quantity: 1,
+                isLoading: false,
+                basePrice: config.basePrice || 0,
+                options: config.options || [],
+                selectedOption: null,
+                promotions: config.promotions || [],
+                selectedGifts: [],
 
-                    get finalPrice() {
-                        if (this.selectedOption) {
-                            const option = this.options.find(o => o.id === this.selectedOption);
-                            if (option) {
-                                return parseFloat(option.price);
-                            }
-                        }
-                        return this.basePrice;
-                    },
-                    
-                    get currentStock() {
-                        if (this.selectedOption) {
-                            const option = this.options.find(o => o.id === this.selectedOption);
-                            return option ? option.stock : 0;
-                        }
-                        return {{ $product->pd_sp_stock }};
-                    },
-
-                    get activePromotion() {
-                        return this.promotions.length > 0 ? this.promotions[0] : null;
-                    },
-
-                    get isConditionMet() {
-                        if (!this.activePromotion) return false;
-                        const logic = this.activePromotion.logic;
-                        const totalQty = logic.cart_qty + this.quantity;
-                        if (logic.condition_type === 'all') {
-                            return logic.other_rules_met && (totalQty >= logic.required_qty);
-                        } else {
-                            return totalQty >= logic.required_qty;
-                        }
-                    },
-
-                    get giftLimit() {
-                        if (!this.activePromotion || !this.isConditionMet) return 0;
-                        return this.activePromotion.gifts_per_item;
-                    },
-
-                    isGiftDisabled(giftId) {
-                        if (!this.isConditionMet) return true;
-                        if (this.selectedGifts.includes(giftId)) return false;
-                        return this.selectedGifts.length >= this.giftLimit;
-                    },
-
-                    init() {
-                        if (this.options.length > 0) {
-                            this.selectedOption = this.options[0].id;
-                        }
-                        this.$watch('quantity', () => {
-                            this.validateSelection();
-                        });
-                        if (localStorage.getItem('justAddedPartner') === 'true') {
-                            localStorage.removeItem('justAddedPartner');
-                            setTimeout(() => {
-                                const promoSection = document.getElementById('promotion-section');
-                                if (promoSection) {
-                                    promoSection.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'center'
-                                    });
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'ปลดล็อคของแถมแล้ว!',
-                                        text: 'คุณสามารถเลือกของแถมได้เลย',
-                                        toast: true,
-                                        position: 'top-end',
-                                        showConfirmButton: false,
-                                        timer: 3000
-                                    });
-                                }
-                            }, 500);
-                        }
-                    },
-
-                    validateSelection() {
-                        if (!this.isConditionMet) this.selectedGifts = [];
-                        else if (this.selectedGifts.length > this.giftLimit) this.selectedGifts.splice(this
-                            .giftLimit);
-                    },
-
-                    toggleGift(id) {
-                        if (!this.isConditionMet) return;
-                        const index = this.selectedGifts.indexOf(id);
-                        if (index > -1) {
-                            this.selectedGifts.splice(index, 1);
-                        } else {
-                            if (this.selectedGifts.length < this.giftLimit) {
-                                this.selectedGifts.push(id);
-                            } else {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'เลือกของแถมครบแล้ว',
-                                    confirmButtonColor: '#10b981'
-                                });
-                            }
-                        }
-                    },
-
-                    async addToCartPartner(partnerId) {
-                        if (this.isLoading) return;
-                        this.isLoading = true;
-                        try {
-                            const response = await fetch(config.bundleAddUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').content
-                                },
-                                body: JSON.stringify({
-                                    // ✅ แก้ไข: บังคับแปลงเป็นตัวเลข (Integer) ก่อนส่ง
-                                    main_product_id: parseInt(config.currentProductId),
-                                    secondary_product_id: parseInt(partnerId),
-                                    gift_ids: this.selectedGifts
-                                })
-                            });
-                            const data = await response.json();
-                            if (data.success) {
-                                localStorage.setItem('justAddedPartner', 'true');
-                                window.location.reload();
-                            } else {
-                                throw new Error(data.message);
-                            }
-                        } catch (e) {
-                            Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถทำรายการได้', 'error');
-                            this.isLoading = false;
-                        }
-                    },
-
-                    async handleAddToCartClick(isBuyNow) {
-                        if (this.options.length > 0 && !this.selectedOption) {
-                            Swal.fire('กรุณาเลือกตัวเลือก', 'กรุณาเลือกตัวเลือกสินค้าก่อนดำเนินการต่อ', 'warning');
-                            return;
-                        }
-                        if (this.isConditionMet && this.giftLimit > 0 && this.selectedGifts.length !==
-                            this.giftLimit) {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'กรุณาเลือกของแถม',
-                                confirmButtonColor: '#10b981'
-                            });
-                            return;
-                        }
-                        if (this.isLoading) return;
-                        this.isLoading = true;
-                        try {
-                            const response = await fetch(config.standardAction, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').content
-                                },
-                                body: JSON.stringify({
-                                    quantity: parseInt(this.quantity),
-                                    selected_gift_ids: this.selectedGifts,
-                                    selected_option_id: this.selectedOption
-                                })
-                            });
-                            const data = await response.json();
-                            if (data.success) {
-                                if (isBuyNow) window.location.href = config.checkoutUrl;
-                                else Swal.fire({
-                                    icon: 'success',
-                                    title: 'เพิ่มสินค้าแล้ว',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                });
-                            } else {
-                                throw new Error(data.message);
-                            }
-                        } catch (e) {
-                            Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถทำรายการได้', 'error');
-                        } finally {
-                            this.isLoading = false;
+                get finalPrice() {
+                    if (this.selectedOption) {
+                        const option = this.options.find(o => o.id === this.selectedOption);
+                        if (option) {
+                            return parseFloat(option.price);
                         }
                     }
-                }));
-            });
-        </script>
-    @endpush
+                    return this.basePrice;
+                },
+
+                get currentStock() {
+                    if (this.selectedOption) {
+                        const option = this.options.find(o => o.id === this.selectedOption);
+                        return option ? option.stock : 0;
+                    }
+                    return {{ $product->pd_sp_stock }};
+                },
+
+                get activePromotion() {
+                    return this.promotions.length > 0 ? this.promotions[0] : null;
+                },
+
+                get isConditionMet() {
+                    if (!this.activePromotion) return false;
+                    const logic = this.activePromotion.logic;
+                    const totalQty = logic.cart_qty + this.quantity;
+                    if (logic.condition_type === 'all') {
+                        return logic.other_rules_met && (totalQty >= logic.required_qty);
+                    } else {
+                        return totalQty >= logic.required_qty;
+                    }
+                },
+
+                get giftLimit() {
+                    if (!this.activePromotion || !this.isConditionMet) return 0;
+                    return this.activePromotion.gifts_per_item;
+                },
+
+                isGiftDisabled(giftId) {
+                    if (!this.isConditionMet) return true;
+                    if (this.selectedGifts.includes(giftId)) return false;
+                    return this.selectedGifts.length >= this.giftLimit;
+                },
+
+                init() {
+                    if (this.options.length > 0) {
+                        this.selectedOption = this.options[0].id;
+                    }
+                    this.$watch('quantity', () => {
+                        this.validateSelection();
+                    });
+                    if (localStorage.getItem('justAddedPartner') === 'true') {
+                        localStorage.removeItem('justAddedPartner');
+                        setTimeout(() => {
+                            const promoSection = document.getElementById('promotion-section');
+                            if (promoSection) {
+                                promoSection.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'ปลดล็อคของแถมแล้ว!',
+                                    text: 'คุณสามารถเลือกของแถมได้เลย',
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+                            }
+                        }, 500);
+                    }
+                },
+
+                validateSelection() {
+                    if (!this.isConditionMet) this.selectedGifts = [];
+                    else if (this.selectedGifts.length > this.giftLimit) this.selectedGifts.splice(this
+                        .giftLimit);
+                },
+
+                toggleGift(id) {
+                    if (!this.isConditionMet) return;
+                    const index = this.selectedGifts.indexOf(id);
+                    if (index > -1) {
+                        this.selectedGifts.splice(index, 1);
+                    } else {
+                        if (this.selectedGifts.length < this.giftLimit) {
+                            this.selectedGifts.push(id);
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'เลือกของแถมครบแล้ว',
+                                confirmButtonColor: '#10b981'
+                            });
+                        }
+                    }
+                },
+
+                async addToCartPartner(partnerId) {
+                    if (this.isLoading) return;
+                    this.isLoading = true;
+                    try {
+                        const response = await fetch(config.bundleAddUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                main_product_id: parseInt(config.currentProductId),
+                                secondary_product_id: parseInt(partnerId),
+                                gift_ids: this.selectedGifts
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            localStorage.setItem('justAddedPartner', 'true');
+                            window.location.reload();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    } catch (e) {
+                        Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถทำรายการได้', 'error');
+                        this.isLoading = false;
+                    }
+                },
+
+                async handleAddToCartClick(isBuyNow) {
+                    if (this.options.length > 0 && !this.selectedOption) {
+                        Swal.fire('กรุณาเลือกตัวเลือก', 'กรุณาเลือกตัวเลือกสินค้าก่อนดำเนินการต่อ',
+                            'warning');
+                        return;
+                    }
+                    if (this.isConditionMet && this.giftLimit > 0 && this.selectedGifts.length !==
+                        this.giftLimit) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณาเลือกของแถม',
+                            confirmButtonColor: '#10b981'
+                        });
+                        return;
+                    }
+                    if (this.isLoading) return;
+                    this.isLoading = true;
+                    try {
+                        const response = await fetch(config.standardAction, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                quantity: parseInt(this.quantity),
+                                selected_gift_ids: this.selectedGifts,
+                                selected_option_id: this.selectedOption
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            if (isBuyNow) window.location.href = config.checkoutUrl;
+                            else Swal.fire({
+                                icon: 'success',
+                                title: 'เพิ่มสินค้าแล้ว',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    } catch (e) {
+                        Swal.fire('ข้อผิดพลาด', e.message || 'ไม่สามารถทำรายการได้', 'error');
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }));
+        });
+    </script>
+@endsection
 @endsection

@@ -99,7 +99,6 @@
                             class="w-48 h-48 object-cover rounded-lg mx-auto transition-all duration-500">
 
                         <div class="mt-3 text-center">
-                            
                             <p class="font-bold text-gray-800 text-lg">บริษัท กวินบราเทอร์</p>
                             <p class="text-xs text-gray-400 mt-1">สแกนเพื่อชำระเงิน</p>
                         </div>
@@ -147,7 +146,7 @@
                 </div>
 
                 
-                <button id="upload-slip-btn" onclick="showUploadSlipPopup()"
+                <button id="upload-slip-btn"
                     class="btn w-full bg-[#00B900] hover:bg-[#009900] text-white border-none text-lg h-12 shadow-md shadow-emerald-200 mb-3 transition-all duration-300">
                     แจ้งชำระเงิน / แนบสลิป
                 </button>
@@ -168,62 +167,29 @@
     </form>
 <?php $__env->stopSection(); ?>
 
-<?php $__env->startPush('scripts'); ?>
+
+<?php $__env->startSection('scripts'); ?>
     <script>
-        // รับค่าเวลาที่เหลือมาจาก Controller (วินาที)
-        let timeLeft = <?php echo e($secondsRemaining); ?>;
-
-        const timerElement = document.getElementById('countdown-timer');
-        const timerContainer = document.getElementById('timer-container');
-        const expiredMessage = document.getElementById('expired-message');
-        const qrOverlay = document.getElementById('qr-overlay');
-        const saveBtnContainer = document.getElementById('save-btn-container');
-        const refreshBtnContainer = document.getElementById('refresh-btn-container');
-        const uploadBtn = document.getElementById('upload-slip-btn');
-
-        function updateTimerDisplay() {
-            if (timeLeft <= 0) {
-                handleExpired();
-                return;
-            }
-
-            const minutes = Math.floor(timeLeft / 60);
-            let seconds = Math.floor(timeLeft % 60);
-            seconds = seconds < 10 ? '0' + seconds : seconds;
-
-            timerElement.innerHTML = `${minutes}:${seconds}`;
-            timeLeft--;
+        // ทำให้ฟังก์ชันเป็น Global เพื่อให้ HTML string ของ Swal เรียกใช้ได้
+        window.triggerFileInput = function() {
+            document.getElementById('slip_image_input').click();
         }
 
-        function handleExpired() {
-            timerContainer.classList.add('hidden');
-            expiredMessage.classList.remove('hidden');
-            qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
-            saveBtnContainer.classList.add('hidden');
-            refreshBtnContainer.classList.remove('hidden');
-
-            uploadBtn.disabled = true;
-            uploadBtn.classList.add('btn-disabled', 'bg-gray-300', 'text-gray-500');
-            uploadBtn.classList.remove('bg-[#00B900]', 'hover:bg-[#009900]', 'shadow-md');
-            uploadBtn.innerHTML = 'หมดเวลาดำเนินการ';
+        window.previewSlip = function(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('slip-preview');
+                if (output) {
+                    output.src = reader.result;
+                    output.classList.remove('hidden');
+                    document.getElementById('slip-preview-placeholder').classList.add('hidden');
+                }
+            };
+            reader.readAsDataURL(event.target.files[0]);
         }
 
-        updateTimerDisplay();
-        const countdown = setInterval(updateTimerDisplay, 1000);
-
-        function saveQRCode() {
-            const img = document.getElementById('qr-code-image');
-            const link = document.createElement('a');
-            link.href = img.src;
-            link.download = 'QR-Payment-<?php echo e($order->ord_code); ?>.svg';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function copyToClipboard(text) {
-            const cleanText = text;
-            navigator.clipboard.writeText(cleanText).then(() => {
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
                 const Toast = Swal.mixin({
                     toast: true,
                     position: 'top-end',
@@ -245,52 +211,93 @@
             });
         }
 
-        function triggerFileInput() {
-            document.getElementById('slip_image_input').click();
+        window.saveQRCode = function() {
+            const img = document.getElementById('qr-code-image');
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = 'QR-Payment-<?php echo e($order->ord_code); ?>.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        function previewSlip(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                const output = document.getElementById('slip-preview');
-                if (output) {
-                    output.src = reader.result;
-                    output.classList.remove('hidden');
-                    document.getElementById('slip-preview-placeholder').classList.add('hidden');
+        document.addEventListener('DOMContentLoaded', function() {
+            // รับค่าเวลาที่เหลือมาจาก Controller (วินาที)
+            let timeLeft = <?php echo e($secondsRemaining); ?>;
+
+            const timerElement = document.getElementById('countdown-timer');
+            const timerContainer = document.getElementById('timer-container');
+            const expiredMessage = document.getElementById('expired-message');
+            const qrOverlay = document.getElementById('qr-overlay');
+            const saveBtnContainer = document.getElementById('save-btn-container');
+            const refreshBtnContainer = document.getElementById('refresh-btn-container');
+            const uploadBtn = document.getElementById('upload-slip-btn');
+
+            function updateTimerDisplay() {
+                if (timeLeft <= 0) {
+                    handleExpired();
+                    return;
                 }
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
 
-        function showUploadSlipPopup() {
-            Swal.fire({
-                title: 'แนบสลิปชำระเงิน',
-                html: `
-                <div class="p-2">
-                    <p class="text-sm text-gray-500 mb-4">กรุณาอัปโหลดหลักฐานการโอนเงินสำหรับออเดอร์ <br><strong class="text-gray-700"><?php echo e($order->ord_code); ?></strong></p>
-                    <div id="slip-preview-container" class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed cursor-pointer" onclick="triggerFileInput()">
-                         <div id="slip-preview-placeholder" class="text-center text-gray-400">
-                            <svg class="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                            <p class="mt-1 text-sm">คลิกเพื่อเลือกไฟล์</p>
-                        </div>
-                        <img id="slip-preview" class="hidden h-full w-full object-contain rounded-lg" />
-                    </div>
-                </div>`,
-                showCancelButton: true,
-                confirmButtonText: 'ยืนยันการแจ้งชำระ',
-                confirmButtonColor: '#00B900',
-                cancelButtonText: 'ยกเลิก',
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    const slipInput = document.getElementById('slip_image_input');
-                    if (slipInput.files.length === 0) {
-                        Swal.showValidationMessage('กรุณาเลือกไฟล์สลิป');
-                        return false;
+                const minutes = Math.floor(timeLeft / 60);
+                let seconds = Math.floor(timeLeft % 60);
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+
+                timerElement.innerHTML = `${minutes}:${seconds}`;
+                timeLeft--;
+            }
+
+            function handleExpired() {
+                timerContainer.classList.add('hidden');
+                expiredMessage.classList.remove('hidden');
+                qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                saveBtnContainer.classList.add('hidden');
+                refreshBtnContainer.classList.remove('hidden');
+
+                uploadBtn.disabled = true;
+                uploadBtn.classList.add('btn-disabled', 'bg-gray-300', 'text-gray-500');
+                uploadBtn.classList.remove('bg-[#00B900]', 'hover:bg-[#009900]', 'shadow-md');
+                uploadBtn.innerHTML = 'หมดเวลาดำเนินการ';
+            }
+
+            updateTimerDisplay();
+            const countdown = setInterval(updateTimerDisplay, 1000);
+
+            // ปุ่มกดแนบสลิป
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        Swal.fire({
+                            title: 'แนบสลิปชำระเงิน',
+                            html: `
+                            <div class="p-2">
+                                <p class="text-sm text-gray-500 mb-4">กรุณาอัปโหลดหลักฐานการโอนเงินสำหรับออเดอร์ <br><strong class="text-gray-700"><?php echo e($order->ord_code); ?></strong></p>
+                                <div id="slip-preview-container" class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed cursor-pointer" onclick="window.triggerFileInput()">
+                                     <div id="slip-preview-placeholder" class="text-center text-gray-400">
+                                        <svg class="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        <p class="mt-1 text-sm">คลิกเพื่อเลือกไฟล์</p>
+                                    </div>
+                                    <img id="slip-preview" class="hidden h-full w-full object-contain rounded-lg" />
+                                </div>
+                            </div>`,
+                            showCancelButton: true,
+                            confirmButtonText: 'ยืนยันการแจ้งชำระ',
+                            confirmButtonColor: '#00B900',
+                            cancelButtonText: 'ยกเลิก',
+                            allowOutsideClick: false,
+                            preConfirm: () => {
+                                const slipInput = document.getElementById('slip_image_input');
+                                if (slipInput.files.length === 0) {
+                                    Swal.showValidationMessage('กรุณาเลือกไฟล์สลิป');
+                                    return false;
+                                }
+                                document.getElementById('slip-upload-form').submit();
+                            }
+                        });
                     }
-                    document.getElementById('slip-upload-form').submit();
-                }
-            });
-        }
+                });
+            }
+        });
     </script>
     <style>
         .animate-fade-in {
@@ -309,6 +316,6 @@
             }
         }
     </style>
-<?php $__env->stopPush(); ?>
+<?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/qr.blade.php ENDPATH**/ ?>

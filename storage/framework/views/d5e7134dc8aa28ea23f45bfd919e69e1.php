@@ -28,14 +28,13 @@
             color: #ffffff !important;
             background: rgba(0, 0, 0, 0.3);
             width: 40px;
-            /* ขนาดในมือถือ */
             height: 40px;
             border-radius: 50%;
             backdrop-filter: blur(4px);
             transition: all 0.3s ease;
         }
 
-        /* ปรับขนาดปุ่มใหญ่ขึ้นในจอ PC */
+        /* ปรับปุ่มให้ใหญ่ขึ้นในจอคอม */
         @media (min-width: 768px) {
 
             .swiper-button-next,
@@ -199,7 +198,7 @@
     </script>
 
     
-    <?php echo $__env->yieldPushContent('scripts'); ?>
+    <?php echo $__env->yieldContent('scripts'); ?>
 </body>
 
 </html>

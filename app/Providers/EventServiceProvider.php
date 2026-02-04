@@ -15,13 +15,18 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-
+        // Listener สำหรับ Socialite (Login ผ่าน LINE)
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
             'SocialiteProviders\\Line\\LineExtendSocialite@handle',
         ],
 
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+
+        // [เพิ่มใหม่] เมื่อ User Login สำเร็จ -> ให้เรียก Listener กู้คืนตะกร้าสินค้า
+        \App\Events\UserLoggedIn::class => [
+            \App\Listeners\RestoreUserCart::class,
         ],
     ];
 

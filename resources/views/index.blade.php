@@ -1,93 +1,96 @@
 @extends('layout')
 
-@section('title', 'หน้าหลัก | Salepage Demo')
+@section('title', 'หน้าหลัก | ติดใจ - ของกินเล่นสูตรเด็ด')
 
 @section('content')
 
-    {{-- HERO SECTION --}}
-    @php
-        $heroImage = isset($settings['site_cover_image']) 
-            ? asset('storage/' . $settings['site_cover_image']) 
-            : 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop';
-    @endphp
-    <div class="relative w-full h-[600px] lg:h-[700px] bg-gray-900 overflow-hidden">
-        <div class="absolute inset-0">
-            <img src="{{ $heroImage }}"
-                class="w-full h-full object-cover opacity-60 hover:scale-105 transition-transform duration-1000 ease-in-out"
-                alt="Sale Background">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-        </div>
-        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-            <span
-                class="inline-block py-1 px-3 rounded-full bg-red-600 text-white text-xs font-bold tracking-widest mb-4 animate-bounce">
-                {{ $settings['hero_section_tagline'] ?? 'ซื้อก่อน ลดก่อน' }}
-            </span>
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
-                <span class="block text-gray-300 text-2xl md:text-3xl font-light mb-2">{{ $settings['hero_section_title_prefix'] ?? 'สมาชิกช้อปสินค้า' }}</span>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">{{ $settings['hero_section_title_highlight'] ?? 'SALE' }}</span>
-                {{ $settings['hero_section_title_suffix'] ?? 'ก่อนใคร' }}
-            </h1>
-            <p class="text-gray-200 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed font-light">
-                {{ $settings['hero_section_description'] ?? 'ลดสูงสุด 50% | ที่ร้านและออนไลน์' }} <br
-                    class="hidden md:block">
-                เฉพาะสินค้าที่ร่วมรายการ จนกว่าสินค้าจะหมด
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4">
-                <a href="/allproducts"
-                    class="btn bg-white text-gray-900 border-none hover:bg-gray-200 px-8 py-3 rounded-full font-bold text-lg transition-transform hover:-translate-y-1 shadow-lg">
-                    ช้อปสินค้าลดราคา
-                </a>
-                <a href="/login">
-                    <button
-                        class="btn btn-outline text-white border-white hover:bg-white/20 px-8 py-3 rounded-full font-bold text-lg transition-transform hover:-translate-y-1">
-                        เข้าสู่ระบบสมาชิก
-                    </button>
-                </a>
+    {{-- ★★★ HERO SECTION (RESPONSIVE SLIDER) ★★★ --}}
+    {{-- ใช้ w-full และลบ fixed height ออก เพื่อให้สูงตามรูปภาพ --}}
+    <div class="relative w-full bg-gray-100 group">
+        <div class="swiper mySwiper w-full">
+            <div class="swiper-wrapper">
+
+                {{-- SLIDE 1: โปรโมชั่น Sale --}}
+                <div class="swiper-slide">
+                    <a href="/allproducts" class="block w-full">
+                        {{-- ใช้ w-full h-auto เพื่อให้รูปปรับขนาดตามจอโดยไม่เบี้ยวและไม่ถูกตัด --}}
+                        <img src="{{ asset('images/th-1.png') }}" class="w-full h-auto block"
+                            alt="โปรโมชั่น Sale"
+                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1920x600/783630/ffffff?text=Missing+image_275bca.png';" />
+                    </a>
+                </div>
+
+                {{-- SLIDE 2: ข้อมูลการจัดส่ง --}}
+                <div class="swiper-slide">
+                    <a href="/allproducts" class="block w-full">
+                        <img src="{{ asset('images/th-2.png') }}" class="w-full h-auto block"
+                            alt="จัดส่งวันไหน"
+                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1920x600/ef4444/ffffff?text=Image+Not+Found';" />
+                    </a>
+                </div>
+
+                {{-- SLIDE 3: ขอบคุณลูกค้า --}}
+                <div class="swiper-slide">
+                    <a href="/allproducts" class="block w-full">
+                        <img src="{{ asset('images/th-3.png') }}" class="w-full h-auto block"
+                            alt="ขอขอบคุณลูกค้า"
+                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1920x600/ef4444/ffffff?text=Image+Not+Found';" />
+                    </a>
+                </div>
+
+                {{-- SLIDE 4: ข้อมูลฮาลาล --}}
+                <div class="swiper-slide">
+                    <a href="/allproducts" class="block w-full">
+                        <img src="{{ asset('images/th-4.png') }}" class="w-full h-auto block"
+                            alt="ข้อมูลฮาลาล"
+                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1920x600/ef4444/ffffff?text=Image+Not+Found';" />
+                    </a>
+                </div>
+
+                {{-- SLIDE 5: โปรโมชั่นส่งฟรี --}}
+                <div class="swiper-slide">
+                    <a href="/allproducts" class="block w-full">
+                        <img src="{{ asset('images/th-5.png') }}" class="w-full h-auto block"
+                            alt="โปรโมชั่นส่งฟรี"
+                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1920x600/ef4444/ffffff?text=Image+Not+Found';" />
+                    </a>
+                </div>
             </div>
-            <p class="mt-8 text-xs text-gray-400 opacity-80 max-w-lg">
-                {{ $settings['hero_section_small_text'] ?? '*สินค้าและราคาของที่ร้านและออนไลน์อาจแตกต่างกัน ลงชื่อเข้าใช้เพื่อรับสิทธิพิเศษ' }}
-            </p>
+
+            {{-- ปุ่มลูกศร --}}
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            {{-- จุด Pagination --}}
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+
+    {{-- ★★★ ข้อมูลแพ้อาหาร (Responsive) ★★★ --}}
+    <div class="w-full bg-red-50">
+        <div class="container mx-auto">
+            <img src="{{ asset('images/image_27e610.png') }}" 
+                 alt="ข้อมูลสำหรับผู้แพ้อาหาร" 
+                 class="w-full h-auto block shadow-sm hover:shadow-lg transition-shadow duration-300"
+                 onerror="this.onerror=null;this.style.display='none';"/>
         </div>
     </div>
 
     {{-- SERVICE BAR --}}
-    <div class="bg-white border-b border-gray-100 py-6">
+    <div class="bg-white border-b border-gray-100 py-8 relative">
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-gray-100">
                 @php
-                    $serviceBarItems = [];
-                    if (isset($settings['service_bar_items'])) {
-                        $decodedItems = json_decode($settings['service_bar_items'], true);
-                        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedItems)) {
-                            $serviceBarItems = $decodedItems;
-                        }
-                    }
-                    if (empty($serviceBarItems)) {
-                        $serviceBarItems = [
-                            [
-                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>',
-                                'text' => 'สินค้าของแท้ 100%',
-                            ],
-                            [
-                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-                                'text' => 'จัดส่งไวใน 24 ชม.',
-                            ],
-                            [
-                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>',
-                                'text' => 'ชำระเงินปลอดภัย',
-                            ],
-                            [
-                                'icon' => '<svg class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
-                                'text' => 'บริการหลังการขาย',
-                            ],
-                        ];
-                    }
+                    $serviceBarItems = [
+                        ['icon' => '<svg class="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 'text' => 'สูตรเด็ดต้นตำรับ'],
+                        ['icon' => '<svg class="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>', 'text' => 'ส่งไว ทันใจ'],
+                        ['icon' => '<svg class="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>', 'text' => 'ชำระเงินปลอดภัย'],
+                        ['icon' => '<svg class="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>', 'text' => 'ทำด้วยใจทุกขั้นตอน'],
+                    ];
                 @endphp
-
-                @foreach($serviceBarItems as $item)
-                    <div class="flex flex-col items-center gap-2 group">
-                        {!! $item['icon'] !!}
-                        <span class="text-sm font-semibold text-gray-700">{{ $item['text'] }}</span>
+                @foreach ($serviceBarItems as $item)
+                    <div class="flex flex-col items-center gap-3 group cursor-default">
+                        <div class="p-3 bg-red-50 rounded-full group-hover:bg-red-100 transition duration-300">{!! $item['icon'] !!}</div>
+                        <span class="text-base font-bold text-gray-700 group-hover:text-red-600 transition">{{ $item['text'] }}</span>
                     </div>
                 @endforeach
             </div>
@@ -95,159 +98,118 @@
     </div>
 
     {{-- PRODUCTS SECTION --}}
-    <div class="container mx-auto px-4 mt-12 mb-20">
-        <div class="flex justify-between items-end mb-8">
-            <div>
-                <h2 class="text-3xl font-bold text-gray-900">สินค้าแนะนำ</h2>
-                <p class="text-gray-500 mt-1">คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
+    <div class="bg-gray-50/50 py-12">
+        <div class="container mx-auto px-4 mb-10">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <div class="inline-block px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm font-bold mb-2">Recommended</div>
+                    <h2 class="text-3xl md:text-4xl font-black text-gray-800 tracking-tight">เมนูแนะนำ <span class="text-red-600">ต้องลอง!</span></h2>
+                </div>
+                <a href="/allproducts" class="group flex items-center gap-1 text-red-600 font-bold hover:text-red-700 hidden md:flex transition">
+                    ดูทั้งหมด <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </a>
             </div>
-            <a href="/allproducts" class="text-emerald-600 font-bold hover:underline hidden md:block">ดูทั้งหมด →</a>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
-                @foreach ($recommendedProducts as $product)
-                    @php
-                        // --- Logic for Eloquent Model ---
-                        $originalPrice = (float) ($product->pd_sp_price ?? 0);
-                        $discountAmount = (float) ($product->pd_sp_discount ?? 0);
-                        $finalSellingPrice = max(0, $originalPrice - $discountAmount);
-                        $isOnSale = $discountAmount > 0;
-
-                        // --- Logic รูปภาพแบบ Robust (แก้ไขใหม่) ---
-                        $displayImage = 'https://via.placeholder.com/400x500.png?text=No+Image';
-
-                        // หา Image Model (รองรับทั้ง Image Path หรือ img_path)
-                        if ($product->images && $product->images->isNotEmpty()) {
-                            // พยายามหารูป is_primary ก่อน
-                            $primaryImage = $product->images->where('is_primary', true)->first();
-                            // ถ้าไม่มี เอาตัวแรกสุด
-                            if (!$primaryImage) {
-                                $primaryImage = $product->images->first();
-                            }
-
-                            if ($primaryImage) {
-                                // รองรับชื่อ field ใน database ทั้งสองแบบเผื่อไว้
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
+                    @foreach ($recommendedProducts as $product)
+                        @php
+                            $originalPrice = (float) ($product->pd_sp_price ?? 0);
+                            $discountAmount = (float) ($product->pd_sp_discount ?? 0);
+                            $finalSellingPrice = max(0, $originalPrice - $discountAmount);
+                            $isOnSale = $discountAmount > 0;
+                            $displayImage = 'https://via.placeholder.com/400x400.png?text=Snack+Image';
+                            if ($product->images && $product->images->isNotEmpty()) {
+                                $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first();
                                 $rawPath = $primaryImage->image_path ?? $primaryImage->img_path;
-
                                 if ($rawPath) {
-                                    // 1. ถ้าเป็น URL เต็มอยู่แล้ว (เช่น https://...)
-                                    if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-                                        $displayImage = $rawPath;
-                                    } else {
-                                        // 2. ถ้าเป็น path ในเครื่อง
-                                        // ลบ 'storage/' ออกก่อนถ้ามี เพื่อกัน path ซ้อน (storage/storage/...)
-                                        $cleanPath = str_replace('storage/', '', $rawPath);
-                                        $cleanPath = ltrim($cleanPath, '/'); // ลบ / ตัวหน้าสุดออก
-
-                                        // ใช้ asset('storage/...') ซึ่งเป็นวิธีมาตรฐานของ Laravel
-                                        $displayImage = asset('storage/' . $cleanPath);
-                                    }
+                                    $displayImage = filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/' . ltrim(str_replace('storage/', '', $rawPath), '/'));
                                 }
                             }
-                        }
-                    @endphp
-
-                    <div
-                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
-
-                        {{-- รูปภาพ --}}
-                        <a href="{{ route('product.show', $product->pd_sp_id) }}">
-                            <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                {{-- แก้ไข img src และเพิ่ม onerror --}}
-                                <img src="{{ $displayImage }}" alt="{{ $product->pd_sp_name }}"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500.png?text=Error';" />
-
-                                {{-- Logic ป้าย SALE --}}
+                        @endphp
+                        <div class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">
+                            <a href="{{ route('product.show', $product->pd_sp_id) }}" class="block overflow-hidden relative pt-[100%]">
+                                <img src="{{ $displayImage }}" alt="{{ $product->pd_sp_name }}" class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition duration-700" onerror="this.onerror=null;this.src='https://via.placeholder.com/400x400.png?text=No+Image';" />
                                 @if ($isOnSale)
-                                    <div
-                                        class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
-                                        ลด ฿{{ number_format($discountAmount) }}
-                                    </div>
+                                    <div class="absolute top-3 right-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md animate-pulse">ลด {{ number_format($discountAmount) }}.-</div>
                                 @endif
-
-                                <div
-                                    class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100 z-10">
-                                    <a href="{{ route('product.show', $product->pd_sp_id) }}"
-                                        class="btn btn-block bg-white/90 hover:bg-emerald-600 hover:text-white text-gray-800 border-none shadow-md text-sm h-10 min-h-0">
-                                        ดูรายละเอียด
-                                    </a>
+                            </a>
+                            <div class="p-5 flex-1 flex flex-col">
+                                <div class="mb-2">
+                                    <h2 class="text-lg font-bold text-gray-800 leading-tight line-clamp-2 hover:text-red-600 transition cursor-pointer" onclick="window.location='{{ route('product.show', $product->pd_sp_id) }}'">{{ $product->pd_sp_name }}</h2>
+                                    <p class="text-xs text-gray-400 mt-1">รหัส: {{ $product->pd_sp_code }}</p>
                                 </div>
-                            </figure>
-                        </a>
-
-                        {{-- รายละเอียด --}}
-                        <div class="card-body p-4 flex-1 flex flex-col">
-                            <div class="text-xs text-gray-400 mb-1">สินค้าแนะนำ</div>
-
-                            <h2
-                                class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
-                                <a href="{{ route('product.show', $product->pd_sp_id) }}"
-                                    class="hover:text-emerald-600 transition">
-                                    {{ $product->pd_sp_name }}
-                                </a>
-                            </h2>
-                            <p class="text-xs text-gray-500">Code: {{ $product->pd_sp_code }}</p>
-                            <p class="text-xs {{ $product->pd_sp_stock > 0 ? 'text-emerald-600' : 'text-red-500' }}">
-                                {{ $product->pd_sp_stock > 0 ? 'มีสินค้า' : 'สินค้าหมด' }}
-                            </p>
-
-                            <div class="flex justify-between items-end mt-2 mb-3">
-                                <div class="flex items-baseline gap-2">
-                                    @if ($isOnSale)
-                                        <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
-                                        <span
-                                            class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
-                                    @else
-                                        <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($finalSellingPrice) }}</span>
-                                    @endif
+                                <div class="mt-auto">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <div class="flex flex-col">
+                                            @if ($isOnSale)
+                                                <span class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
+                                                <span class="text-xl font-black text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
+                                            @else
+                                                <span class="text-xl font-black text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="text-xs font-semibold {{ $product->pd_sp_stock > 0 ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50' }} px-2 py-1 rounded-md">{{ $product->pd_sp_stock > 0 ? 'มีสินค้า' : 'สินค้าหมด' }}</div>
+                                    </div>
+                                    <button type="button" onclick="addToCartQuick(this, '{{ route('cart.add', ['id' => $product->pd_sp_id]) }}')" class="btn w-full rounded-xl border-none font-bold text-white shadow-md transition-transform active:scale-95 {{ $product->pd_sp_stock > 0 ? 'bg-red-600 hover:bg-red-700 shadow-red-200' : 'bg-gray-300 cursor-not-allowed' }}" {{ $product->pd_sp_stock <= 0 ? 'disabled' : '' }}>
+                                        @if ($product->pd_sp_stock > 0) ใส่ตะกร้าเลย @else สินค้าหมด @endif
+                                    </button>
                                 </div>
                             </div>
-
-                            <div class="mt-auto">
-                                <button type="button"
-                                    onclick="addToCartQuick(this, '{{ route('cart.add', ['id' => $product->pd_sp_id]) }}')"
-                                    class="btn btn-sm w-full {{ $product->pd_sp_stock > 0 ? 'btn-outline border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600' : 'btn-disabled bg-gray-200' }} font-bold gap-2"
-                                    {{ $product->pd_sp_stock <= 0 ? 'disabled' : '' }}>
-                                    @if ($product->pd_sp_stock > 0)
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        เพิ่มลงตะกร้า
-                                    @else
-                                        สินค้าหมด
-                                    @endif
-                                </button>
-                            </div>
-
                         </div>
+                    @endforeach
+                @else
+                    <div class="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-3xl border border-dashed border-gray-300">
+                        <p class="text-gray-500 font-medium">ไม่พบสินค้าแนะนำในขณะนี้</p>
                     </div>
-                @endforeach
-            @else
-                <div class="col-span-full text-center py-10">
-                    <p class="text-gray-500">ไม่พบสินค้าแนะนำในขณะนี้</p>
-                </div>
-            @endif
-        </div>
-
-        <div class="mt-8 text-center md:hidden">
-            <a href="/allproducts" class="btn btn-outline w-full">ดูสินค้าทั้งหมด</a>
+                @endif
+            </div>
+             <div class="mt-10 text-center md:hidden">
+                <a href="/allproducts" class="btn btn-outline border-red-600 text-red-600 w-full rounded-xl font-bold">ดูสินค้าทั้งหมด</a>
+            </div>
         </div>
     </div>
 
-    {{-- SCRIPT (คงเดิม) --}}
+@endsection
+
+@push('scripts')
+    {{-- ★★★ SCRIPT: สั่งให้ SWIPER ทำงาน (ปรับแก้ให้ Loop ได้ลื่นไหล) ★★★ --}}
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var swiper = new Swiper(".mySwiper", {
+                slidesPerView: 1,
+                spaceBetween: 0,
+                loop: true,
+                speed: 800,
+                effect: 'slide',
+
+                // ตั้งค่าเล่นอัตโนมัติ
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                },
+
+                // ปุ่มจุดด้านล่าง
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
+                    dynamicBullets: true,
+                },
+
+                // ปุ่มลูกศร ซ้าย-ขวา
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+            });
+        });
+
+        // --- Cart Function ---
         function addToCartQuick(btnElement, url) {
             if (btnElement.disabled) return;
-            const originalText = btnElement.innerHTML;
+            const originalHTML = btnElement.innerHTML;
             btnElement.disabled = true;
-            btnElement.innerHTML = '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
-
+            btnElement.innerHTML = '<span class="loading loading-spinner loading-xs"></span> กำลังปรุง...';
             const formData = new FormData();
             formData.append('quantity', 1);
 
@@ -263,44 +225,39 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        if (typeof window.flyToCart === 'function') {
-                            window.flyToCart(btnElement);
-                        }
+                        if (typeof window.flyToCart === 'function') window.flyToCart(btnElement);
                         Swal.fire({
                             icon: 'success',
-                            title: 'เพิ่มลงตะกร้าแล้ว',
-                            position: 'center',
+                            title: 'เพิ่มเรียบร้อย!',
                             showConfirmButton: false,
-                            timer: 1500
+                            timer: 1500,
+                            position: 'top-end',
+                            toast: true,
+                            background: '#FEF2F2',
+                            iconColor: '#DC2626'
                         });
-                        if (window.updateCartBadge) {
-                            window.updateCartBadge(data.cartCount);
-                        }
+                        if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'เกิดข้อผิดพลาด',
-                            text: data.message || 'ไม่สามารถเพิ่มสินค้าได้',
-                            position: 'center',
-                            showConfirmButton: false,
-                            timer: 1500
+                            title: 'แจ้งเตือน',
+                            text: data.message || 'เพิ่มสินค้าไม่ได้',
+                            confirmButtonColor: '#DC2626'
                         });
                     }
                 })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'
-                    });
-                })
+                .catch(err => Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Connection failed',
+                    confirmButtonColor: '#DC2626'
+                }))
                 .finally(() => {
                     setTimeout(() => {
                         btnElement.disabled = false;
-                        btnElement.innerHTML = originalText;
+                        btnElement.innerHTML = originalHTML;
                     }, 500);
                 });
         }
     </script>
-@endsection
+@endpush

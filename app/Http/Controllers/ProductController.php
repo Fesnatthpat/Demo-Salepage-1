@@ -16,7 +16,7 @@ class ProductController extends Controller
             ->where('pd_sp_id', $id)
             ->firstOrFail();
 
-        $coverImg = $salePageProduct->images->where('img_sort', 1)->first() ?? $salePageProduct->images->first();
+        $coverImg = $salePageProduct->images->where('img_sort', 0)->first() ?? $salePageProduct->images->sortBy('img_sort')->first();
         $activeImageUrl = $this->formatUrl($coverImg?->img_path ?? $coverImg?->image_path);
         $productImages = $salePageProduct->images->map(fn ($img) => (object) ['image_url' => $this->formatUrl($img->img_path ?? $img->image_path)]);
 

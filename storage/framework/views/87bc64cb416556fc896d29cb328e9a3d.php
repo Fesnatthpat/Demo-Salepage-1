@@ -44,7 +44,7 @@
                                 </ul>
                             </div>
                             <button type="submit"
-                                class="btn btn-primary btn-block text-white mt-4 shadow-md">ค้นหา</button>
+                                class="btn btn-block bg-red-600 hover:bg-red-700 text-white mt-4 shadow-md">ค้นหา</button>
                         </form>
                     </div>
                 </aside>
@@ -67,8 +67,8 @@
                                         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                                         $isOnSale = $discountAmount > 0;
 
-                                        // ✅ แก้ไข: ดึงรูปปกโดยใช้ img_sort (เรียงมากไปน้อย เอา 1 ขึ้นก่อน)
-                                        $primaryImage = $product->images->sortByDesc('img_sort')->first();
+                                        // ✅ แก้ไข: ดึงรูปปกโดยใช้ img_sort (เรียงน้อยไปมาก เอา 0 ขึ้นก่อน)
+                                        $primaryImage = $product->images->sortBy('img_sort')->first();
 
                                         // ✅ แก้ไข: ใช้ img_path ตามฐานข้อมูลใหม่
                                         $imagePath = $primaryImage
@@ -93,7 +93,7 @@
                                                     </div>
                                                 <?php endif; ?>
                                                 <?php if($product->gifts_per_item): ?>
-                                                    <div class="absolute top-2 right-2 bg-emerald-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
+                                                    <div class="absolute top-2 right-2 bg-red-600 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
                                                         แถม <?php echo e($product->gifts_per_item); ?> ชิ้น
                                                     </div>
                                                 <?php endif; ?>
@@ -104,12 +104,12 @@
                                             <h2
                                                 class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
                                                 <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"
-                                                    class="hover:text-emerald-600 transition"><?php echo e($product->pd_sp_name ?? 'Missing Product Name'); ?></a>
+                                                    class="hover:text-red-600 transition"><?php echo e($product->pd_sp_name ?? 'Missing Product Name'); ?></a>
                                             </h2>
                                             <p class="text-xs text-gray-500">Code:
                                                 <?php echo e($product->pd_sp_code); ?></p>
                                             <p
-                                                class="text-xs <?php echo e($product->pd_sp_stock > 0 ? 'text-emerald-600' : 'text-red-500'); ?>">
+                                                class="text-xs <?php echo e($product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500'); ?>">
                                                 <?php echo e($product->pd_sp_stock > 0 ? 'มีสินค้า' : 'สินค้าหมด'); ?>
 
                                             </p>
@@ -118,12 +118,12 @@
                                                 <div class="flex flex-col mb-3">
                                                     <?php if($isOnSale): ?>
                                                         <span
-                                                            class="text-lg font-bold text-emerald-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
+                                                            class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
                                                         <span
                                                             class="text-xs text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
                                                     <?php else: ?>
                                                         <span
-                                                            class="text-lg font-bold text-emerald-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
+                                                            class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
                                                     <?php endif; ?>
                                                 </div>
 
@@ -131,7 +131,7 @@
                                                     data-action="<?php echo e(route('cart.add', ['id' => $product->pd_sp_id])); ?>">
                                                     <input type="hidden" name="quantity" value="1">
                                                     <button type="submit"
-                                                        class="btn btn-sm w-full <?php echo e($product->pd_sp_stock > 0 ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'btn-disabled bg-gray-200'); ?> border-none shadow-sm flex items-center justify-center gap-2"
+                                                        class="btn btn-sm w-full <?php echo e($product->pd_sp_stock > 0 ? 'bg-red-600 hover:bg-red-700 text-white' : 'btn-disabled bg-gray-200'); ?> border-none shadow-sm flex items-center justify-center gap-2"
                                                         <?php echo e($product->pd_sp_stock <= 0 ? 'disabled' : ''); ?>>
                                                         <?php if($product->pd_sp_stock > 0): ?>
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"

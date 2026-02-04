@@ -93,7 +93,7 @@
                                 <template x-for="img in images" :key="img">
                                     <button @click="activeImage = img"
                                         class="aspect-square rounded-xl border-2 overflow-hidden bg-white transition-all"
-                                        :class="activeImage === img ? 'border-emerald-500 shadow-md transform scale-105' :
+                                        :class="activeImage === img ? 'border-red-500 shadow-md transform scale-105' :
                                             'border-transparent opacity-60'">
                                         <img :src="img" class="w-full h-full object-cover">
                                     </button>
@@ -124,7 +124,7 @@
 
                         <div class="inline-flex flex-col items-start bg-gray-50 rounded-2xl p-4 mb-8">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-black text-emerald-600" x-text="'฿' + finalPrice.toLocaleString()"></span>
+                                <span class="text-4xl font-black text-red-600" x-text="'฿' + finalPrice.toLocaleString()"></span>
                                 <?php if($discountAmount > 0): ?>
                                     <span
                                         class="text-lg text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
@@ -143,11 +143,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <template x-for="option in options" :key="option.id">
                                         <label class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer"
-                                            :class="selectedOption == option.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-white hover:border-emerald-200'">
-                                            <input type="radio" name="product_option" x-model="selectedOption" :value="option.id" class="h-5 w-5 rounded-full border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                            :class="selectedOption == option.id ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-white hover:border-red-200'">
+                                            <input type="radio" name="product_option" x-model="selectedOption" :value="option.id" class="h-5 w-5 rounded-full border-gray-300 text-red-600 focus:ring-red-500">
                                             <div class="flex-1">
                                                 <p class="font-bold text-gray-800" x-text="option.name"></p>
-                                                <p class="text-sm text-emerald-600 font-bold" x-text="'฿' + option.price.toLocaleString(undefined, {minimumFractionDigits: 2})"></p>
+                                                <p class="text-sm text-red-600 font-bold" x-text="'฿' + option.price.toLocaleString(undefined, {minimumFractionDigits: 2})"></p>
                                             </div>
                                             <div class="text-right">
                                                 <p class="text-sm font-semibold text-gray-600" x-text="'สต็อก: ' + option.stock"></p>
@@ -169,12 +169,12 @@
                                     <h3 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
                                         <span>🎉 ของแถมโปรโมชั่น</span>
                                         <template x-if="activePromotion && activePromotion.gifts_per_item > 0">
-                                            <span class="badge badge-lg badge-success text-white font-bold ml-2">
+                                            <span class="badge badge-lg badge-error text-white font-bold ml-2">
                                                 แถม <span x-text="activePromotion.gifts_per_item"></span> ชิ้น
                                             </span>
                                         </template>
                                         <span x-show="isConditionMet"
-                                            class="badge badge-success badge-sm text-white">ปลดล็อคแล้ว!</span>
+                                            class="badge badge-error badge-sm text-white">ปลดล็อคแล้ว!</span>
                                     </h3>
 
                                     <template x-if="isConditionMet">
@@ -198,16 +198,16 @@
                                                 :class="{
                                                     'bg-gray-100 border-gray-200 opacity-60 cursor-not-allowed grayscale': isGiftDisabled(
                                                         gift.id) && !selectedGifts.includes(gift.id),
-                                                    'bg-white cursor-pointer border-emerald-200 ring-2 ring-emerald-100 hover:border-emerald-300': isConditionMet &&
+                                                    'bg-white cursor-pointer border-red-200 ring-2 ring-red-100 hover:border-red-300': isConditionMet &&
                                                         !isGiftDisabled(gift.id),
-                                                    'border-emerald-500 bg-emerald-50 ring-0': selectedGifts.includes(
+                                                    'border-red-500 bg-red-50 ring-0': selectedGifts.includes(
                                                         gift.id)
                                                 }">
                                                 <input type="checkbox"
                                                     :disabled="!isConditionMet || (selectedGifts.length >= giftLimit && !
                                                         selectedGifts.includes(gift.id))"
                                                     @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"
-                                                    class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:bg-gray-200 disabled:cursor-not-allowed">
+                                                    class="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500 disabled:bg-gray-200 disabled:cursor-not-allowed">
 
                                                 <div
                                                     class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
@@ -244,18 +244,18 @@
                                                     <div class="flex-1">
                                                         <p class="text-sm font-bold text-gray-800" x-text="partner.name">
                                                         </p>
-                                                        <p class="text-sm text-emerald-600 font-bold">฿<span
+                                                        <p class="text-sm text-red-600 font-bold">฿<span
                                                                 x-text="partner.price"></span></p>
                                                     </div>
 
                                                     
                                                     <div class="flex flex-col gap-2">
                                                         <button @click="addToCartPartner(partner.id)" type="button"
-                                                            class="btn btn-sm btn-primary text-white shadow-sm flex items-center gap-1 border-none bg-emerald-600 hover:bg-emerald-700">
+                                                            class="btn btn-sm btn-primary text-white shadow-sm flex items-center gap-1 border-none bg-red-600 hover:bg-red-700">
                                                             <i class="fas fa-plus"></i> เพิ่มทันที
                                                         </button>
                                                         <a :href="partner.url"
-                                                            class="text-[10px] text-gray-400 text-center hover:text-emerald-600 underline">รายละเอียด</a>
+                                                            class="text-[10px] text-gray-400 text-center hover:text-red-600 underline">รายละเอียด</a>
                                                     </div>
                                                 </div>
                                             </template>
@@ -271,21 +271,21 @@
                     <div class="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-6">
                         <div class="flex items-center bg-gray-100 rounded-2xl p-1.5 shadow-inner">
                             <button @click="quantity > 1 ? quantity-- : null"
-                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors font-bold text-lg">-</button>
+                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors font-bold text-lg">-</button>
                             <input type="number" x-model.number="quantity"
                                 class="w-12 text-center bg-transparent border-none font-black text-gray-900 focus:ring-0 text-lg"
                                 readonly>
                             <button @click="quantity++"
-                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-emerald-600 transition-colors font-bold text-lg">+</button>
+                                class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors font-bold text-lg">+</button>
                         </div>
                         <div class="flex-1 w-full grid grid-cols-2 gap-4">
                             <button @click="handleAddToCartClick(false)"
-                                class="h-14 rounded-2xl border-2 border-emerald-600 text-emerald-600 font-bold hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 text-lg">
+                                class="h-14 rounded-2xl border-2 border-red-600 text-red-600 font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2 text-lg">
                                 <span x-show="!isLoading">ใส่ตะกร้า</span>
                                 <span x-show="isLoading" class="loading loading-spinner"></span>
                             </button>
                             <button @click="handleAddToCartClick(true)"
-                                class="h-14 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-lg transition-all text-lg">Buy
+                                class="h-14 rounded-2xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all text-lg">Buy
                                 Now</button>
                         </div>
                     </div>

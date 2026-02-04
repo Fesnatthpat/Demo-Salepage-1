@@ -17,11 +17,12 @@
             <div class="bg-white py-8 px-4 shadow-xl rounded-xl sm:px-10 border border-gray-100">
 
                 <?php if(session('success')): ?>
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                        role="alert">
                         <span class="block sm:inline"><?php echo e(session('success')); ?></span>
                     </div>
                 <?php endif; ?>
-                
+
                 <form class="space-y-6" action="<?php echo e(route('profile.update')); ?>" method="POST">
                     <?php echo csrf_field(); ?>
                     <?php echo method_field('PUT'); ?>
@@ -45,7 +46,8 @@
                             วันเดือนปีเกิด (Date of Birth)
                         </label>
                         <div class="relative">
-                            <input type="date" name="date_of_birth" id="date_of_birth"
+                            
+                            <input type="date" name="date_of_birth" id="date_of_birth" max="<?php echo e(date('Y-m-d')); ?>"
                                 value="<?php echo e(old('date_of_birth', optional($user->date_of_birth)->format('Y-m-d'))); ?>"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="Select date">
@@ -120,6 +122,7 @@
                 const dob = new Date(dobInput.value);
                 const today = new Date();
 
+                // การตรวจสอบใน JS ยังคงมีไว้เพื่อความปลอดภัยสำรอง
                 if (dob > today) {
                     // alert("วันเกิดไม่สามารถเป็นอนาคตได้");
                     dobInput.value = '';
@@ -138,7 +141,7 @@
             }
 
             dobInput.addEventListener('change', calculateAge);
-            
+
             // Initial calculation on page load
             calculateAge();
         });

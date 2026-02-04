@@ -24,7 +24,8 @@
                             วันเดือนปีเกิด (Date of Birth)
                         </label>
                         <div class="relative">
-                            <input type="date" name="date_of_birth" id="date_of_birth" required
+                            {{-- เพิ่ม max="{{ date('Y-m-d') }}" เพื่อล็อคไม่ให้เลือกอนาคต --}}
+                            <input type="date" name="date_of_birth" id="date_of_birth" required max="{{ date('Y-m-d') }}"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="Select date">
                         </div>
@@ -93,6 +94,7 @@
                 const dob = new Date(this.value);
                 const today = new Date();
 
+                // การตรวจสอบใน JS ยังคงมีไว้เพื่อความปลอดภัยสำรอง
                 if (dob > today) {
                     alert("วันเกิดไม่สามารถเป็นอนาคตได้");
                     this.value = '';

@@ -17,4 +17,9 @@ class HomeController extends Controller
 
         return view('index', compact('recommendedProducts'));
     }
+
+    public function about()
+    {
+        return view('about');
+    }
 }

@@ -60,7 +60,7 @@
     </style>
 </head>
 
-<body class="font-['Noto_Sans_Thai'] bg-[#f9fafb]">
+<body class="font-['Noto_Sans_Thai'] bg-[#f9fafb] flex flex-col min-h-screen">
 
     {{-- Logic คำนวณจำนวนสินค้า --}}
     @php
@@ -76,6 +76,7 @@
         $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo_hm.png';
     @endphp
 
+    {{-- ★★★ NAVBAR ★★★ --}}
     <div class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
         <div class="container mx-auto px-4 md:px-6">
             <div class="navbar min-h-[4rem] px-0">
@@ -97,7 +98,6 @@
                             @endforeach
                             @auth
                                 <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a>
-                                <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">เกี่ยวกับเรา</a>
                                 </li>
                                 <li><a href="{{ route('profile.edit') }}"
                                         class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
@@ -126,33 +126,18 @@
                             </li>
                         @endforeach
                         @auth <li><a href="/orderhistory"
-                                    class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a>
-                                </li>
-                                    <li><a href="/about"
-                                        class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับเรา</a>
-                                    </li>
-                                    <li><a href="/contact"
-                                        class="hover:text-red-600 hover:bg-transparent font-bold">ติดต่อเรา</a>
-                                    </li>
-                                    <li><a href="/track"
-                                        class="hover:text-red-600 hover:bg-transparent font-bold">เช็คพัสดุ</a>
-                                    </li>
-                                    
-
-                                        
+                                    class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a></li>
                         @endauth
                     </ul>
                 </div>
                 <div class="navbar-end flex items-center gap-2 md:gap-4">
                     <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-red-50">
                         <div class="indicator">
-                            {{-- ไอคอนตะกร้าสีแดง --}}
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            {{-- Badge สีแดง --}}
                             <span id="cart-badge"
                                 class="badge badge-sm indicator-item bg-red-600 text-white border-none {{ $cartCount > 0 ? '' : 'hidden' }}">{{ $cartCount }}</span>
                         </div>
@@ -185,29 +170,110 @@
         </div>
     </div>
 
-    <div class="min-h-screen">
+    {{-- ★★★ CONTENT ★★★ --}}
+    <div class="flex-grow">
         @yield('content')
     </div>
 
-    <div class="bg-red-600 text-white mt-10 border-t border-gray-200">
-        <footer class="footer sm:footer-horizontal p-10 container mx-auto">
-            <nav>
-                <h6 class="footer-title text-white opacity-100">ศูนย์ช่วยเหลือ</h6><a
-                    class="link link-hover hover:text-red-400">ติดตามสถานะ</a>
+    {{-- ★★★ FOOTER (ใช้ Flexbox ตามคำขอ) ★★★ --}}
+    <div class="bg-red-600 text-white mt-10 border-t border-red-700">
+        {{-- ใช้ flex-wrap เพื่อให้รองรับทุกขนาดหน้าจอ --}}
+        <footer class="container mx-auto p-10 flex flex-wrap lg:flex-nowrap justify-between gap-10">
+
+            {{-- Column 1: ศูนย์ช่วยเหลือ --}}
+            <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
+                <h6 class="text-lg font-bold text-white mb-2 opacity-100">ศูนย์ช่วยเหลือ</h6>
+                <a href="/track"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">ติดตามสถานะคำสั่งซื้อ</a>
+                <a href="#"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">การรับประกันสินค้า</a>
+                <a href="#"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">การคืนสินค้าและการคืนเงิน</a>
+                <a href="#"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">วิธีการสั่งซื้อ</a>
             </nav>
-            <nav>
-                <h6 class="footer-title text-white opacity-100">เกี่ยวกับเรา</h6><a
-                    class="link link-hover hover:text-red-400">นโยบายความเป็นส่วนตัว</a>
+
+            {{-- Column 2: เกี่ยวกับเรา --}}
+            <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
+                <h6 class="text-lg font-bold text-white mb-2 opacity-100">เกี่ยวกับเรา</h6>
+                <a href="/about"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">เรื่องราวของเรา</a>
+                <a href="#"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">บทความน่ารู้</a>
+                <a href="#"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">นโยบายความเป็นส่วนตัว</a>
+                <a href="#"
+                    class="link link-hover text-red-50 hover:text-white transition-colors">ข้อกำหนดและเงื่อนไข</a>
             </nav>
-            <form>
-                <h6 class="footer-title text-white opacity-100">รับข่าวสาร</h6>
-                <div class="join">
-                    <input type="text" placeholder="email"
-                        class="input input-bordered join-item focus:border-red-500 focus:ring-red-500" />
-                    <button class="btn bg-red-600 hover:bg-red-700 text-white border-none join-item">สมัคร</button>
+
+            {{-- Column 3: ติดต่อเรา --}}
+            <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
+                <h6 class="text-lg font-bold text-white mb-2 opacity-100">ติดต่อเรา</h6>
+                <div class="flex items-start gap-2 text-red-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="w-5 h-5 flex-shrink-0 mt-0.5">
+                        <path fill-rule="evenodd"
+                            d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.006.003.002.001.003.001a.79.79 0 00.01.003zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span>บริษัท ติดใจ จำกัด<br>123 ถนนสุขุมวิท แขวงคลองเตย<br>เขตคลองเตย กรุงเทพฯ 10110</span>
                 </div>
+                <div class="flex items-center gap-2 text-red-50 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path
+                            d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                    </svg>
+                    <span>02-123-4567</span>
+                </div>
+                <div class="flex items-center gap-2 text-red-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                    <span>contact@tidjai.com</span>
+                </div>
+            </nav>
+
+            {{-- Column 4: Newsletter Form --}}
+            <form class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto min-w-[250px]">
+                <h6 class="text-lg font-bold text-white mb-2 opacity-100">รับข่าวสารโปรโมชั่น</h6>
+                <fieldset class="form-control w-full">
+                    <label class="label pt-0">
+                        <span class="label-text text-red-100">กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร</span>
+                    </label>
+                    <div class="join w-full">
+                        <input type="text" placeholder="your-email@example.com"
+                            class="input input-bordered join-item text-gray-800 w-full focus:outline-none" />
+                        <button
+                            class="btn bg-white text-red-600 hover:bg-red-50 border-none join-item font-bold">สมัคร</button>
+                    </div>
+                </fieldset>
             </form>
         </footer>
+
+        {{-- Copyright Bar --}}
+        <div class="bg-red-700 py-4 text-center text-red-200 text-sm border-t border-red-800">
+            <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+                <p>Copyright © {{ date('Y') }} - All right reserved by Tidjai Co., Ltd.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-white transition-colors"><svg fill="currentColor"
+                            class="w-5 h-5" viewBox="0 0 24 24">
+                            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
+                        </svg></a>
+                    <a href="#" class="hover:text-white transition-colors"><svg fill="currentColor"
+                            class="w-5 h-5" viewBox="0 0 24 24">
+                            <path
+                                d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                            </path>
+                        </svg></a>
+                    <a href="#" class="hover:text-white transition-colors"><svg fill="none"
+                            stroke="currentColor" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
+                        </svg></a>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- ★★★ JS ของ Swiper (ต้องมีบรรทัดนี้ สไลด์ถึงจะเลื่อนได้) ★★★ --}}

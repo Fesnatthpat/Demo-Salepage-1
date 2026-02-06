@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 // ==========================================
 // 2. ระบบตะกร้าสินค้า (Cart)

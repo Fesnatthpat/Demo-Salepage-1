@@ -56,82 +56,6 @@
                     
                     <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
                         <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-                                <i class="fas fa-bullhorn"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">Hero Section (ส่วนหัวแรก)</h3>
-                        </div>
-
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">Tagline (ข้อความโปรย)</span>
-                                    <span class="label-text-alt text-gray-500">ข้อความเล็กๆ ด้านบนสุด</span>
-                                </label>
-                                <input type="text" name="hero_section_tagline"
-                                    class="input input-bordered w-full bg-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                                    value="<?php echo e($settings['hero_section_tagline'] ?? 'ซื้อก่อน ลดก่อน'); ?>" />
-                            </div>
-
-                            
-                            <div class="p-4 bg-gray-700/30 rounded-xl border border-gray-700">
-                                <label class="label mb-2">
-                                    <span class="label-text font-bold text-gray-300">หัวข้อหลัก (Main Headline)</span>
-                                    <span class="label-text-alt text-gray-500">ประกอบกันเป็น 3 ส่วน</span>
-                                </label>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="form-control">
-                                        <label class="label-text-alt text-gray-400 mb-1">ส่วนหน้า</label>
-                                        <input type="text" name="hero_section_title_prefix"
-                                            class="input input-bordered w-full bg-gray-700 text-gray-100 text-sm"
-                                            value="<?php echo e($settings['hero_section_title_prefix'] ?? 'สมาชิกช้อปสินค้า'); ?>" />
-                                    </div>
-                                    <div class="form-control">
-                                        <label class="label-text-alt text-blue-400 mb-1 font-bold">ส่วนเน้น
-                                            (Highlight)</label>
-                                        <input type="text" name="hero_section_title_highlight"
-                                            class="input input-bordered w-full bg-gray-700 text-blue-300 font-bold text-sm border-blue-500/50"
-                                            value="<?php echo e($settings['hero_section_title_highlight'] ?? 'SALE'); ?>" />
-                                    </div>
-                                    <div class="form-control">
-                                        <label class="label-text-alt text-gray-400 mb-1">ส่วนหลัง</label>
-                                        <input type="text" name="hero_section_title_suffix"
-                                            class="input input-bordered w-full bg-gray-700 text-gray-100 text-sm"
-                                            value="<?php echo e($settings['hero_section_title_suffix'] ?? 'ก่อนใคร'); ?>" />
-                                    </div>
-                                </div>
-                                <div class="mt-2 text-xs text-gray-500">
-                                    ตัวอย่างที่แสดง: <span><?php echo e($settings['hero_section_title_prefix'] ?? '...'); ?></span>
-                                    <span
-                                        class="text-blue-400 font-bold"><?php echo e($settings['hero_section_title_highlight'] ?? '...'); ?></span>
-                                    <span><?php echo e($settings['hero_section_title_suffix'] ?? '...'); ?></span>
-                                </div>
-                            </div>
-
-                            
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">คำอธิบายหลัก</span>
-                                </label>
-                                <textarea name="hero_section_description" rows="3"
-                                    class="textarea textarea-bordered w-full bg-gray-700 text-gray-100 text-base leading-relaxed"><?php echo e($settings['hero_section_description'] ?? 'ลดสูงสุด 50% | ที่ร้านและออนไลน์'); ?></textarea>
-                            </div>
-
-                            
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">ข้อความหมายเหตุ (Disclaimer)</span>
-                                </label>
-                                <textarea name="hero_section_small_text" rows="2"
-                                    class="textarea textarea-bordered w-full bg-gray-700 text-gray-400 text-sm"><?php echo e($settings['hero_section_small_text'] ?? '*สินค้าและราคาของที่ร้านและออนไลน์อาจแตกต่างกัน'); ?></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
                                 <i class="fas fa-images"></i>
                             </div>
@@ -145,7 +69,8 @@
 
                             <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
                                 
-                                <div class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
+                                <div
+                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
                                     <div class="col-span-3">รูปภาพ (URL)</div>
                                     <div class="col-span-3">หัวข้อ</div>
                                     <div class="col-span-5">คำอธิบาย</div>
@@ -197,7 +122,8 @@
                     
                     <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
                         <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400">
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
                             <h3 class="text-lg font-bold text-gray-100">ข้อมูลแพ้อาหาร</h3>
@@ -218,7 +144,8 @@
                     
                     <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
                         <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
                                 <i class="fas fa-list-ul"></i>
                             </div>
                             <h3 class="text-lg font-bold text-gray-100">6 Reasons Section</h3>
@@ -231,7 +158,8 @@
 
                             <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
                                 
-                                <div class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
+                                <div
+                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
                                     <div class="col-span-3">รูปภาพ (URL)</div>
                                     <div class="col-span-4">หัวข้อ</div>
                                     <div class="col-span-4">คำอธิบาย</div>
@@ -283,7 +211,8 @@
                     
                     <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
                         <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
                                 <i class="fas fa-images"></i>
                             </div>
                             <h3 class="text-lg font-bold text-gray-100">สไลด์ตัวที่ 2</h3>
@@ -296,7 +225,8 @@
 
                             <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
                                 
-                                <div class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
+                                <div
+                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
                                     <div class="col-span-3">รูปภาพ (URL)</div>
                                     <div class="col-span-3">หัวข้อ</div>
                                     <div class="col-span-4">คำอธิบาย</div>
@@ -354,7 +284,8 @@
                     
                     <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
                         <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
                                 <i class="fas fa-th-list"></i>
                             </div>
                             <h3 class="text-lg font-bold text-gray-100">Category Menu Section (Sticky Top)</h3>
@@ -367,7 +298,8 @@
 
                             <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
                                 
-                                <div class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
+                                <div
+                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
                                     <div class="col-span-3">รูปภาพ (URL)</div>
                                     <div class="col-span-5">ชื่อหมวดหมู่</div>
                                     <div class="col-span-3">ลิงก์</div>
@@ -410,7 +342,8 @@
                                     </div>
                                 </div>
                                 <div class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ. สำหรับลิงก์ ใช้ `allproducts?category=[หมวดหมู่]`
+                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ. สำหรับลิงก์
+                                    ใช้ `allproducts?category=[หมวดหมู่]`
                                 </div>
                             </div>
                         </div>
@@ -419,7 +352,8 @@
                     
                     <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
                         <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400">
+                            <div
+                                class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400">
                                 <i class="fas fa-images"></i>
                             </div>
                             <h3 class="text-lg font-bold text-gray-100">Small Slider (หน้าสินค้าทั้งหมด)</h3>
@@ -427,12 +361,14 @@
 
                         <div class="card-body p-6 space-y-6">
                             
-                            <input type="hidden" name="small_slider_allproducts_items" id="small_slider_allproducts_items_input"
+                            <input type="hidden" name="small_slider_allproducts_items"
+                                id="small_slider_allproducts_items_input"
                                 value="<?php echo e(old('small_slider_allproducts_items', $settings['small_slider_allproducts_items'] ?? '[]')); ?>">
 
                             <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
                                 
-                                <div class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
+                                <div
+                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
                                     <div class="col-span-3">รูปภาพ (URL)</div>
                                     <div class="col-span-5">หัวข้อ</div>
                                     <div class="col-span-3">ลิงก์</div>
@@ -805,40 +741,42 @@
             input.value = JSON.stringify(serviceItems);
         }
 
-    // --- Hero Slider Builder Logic ---
-    let heroSliderItems = [];
+        // --- Hero Slider Builder Logic ---
+        let heroSliderItems = [];
 
-    // Initialize
-    function initHeroSliderBuilder() {
-        const input = document.getElementById('hero_slider_items_input');
-        try {
-            heroSliderItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-        } catch (e) {
-            console.error('Invalid JSON for hero slider:', e);
-            heroSliderItems = [];
+        // Initialize
+        function initHeroSliderBuilder() {
+            const input = document.getElementById('hero_slider_items_input');
+            try {
+                heroSliderItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
+            } catch (e) {
+                console.error('Invalid JSON for hero slider:', e);
+                heroSliderItems = [];
+            }
+            renderHeroSliderBuilder();
         }
-        renderHeroSliderBuilder();
-    }
 
-    // Render List
-    function renderHeroSliderBuilder() {
-        const container = document.getElementById('hero-slider-list');
-        const emptyState = document.getElementById('hero-slider-empty-state');
-        container.innerHTML = '';
+        // Render List
+        function renderHeroSliderBuilder() {
+            const container = document.getElementById('hero-slider-list');
+            const emptyState = document.getElementById('hero-slider-empty-state');
+            container.innerHTML = '';
 
-        if (heroSliderItems.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            heroSliderItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className =
-                    'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+            if (heroSliderItems.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                heroSliderItems.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className =
+                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
 
-                // Image preview (simple text for URL for now)
-                let imagePreview = item.image ? `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` : `<i class="fas fa-image text-gray-500"></i>`;
+                    // Image preview (simple text for URL for now)
+                    let imagePreview = item.image ?
+                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
+                        `<i class="fas fa-image text-gray-500"></i>`;
 
-                row.innerHTML = `
+                    row.innerHTML = `
                     <div class="col-span-3 flex items-center gap-2">
                         <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
                         <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
@@ -861,97 +799,99 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(row);
+                    container.appendChild(row);
+                });
+            }
+            updateHeroSliderHiddenInput();
+        }
+
+        // Add Item
+        window.addHeroSlideItem = function() {
+            const imageInput = document.getElementById('new_hero_slide_image');
+            const titleInput = document.getElementById('new_hero_slide_title');
+            const descriptionInput = document.getElementById('new_hero_slide_description');
+
+            const image = imageInput.value.trim();
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+
+            if (!image && !title && !description) {
+                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
+                return;
+            }
+
+            heroSliderItems.push({
+                image: image,
+                title: title,
+                description: description,
+                link: '#' // Default link
             });
-        }
-        updateHeroSliderHiddenInput();
-    }
 
-    // Add Item
-    window.addHeroSlideItem = function() {
-        const imageInput = document.getElementById('new_hero_slide_image');
-        const titleInput = document.getElementById('new_hero_slide_title');
-        const descriptionInput = document.getElementById('new_hero_slide_description');
+            // Clear inputs
+            imageInput.value = '';
+            titleInput.value = '';
+            descriptionInput.value = '';
+            imageInput.focus();
 
-        const image = imageInput.value.trim();
-        const title = titleInput.value.trim();
-        const description = descriptionInput.value.trim();
-
-        if (!image && !title && !description) {
-            alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
-            return;
-        }
-
-        heroSliderItems.push({
-            image: image,
-            title: title,
-            description: description,
-            link: '#' // Default link
-        });
-
-        // Clear inputs
-        imageInput.value = '';
-        titleInput.value = '';
-        descriptionInput.value = '';
-        imageInput.focus();
-
-        renderHeroSliderBuilder();
-    }
-
-    // Remove Item
-    window.removeHeroSlideItem = function(index) {
-        if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-            heroSliderItems.splice(index, 1);
             renderHeroSliderBuilder();
         }
-    }
 
-    // Update Item
-    window.updateHeroSlideItem = function(index, field, value) {
-        heroSliderItems[index][field] = value;
-        renderHeroSliderBuilder(); // Re-render to update image preview
-    }
-
-    // Sync to Hidden Input
-    function updateHeroSliderHiddenInput() {
-        const input = document.getElementById('hero_slider_items_input');
-        input.value = JSON.stringify(heroSliderItems);
-    }
-
-    // --- Reasons Section Builder Logic ---
-    let reasonsSectionItems = [];
-
-    // Initialize
-    function initReasonsSectionBuilder() {
-        const input = document.getElementById('reasons_section_items_input');
-        try {
-            reasonsSectionItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-        } catch (e) {
-            console.error('Invalid JSON for reasons section:', e);
-            reasonsSectionItems = [];
+        // Remove Item
+        window.removeHeroSlideItem = function(index) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                heroSliderItems.splice(index, 1);
+                renderHeroSliderBuilder();
+            }
         }
-        renderReasonsSectionBuilder();
-    }
 
-    // Render List
-    function renderReasonsSectionBuilder() {
-        const container = document.getElementById('reasons-list');
-        const emptyState = document.getElementById('reasons-empty-state');
-        container.innerHTML = '';
+        // Update Item
+        window.updateHeroSlideItem = function(index, field, value) {
+            heroSliderItems[index][field] = value;
+            renderHeroSliderBuilder(); // Re-render to update image preview
+        }
 
-        if (reasonsSectionItems.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            reasonsSectionItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className =
-                    'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+        // Sync to Hidden Input
+        function updateHeroSliderHiddenInput() {
+            const input = document.getElementById('hero_slider_items_input');
+            input.value = JSON.stringify(heroSliderItems);
+        }
 
-                // Image preview (simple text for URL for now)
-                let imagePreview = item.image ? `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` : `<i class="fas fa-image text-gray-500"></i>`;
+        // --- Reasons Section Builder Logic ---
+        let reasonsSectionItems = [];
 
-                row.innerHTML = `
+        // Initialize
+        function initReasonsSectionBuilder() {
+            const input = document.getElementById('reasons_section_items_input');
+            try {
+                reasonsSectionItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
+            } catch (e) {
+                console.error('Invalid JSON for reasons section:', e);
+                reasonsSectionItems = [];
+            }
+            renderReasonsSectionBuilder();
+        }
+
+        // Render List
+        function renderReasonsSectionBuilder() {
+            const container = document.getElementById('reasons-list');
+            const emptyState = document.getElementById('reasons-empty-state');
+            container.innerHTML = '';
+
+            if (reasonsSectionItems.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                reasonsSectionItems.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className =
+                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+
+                    // Image preview (simple text for URL for now)
+                    let imagePreview = item.image ?
+                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
+                        `<i class="fas fa-image text-gray-500"></i>`;
+
+                    row.innerHTML = `
                     <div class="col-span-3 flex items-center gap-2">
                         <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
                         <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
@@ -974,96 +914,98 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(row);
+                    container.appendChild(row);
+                });
+            }
+            updateReasonsSectionHiddenInput();
+        }
+
+        // Add Item
+        window.addReasonItem = function() {
+            const imageInput = document.getElementById('new_reason_image');
+            const titleInput = document.getElementById('new_reason_title');
+            const descriptionInput = document.getElementById('new_reason_description');
+
+            const image = imageInput.value.trim();
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+
+            if (!image && !title && !description) {
+                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับเหตุผล');
+                return;
+            }
+
+            reasonsSectionItems.push({
+                image: image,
+                title: title,
+                description: description,
             });
-        }
-        updateReasonsSectionHiddenInput();
-    }
 
-    // Add Item
-    window.addReasonItem = function() {
-        const imageInput = document.getElementById('new_reason_image');
-        const titleInput = document.getElementById('new_reason_title');
-        const descriptionInput = document.getElementById('new_reason_description');
+            // Clear inputs
+            imageInput.value = '';
+            titleInput.value = '';
+            descriptionInput.value = '';
+            imageInput.focus();
 
-        const image = imageInput.value.trim();
-        const title = titleInput.value.trim();
-        const description = descriptionInput.value.trim();
-
-        if (!image && !title && !description) {
-            alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับเหตุผล');
-            return;
-        }
-
-        reasonsSectionItems.push({
-            image: image,
-            title: title,
-            description: description,
-        });
-
-        // Clear inputs
-        imageInput.value = '';
-        titleInput.value = '';
-        descriptionInput.value = '';
-        imageInput.focus();
-
-        renderReasonsSectionBuilder();
-    }
-
-    // Remove Item
-    window.removeReasonItem = function(index) {
-        if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-            reasonsSectionItems.splice(index, 1);
             renderReasonsSectionBuilder();
         }
-    }
 
-    // Update Item
-    window.updateReasonItem = function(index, field, value) {
-        reasonsSectionItems[index][field] = value;
-        renderReasonsSectionBuilder();
-    }
-
-    // Sync to Hidden Input
-    function updateReasonsSectionHiddenInput() {
-        const input = document.getElementById('reasons_section_items_input');
-        input.value = JSON.stringify(reasonsSectionItems);
-    }
-
-    // --- Second Slider Builder Logic ---
-    let secondSliderItems = [];
-
-    // Initialize
-    function initSecondSliderBuilder() {
-        const input = document.getElementById('second_slider_items_input');
-        try {
-            secondSliderItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-        } catch (e) {
-            console.error('Invalid JSON for second slider:', e);
-            secondSliderItems = [];
+        // Remove Item
+        window.removeReasonItem = function(index) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                reasonsSectionItems.splice(index, 1);
+                renderReasonsSectionBuilder();
+            }
         }
-        renderSecondSliderBuilder();
-    }
 
-    // Render List
-    function renderSecondSliderBuilder() {
-        const container = document.getElementById('second-slider-list');
-        const emptyState = document.getElementById('second-slider-empty-state');
-        container.innerHTML = '';
+        // Update Item
+        window.updateReasonItem = function(index, field, value) {
+            reasonsSectionItems[index][field] = value;
+            renderReasonsSectionBuilder();
+        }
 
-        if (secondSliderItems.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            secondSliderItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className =
-                    'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+        // Sync to Hidden Input
+        function updateReasonsSectionHiddenInput() {
+            const input = document.getElementById('reasons_section_items_input');
+            input.value = JSON.stringify(reasonsSectionItems);
+        }
 
-                // Image preview
-                let imagePreview = item.image ? `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` : `<i class="fas fa-image text-gray-500"></i>`;
+        // --- Second Slider Builder Logic ---
+        let secondSliderItems = [];
 
-                row.innerHTML = `
+        // Initialize
+        function initSecondSliderBuilder() {
+            const input = document.getElementById('second_slider_items_input');
+            try {
+                secondSliderItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
+            } catch (e) {
+                console.error('Invalid JSON for second slider:', e);
+                secondSliderItems = [];
+            }
+            renderSecondSliderBuilder();
+        }
+
+        // Render List
+        function renderSecondSliderBuilder() {
+            const container = document.getElementById('second-slider-list');
+            const emptyState = document.getElementById('second-slider-empty-state');
+            container.innerHTML = '';
+
+            if (secondSliderItems.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                secondSliderItems.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className =
+                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+
+                    // Image preview
+                    let imagePreview = item.image ?
+                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
+                        `<i class="fas fa-image text-gray-500"></i>`;
+
+                    row.innerHTML = `
                     <div class="col-span-3 flex items-center gap-2">
                         <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
                         <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
@@ -1091,101 +1033,103 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(row);
+                    container.appendChild(row);
+                });
+            }
+            updateSecondSliderHiddenInput();
+        }
+
+        // Add Item
+        window.addSecondSlideItem = function() {
+            const imageInput = document.getElementById('new_second_slide_image');
+            const titleInput = document.getElementById('new_second_slide_title');
+            const descriptionInput = document.getElementById('new_second_slide_description');
+            const linkInput = document.getElementById('new_second_slide_link');
+
+
+            const image = imageInput.value.trim();
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+            const link = linkInput.value.trim();
+
+            if (!image && !title && !description && !link) {
+                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
+                return;
+            }
+
+            secondSliderItems.push({
+                image: image,
+                title: title,
+                description: description,
+                link: link
             });
-        }
-        updateSecondSliderHiddenInput();
-    }
 
-    // Add Item
-    window.addSecondSlideItem = function() {
-        const imageInput = document.getElementById('new_second_slide_image');
-        const titleInput = document.getElementById('new_second_slide_title');
-        const descriptionInput = document.getElementById('new_second_slide_description');
-        const linkInput = document.getElementById('new_second_slide_link');
+            // Clear inputs
+            imageInput.value = '';
+            titleInput.value = '';
+            descriptionInput.value = '';
+            linkInput.value = '';
+            imageInput.focus();
 
-
-        const image = imageInput.value.trim();
-        const title = titleInput.value.trim();
-        const description = descriptionInput.value.trim();
-        const link = linkInput.value.trim();
-
-        if (!image && !title && !description && !link) {
-            alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
-            return;
-        }
-
-        secondSliderItems.push({
-            image: image,
-            title: title,
-            description: description,
-            link: link
-        });
-
-        // Clear inputs
-        imageInput.value = '';
-        titleInput.value = '';
-        descriptionInput.value = '';
-        linkInput.value = '';
-        imageInput.focus();
-
-        renderSecondSliderBuilder();
-    }
-
-    // Remove Item
-    window.removeSecondSlideItem = function(index) {
-        if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-            secondSliderItems.splice(index, 1);
             renderSecondSliderBuilder();
         }
-    }
 
-    // Update Item
-    window.updateSecondSlideItem = function(index, field, value) {
-        secondSliderItems[index][field] = value;
-        renderSecondSliderBuilder();
-    }
-
-    // Sync to Hidden Input
-    function updateSecondSliderHiddenInput() {
-        const input = document.getElementById('second_slider_items_input');
-        input.value = JSON.stringify(secondSliderItems);
-    }
-
-    // --- Category Menu Builder Logic ---
-    let categoryMenuItems = [];
-
-    // Initialize
-    function initCategoryMenuBuilder() {
-        const input = document.getElementById('category_menu_items_input');
-        try {
-            categoryMenuItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-        } catch (e) {
-            console.error('Invalid JSON for category menu:', e);
-            categoryMenuItems = [];
+        // Remove Item
+        window.removeSecondSlideItem = function(index) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                secondSliderItems.splice(index, 1);
+                renderSecondSliderBuilder();
+            }
         }
-        renderCategoryMenuBuilder();
-    }
 
-    // Render List
-    function renderCategoryMenuBuilder() {
-        const container = document.getElementById('category-menu-list');
-        const emptyState = document.getElementById('category-menu-empty-state');
-        container.innerHTML = '';
+        // Update Item
+        window.updateSecondSlideItem = function(index, field, value) {
+            secondSliderItems[index][field] = value;
+            renderSecondSliderBuilder();
+        }
 
-        if (categoryMenuItems.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            categoryMenuItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className =
-                    'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+        // Sync to Hidden Input
+        function updateSecondSliderHiddenInput() {
+            const input = document.getElementById('second_slider_items_input');
+            input.value = JSON.stringify(secondSliderItems);
+        }
 
-                // Image preview
-                let imagePreview = item.image ? `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` : `<i class="fas fa-image text-gray-500"></i>`;
+        // --- Category Menu Builder Logic ---
+        let categoryMenuItems = [];
 
-                row.innerHTML = `
+        // Initialize
+        function initCategoryMenuBuilder() {
+            const input = document.getElementById('category_menu_items_input');
+            try {
+                categoryMenuItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
+            } catch (e) {
+                console.error('Invalid JSON for category menu:', e);
+                categoryMenuItems = [];
+            }
+            renderCategoryMenuBuilder();
+        }
+
+        // Render List
+        function renderCategoryMenuBuilder() {
+            const container = document.getElementById('category-menu-list');
+            const emptyState = document.getElementById('category-menu-empty-state');
+            container.innerHTML = '';
+
+            if (categoryMenuItems.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                categoryMenuItems.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className =
+                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+
+                    // Image preview
+                    let imagePreview = item.image ?
+                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
+                        `<i class="fas fa-image text-gray-500"></i>`;
+
+                    row.innerHTML = `
                     <div class="col-span-3 flex items-center gap-2">
                         <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
                         <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
@@ -1208,97 +1152,99 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(row);
+                    container.appendChild(row);
+                });
+            }
+            updateCategoryMenuHiddenInput();
+        }
+
+        // Add Item
+        window.addCategoryMenuItem = function() {
+            const imageInput = document.getElementById('new_category_image');
+            const nameInput = document.getElementById('new_category_name');
+            const linkInput = document.getElementById('new_category_link');
+
+
+            const image = imageInput.value.trim();
+            const name = nameInput.value.trim();
+            const link = linkInput.value.trim();
+
+            if (!image && !name && !link) {
+                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับหมวดหมู่');
+                return;
+            }
+
+            categoryMenuItems.push({
+                image: image,
+                name: name,
+                link: link
             });
-        }
-        updateCategoryMenuHiddenInput();
-    }
 
-    // Add Item
-    window.addCategoryMenuItem = function() {
-        const imageInput = document.getElementById('new_category_image');
-        const nameInput = document.getElementById('new_category_name');
-        const linkInput = document.getElementById('new_category_link');
+            // Clear inputs
+            imageInput.value = '';
+            nameInput.value = '';
+            linkInput.value = '';
+            imageInput.focus();
 
-
-        const image = imageInput.value.trim();
-        const name = nameInput.value.trim();
-        const link = linkInput.value.trim();
-
-        if (!image && !name && !link) {
-            alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับหมวดหมู่');
-            return;
-        }
-
-        categoryMenuItems.push({
-            image: image,
-            name: name,
-            link: link
-        });
-
-        // Clear inputs
-        imageInput.value = '';
-        nameInput.value = '';
-        linkInput.value = '';
-        imageInput.focus();
-
-        renderCategoryMenuBuilder();
-    }
-
-    // Remove Item
-    window.removeCategoryMenuItem = function(index) {
-        if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-            categoryMenuItems.splice(index, 1);
             renderCategoryMenuBuilder();
         }
-    }
 
-    // Update Item
-    window.updateCategoryMenuItem = function(index, field, value) {
-        categoryMenuItems[index][field] = value;
-        renderCategoryMenuBuilder();
-    }
-
-    // Sync to Hidden Input
-    function updateCategoryMenuHiddenInput() {
-        const input = document.getElementById('category_menu_items_input');
-        input.value = JSON.stringify(categoryMenuItems);
-    }
-
-    // --- Small Slider All Products Builder Logic ---
-    let smallSliderAllproductsItems = [];
-
-    // Initialize
-    function initSmallSliderAllproductsBuilder() {
-        const input = document.getElementById('small_slider_allproducts_items_input');
-        try {
-            smallSliderAllproductsItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-        } catch (e) {
-            console.error('Invalid JSON for small slider all products:', e);
-            smallSliderAllproductsItems = [];
+        // Remove Item
+        window.removeCategoryMenuItem = function(index) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                categoryMenuItems.splice(index, 1);
+                renderCategoryMenuBuilder();
+            }
         }
-        renderSmallSliderAllproductsBuilder();
-    }
 
-    // Render List
-    function renderSmallSliderAllproductsBuilder() {
-        const container = document.getElementById('small-slider-allproducts-list');
-        const emptyState = document.getElementById('small-slider-allproducts-empty-state');
-        container.innerHTML = '';
+        // Update Item
+        window.updateCategoryMenuItem = function(index, field, value) {
+            categoryMenuItems[index][field] = value;
+            renderCategoryMenuBuilder();
+        }
 
-        if (smallSliderAllproductsItems.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-            smallSliderAllproductsItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className =
-                    'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+        // Sync to Hidden Input
+        function updateCategoryMenuHiddenInput() {
+            const input = document.getElementById('category_menu_items_input');
+            input.value = JSON.stringify(categoryMenuItems);
+        }
 
-                // Image preview
-                let imagePreview = item.image ? `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` : `<i class="fas fa-image text-gray-500"></i>`;
+        // --- Small Slider All Products Builder Logic ---
+        let smallSliderAllproductsItems = [];
 
-                row.innerHTML = `
+        // Initialize
+        function initSmallSliderAllproductsBuilder() {
+            const input = document.getElementById('small_slider_allproducts_items_input');
+            try {
+                smallSliderAllproductsItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
+            } catch (e) {
+                console.error('Invalid JSON for small slider all products:', e);
+                smallSliderAllproductsItems = [];
+            }
+            renderSmallSliderAllproductsBuilder();
+        }
+
+        // Render List
+        function renderSmallSliderAllproductsBuilder() {
+            const container = document.getElementById('small-slider-allproducts-list');
+            const emptyState = document.getElementById('small-slider-allproducts-empty-state');
+            container.innerHTML = '';
+
+            if (smallSliderAllproductsItems.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                smallSliderAllproductsItems.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className =
+                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
+
+                    // Image preview
+                    let imagePreview = item.image ?
+                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
+                        `<i class="fas fa-image text-gray-500"></i>`;
+
+                    row.innerHTML = `
                     <div class="col-span-3 flex items-center gap-2">
                         <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
                         <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
@@ -1321,71 +1267,71 @@
                         </button>
                     </div>
                 `;
-                container.appendChild(row);
+                    container.appendChild(row);
+                });
+            }
+            updateSmallSliderAllproductsHiddenInput();
+        }
+
+        // Add Item
+        window.addSmallSliderAllproductsItem = function() {
+            const imageInput = document.getElementById('new_small_slider_allproducts_image');
+            const titleInput = document.getElementById('new_small_slider_allproducts_title');
+            const linkInput = document.getElementById('new_small_slider_allproducts_link');
+
+
+            const image = imageInput.value.trim();
+            const title = titleInput.value.trim();
+            const link = linkInput.value.trim();
+
+            if (!image && !title && !link) {
+                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
+                return;
+            }
+
+            smallSliderAllproductsItems.push({
+                image: image,
+                title: title,
+                link: link
             });
-        }
-        updateSmallSliderAllproductsHiddenInput();
-    }
 
-    // Add Item
-    window.addSmallSliderAllproductsItem = function() {
-        const imageInput = document.getElementById('new_small_slider_allproducts_image');
-        const titleInput = document.getElementById('new_small_slider_allproducts_title');
-        const linkInput = document.getElementById('new_small_slider_allproducts_link');
+            // Clear inputs
+            imageInput.value = '';
+            titleInput.value = '';
+            linkInput.value = '';
+            imageInput.focus();
 
-
-        const image = imageInput.value.trim();
-        const title = titleInput.value.trim();
-        const link = linkInput.value.trim();
-
-        if (!image && !title && !link) {
-            alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
-            return;
-        }
-
-        smallSliderAllproductsItems.push({
-            image: image,
-            title: title,
-            link: link
-        });
-
-        // Clear inputs
-        imageInput.value = '';
-        titleInput.value = '';
-        linkInput.value = '';
-        imageInput.focus();
-
-        renderSmallSliderAllproductsBuilder();
-    }
-
-    // Remove Item
-    window.removeSmallSliderAllproductsItem = function(index) {
-        if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-            smallSliderAllproductsItems.splice(index, 1);
             renderSmallSliderAllproductsBuilder();
         }
-    }
 
-    // Update Item
-    window.updateSmallSliderAllproductsItem = function(index, field, value) {
-        smallSliderAllproductsItems[index][field] = value;
-        renderSmallSliderAllproductsBuilder();
-    }
+        // Remove Item
+        window.removeSmallSliderAllproductsItem = function(index) {
+            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
+                smallSliderAllproductsItems.splice(index, 1);
+                renderSmallSliderAllproductsBuilder();
+            }
+        }
 
-    // Sync to Hidden Input
-    function updateSmallSliderAllproductsHiddenInput() {
-        const input = document.getElementById('small_slider_allproducts_items_input');
-        input.value = JSON.stringify(smallSliderAllproductsItems);
-    }
+        // Update Item
+        window.updateSmallSliderAllproductsItem = function(index, field, value) {
+            smallSliderAllproductsItems[index][field] = value;
+            renderSmallSliderAllproductsBuilder();
+        }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Start Service Builder
-        initServiceBuilder();
-        initHeroSliderBuilder(); // Initialize the new builder
-        initReasonsSectionBuilder(); // Initialize the new builder
-        initSecondSliderBuilder(); // Initialize the new builder
-        initCategoryMenuBuilder(); // Initialize the new builder
-        initSmallSliderAllproductsBuilder(); // Initialize the new builder
+        // Sync to Hidden Input
+        function updateSmallSliderAllproductsHiddenInput() {
+            const input = document.getElementById('small_slider_allproducts_items_input');
+            input.value = JSON.stringify(smallSliderAllproductsItems);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start Service Builder
+            initServiceBuilder();
+            initHeroSliderBuilder(); // Initialize the new builder
+            initReasonsSectionBuilder(); // Initialize the new builder
+            initSecondSliderBuilder(); // Initialize the new builder
+            initCategoryMenuBuilder(); // Initialize the new builder
+            initSmallSliderAllproductsBuilder(); // Initialize the new builder
 
             // --- Image Deletion Logic (Existing) ---
             document.querySelectorAll('.delete-setting').forEach(button => {
@@ -1393,7 +1339,7 @@
                     const key = this.dataset.key;
                     if (!key || !confirm(
                             `คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้? การกระทำนี้ไม่สามารถย้อนกลับได้`
-                            )) {
+                        )) {
                         return;
                     }
 

@@ -16,7 +16,9 @@
                     </svg>
                     <h2 class="text-2xl font-bold text-gray-400 mb-2">ไม่พบประวัติการสั่งซื้อ</h2>
                     <p class="text-gray-500 mb-6">คุณยังไม่มีคำสั่งซื้อใดๆ ในระบบ</p>
-                    <a href="{{ route('allproducts') }}" class="btn btn-primary text-white px-8">ไปเลือกซื้อสินค้า</a>
+                    {{-- ปรับปุ่มเป็นสีแดง --}}
+                    <a href="{{ route('allproducts') }}"
+                        class="btn bg-red-600 hover:bg-red-700 border-none text-white px-8">ไปเลือกซื้อสินค้า</a>
                 </div>
             @else
                 <div class="overflow-x-auto">
@@ -46,7 +48,7 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($orders as $order)
                                 @php
-                                    // 1. Status Logic
+                                    // 1. Status Logic (คงสีสถานะไว้ตามมาตรฐานสากล เพื่อความเข้าใจง่าย)
                                     $statusText = 'ไม่ระบุ';
                                     $statusClass = 'bg-gray-100 text-gray-800';
                                     switch ($order->status_id) {
@@ -156,8 +158,9 @@
                                         <div class="flex items-center space-x-2">
                                             <span id="order-code-{{ $order->id }}"
                                                 class="text-sm font-semibold text-gray-900">{{ $order->ord_code }}</span>
+                                            {{-- ปรับ hover และ focus ring เป็นสีแดง --}}
                                             <button onclick="copyToClipboard('order-code-{{ $order->id }}', this)"
-                                                class="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 group relative transition-colors">
+                                                class="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 group relative transition-colors">
                                                 <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-600"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke="currentColor">
@@ -183,26 +186,23 @@
                                         </span>
                                     </td>
 
-                                    {{-- ========== ส่วนที่แก้ไข: แสดงราคา หรือ ของแถม ========== --}}
+                                    {{-- ปรับราคาสุทธิเป็นสีแดง --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         @if ((float) $order->net_amount <= 0)
-                                            {{-- กรณีเป็นของแถม (0 บาท) --}}
                                             <div class="text-sm font-bold text-red-500">
                                                 (แถมฟรี 0 บาท)
                                             </div>
                                         @else
-                                            {{-- กรณีราคาปกติ --}}
-                                            <div class="text-sm font-bold text-emerald-600">
+                                            <div class="text-sm font-bold text-red-600">
                                                 ฿{{ number_format($order->net_amount, 2) }}
                                             </div>
-                                            {{-- ถ้ามีตัวแปร $order->discount หรือ logic ประหยัด สามารถใส่ else if เพิ่มตรงนี้ได้ --}}
                                         @endif
                                     </td>
-                                    {{-- ================================================= --}}
 
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        {{-- ปรับลิงก์ดูรายละเอียดเป็นสีแดง --}}
                                         <a href="{{ route('order.show', ['orderCode' => $order->ord_code]) }}"
-                                            class="text-indigo-600 hover:text-indigo-900 font-semibold hover:underline">ดูรายละเอียด</a>
+                                            class="text-red-600 hover:text-red-900 font-semibold hover:underline">ดูรายละเอียด</a>
                                     </td>
                                 </tr>
                             @endforeach

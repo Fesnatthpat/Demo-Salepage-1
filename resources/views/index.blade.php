@@ -106,7 +106,7 @@
 
     {{-- ★★★ CATEGORY MENU SECTION (Sticky Fix) ★★★ --}}
     {{-- ใช้ sticky top-0 z-40: ทำให้เกาะติดขอบบน แต่ไม่ซ้อนทับเลเยอร์แบบผิดๆ เหมือน fixed --}}
-    <div class="w-full bg-red-600 py-6 sticky top-0 z-40 shadow-lg">
+    <div class="w-full bg-red-600 py-6 shadow-lg">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-5 lg:grid-cols-10 gap-x-2 gap-y-4 justify-items-center">
                 @php

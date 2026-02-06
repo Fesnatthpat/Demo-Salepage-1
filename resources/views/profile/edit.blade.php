@@ -29,15 +29,15 @@
                     @csrf
                     @method('PUT')
 
-                    {{-- 0. Name --}}
+                    {{-- 0. Name (ดึงจาก auth()->user()->name) --}}
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
                             ชื่อ-นามสกุล (Full Name)
                         </label>
                         <div class="relative">
                             <input type="text" name="name" id="name" required
-                                value="{{ old('name', $user->name) }}"
-                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 ease-in-out"
+                                value="{{ old('name', auth()->user()->name) }}"
+                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="กรอกชื่อ-นามสกุล">
                         </div>
                     </div>
@@ -48,10 +48,14 @@
                             วันเดือนปีเกิด (Date of Birth)
                         </label>
                         <div class="relative">
-                            {{-- เพิ่ม max="{{ date('Y-m-d') }}" เพื่อล็อควันที่ให้ไม่เกินปัจจุบัน --}}
+                            @php
+                                $dob = auth()->user()->date_of_birth;
+                                // ตรวจสอบว่า $dob เป็น Object (Carbon) หรือ String แล้วแปลงให้เป็น Y-m-d
+                                $dobValue = $dob ? \Carbon\Carbon::parse($dob)->format('Y-m-d') : '';
+                            @endphp
                             <input type="date" name="date_of_birth" id="date_of_birth" max="{{ date('Y-m-d') }}"
-                                value="{{ old('date_of_birth', optional($user->date_of_birth)->format('Y-m-d')) }}"
-                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 ease-in-out"
+                                value="{{ old('date_of_birth', $dobValue) }}"
+                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="Select date">
                         </div>
                     </div>
@@ -62,11 +66,16 @@
                             เพศ (Gender)
                         </label>
                         <select id="gender" name="gender"
-                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white transition duration-200 ease-in-out">
-                            <option value="" disabled>กรุณาเลือกเพศ</option>
-                            <option value="male" @if (old('gender', $user->gender) == 'male') selected @endif>ชาย (Male)</option>
-                            <option value="female" @if (old('gender', $user->gender) == 'female') selected @endif>หญิง (Female)</option>
-                            <option value="other" @if (old('gender', $user->gender) == 'other') selected @endif>อื่นๆ (Other)</option>
+                            class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm bg-white transition duration-200 ease-in-out">
+                            <option value="" disabled {{ !auth()->user()->gender ? 'selected' : '' }}>กรุณาเลือกเพศ
+                            </option>
+                            <option value="male" {{ old('gender', auth()->user()->gender) == 'male' ? 'selected' : '' }}>
+                                ชาย (Male)</option>
+                            <option value="female"
+                                {{ old('gender', auth()->user()->gender) == 'female' ? 'selected' : '' }}>หญิง (Female)
+                            </option>
+                            <option value="other" {{ old('gender', auth()->user()->gender) == 'other' ? 'selected' : '' }}>
+                                อื่นๆ (Other)</option>
                         </select>
                     </div>
 
@@ -77,7 +86,7 @@
                         </label>
                         <div class="relative rounded-md shadow-sm">
                             <input type="number" name="age" id="age" readonly
-                                value="{{ old('age', $user->age) }}"
+                                value="{{ old('age', auth()->user()->age) }}"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-100 text-gray-500 sm:text-sm cursor-not-allowed focus:outline-none"
                                 placeholder="ระบบคำนวณอัตโนมัติ">
                         </div>
@@ -91,8 +100,8 @@
                         </label>
                         <div class="relative">
                             <input type="tel" name="phone" id="phone" required
-                                value="{{ old('phone', $user->phone) }}"
-                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 ease-in-out"
+                                value="{{ old('phone', auth()->user()->phone) }}"
+                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="กรอกเบอร์โทรศัพท์">
                         </div>
                     </div>
@@ -100,7 +109,7 @@
                     {{-- Submit Button --}}
                     <div class="pt-2">
                         <button type="submit"
-                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 transform hover:-translate-y-0.5">
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300 transform hover:-translate-y-0.5">
                             บันทึกข้อมูล (Save Profile)
                         </button>
                     </div>
@@ -117,16 +126,15 @@
 
             const calculateAge = () => {
                 if (!dobInput.value) {
-                    ageInput.value = '';
+                    // ถ้าไม่มีค่าวันเกิด ให้ใช้ค่าเดิมจาก PHP (ถ้ามี) หรือปล่อยว่าง
+                    if (!ageInput.value) ageInput.value = '';
                     return;
                 };
 
                 const dob = new Date(dobInput.value);
                 const today = new Date();
 
-                // การตรวจสอบใน JS ยังคงมีไว้เพื่อความปลอดภัยสำรอง
                 if (dob > today) {
-                    // alert("วันเกิดไม่สามารถเป็นอนาคตได้");
                     dobInput.value = '';
                     ageInput.value = '';
                     return;
@@ -144,8 +152,10 @@
 
             dobInput.addEventListener('change', calculateAge);
 
-            // Initial calculation on page load
-            calculateAge();
+            // คำนวณทันทีเมื่อโหลดหน้า (กรณีมีข้อมูลเดิมอยู่แล้ว)
+            if (dobInput.value) {
+                calculateAge();
+            }
         });
     </script>
 @endsection

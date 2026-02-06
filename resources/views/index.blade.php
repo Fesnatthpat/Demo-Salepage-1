@@ -104,41 +104,67 @@
         </div>
     </div>
 
-    {{-- ★★★ สไลด์ตัวที่ 2 (แก้ไขตามคำขอ: ทำให้ส่วนนี้สไลด์ได้) ★★★ --}}
+    {{-- ★★★ CATEGORY MENU SECTION (Sticky Fix) ★★★ --}}
+    {{-- ใช้ sticky top-0 z-40: ทำให้เกาะติดขอบบน แต่ไม่ซ้อนทับเลเยอร์แบบผิดๆ เหมือน fixed --}}
+    <div class="w-full bg-red-600 py-6 sticky top-0 z-40 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-5 lg:grid-cols-10 gap-x-2 gap-y-4 justify-items-center">
+                @php
+                    $menuItems = [
+                        ['name' => 'กิมจิ', 'image' => 'menu-kimchi.png'],
+                        ['name' => 'ซอส<br>เกาหลี', 'image' => 'menu-korean-sauce.png'],
+                        ['name' => 'combo<br>set', 'image' => 'menu-combo.png'],
+                        ['name' => 'น้ำดอง<br>ผักดอง', 'image' => 'menu-pickle.png'],
+                        ['name' => 'เครื่องปรุง<br>เกาหลี', 'image' => 'menu-korean-seasoning.png'],
+                        ['name' => 'แป้ง/ข้าว/<br>เส้น', 'image' => 'menu-flour.png'],
+                        ['name' => 'สาหร่าย', 'image' => 'menu-seaweed.png'],
+                        ['name' => 'เครื่อง<br>ครัว', 'image' => 'menu-kitchenware.png'],
+                        ['name' => 'ซอส<br>ญี่ปุ่น', 'image' => 'menu-japan-sauce.png'],
+                        ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
+                    ];
+                @endphp
+
+                @foreach ($menuItems as $menu)
+                    <a href="/allproducts?category={{ strip_tags($menu['name']) }}"
+                        class="flex flex-col items-center group w-full max-w-[90px] transition-transform duration-300 hover:scale-105">
+                        {{-- วงกลมพื้นขาว (bg-white) --}}
+                        <div
+                            class="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 bg-white rounded-full flex items-center justify-center p-2 mb-2 shadow-sm">
+                            <img src="{{ asset('images/' . $menu['image']) }}" alt="{{ strip_tags($menu['name']) }}"
+                                class="w-full h-full object-contain"
+                                onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
+                        </div>
+                        {{-- ชื่อเมนูสีขาว (text-white) --}}
+                        <span class="text-[10px] md:text-xs lg:text-sm font-bold text-white text-center leading-tight">
+                            {!! $menu['name'] !!}
+                        </span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    {{-- ★★★ สไลด์ตัวที่ 2 ★★★ --}}
     <div class="w-full bg-gray-50/50 pt-8 pb-4">
         <div class="container mx-auto px-4">
-            {{-- สร้าง Container สไลด์ใหม่ ชื่อ mySwiper2 --}}
             <div class="swiper mySwiper2 w-full rounded-2xl shadow-md overflow-hidden">
                 <div class="swiper-wrapper">
-
-                    {{-- Slide 1: รูป th-c.png --}}
                     <div class="swiper-slide">
                         <img src="{{ asset('images/th-a.png') }}" alt="โปรโมชั่นพิเศษ"
                             class="w-full h-auto block hover:shadow-xl transition-all duration-300"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+Not+Found';" />
                     </div>
-
                     <div class="swiper-slide">
                         <img src="{{ asset('images/th-b.png') }}" alt="โปรโมชั่นพิเศษ"
                             class="w-full h-auto block hover:shadow-xl transition-all duration-300"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+Not+Found';" />
                     </div>
-
                     <div class="swiper-slide">
                         <img src="{{ asset('images/th-c.png') }}" alt="โปรโมชั่นพิเศษ"
                             class="w-full h-auto block hover:shadow-xl transition-all duration-300"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+Not+Found';" />
                     </div>
-
-                    {{-- (ตัวอย่าง) Slide 2: คุณสามารถเพิ่มรูปอื่นๆ ได้ที่นี่ --}}
-                    {{-- 
-                    <div class="swiper-slide">
-                        <img src="{{ asset('images/another-image.png') }}" class="w-full h-auto block" />
-                    </div> 
-                    --}}
-
                 </div>
-                {{-- Pagination ของสไลด์ตัวที่ 2 --}}
                 <div class="swiper-pagination"></div>
             </div>
         </div>
@@ -255,8 +281,7 @@
     {{-- ★★★ SCRIPT INITIALIZE SWIPER (2 ตัว) ★★★ --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
-            // 1. สไลด์หลักด้านบน (mySwiper)
+            // 1. สไลด์หลักด้านบน
             var swiper1 = new Swiper(".mySwiper", {
                 slidesPerView: 1,
                 spaceBetween: 0,
@@ -265,33 +290,33 @@
                 effect: 'slide',
                 autoplay: {
                     delay: 5000,
-                    disableOnInteraction: false,
+                    disableOnInteraction: false
                 },
                 pagination: {
                     el: ".swiper-pagination",
                     clickable: true,
-                    dynamicBullets: true,
+                    dynamicBullets: true
                 },
                 navigation: {
                     nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
+                    prevEl: ".swiper-button-prev"
                 },
             });
 
-            // 2. สไลด์ตัวที่สอง (mySwiper2) - ตรง th-c.png
+            // 2. สไลด์ตัวที่สอง
             var swiper2 = new Swiper(".mySwiper2", {
                 slidesPerView: 1,
                 spaceBetween: 10,
-                loop: true, // วนลูปได้ (ถ้ามีรูปเดียวอาจจะไม่วน)
+                loop: true,
                 speed: 800,
-                autoHeight: true, // ปรับความสูงอัตโนมัติ
+                autoHeight: true,
                 autoplay: {
                     delay: 4000,
-                    disableOnInteraction: false,
+                    disableOnInteraction: false
                 },
                 pagination: {
                     el: ".swiper-pagination",
-                    clickable: true,
+                    clickable: true
                 },
             });
         });

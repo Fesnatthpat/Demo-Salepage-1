@@ -9,7 +9,7 @@ use App\Models\Province;
 use App\Services\OrderService;
 use App\Services\PromptPayService;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
-use Darryldecode\Cart\ItemCollection; // เรียกใช้ Class ให้ถูกต้อง
+use Darryldecode\Cart\ItemCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -49,7 +49,6 @@ class PaymentController extends Controller
 
         // --- Freebie Logic (Preview) ---
         if (! empty($selectedFreebies)) {
-            // ถ้า selected_freebies มาเป็น string (เช่นจาก query param) ให้แปลงเป็น array
             if (is_string($selectedFreebies)) {
                 $selectedFreebies = explode(',', $selectedFreebies);
             }
@@ -57,14 +56,12 @@ class PaymentController extends Controller
             $freebieProducts = ProductSalepage::with('images')->whereIn('pd_sp_id', $selectedFreebies)->get();
 
             foreach ($freebieProducts as $freebie) {
-                // จัดการ Path รูปภาพ
                 $img = $freebie->images->first();
                 $imgPath = $img ? ($img->img_path ?? $img->image_path) : null;
                 if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
                     $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
                 }
 
-                // สร้าง Dummy Item เพื่อแสดงผลหน้า Checkout
                 $freebieCartItem = new ItemCollection([
                     'id' => $freebie->pd_sp_id,
                     'name' => $freebie->pd_sp_name.' (ของแถม)',
@@ -82,13 +79,11 @@ class PaymentController extends Controller
             }
         }
 
-        // คำนวณยอดรวม (ของแถมราคา 0 ไม่กระทบยอดเงิน แต่กระทบส่วนลดถ้าคิดตาม Logic เดิม)
         $totalAmount = 0;
         $totalDiscount = 0;
         $totalOriginalAmount = 0;
 
         foreach ($cartItems as $item) {
-            // เช็คสต็อก (เฉพาะสินค้าหลัก)
             if (! $item->attributes->get('is_freebie')) {
                 $product = ProductSalepage::find($item->id);
                 if (! $product || $product->pd_sp_stock < $item->quantity) {
@@ -97,11 +92,8 @@ class PaymentController extends Controller
             }
 
             $totalAmount += ($item->price * $item->quantity);
-
             $originalPrice = $item->attributes['original_price'] ?? $item->price;
             $totalOriginalAmount += ($originalPrice * $item->quantity);
-
-            // ส่วนลด = ราคาเต็ม - ราคาขายจริง
             $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
         }
 
@@ -119,7 +111,6 @@ class PaymentController extends Controller
         $request->validate([
             'delivery_address_id' => 'required|exists:delivery_addresses,id',
             'selected_items' => 'required|array|min:1',
-            // Add validation for payment_method if needed
         ]);
 
         $user = Auth::user();
@@ -129,7 +120,7 @@ class PaymentController extends Controller
             $order = $this->orderService->createOrder(
                 [
                     'delivery_address_id' => $request->input('delivery_address_id'),
-                    'payment_method' => 'promptpay', // Assuming promptpay for now, adjust as needed
+                    'payment_method' => 'promptpay',
                 ],
                 $user,
                 $guestSessionKey
@@ -180,9 +171,9 @@ class PaymentController extends Controller
             $request->validate([
                 'code' => 'required|string|max:255',
                 'selected_items' => 'required|array',
-                'selected_items.*' => 'integer',
+                'selected_items.*' => 'numeric',
                 'selected_freebies' => 'nullable|array',
-                'selected_freebies.*' => 'integer',
+                'selected_freebies.*' => 'numeric',
             ]);
 
             $discountCode = $request->input('code');
@@ -194,8 +185,8 @@ class PaymentController extends Controller
             $message = 'รหัสส่วนลดไม่ถูกต้องหรือไม่สามารถใช้ได้';
             $fixedDiscountValue = 0;
             $percentageDiscountRate = 0;
-            
-            // --- Dummy Discount Logic for demonstration ---
+
+            // --- เพิ่ม KAWIN100 ตรงนี้ ---
             if ($discountCode === 'FIXED100') {
                 $fixedDiscountValue = 100;
                 $success = true;
@@ -204,18 +195,18 @@ class PaymentController extends Controller
                 $percentageDiscountRate = 0.10; // 10%
                 $success = true;
                 $message = 'ใช้รหัสส่วนลดสำเร็จ! ได้รับส่วนลด 10%';
+            } elseif ($discountCode === 'KAWIN100') { // เพิ่มเงื่อนไขนี้
+                $fixedDiscountValue = 100;
+                $success = true;
+                $message = 'ใช้รหัสส่วนลด KAWIN100 สำเร็จ! ลด 100 บาท';
             } else {
-                // If code is not recognized by dummy logic, forget any previously applied code
                 session()->forget('applied_discount_code');
             }
 
-            // Store applied code in session if successful
             if ($success) {
                 session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixedDiscountValue, 'percentage' => $percentageDiscountRate]]);
             }
 
-
-            // --- Recalculate Cart Totals with applied discount ---
             $cartContent = Cart::session($userId)->getContent();
             $checkoutCartItems = collect();
 
@@ -225,11 +216,10 @@ class PaymentController extends Controller
                 }
             }
 
-            // Add freebies if any
             if (! empty($selectedFreebies)) {
                 $freebieProducts = ProductSalepage::with('images')->whereIn('pd_sp_id', $selectedFreebies)->get();
                 foreach ($freebieProducts as $freebie) {
-                     $checkoutCartItems->push(new ItemCollection([
+                    $checkoutCartItems->push(new ItemCollection([
                         'id' => $freebie->pd_sp_id,
                         'name' => $freebie->pd_sp_name.' (ของแถม)',
                         'price' => 0,
@@ -243,9 +233,9 @@ class PaymentController extends Controller
                 }
             }
 
-            $totalAmount = 0; // Sum of item.price * item.quantity (actual prices after product-level discounts)
-            $totalDiscountFromProducts = 0; // Total discount from product itself (original - actual price)
-            $totalOriginalAmount = 0; // Sum of originalPrice * item.quantity
+            $totalAmount = 0;
+            $totalDiscountFromProducts = 0;
+            $totalOriginalAmount = 0;
 
             foreach ($checkoutCartItems as $item) {
                 $totalAmount += ($item->price * $item->quantity);
@@ -253,7 +243,7 @@ class PaymentController extends Controller
                 $totalOriginalAmount += ($originalPrice * $item->quantity);
                 $totalDiscountFromProducts += (($originalPrice - $item->price) * $item->quantity);
             }
-            
+
             $additionalDiscountFromCode = 0;
             if ($success) {
                 if ($fixedDiscountValue > 0) {
@@ -266,7 +256,7 @@ class PaymentController extends Controller
             $grandTotal = max(0, $totalAmount - $additionalDiscountFromCode);
             $totalDiscount = $totalDiscountFromProducts + $additionalDiscountFromCode;
 
-            $shippingCost = 0; // Still assuming 0 for now
+            $shippingCost = 0;
             $finalTotal = $grandTotal + $shippingCost;
 
             return response()->json([
@@ -290,7 +280,6 @@ class PaymentController extends Controller
         }
     }
 
-    // [Step 4] Upload Slip
     public function uploadSlip(Request $request, $orderCode)
     {
         $request->validate(['slip_image' => 'required|image|max:5120']);

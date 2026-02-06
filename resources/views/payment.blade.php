@@ -5,7 +5,6 @@
 @section('content')
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
 
-        {{-- แสดงข้อความ Error/Success --}}
         @if (session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
@@ -13,7 +12,6 @@
             </div>
         @endif
 
-        {{-- แสดง Validation Errors --}}
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
@@ -26,7 +24,6 @@
             </div>
         @endif
 
-        {{-- คำนวณยอดรวม --}}
         @php
             $grandTotal = $totalAmount;
             $shippingCost = 0;
@@ -57,7 +54,6 @@
                     @foreach ($addresses as $index => $address)
                         @php $modalEditId = 'modal_edit_' . $address->id; @endphp
 
-                        {{-- Card ที่อยู่ (ปรับสี Active เป็นแดง) --}}
                         <div class="relative border rounded-lg p-6 mb-4 transition-all duration-200 cursor-pointer"
                             :class="activeAddress === {{ $address->id }} ? 'border-red-500 bg-red-50/10' :
                                 'border-gray-300 hover:border-red-300'"
@@ -99,7 +95,6 @@
                                     </div>
                                 </div>
 
-                                {{-- ปุ่มดำเนินการ --}}
                                 <div class="flex items-center gap-2">
                                     <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
                                         class="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal px-4">
@@ -119,7 +114,6 @@
                             </div>
                         </div>
 
-                        {{-- Modal Edit (ปรับสีหัวข้อและ Input Focus เป็นแดง) --}}
                         <dialog id="{{ $modalEditId }}" class="modal modal-middle" x-data="addressDropdown()"
                             x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
                             <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden cursor-default"
@@ -222,7 +216,6 @@
                                         <form method="dialog"><button
                                                 class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button>
                                         </form>
-                                        {{-- ปุ่มบันทึกเป็นสีแดง --}}
                                         <button
                                             onclick="document.getElementById('form_edit_{{ $address->id }}').submit()"
                                             class="btn bg-red-600 hover:bg-red-700 text-white border-none font-normal px-6">บันทึกข้อมูล</button>
@@ -234,7 +227,6 @@
                 @else
                     <div class="text-center py-10 bg-gray-50 rounded border-2 border-dashed border-gray-300">
                         <p class="text-gray-500 mb-4">ยังไม่มีข้อมูลที่อยู่จัดส่ง</p>
-                        {{-- ปุ่มเพิ่มที่อยู่ใหม่เป็นสีแดง --}}
                         <button onclick="modal_add_new.showModal()"
                             class="btn bg-red-600 hover:bg-red-700 text-white border-none">เพิ่มที่อยู่จัดส่ง</button>
                     </div>
@@ -291,7 +283,6 @@
                             </div>
 
                             <div class="text-right">
-                                {{-- ราคาเป็นสีแดง --}}
                                 <p class="font-bold text-red-600">฿{{ number_format($totalPrice) }}</p>
                                 @if ($originalPrice > $item->price)
                                     <p class="text-xs text-gray-400 line-through">
@@ -322,7 +313,6 @@
                         </select>
                     </div>
                     <div class="border border-gray-300 rounded p-4 flex items-center gap-4">
-                        {{-- Checkbox สีแดง --}}
                         <input type="checkbox" checked
                             class="checkbox border-gray-400 checked:border-red-600 [--chkbg:theme(colors.red.600)] [--chkfg:white] rounded-sm w-5 h-5" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
@@ -337,7 +327,9 @@
                     initialGrandTotal: {{ $grandTotal }},
                     initialShippingCost: {{ $shippingCost }},
                     initialTotalDiscount: {{ $discount }},
-                    initialFinalTotal: {{ $finalTotal }}
+                    initialFinalTotal: {{ $finalTotal }},
+                    selectedItems: @js($selectedItems), // ✅ ส่งค่าสินค้าที่เลือกไปด้วย
+                    selectedFreebies: @js($selectedFreebies) // ✅ ส่งค่าของแถมไปด้วย
                 })">
                     <h3 class="font-bold text-gray-800 mb-4">สรุปยอดชำระ:</h3>
 
@@ -366,7 +358,6 @@
                         </div>
                         <div class="flex justify-between">
                             <span>รวมการสั่งซื้อ</span>
-                            {{-- เปลี่ยนสีราคารวมเป็นแดง --}}
                             <span class="font-medium text-red-600" x-text="'฿' + formatNumber(grandTotal)"></span>
                         </div>
                         <div class="flex justify-between">
@@ -397,7 +388,6 @@
                             @endforeach
                         @endif
                         <input type="hidden" name="delivery_address_id" id="hidden_address_id">
-                        {{-- ปุ่มชำระเงินสีแดง --}}
                         <button type="submit"
                             class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full text-base font-normal h-11 rounded shadow-sm">
                             ชำระเงิน
@@ -502,7 +492,6 @@
                     <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                         <form method="dialog"><button
                                 class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button></form>
-                        {{-- ปุ่มบันทึกสีแดง --}}
                         <button onclick="document.getElementById('form_add_new').submit()"
                             class="btn bg-red-600 hover:bg-red-700 text-white border-none font-normal px-6">บันทึกข้อมูล</button>
                     </div>
@@ -510,7 +499,7 @@
             </div>
         </dialog>
 
-        {{-- Loading Overlay (Spinner สีแดง) --}}
+        {{-- Loading Overlay --}}
         <div id="loading-overlay" class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center hidden">
             <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-bounce-in">
                 <span class="loading loading-spinner loading-lg text-red-500 scale-150"></span>
@@ -577,6 +566,8 @@
                 applyingDiscount: false,
                 discountMessage: '',
                 discountMessageType: '',
+                selectedItems: config.selectedItems || [], // รับค่ารายการสินค้า
+                selectedFreebies: config.selectedFreebies || [], // รับค่าของแถม
 
                 formatNumber(value) {
                     return new Intl.NumberFormat('th-TH', {
@@ -601,8 +592,11 @@
                                 'X-CSRF-TOKEN': document.querySelector(
                                     'meta[name="csrf-token"]').content,
                             },
+                            // ส่งข้อมูลให้ครบถ้วนตามที่ Controller ต้องการ
                             body: JSON.stringify({
-                                code: this.discountCode
+                                code: this.discountCode,
+                                selected_items: this.selectedItems,
+                                selected_freebies: this.selectedFreebies
                             }),
                         });
 

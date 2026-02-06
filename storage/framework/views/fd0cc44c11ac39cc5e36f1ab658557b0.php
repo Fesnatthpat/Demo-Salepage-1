@@ -3,7 +3,6 @@
 <?php $__env->startSection('content'); ?>
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
 
-        
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
@@ -11,7 +10,6 @@
             </div>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
                 role="alert">
@@ -24,7 +22,6 @@
             </div>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        
         <?php
             $grandTotal = $totalAmount;
             $shippingCost = 0;
@@ -55,7 +52,6 @@
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $addresses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $address): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <?php $modalEditId = 'modal_edit_' . $address->id; ?>
 
-                        
                         <div class="relative border rounded-lg p-6 mb-4 transition-all duration-200 cursor-pointer"
                             :class="activeAddress === <?php echo e($address->id); ?> ? 'border-red-500 bg-red-50/10' :
                                 'border-gray-300 hover:border-red-300'"
@@ -103,7 +99,6 @@
                                     </div>
                                 </div>
 
-                                
                                 <div class="flex items-center gap-2">
                                     <button type="button" onclick="<?php echo e($modalEditId); ?>.showModal()" @click.stop
                                         class="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal px-4">
@@ -123,7 +118,6 @@
                             </div>
                         </div>
 
-                        
                         <dialog id="<?php echo e($modalEditId); ?>" class="modal modal-middle" x-data="addressDropdown()"
                             x-init="loadEditData('<?php echo e($address->province_id); ?>', '<?php echo e($address->amphure_id); ?>', '<?php echo e($address->district_id); ?>')">
                             <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden cursor-default"
@@ -227,7 +221,6 @@
                                         <form method="dialog"><button
                                                 class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button>
                                         </form>
-                                        
                                         <button
                                             onclick="document.getElementById('form_edit_<?php echo e($address->id); ?>').submit()"
                                             class="btn bg-red-600 hover:bg-red-700 text-white border-none font-normal px-6">บันทึกข้อมูล</button>
@@ -239,7 +232,6 @@
                 <?php else: ?>
                     <div class="text-center py-10 bg-gray-50 rounded border-2 border-dashed border-gray-300">
                         <p class="text-gray-500 mb-4">ยังไม่มีข้อมูลที่อยู่จัดส่ง</p>
-                        
                         <button onclick="modal_add_new.showModal()"
                             class="btn bg-red-600 hover:bg-red-700 text-white border-none">เพิ่มที่อยู่จัดส่ง</button>
                     </div>
@@ -297,7 +289,6 @@
                             </div>
 
                             <div class="text-right">
-                                
                                 <p class="font-bold text-red-600">฿<?php echo e(number_format($totalPrice)); ?></p>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($originalPrice > $item->price): ?>
                                     <p class="text-xs text-gray-400 line-through">
@@ -329,7 +320,6 @@
                         </select>
                     </div>
                     <div class="border border-gray-300 rounded p-4 flex items-center gap-4">
-                        
                         <input type="checkbox" checked
                             class="checkbox border-gray-400 checked:border-red-600 [--chkbg:theme(colors.red.600)] [--chkfg:white] rounded-sm w-5 h-5" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
@@ -344,8 +334,9 @@
                     initialGrandTotal: <?php echo e($grandTotal); ?>,
                     initialShippingCost: <?php echo e($shippingCost); ?>,
                     initialTotalDiscount: <?php echo e($discount); ?>,
-                    initialFinalTotal: <?php echo e($finalTotal); ?>
-
+                    initialFinalTotal: <?php echo e($finalTotal); ?>,
+                    selectedItems: <?php echo \Illuminate\Support\Js::from($selectedItems)->toHtml() ?>, // ✅ ส่งค่าสินค้าที่เลือกไปด้วย
+                    selectedFreebies: <?php echo \Illuminate\Support\Js::from($selectedFreebies)->toHtml() ?> // ✅ ส่งค่าของแถมไปด้วย
                 })">
                     <h3 class="font-bold text-gray-800 mb-4">สรุปยอดชำระ:</h3>
 
@@ -374,7 +365,6 @@
                         </div>
                         <div class="flex justify-between">
                             <span>รวมการสั่งซื้อ</span>
-                            
                             <span class="font-medium text-red-600" x-text="'฿' + formatNumber(grandTotal)"></span>
                         </div>
                         <div class="flex justify-between">
@@ -405,7 +395,6 @@
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <input type="hidden" name="delivery_address_id" id="hidden_address_id">
-                        
                         <button type="submit"
                             class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full text-base font-normal h-11 rounded shadow-sm">
                             ชำระเงิน
@@ -510,7 +499,6 @@
                     <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                         <form method="dialog"><button
                                 class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button></form>
-                        
                         <button onclick="document.getElementById('form_add_new').submit()"
                             class="btn bg-red-600 hover:bg-red-700 text-white border-none font-normal px-6">บันทึกข้อมูล</button>
                     </div>
@@ -585,6 +573,8 @@
                 applyingDiscount: false,
                 discountMessage: '',
                 discountMessageType: '',
+                selectedItems: config.selectedItems || [], // รับค่ารายการสินค้า
+                selectedFreebies: config.selectedFreebies || [], // รับค่าของแถม
 
                 formatNumber(value) {
                     return new Intl.NumberFormat('th-TH', {
@@ -609,8 +599,11 @@
                                 'X-CSRF-TOKEN': document.querySelector(
                                     'meta[name="csrf-token"]').content,
                             },
+                            // ส่งข้อมูลให้ครบถ้วนตามที่ Controller ต้องการ
                             body: JSON.stringify({
-                                code: this.discountCode
+                                code: this.discountCode,
+                                selected_items: this.selectedItems,
+                                selected_freebies: this.selectedFreebies
                             }),
                         });
 

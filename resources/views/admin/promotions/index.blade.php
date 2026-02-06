@@ -32,7 +32,10 @@
                     <thead
                         class="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider border-b border-gray-700">
                         <tr>
-                            <th class="py-4 pl-6 w-[25%]">รายละเอียดแคมเปญ</th>
+                            <th class="py-4 pl-6 w-[15%]">รายละเอียดแคมเปญ</th>
+                            <th class="py-4 text-center w-[10%]">รหัสส่วนลด</th>
+                            <th class="py-4 text-center w-[10%]">ประเภทส่วนลด</th>
+                            <th class="py-4 text-right w-[10%]">มูลค่าส่วนลด</th>
                             <th class="py-4 text-center w-[40%]">เงื่อนไข (ซื้อ <i
                                     class="fas fa-arrow-right text-xs mx-1"></i> แถม)</th>
                             <th class="py-4 text-center">ระยะเวลา</th>
@@ -59,6 +62,33 @@
                                             <span class="text-xs text-gray-600 italic mt-1">- ไม่มีรายละเอียด -</span>
                                         @endif
                                     </div>
+                                </td>
+
+                                {{-- Code --}}
+                                <td class="text-center align-middle py-4">
+                                    @if($promo->code)
+                                        <span class="font-mono text-xs text-gray-200 bg-gray-700 px-2 py-1 rounded">{{ $promo->code }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                {{-- Discount Type --}}
+                                <td class="text-center align-middle py-4">
+                                    @if($promo->discount_type)
+                                        <span class="badge badge-outline border-emerald-500 text-emerald-400 font-bold">{{ $promo->discount_type === 'fixed' ? 'ลดคงที่' : ($promo->discount_type === 'percentage' ? 'ลด %' : '-') }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
+                                {{-- Discount Value --}}
+                                <td class="text-right align-middle py-4">
+                                    @if(isset($promo->discount_value))
+                                        <span class="font-bold text-gray-200">{{ number_format($promo->discount_value, 0) }}{{ $promo->discount_type === 'percentage' ? '%' : '฿' }}</span>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
 
                                 {{-- Logic Visualizer --}}
@@ -168,7 +198,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-20 text-center">
+                                <td colspan="8" class="py-20 text-center">
                                     <div class="flex flex-col items-center justify-center opacity-60">
                                         <div class="bg-gray-700 rounded-full p-4 mb-4">
                                             <i class="fas fa-tag text-4xl text-gray-500"></i>

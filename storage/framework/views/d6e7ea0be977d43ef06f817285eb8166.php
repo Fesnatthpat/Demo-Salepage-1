@@ -9,35 +9,35 @@
         <div class="swiper mySwiper w-full h-full">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <a href="/allproducts" class="block w-full h-full">
+                    <a href="/allproducts" class="block max-w-full">
                         <img src="<?php echo e(asset('images/th-1.png')); ?>" class="w-full h-full object-cover object-center"
                             alt="Slide 1"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/783630/ffffff?text=Image+1';" />
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a href="/allproducts" class="block w-full h-full">
+                    <a href="/allproducts" class="block max-w-full">
                         <img src="<?php echo e(asset('images/th-2.png')); ?>" class="w-full h-full object-cover object-center"
                             alt="Slide 2"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+2';" />
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a href="/allproducts" class="block w-full h-full">
+                    <a href="/allproducts" class="block max-w-full">
                         <img src="<?php echo e(asset('images/th-3.png')); ?>" class="w-full h-full object-cover object-center"
                             alt="Slide 3"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+3';" />
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a href="/allproducts" class="block w-full h-full">
+                    <a href="/allproducts" class="block max-w-full">
                         <img src="<?php echo e(asset('images/th-4.png')); ?>" class="w-full h-full object-cover object-center"
                             alt="Slide 4"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+4';" />
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a href="/allproducts" class="block w-full h-full">
+                    <a href="/allproducts" class="block max-w-full">
                         <img src="<?php echo e(asset('images/th-5.png')); ?>" class="w-full h-full object-cover object-center"
                             alt="Slide 5"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+5';" />

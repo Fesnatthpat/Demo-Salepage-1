@@ -126,9 +126,20 @@
                             </li>
                         @endforeach
                         @auth <li><a href="/orderhistory"
-                                    class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a></li>
+                                    class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a>
+                                </li>
                                     <li><a href="/about"
-                                        class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับเรา</a></li>
+                                        class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับเรา</a>
+                                    </li>
+                                    <li><a href="/contact"
+                                        class="hover:text-red-600 hover:bg-transparent font-bold">ติดต่อเรา</a>
+                                    </li>
+                                    <li><a href="/track"
+                                        class="hover:text-red-600 hover:bg-transparent font-bold">เช็คพัสดุ</a>
+                                    </li>
+                                    
+
+                                        
                         @endauth
                     </ul>
                 </div>

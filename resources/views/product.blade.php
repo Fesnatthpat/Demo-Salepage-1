@@ -542,7 +542,7 @@
                                     showConfirmButton: false,
                                     timer: 1500
                                 });
-                                window.updateCartBadge(data.cartCount);
+                                Livewire.dispatch('cartUpdated');
                             }
                         } else throw new Error(data.message);
                     } catch (e) {

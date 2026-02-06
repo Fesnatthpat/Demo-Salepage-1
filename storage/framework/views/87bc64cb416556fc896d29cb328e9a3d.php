@@ -40,8 +40,8 @@
                                             ทั้งหมด
                                         </a>
                                     </li>
-                                    <?php if(isset($categories)): ?>
-                                        <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($categories)): ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                             <li>
                                                 <a href="<?php echo e(route('allproducts', ['category' => $cat])); ?>"
                                                     class="<?php echo e(request('category') == $cat ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600'); ?>">
@@ -49,8 +49,8 @@
 
                                                 </a>
                                             </li>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    <?php endif; ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </ul>
                             </div>
                             <button type="submit"
@@ -102,7 +102,7 @@
                     </div>
 
                     
-                    <div class="w-full bg-red-600 py-4 rounded-2xl mt-10 mb-10 shadow-lg border-b border-red-700">
+                    <div class="w-full  py-4 rounded-2xl mt-10 mb-10 shadow-lg ">
                         <div class="container mx-auto px-4">
                             <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
                                 <?php
@@ -120,21 +120,21 @@
                                     ];
                                 ?>
 
-                                <?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                     <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
                                         class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
                                         <div
-                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
+                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white hover:bg-red-600 rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
                                             <img src="<?php echo e(asset('images/' . $menu['image'])); ?>"
                                                 alt="<?php echo e(strip_tags($menu['name'])); ?>" class="w-full h-full object-contain"
                                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
                                         </div>
-                                        <span class="text-[10px] md:text-xs font-bold text-white text-center leading-tight">
+                                        <span class="text-[10px] md:text-xs font-bold text-red-600 text-center leading-tight">
                                             <?php echo $menu['name']; ?>
 
                                         </span>
                                     </a>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -143,10 +143,10 @@
                     
 
                     
-                    <?php if($products->count() > 0): ?>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <?php if($product): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($products->count() > 0): ?>
+                        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product): ?>
                                     <?php
                                         // --- Logic for Eloquent Model ---
                                         $originalPrice = (float) ($product->pd_sp_price ?? 0);
@@ -169,14 +169,14 @@
                                                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500.png?text=No+Image';" />
 
-                                                <?php if($isOnSale): ?>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
                                                     <div
                                                         class="absolute top-2 left-2 bg-red-600 px-2 py-1 rounded-lg text-white text-xs font-bold shadow-sm">
                                                         ลด ฿<?php echo e(number_format($discountAmount)); ?>
 
                                                     </div>
-                                                <?php endif; ?>
-                                                <?php if($product->gifts_per_item): ?>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->gifts_per_item): ?>
                                                     <div
                                                         class="absolute top-2 right-2 bg-red-500 px-2 py-1 rounded-lg text-white text-xs font-bold shadow-sm flex items-center gap-1">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
@@ -190,7 +190,7 @@
                                                         แถม <?php echo e($product->gifts_per_item); ?>
 
                                                     </div>
-                                                <?php endif; ?>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </figure>
                                         </a>
 
@@ -210,7 +210,7 @@
 
                                             <div class="mt-auto pt-3 border-t border-gray-50">
                                                 <div class="flex flex-col mb-3">
-                                                    <?php if($isOnSale): ?>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
                                                         <div class="flex items-center gap-2">
                                                             <span
                                                                 class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
@@ -220,7 +220,7 @@
                                                     <?php else: ?>
                                                         <span
                                                             class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
-                                                    <?php endif; ?>
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                 </div>
 
                                                 <form class="add-to-cart-form-listing w-full"
@@ -229,7 +229,7 @@
                                                     <button type="submit"
                                                         class="btn btn-sm w-full <?php echo e($product->pd_sp_stock > 0 ? 'bg-red-600 hover:bg-red-700 text-white' : 'btn-disabled bg-gray-200 text-gray-400'); ?> border-none shadow-sm flex items-center justify-center gap-2"
                                                         <?php echo e($product->pd_sp_stock <= 0 ? 'disabled' : ''); ?>>
-                                                        <?php if($product->pd_sp_stock > 0): ?>
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_stock > 0): ?>
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -239,7 +239,7 @@
                                                             เพิ่มลงตะกร้า
                                                         <?php else: ?>
                                                             สินค้าหมด
-                                                        <?php endif; ?>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </button>
                                                 </form>
                                             </div>
@@ -250,8 +250,8 @@
                                         class="card bg-gray-50 border border-gray-200 shadow-sm rounded-xl overflow-hidden flex flex-col h-full p-4 items-center justify-center text-center">
                                         <p class="text-sm text-gray-400">ข้อมูลสินค้าไม่สมบูรณ์</p>
                                     </div>
-                                <?php endif; ?>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </div>
 
                         <div class="mt-10 flex justify-center">
@@ -271,7 +271,7 @@
                             <a href="<?php echo e(route('allproducts')); ?>"
                                 class="btn btn-sm btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white mt-4">ล้างคำค้นหา</a>
                         </div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </main>
             </div>
         </div>
@@ -354,11 +354,9 @@
                                     iconColor: '#DC2626' // ไอคอนสีแดง
                                 });
 
-                                // 3. Update Badge
+                                // 3. Dispatch Livewire event
                                 setTimeout(() => {
-                                    if (window.updateCartBadge) {
-                                        window.updateCartBadge(data.cartCount);
-                                    }
+                                    Livewire.dispatch('cartUpdated');
                                 }, 500);
                             } else {
                                 throw new Error(data.message || 'Unknown error');

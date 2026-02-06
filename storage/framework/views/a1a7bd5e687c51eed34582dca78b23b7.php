@@ -125,7 +125,7 @@
                         </div>
 
                         
-                        <?php if(count($allImages) > 1): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($allImages) > 1): ?>
                             <div class="grid grid-cols-5 gap-3 mt-6">
                                 <template x-for="img in images" :key="img">
                                     <button @click="activeImage = img"
@@ -136,7 +136,7 @@
                                     </button>
                                 </template>
                             </div>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                 </div>
 
@@ -157,24 +157,24 @@
                             <div class="flex items-baseline gap-2">
                                 <span class="text-4xl font-black text-red-600"
                                     x-text="'฿' + finalPrice.toLocaleString()"></span>
-                                <?php if($discountAmount > 0): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($discountAmount > 0): ?>
                                     <span
                                         class="text-lg text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
-                                <?php endif; ?>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
-                            <?php if($discountAmount > 0): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($discountAmount > 0): ?>
                                 <span class="text-sm font-semibold text-red-500 mt-1">ประหยัด
                                     ฿<?php echo e(number_format($discountAmount)); ?></span>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         
-                        <?php if($product->pd_details): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_details): ?>
                             <div>
                                 <h2 class="text-lg font-bold text-gray-800 mb-4">รายละเอียดสินค้า:</h2>
                             </div>
                             <div class="prose max-w-none text-gray-600 mb-8"><?php echo nl2br(e($product->pd_details)); ?></div>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         
                         <template x-if="options.length > 0">
@@ -540,7 +540,7 @@
                                     showConfirmButton: false,
                                     timer: 1500
                                 });
-                                window.updateCartBadge(data.cartCount);
+                                Livewire.dispatch('cartUpdated');
                             }
                         } else throw new Error(data.message);
                     } catch (e) {

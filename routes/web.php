@@ -71,6 +71,7 @@ Route::middleware(['auth'])->group(function () {
     // -- ระบบชำระเงิน (Checkout & Payment) --
     Route::get('/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
+    Route::post('/payment/apply-discount', [PaymentController::class, 'applyDiscount'])->name('payment.applyDiscount');
 
     // หน้าแสดง QR Code และ Upload Slip
     Route::get('/payment/qr/{orderId}', [PaymentController::class, 'showQr'])->name('payment.qr');

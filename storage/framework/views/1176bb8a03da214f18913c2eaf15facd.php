@@ -5,7 +5,7 @@
         <div class="bg-white border border-gray-200 rounded-lg p-6 lg:p-8 shadow-sm">
             <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-4">ประวัติการสั่งซื้อ</h1>
 
-            <?php if($orders->isEmpty()): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($orders->isEmpty()): ?>
                 <div class="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300 mb-6" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
@@ -44,7 +44,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <?php
                                     // 1. Status Logic (คงสีสถานะไว้ตามมาตรฐานสากล เพื่อความเข้าใจง่าย)
                                     $statusText = 'ไม่ระบุ';
@@ -141,13 +141,13 @@
                                                         src="<?php echo e($displayImage); ?>" alt="Product Image" loading="lazy"
                                                         onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';">
 
-                                                    <?php if($itemCount > 1): ?>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($itemCount > 1): ?>
                                                         <span
                                                             class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white font-bold shadow-md z-10">
                                                             +<?php echo e($itemCount - 1); ?>
 
                                                         </span>
-                                                    <?php endif; ?>
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -189,7 +189,7 @@
 
                                     
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <?php if((float) $order->net_amount <= 0): ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((float) $order->net_amount <= 0): ?>
                                             <div class="text-sm font-bold text-red-500">
                                                 (แถมฟรี 0 บาท)
                                             </div>
@@ -198,7 +198,7 @@
                                                 ฿<?php echo e(number_format($order->net_amount, 2)); ?>
 
                                             </div>
-                                        <?php endif; ?>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -207,11 +207,11 @@
                                             class="text-red-600 hover:text-red-900 font-semibold hover:underline">ดูรายละเอียด</a>
                                     </td>
                                 </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-            <?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
 <?php $__env->stopSection(); ?>

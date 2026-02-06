@@ -8,6 +8,8 @@
     <meta name="description" content="<?php echo e($settings['site_description'] ?? 'Salepage Demo - เว็บไซต์ขายสินค้าออนไลน์'); ?>">
 
     <?php echo app('Illuminate\Foundation\Vite')('resources/css/app.css'); ?>
+    <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
+
 
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -91,11 +93,11 @@
                         <ul tabindex="-1"
                             class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg">
                             <?php $menuItems = [['name' => 'หน้าหลัก', 'url' => '/'], ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts']]; ?>
-                            <?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <li><a href="<?php echo e($item['url']); ?>"
                                         class="py-3 font-bold hover:text-red-600"><?php echo e($item['name']); ?></a></li>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            <?php if(auth()->guard()->check()): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                                 <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a>
                                 <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">เกี่ยวกับเรา</a>
                                 </li>
@@ -110,7 +112,7 @@
                                 <div class="p-2 mt-2"><a href="/login"
                                         class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none">เข้าสู่ระบบ</a>
                                 </div>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </ul>
                     </div>
                     <a href="/" class="hidden md:flex btn btn-ghost text-xl p-0 hover:bg-transparent"><img
@@ -120,12 +122,12 @@
                     <a href="/" class="md:hidden btn btn-ghost text-xl p-0 hover:bg-transparent"><img
                             src="<?php echo e($siteLogo); ?>" alt="Logo" class="h-10 w-auto object-contain"></a>
                     <ul class="menu menu-horizontal px-1 gap-6 text-base font-medium text-gray-600 hidden md:flex">
-                        <?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                             <li><a href="<?php echo e($item['url']); ?>"
                                     class="hover:text-red-600 hover:bg-transparent font-bold"><?php echo e($item['name']); ?></a>
                             </li>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        <?php if(auth()->guard()->check()): ?> <li><a href="/orderhistory"
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?> <li><a href="/orderhistory"
                                     class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a>
                             </li>
                             <li><a href="/about" class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับเรา</a>
@@ -137,7 +139,7 @@
 
 
 
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </ul>
                 </div>
                 <div class="navbar-end flex items-center gap-2 md:gap-4">
@@ -150,14 +152,33 @@
                                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                             
-                            <span id="cart-badge"
-                                class="badge badge-sm indicator-item bg-red-600 text-white border-none <?php echo e($cartCount > 0 ? '' : 'hidden'); ?>"><?php echo e($cartCount); ?></span>
+                            <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('cart-icon', []);
+
+$key = null;
+$__componentSlots = [];
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3387468502-0', $key);
+
+$__html = app('livewire')->mount($__name, $__params, $key, $__componentSlots);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__componentSlots);
+unset($__split);
+?>
                         </div>
                     </a>
-                    <?php if(auth()->guard()->guest()): ?> <a href="/login"
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->guest()): ?> <a href="/login"
                             class="hidden md:flex items-center gap-2 btn bg-red-600 hover:bg-red-700 text-white border-none px-5 rounded-full shadow-md shadow-red-200">เข้าสู่ระบบ</a>
-                    <?php endif; ?>
-                    <?php if(auth()->guard()->check()): ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                         <div class="dropdown dropdown-end hidden md:block">
                             <div tabindex="0" role="button"
                                 class="btn btn-ghost btn-circle avatar border border-red-100 hover:border-red-300 transition-colors">
@@ -176,7 +197,7 @@
                                 </li>
                             </ul>
                         </div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
         </div>
@@ -289,20 +310,10 @@
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <script>
-        window.updateCartBadge = function(count) {
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                badge.innerText = count;
-                badge.classList.toggle('hidden', count <= 0);
-                badge.classList.add('scale-125');
-                setTimeout(() => badge.classList.remove('scale-125'), 200);
-            }
-        };
-    </script>
-
     
     <?php echo $__env->yieldContent('scripts'); ?>
+    <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
+
 </body>
 
 </html>

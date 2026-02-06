@@ -13,6 +13,7 @@ use Darryldecode\Cart\ItemCollection; // เรียกใช้ Class ให�
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PaymentController extends Controller
@@ -171,6 +172,122 @@ class PaymentController extends Controller
         }
 
         return back()->with('error', 'ไม่สามารถรีเฟรชได้');
+    }
+
+    public function applyDiscount(Request $request)
+    {
+        try {
+            $request->validate([
+                'code' => 'required|string|max:255',
+                'selected_items' => 'required|array',
+                'selected_items.*' => 'integer',
+                'selected_freebies' => 'nullable|array',
+                'selected_freebies.*' => 'integer',
+            ]);
+
+            $discountCode = $request->input('code');
+            $selectedItems = $request->input('selected_items');
+            $selectedFreebies = $request->input('selected_freebies', []);
+            $userId = auth()->id();
+
+            $success = false;
+            $message = 'รหัสส่วนลดไม่ถูกต้องหรือไม่สามารถใช้ได้';
+            $fixedDiscountValue = 0;
+            $percentageDiscountRate = 0;
+            
+            // --- Dummy Discount Logic for demonstration ---
+            if ($discountCode === 'FIXED100') {
+                $fixedDiscountValue = 100;
+                $success = true;
+                $message = 'ใช้รหัสส่วนลดสำเร็จ! ได้รับส่วนลด 100 บาท';
+            } elseif ($discountCode === 'PERCENT10') {
+                $percentageDiscountRate = 0.10; // 10%
+                $success = true;
+                $message = 'ใช้รหัสส่วนลดสำเร็จ! ได้รับส่วนลด 10%';
+            } else {
+                // If code is not recognized by dummy logic, forget any previously applied code
+                session()->forget('applied_discount_code');
+            }
+
+            // Store applied code in session if successful
+            if ($success) {
+                session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixedDiscountValue, 'percentage' => $percentageDiscountRate]]);
+            }
+
+
+            // --- Recalculate Cart Totals with applied discount ---
+            $cartContent = Cart::session($userId)->getContent();
+            $checkoutCartItems = collect();
+
+            foreach ($cartContent as $item) {
+                if (in_array((string) $item->id, $selectedItems)) {
+                    $checkoutCartItems->push($item);
+                }
+            }
+
+            // Add freebies if any
+            if (! empty($selectedFreebies)) {
+                $freebieProducts = ProductSalepage::with('images')->whereIn('pd_sp_id', $selectedFreebies)->get();
+                foreach ($freebieProducts as $freebie) {
+                     $checkoutCartItems->push(new ItemCollection([
+                        'id' => $freebie->pd_sp_id,
+                        'name' => $freebie->pd_sp_name.' (ของแถม)',
+                        'price' => 0,
+                        'quantity' => 1,
+                        'attributes' => new Collection([
+                            'original_price' => (float) $freebie->pd_sp_price,
+                            'is_freebie' => true,
+                        ]),
+                        'associatedModel' => $freebie,
+                    ]));
+                }
+            }
+
+            $totalAmount = 0; // Sum of item.price * item.quantity (actual prices after product-level discounts)
+            $totalDiscountFromProducts = 0; // Total discount from product itself (original - actual price)
+            $totalOriginalAmount = 0; // Sum of originalPrice * item.quantity
+
+            foreach ($checkoutCartItems as $item) {
+                $totalAmount += ($item->price * $item->quantity);
+                $originalPrice = $item->attributes['original_price'] ?? $item->price;
+                $totalOriginalAmount += ($originalPrice * $item->quantity);
+                $totalDiscountFromProducts += (($originalPrice - $item->price) * $item->quantity);
+            }
+            
+            $additionalDiscountFromCode = 0;
+            if ($success) {
+                if ($fixedDiscountValue > 0) {
+                    $additionalDiscountFromCode = $fixedDiscountValue;
+                } elseif ($percentageDiscountRate > 0) {
+                    $additionalDiscountFromCode = $totalAmount * $percentageDiscountRate;
+                }
+            }
+
+            $grandTotal = max(0, $totalAmount - $additionalDiscountFromCode);
+            $totalDiscount = $totalDiscountFromProducts + $additionalDiscountFromCode;
+
+            $shippingCost = 0; // Still assuming 0 for now
+            $finalTotal = $grandTotal + $shippingCost;
+
+            return response()->json([
+                'success' => $success,
+                'message' => $message,
+                'totalOriginalAmount' => (float) $totalOriginalAmount,
+                'grandTotal' => (float) $grandTotal,
+                'shippingCost' => (float) $shippingCost,
+                'totalDiscount' => (float) $totalDiscount,
+                'finalTotal' => (float) $finalTotal,
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ข้อมูลไม่ถูกต้อง: '.implode(', ', $e->errors()['code'] ?? []),
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'เกิดข้อผิดพลาดภายใน: '.$e->getMessage()], 500);
+        }
     }
 
     // [Step 4] Upload Slip

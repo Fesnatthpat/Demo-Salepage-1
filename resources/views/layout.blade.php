@@ -8,6 +8,7 @@
     <meta name="description" content="{{ $settings['site_description'] ?? 'Salepage Demo - เว็บไซต์ขายสินค้าออนไลน์' }}">
 
     @vite('resources/css/app.css')
+    @livewireStyles
 
     {{-- Alpine.js --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -149,9 +150,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            {{-- Badge สีแดง --}}
-                            <span id="cart-badge"
-                                class="badge badge-sm indicator-item bg-red-600 text-white border-none {{ $cartCount > 0 ? '' : 'hidden' }}">{{ $cartCount }}</span>
+                            {{-- Livewire Cart Icon --}}
+                            <livewire:cart-icon />
                         </div>
                     </a>
                     @guest <a href="/login"
@@ -289,20 +289,9 @@
     {{-- ★★★ JS ของ Swiper (ต้องมีบรรทัดนี้ สไลด์ถึงจะเลื่อนได้) ★★★ --}}
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <script>
-        window.updateCartBadge = function(count) {
-            const badge = document.getElementById('cart-badge');
-            if (badge) {
-                badge.innerText = count;
-                badge.classList.toggle('hidden', count <= 0);
-                badge.classList.add('scale-125');
-                setTimeout(() => badge.classList.remove('scale-125'), 200);
-            }
-        };
-    </script>
-
     {{-- ★★★ ใช้ @yield แทน @stack เพื่อความชัวร์ ★★★ --}}
     @yield('scripts')
+    @livewireScripts
 </body>
 
 </html>

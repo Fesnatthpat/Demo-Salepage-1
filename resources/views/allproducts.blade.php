@@ -103,7 +103,7 @@
                     </div>
 
                     {{-- ★★★ CATEGORY MENU SECTION (Sticky Top) ★★★ --}}
-                    <div class="w-full bg-red-600 py-4 rounded-2xl mt-10 mb-10 shadow-lg border-b border-red-700">
+                    <div class="w-full  py-4 rounded-2xl mt-10 mb-10 shadow-lg ">
                         <div class="container mx-auto px-4">
                             <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
                                 @php
@@ -125,12 +125,12 @@
                                     <a href="/allproducts?category={{ strip_tags($menu['name']) }}"
                                         class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
                                         <div
-                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
+                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white hover:bg-red-600 rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
                                             <img src="{{ asset('images/' . $menu['image']) }}"
                                                 alt="{{ strip_tags($menu['name']) }}" class="w-full h-full object-contain"
                                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
                                         </div>
-                                        <span class="text-[10px] md:text-xs font-bold text-white text-center leading-tight">
+                                        <span class="text-[10px] md:text-xs font-bold text-red-600 text-center leading-tight">
                                             {!! $menu['name'] !!}
                                         </span>
                                     </a>
@@ -147,7 +147,7 @@
 
                     {{-- Grid สินค้า --}}
                     @if ($products->count() > 0)
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             @foreach ($products as $product)
                                 @if ($product)
                                     @php
@@ -353,11 +353,9 @@
                                     iconColor: '#DC2626' // ไอคอนสีแดง
                                 });
 
-                                // 3. Update Badge
+                                // 3. Dispatch Livewire event
                                 setTimeout(() => {
-                                    if (window.updateCartBadge) {
-                                        window.updateCartBadge(data.cartCount);
-                                    }
+                                    Livewire.dispatch('cartUpdated');
                                 }, 500);
                             } else {
                                 throw new Error(data.message || 'Unknown error');

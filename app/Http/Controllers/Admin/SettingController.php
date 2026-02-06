@@ -29,6 +29,12 @@ class SettingController extends Controller
             'hero_section_description' => 'nullable|string|max:500',
             'hero_section_small_text' => 'nullable|string|max:500',
             'service_bar_items' => 'nullable|json',
+            'hero_slider_items' => 'nullable|json',
+            'allergy_info_content' => 'nullable|string',
+            'reasons_section_items' => 'nullable|json',
+            'second_slider_items' => 'nullable|json',
+            'category_menu_items' => 'nullable|json',
+            'small_slider_allproducts_items' => 'nullable|json',
         ]);
 
         $data = $request->except('_token');

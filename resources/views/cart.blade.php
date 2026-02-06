@@ -12,7 +12,7 @@
                         @if (isset($items) && !$items->isEmpty())
                             <div class="flex items-center">
                                 <input type="checkbox" id="select-all" checked
-                                    class="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
+                                    class="w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
                                     onclick="toggleAll(this)">
                             </div>
                         @endif
@@ -35,7 +35,6 @@
                                 $totalPrice = $price * $quantity;
                                 $isFree = $item->attributes->has('is_freebie') && $item->attributes->is_freebie;
 
-                                // คิดราคาต้นเป็น 0 ถ้าเป็นของแถม เพื่อไม่ให้ยอดรวมเพี้ยน
                                 $calcOriginalPrice = $isFree ? 0 : $originalPrice;
                                 $totalOriginalPrice = $calcOriginalPrice * $quantity;
 
@@ -45,7 +44,8 @@
                                 $summaryTotalPrice += $totalPrice;
                                 $summaryTotalOriginal += $totalOriginalPrice;
 
-                                $displayImage = $item->attributes->image ?? 'https://via.placeholder.com/150?text=No+Image';
+                                $displayImage =
+                                    $item->attributes->image ?? 'https://via.placeholder.com/150?text=No+Image';
                             @endphp
 
                             <div
@@ -55,7 +55,7 @@
                                     <div class="mt-8 md:mt-10">
                                         <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" checked
                                             data-price="{{ $totalPrice }}" data-original-price="{{ $totalOriginalPrice }}"
-                                            class="item-checkbox w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
+                                            class="item-checkbox w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
                                             onchange="calculateTotal()">
                                     </div>
                                     <div class="flex-shrink-0">
@@ -86,7 +86,7 @@
                                         @if ($isFree)
                                             <div class="text-2xl font-bold text-red-600">ฟรี</div>
                                         @else
-                                            <div class="text-2xl font-bold text-emerald-600">
+                                            <div class="text-2xl font-bold text-red-600">
                                                 ฿{{ number_format($totalPrice) }}</div>
                                         @endif
                                     </div>
@@ -120,7 +120,7 @@
                                     <div class="font-medium">฿<span
                                             id="subtotal-display">{{ number_format($summaryTotalOriginal) }}</span></div>
                                 </div>
-                                <div class="flex justify-between mt-2 text-base text-red-500">
+                                <div class="flex justify-between mt-2 text-base text-red-500 font-semibold">
                                     <div>ส่วนลดรวม</div>
                                     <div class="font-medium">-฿<span
                                             id="discount-display">{{ number_format($summaryTotalOriginal - $summaryTotalPrice) }}</span>
@@ -129,17 +129,18 @@
                                 <div class="border-t border-gray-200 my-4"></div>
                                 <div class="flex justify-between items-center mb-6">
                                     <h1 class="font-bold text-xl text-gray-800">ยอดสุทธิ</h1>
-                                    <h1 class="text-emerald-600 font-bold text-3xl">฿<span
+                                    <h1 class="text-red-600 font-bold text-3xl">฿<span
                                             id="total-display">{{ number_format($summaryTotalPrice) }}</span></h1>
                                 </div>
                                 <button type="submit" id="checkout-btn"
-                                    class="btn btn-success text-white w-full text-lg h-12">ชำระเงิน</button>
+                                    class="btn bg-red-600 hover:bg-red-700 border-none text-white w-full text-lg h-12">ชำระเงิน</button>
                             </div>
                         </div>
                     @else
                         <div class="text-center py-20 bg-gray-50 rounded-lg">
                             <h2 class="text-2xl font-bold text-gray-400 mb-2">ตะกร้าว่างเปล่า</h2>
-                            <a href="{{ route('allproducts') }}" class="btn btn-primary mt-4">ไปเลือกซื้อสินค้า</a>
+                            <a href="{{ route('allproducts') }}"
+                                class="btn bg-red-600 hover:bg-red-700 border-none text-white mt-4">ไปเลือกซื้อสินค้า</a>
                         </div>
                     @endif
                 </div>
@@ -171,7 +172,14 @@
             document.getElementById('selected-count').innerText = count;
 
             const btn = document.getElementById('checkout-btn');
-            if (btn) btn.disabled = (count === 0);
+            if (btn) {
+                btn.disabled = (count === 0);
+                if (count === 0) {
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
         }
 
         function toggleAll(source) {
@@ -210,5 +218,4 @@
             });
         });
     </script>
-
 @endsection

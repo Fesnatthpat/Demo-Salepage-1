@@ -130,7 +130,7 @@
         <div class="form-control w-full">
             <label class="label font-bold text-gray-300">รายละเอียดสินค้า</label>
             <textarea name="pd_sp_details" rows="5"
-                class="textarea textarea-bordered h-32 text-base leading-relaxed bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
+                class="textarea textarea-bordered h-62 w-full text-base leading-relaxed bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                 placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้..."><?php echo e(old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? ''))); ?></textarea>
         </div>
     </div>

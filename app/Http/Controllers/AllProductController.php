@@ -36,7 +36,7 @@ class AllProductController extends Controller
         });
 
         // Categories can be dynamic in the future
-        $categories = ['Electronics', 'Books', 'Clothing', 'Home & Kitchen'];
+        $categories = ['ผลไม้อบแห้ง', 'ลูกผลไม้อบ', 'ผลไม้สไลด์', 'ผลไม้คลุกพริกเกลือ'];
 
         return view('allproducts', compact('products', 'categories'));
     }

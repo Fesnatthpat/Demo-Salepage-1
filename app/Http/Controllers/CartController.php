@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
@@ -50,6 +51,19 @@ class CartController extends Controller
         ]);
 
         try {
+            // 🔥 ขั้นตอนที่ 2: ตรวจสอบข้อมูล (Validation)
+            $request->validate([
+                'quantity' => 'integer|min:1',
+                'selected_gift_ids' => 'array',
+                'selected_gift_ids.*' => 'integer',
+                'selected_option_id' => 'nullable|integer|exists:product_options,id',
+            ], [
+                'quantity.min' => 'ต้องสั่งซื้ออย่างน้อย 1 ชิ้น',
+                'integer' => 'ข้อมูลต้องเป็นตัวเลขจำนวนเต็ม',
+                'array' => 'ข้อมูลไม่ถูกต้อง',
+                'selected_option_id.exists' => 'ตัวเลือกสินค้าไม่ถูกต้อง',
+            ]);
+
             if (! empty($gifts)) {
                 $this->cartService->addWithGifts((int) $productId, $quantity, $gifts);
             } else {
@@ -66,6 +80,15 @@ class CartController extends Controller
 
             return back()->with('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
 
+        } catch (ValidationException $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ข้อมูลไม่ถูกต้อง',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 422);

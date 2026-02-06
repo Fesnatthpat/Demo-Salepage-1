@@ -170,10 +170,30 @@
 
                         
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_details): ?>
-                            <div>
+                            <div x-data="{ expanded: false }" class="mb-8">
                                 <h2 class="text-lg font-bold text-gray-800 mb-4">รายละเอียดสินค้า:</h2>
+                                <div class="relative">
+                                    <div class="prose max-w-none text-gray-600 transition-all duration-300"
+                                        :class="expanded ? '' : 'max-h-[150px] overflow-hidden'">
+                                        <?php echo nl2br(e($product->pd_details)); ?>
+
+                                    </div>
+                                    
+                                    <div x-show="!expanded"
+                                        class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-white to-transparent pointer-events-none">
+                                    </div>
+                                </div>
+                                <button @click="expanded = !expanded"
+                                    class="text-red-600 font-bold hover:underline mt-2 flex items-center gap-1 focus:outline-none">
+                                    <span x-text="expanded ? 'ย่อน้อยลง' : 'แสดงเพิ่มเติม'"></span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform"
+                                        :class="expanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
                             </div>
-                            <div class="prose max-w-none text-gray-600 mb-8"><?php echo nl2br(e($product->pd_details)); ?></div>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         
@@ -239,14 +259,16 @@
                                                 <input type="checkbox"
                                                     :disabled="!isConditionMet || (selectedGifts.length >= giftLimit && !
                                                         selectedGifts.includes(gift.id))"
-                                                    @click="toggleGift(gift.id)" :checked="selectedGifts.includes(gift.id)"
+                                                    @click="toggleGift(gift.id)"
+                                                    :checked="selectedGifts.includes(gift.id)"
                                                     class="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500">
                                                 <div
                                                     class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
                                                     <img :src="gift.image" class="w-full h-full object-cover">
                                                 </div>
                                                 <div class="flex-1 overflow-hidden">
-                                                    <p class="text-xs font-bold text-gray-800 truncate" x-text="gift.name">
+                                                    <p class="text-xs font-bold text-gray-800 truncate"
+                                                        x-text="gift.name">
                                                     </p>
                                                     <span class="text-xs font-bold"
                                                         :class="!isConditionMet ? 'text-gray-400' : 'text-red-500'"
@@ -473,10 +495,10 @@
                         if (!contentType || !contentType.includes("application/json")) {
                             const text = await response.text();
                             console.error("Server HTML Response:",
-                            text); // แสดง HTML ใน Console เพื่อช่วย Debug
+                                text); // แสดง HTML ใน Console เพื่อช่วย Debug
                             throw new Error(
                                 "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์ (ได้รับ HTML แทน JSON) กรุณาลองใหม่อีกครั้ง"
-                                );
+                            );
                         }
 
                         const data = await response.json();
@@ -527,7 +549,7 @@
                             console.error("Server HTML Response:", text);
                             throw new Error(
                                 "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์ (ได้รับ HTML แทน JSON) กรุณาลองใหม่อีกครั้ง"
-                                );
+                            );
                         }
 
                         const data = await response.json();

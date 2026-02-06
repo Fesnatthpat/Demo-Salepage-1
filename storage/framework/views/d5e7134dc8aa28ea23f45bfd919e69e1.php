@@ -60,7 +60,7 @@
     </style>
 </head>
 
-<body class="font-['Noto_Sans_Thai'] bg-[#f9fafb] flex flex-col min-h-screen">
+<body class="font-['Noto_Sans_Thai'] bg-[#f9fafb]">
 
     
     <?php
@@ -76,7 +76,6 @@
         $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo_hm.png';
     ?>
 
-    
     <div class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
         <div class="container mx-auto px-4 md:px-6">
             <div class="navbar min-h-[4rem] px-0">
@@ -98,6 +97,7 @@
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             <?php if(auth()->guard()->check()): ?>
                                 <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a>
+                                <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">เกี่ยวกับเรา</a>
                                 </li>
                                 <li><a href="<?php echo e(route('profile.edit')); ?>"
                                         class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
@@ -126,18 +126,30 @@
                             </li>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <?php if(auth()->guard()->check()): ?> <li><a href="/orderhistory"
-                                    class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a></li>
+                                    class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a>
+                            </li>
+                            <li><a href="/about" class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับเรา</a>
+                            </li>
+                            <li><a href="/contact" class="hover:text-red-600 hover:bg-transparent font-bold">ติดต่อเรา</a>
+                            </li>
+                            <li><a href="/track" class="hover:text-red-600 hover:bg-transparent font-bold">เช็คพัสดุ</a>
+                            </li>
+
+
+
                         <?php endif; ?>
                     </ul>
                 </div>
                 <div class="navbar-end flex items-center gap-2 md:gap-4">
                     <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-red-50">
                         <div class="indicator">
+                            
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
+                            
                             <span id="cart-badge"
                                 class="badge badge-sm indicator-item bg-red-600 text-white border-none <?php echo e($cartCount > 0 ? '' : 'hidden'); ?>"><?php echo e($cartCount); ?></span>
                         </div>
@@ -170,8 +182,7 @@
         </div>
     </div>
 
-    
-    <div class="flex-grow">
+    <div class="min-h-screen">
         <?php echo $__env->yieldContent('content'); ?>
     </div>
 
@@ -251,7 +262,6 @@
             </form>
         </footer>
 
-        
         <div class="bg-red-700 py-4 text-center text-red-200 text-sm border-t border-red-800">
             <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
                 <p>Copyright © <?php echo e(date('Y')); ?> - All right reserved by Tidjai Co., Ltd.</p>

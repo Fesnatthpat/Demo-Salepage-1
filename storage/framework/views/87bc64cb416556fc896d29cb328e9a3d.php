@@ -10,17 +10,17 @@
 
                 
                 <aside class="w-full lg:w-1/4">
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-4">
-                        <h3 class="font-bold text-lg mb-4 text-gray-700">ตัวกรองค้นหา</h3>
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-24">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">ตัวกรองค้นหา</h3>
                         <form action="<?php echo e(route('allproducts')); ?>" method="GET">
                             <div class="form-control mb-4">
-                                <label class="label"><span class="label-text">ค้นหาชื่อสินค้า</span></label>
+                                <label class="label"><span class="label-text text-gray-600">ค้นหาชื่อสินค้า</span></label>
                                 <div class="relative">
                                     <input type="text" name="search" value="<?php echo e(request('search')); ?>"
                                         placeholder="พิมพ์คำค้นหา..."
-                                        class="input input-bordered w-full pr-10 bg-gray-50" />
+                                        class="input input-bordered w-full pr-10 bg-gray-50 focus:border-red-500 focus:ring-red-500" />
                                     <button type="submit"
-                                        class="absolute right-2 top-2.5 text-gray-400 hover:text-emerald-600">
+                                        class="absolute right-2 top-2.5 text-gray-400 hover:text-red-600 transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -31,31 +31,118 @@
                             </div>
                             <div class="divider my-2"></div>
                             <div class="mb-4">
-                                <label class="label"><span class="label-text font-bold">หมวดหมู่</span></label>
-                                <ul class="menu bg-base-100 w-full p-0 text-gray-600">
-                                    <li><a href="<?php echo e(route('allproducts')); ?>"
-                                            class="<?php echo e(!request('category') ? 'active' : ''); ?>">ทั้งหมด</a></li>
-                                    
+                                <label class="label"><span
+                                        class="label-text font-bold text-gray-700">หมวดหมู่</span></label>
+                                <ul class="menu bg-base-100 w-full p-0 text-gray-600 rounded-box">
+                                    <li>
+                                        <a href="<?php echo e(route('allproducts')); ?>"
+                                            class="<?php echo e(!request('category') ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600'); ?>">
+                                            ทั้งหมด
+                                        </a>
+                                    </li>
                                     <?php if(isset($categories)): ?>
                                         <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <li><a href="#"><?php echo e($cat); ?></a></li>
+                                            <li>
+                                                <a href="<?php echo e(route('allproducts', ['category' => $cat])); ?>"
+                                                    class="<?php echo e(request('category') == $cat ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600'); ?>">
+                                                    <?php echo e($cat); ?>
+
+                                                </a>
+                                            </li>
                                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                     <?php endif; ?>
                                 </ul>
                             </div>
                             <button type="submit"
-                                class="btn btn-block bg-red-600 hover:bg-red-700 text-white mt-4 shadow-md">ค้นหา</button>
+                                class="btn btn-block bg-red-600 hover:bg-red-700 border-none text-white mt-4 shadow-md">
+                                ค้นหา
+                            </button>
                         </form>
                     </div>
                 </aside>
 
                 
                 <main class="w-full lg:w-3/4">
+
+                    
                     <div
-                        class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 mb-6 flex justify-between items-center">
-                        <span class="text-gray-500 text-sm hidden sm:inline">พบสินค้า <?php echo e($products->total()); ?> รายการ</span>
+                        class="w-full h-[150px] md:h-[250px] lg:h-[300px] rounded-2xl overflow-hidden mb-6 shadow-sm group relative">
+                        <div class="swiper mySwiper w-full h-full">
+                            <div class="swiper-wrapper">
+                                
+                                <div class="swiper-slide">
+                                    <a href="#" class="block w-full">
+                                        <img src="<?php echo e(asset('images/th-1.png')); ?>" class="w-full object-cover object-center"
+                                            alt="โปรโมชั่น Sale"
+                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/783630/ffffff?text=Banner+1';" />
+                                    </a>
+                                </div>
+                                
+                                <div class="swiper-slide">
+                                    <a href="#" class="block w-full">
+                                        <img src="<?php echo e(asset('images/th-2.png')); ?>" class="w-full object-cover object-center"
+                                            alt="จัดส่งวันไหน"
+                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+2';" />
+                                    </a>
+                                </div>
+                                
+                                <div class="swiper-slide">
+                                    <a href="#" class="block w-full">
+                                        <img src="<?php echo e(asset('images/th-3.png')); ?>" class="w-full object-cover object-center"
+                                            alt="ขอขอบคุณลูกค้า"
+                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+3';" />
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
+                            <div class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
+                            <div class="swiper-pagination"></div>
+                        </div>
                     </div>
 
+                    
+                    <div class="w-full bg-red-600 py-4 rounded-2xl mt-10 mb-10 shadow-lg border-b border-red-700">
+                        <div class="container mx-auto px-4">
+                            <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
+                                <?php
+                                    $menuItems = [
+                                        ['name' => 'กิมจิ', 'image' => 'menu-kimchi.png'],
+                                        ['name' => 'ซอส<br>เกาหลี', 'image' => 'menu-korean-sauce.png'],
+                                        ['name' => 'combo<br>set', 'image' => 'menu-combo.png'],
+                                        ['name' => 'น้ำดอง<br>ผักดอง', 'image' => 'menu-pickle.png'],
+                                        ['name' => 'เครื่องปรุง<br>เกาหลี', 'image' => 'menu-korean-seasoning.png'],
+                                        ['name' => 'แป้ง/ข้าว/<br>เส้น', 'image' => 'menu-flour.png'],
+                                        ['name' => 'สาหร่าย', 'image' => 'menu-seaweed.png'],
+                                        ['name' => 'เครื่อง<br>ครัว', 'image' => 'menu-kitchenware.png'],
+                                        ['name' => 'ซอส<br>ญี่ปุ่น', 'image' => 'menu-japan-sauce.png'],
+                                        ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
+                                    ];
+                                ?>
+
+                                <?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
+                                        class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
+                                        <div
+                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
+                                            <img src="<?php echo e(asset('images/' . $menu['image'])); ?>"
+                                                alt="<?php echo e(strip_tags($menu['name'])); ?>" class="w-full h-full object-contain"
+                                                onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
+                                        </div>
+                                        <span class="text-[10px] md:text-xs font-bold text-white text-center leading-tight">
+                                            <?php echo $menu['name']; ?>
+
+                                        </span>
+                                    </a>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    
+
+                    
                     <?php if($products->count() > 0): ?>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -67,34 +154,41 @@
                                         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                                         $isOnSale = $discountAmount > 0;
 
-                                        // ✅ แก้ไข: ดึงรูปปกโดยใช้ img_sort (เรียงน้อยไปมาก เอา 0 ขึ้นก่อน)
                                         $primaryImage = $product->images->sortBy('img_sort')->first();
-
-                                        // ✅ แก้ไข: ใช้ img_path ตามฐานข้อมูลใหม่
                                         $imagePath = $primaryImage
                                             ? $primaryImage->img_path
                                             : 'https://via.placeholder.com/400x500.png?text=No+Image';
                                     ?>
 
                                     <div
-                                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-b-md overflow-hidden duration-300 group flex flex-col h-full">
+                                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-xl overflow-hidden duration-300 group flex flex-col h-full">
                                         <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>">
                                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                                
                                                 <img src="<?php echo e(Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath)); ?>"
                                                     alt="<?php echo e($product->pd_sp_name); ?>"
-                                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500.png?text=No+Image';" />
 
                                                 <?php if($isOnSale): ?>
                                                     <div
-                                                        class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
+                                                        class="absolute top-2 left-2 bg-red-600 px-2 py-1 rounded-lg text-white text-xs font-bold shadow-sm">
                                                         ลด ฿<?php echo e(number_format($discountAmount)); ?>
 
                                                     </div>
                                                 <?php endif; ?>
                                                 <?php if($product->gifts_per_item): ?>
-                                                    <div class="absolute top-2 right-2 bg-red-600 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
-                                                        แถม <?php echo e($product->gifts_per_item); ?> ชิ้น
+                                                    <div
+                                                        class="absolute top-2 right-2 bg-red-500 px-2 py-1 rounded-lg text-white text-xs font-bold shadow-sm flex items-center gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                            viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fill-rule="evenodd"
+                                                                d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z"
+                                                                clip-rule="evenodd" />
+                                                            <path
+                                                                d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
+                                                        </svg>
+                                                        แถม <?php echo e($product->gifts_per_item); ?>
+
                                                     </div>
                                                 <?php endif; ?>
                                             </figure>
@@ -106,21 +200,23 @@
                                                 <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"
                                                     class="hover:text-red-600 transition"><?php echo e($product->pd_sp_name ?? 'Missing Product Name'); ?></a>
                                             </h2>
-                                            <p class="text-xs text-gray-500">Code:
-                                                <?php echo e($product->pd_sp_code); ?></p>
+                                            <p class="text-xs text-gray-500 mt-1">Code: <?php echo e($product->pd_sp_code); ?></p>
+
                                             <p
-                                                class="text-xs <?php echo e($product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500'); ?>">
-                                                <?php echo e($product->pd_sp_stock > 0 ? 'มีสินค้า' : 'สินค้าหมด'); ?>
+                                                class="text-xs font-medium mt-1 <?php echo e($product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500'); ?>">
+                                                <?php echo e($product->pd_sp_stock > 0 ? '● มีสินค้า' : '● สินค้าหมด'); ?>
 
                                             </p>
-                                            
-                                            <div class="mt-auto pt-2">
+
+                                            <div class="mt-auto pt-3 border-t border-gray-50">
                                                 <div class="flex flex-col mb-3">
                                                     <?php if($isOnSale): ?>
-                                                        <span
-                                                            class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
-                                                        <span
-                                                            class="text-xs text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
+                                                        <div class="flex items-center gap-2">
+                                                            <span
+                                                                class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
+                                                            <span
+                                                                class="text-xs text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
+                                                        </div>
                                                     <?php else: ?>
                                                         <span
                                                             class="text-lg font-bold text-red-600">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
@@ -131,7 +227,7 @@
                                                     data-action="<?php echo e(route('cart.add', ['id' => $product->pd_sp_id])); ?>">
                                                     <input type="hidden" name="quantity" value="1">
                                                     <button type="submit"
-                                                        class="btn btn-sm w-full <?php echo e($product->pd_sp_stock > 0 ? 'bg-red-600 hover:bg-red-700 text-white' : 'btn-disabled bg-gray-200'); ?> border-none shadow-sm flex items-center justify-center gap-2"
+                                                        class="btn btn-sm w-full <?php echo e($product->pd_sp_stock > 0 ? 'bg-red-600 hover:bg-red-700 text-white' : 'btn-disabled bg-gray-200 text-gray-400'); ?> border-none shadow-sm flex items-center justify-center gap-2"
                                                         <?php echo e($product->pd_sp_stock <= 0 ? 'disabled' : ''); ?>>
                                                         <?php if($product->pd_sp_stock > 0): ?>
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
@@ -150,22 +246,30 @@
                                         </div>
                                     </div>
                                 <?php else: ?>
-                                    
                                     <div
-                                        class="card bg-gray-100 border border-gray-200 shadow-sm rounded-b-md overflow-hidden flex flex-col h-full p-4 items-center justify-center text-center">
-                                        <p class="text-sm text-gray-500">Error rendering product.</p>
+                                        class="card bg-gray-50 border border-gray-200 shadow-sm rounded-xl overflow-hidden flex flex-col h-full p-4 items-center justify-center text-center">
+                                        <p class="text-sm text-gray-400">ข้อมูลสินค้าไม่สมบูรณ์</p>
                                     </div>
                                 <?php endif; ?>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
 
-                        <div class="mt-8 flex justify-center">
+                        <div class="mt-10 flex justify-center">
                             <?php echo e($products->appends(request()->query())->links()); ?>
 
                         </div>
                     <?php else: ?>
-                        <div class="text-center py-20 bg-white rounded-lg border border-dashed">
-                            <p class="text-gray-500 text-lg">ไม่พบสินค้าที่คุณค้นหา</p>
+                        <div
+                            class="flex flex-col items-center justify-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-200 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mb-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3 class="text-lg font-bold text-gray-600">ไม่พบสินค้าที่คุณค้นหา</h3>
+                            <p class="text-gray-500">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่น</p>
+                            <a href="<?php echo e(route('allproducts')); ?>"
+                                class="btn btn-sm btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white mt-4">ล้างคำค้นหา</a>
                         </div>
                     <?php endif; ?>
                 </main>
@@ -176,6 +280,29 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // 1. Initialize Swiper
+            var swiper1 = new Swiper(".mySwiper", {
+                slidesPerView: 1,
+                spaceBetween: 0,
+                loop: true,
+                speed: 800,
+                effect: 'slide',
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
+                    dynamicBullets: true,
+                },
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+            });
+
+            // 2. จัดการ Cart
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
 
             forms.forEach(form => {
@@ -196,7 +323,7 @@
                     const formData = new FormData();
                     formData.append('quantity', quantity);
 
-                    fetch(actionUrl, { // Use actionUrl directly for POST
+                    fetch(actionUrl, {
                             method: 'POST',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -219,9 +346,12 @@
                                     icon: 'success',
                                     title: 'เพิ่มลงตะกร้าแล้ว',
                                     text: 'สินค้าถูกเพิ่มเรียบร้อย',
-                                    position: 'center',
+                                    position: 'top-end',
+                                    toast: true,
                                     showConfirmButton: false,
-                                    timer: 1500
+                                    timer: 1500,
+                                    background: '#FEF2F2', // พื้นหลังสีแดงอ่อน
+                                    iconColor: '#DC2626' // ไอคอนสีแดง
                                 });
 
                                 // 3. Update Badge
@@ -242,7 +372,8 @@
                                 text: 'ไม่สามารถเพิ่มสินค้าได้',
                                 position: 'center',
                                 showConfirmButton: false,
-                                timer: 1500
+                                timer: 1500,
+                                confirmButtonColor: '#DC2626' // ปุ่มยืนยันสีแดง
                             });
                         })
                         .finally(() => {

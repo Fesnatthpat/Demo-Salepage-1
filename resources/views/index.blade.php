@@ -291,8 +291,7 @@
                             }
                         @endphp
                         <div
-                            class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">
-                            <a href="{{ route('product.show', $product->pd_sp_id) }}"
+                                                                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">                            <a href="{{ route('product.show', $product->pd_sp_id) }}"
                                 class="block overflow-hidden relative pt-[100%]">
                                 <img src="{{ $displayImage }}" alt="{{ $product->pd_sp_name }}"
                                     class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition duration-700"

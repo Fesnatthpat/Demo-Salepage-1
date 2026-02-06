@@ -16,3 +16,10 @@
     font-style: normal;
     font-variation-settings: "wdth" 100;
 }
+
+/* Custom glow effect for product cards */
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.5), /* default shadow */
+                0 4px 6px -2px rgba(239, 68, 68, 0.05), /* default shadow */
+                0 0 20px 5px rgba(239, 68, 68, 0.7); /* custom glow */
+}

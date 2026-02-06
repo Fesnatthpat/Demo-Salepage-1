@@ -70,17 +70,14 @@ class CartController extends Controller
                 $this->cartService->addOrUpdate((int) $productId, $quantity, $optionId);
             }
 
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
-                    'cartCount' => $this->cartService->getTotalQuantity(),
-                ]);
-            }
+        // Always return JSON for this endpoint, as it's explicitly called via AJAX
+        return response()->json([
+            'success' => true,
+            'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
+            'cartCount' => $this->cartService->getTotalQuantity(),
+        ]);
 
-            return back()->with('success', 'เพิ่มสินค้าเรียบร้อยแล้ว');
-
-        } catch (ValidationException $e) {
+    } catch (ValidationException $e) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,

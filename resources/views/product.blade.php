@@ -535,12 +535,15 @@
                         const data = await response.json();
                         if (data.success) {
                             if (isBuyNow) window.location.href = config.checkoutUrl;
-                            else Swal.fire({
-                                icon: 'success',
-                                title: 'เพิ่มสินค้าแล้ว',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
+                            else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'เพิ่มสินค้าแล้ว',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                window.updateCartBadge(data.cartCount);
+                            }
                         } else throw new Error(data.message);
                     } catch (e) {
                         Swal.fire('ข้อผิดพลาด', e.message, 'error');

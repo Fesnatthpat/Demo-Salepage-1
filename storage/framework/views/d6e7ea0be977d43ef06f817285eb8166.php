@@ -209,45 +209,6 @@
         </div>
     </div>
 
-    
-    <div class="w-full bg-red-600 py-4  shadow-lg border-b border-red-700">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
-                <?php
-                    $menuItems = [
-                        ['name' => 'กิมจิ', 'image' => 'menu-kimchi.png'],
-                        ['name' => 'ซอส<br>เกาหลี', 'image' => 'menu-korean-sauce.png'],
-                        ['name' => 'combo<br>set', 'image' => 'menu-combo.png'],
-                        ['name' => 'น้ำดอง<br>ผักดอง', 'image' => 'menu-pickle.png'],
-                        ['name' => 'เครื่องปรุง<br>เกาหลี', 'image' => 'menu-korean-seasoning.png'],
-                        ['name' => 'แป้ง/ข้าว/<br>เส้น', 'image' => 'menu-flour.png'],
-                        ['name' => 'สาหร่าย', 'image' => 'menu-seaweed.png'],
-                        ['name' => 'เครื่อง<br>ครัว', 'image' => 'menu-kitchenware.png'],
-                        ['name' => 'ซอส<br>ญี่ปุ่น', 'image' => 'menu-japan-sauce.png'],
-                        ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
-                    ];
-                ?>
-
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                    <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
-                        class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
-                        <div
-                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
-                            <img src="<?php echo e(asset('images/' . $menu['image'])); ?>" alt="<?php echo e(strip_tags($menu['name'])); ?>"
-                                class="w-full h-full object-contain"
-                                onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
-                        </div>
-                        <span class="text-[10px] md:text-xs font-bold text-white text-center leading-tight">
-                            <?php echo $menu['name']; ?>
-
-                        </span>
-                    </a>
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-            </div>
-        </div>
-    </div>
-
-
 
     
     <div class="bg-gray-50/50 pb-12 pt-4">
@@ -290,7 +251,8 @@
                             }
                         ?>
                         <div
-                                                                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">                            <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"
+                            class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">
+                            <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"
                                 class="block overflow-hidden relative pt-[100%]">
                                 <img src="<?php echo e($displayImage); ?>" alt="<?php echo e($product->pd_sp_name); ?>"
                                     class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition duration-700"

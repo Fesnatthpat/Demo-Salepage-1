@@ -133,7 +133,11 @@
                             </li>
                             <li><a href="/contact" class="hover:text-red-600 hover:bg-transparent font-bold">ติดต่อเรา</a>
                             </li>
-                            <li><a href="/track" class="hover:text-red-600 hover:bg-transparent font-bold">เช็คพัสดุ</a>
+                            <li>
+                                <a href="https://kawinbrothers.com/tracking/index.php" target="_blank"
+                                    rel="noopener noreferrer" class="hover:text-red-600 hover:bg-transparent font-bold">
+                                    เช็คพัสดุ
+                                </a>
                             </li>
 
 

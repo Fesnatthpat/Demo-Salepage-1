@@ -131,9 +131,9 @@
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?> <li><a href="/orderhistory"
                                     class="hover:text-red-600 hover:bg-transparent font-bold">ประวัติการสั่งซื้อ</a>
                             </li>
-                            <li><a href="/about" class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับเรา</a>
+                            <li><a href="/about" class="hover:text-red-600 hover:bg-transparent font-bold">เกี่ยวกับติดใจ</a>
                             </li>
-                            <li><a href="/contact" class="hover:text-red-600 hover:bg-transparent font-bold">ติดต่อเรา</a>
+                            <li><a href="/contact" class="hover:text-red-600 hover:bg-transparent font-bold">ติดต่อติดใจ</a>
                             </li>
                             <li>
                                 <a href="https://kawinbrothers.com/tracking/index.php" target="_blank"

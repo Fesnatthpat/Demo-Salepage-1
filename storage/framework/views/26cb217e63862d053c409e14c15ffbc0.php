@@ -8,7 +8,7 @@
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
 
             
-            <div class="bg-gradient-to-r from-[#00B900] to-[#06C755] p-6 text-center text-white relative overflow-hidden">
+            <div class="bg-gradient-to-r from-[#fc0303] to-[#c70606] p-6 text-center text-white relative overflow-hidden">
                 <h1 class="font-bold text-2xl relative z-10">ชำระเงิน</h1>
 
                 
@@ -147,7 +147,7 @@
 
                 
                 <button id="upload-slip-btn"
-                    class="btn w-full bg-[#00B900] hover:bg-[#009900] text-white border-none text-lg h-12 shadow-md shadow-emerald-200 mb-3 transition-all duration-300">
+                    class="btn w-full bg-gradient-to-r from-[#fc0303] to-[#c70606] text-white border-none text-lg h-12 shadow-md shadow-emerald-200 mb-3 transition-all duration-300">
                     แจ้งชำระเงิน / แนบสลิป
                 </button>
 
@@ -282,7 +282,7 @@
                             </div>`,
                             showCancelButton: true,
                             confirmButtonText: 'ยืนยันการแจ้งชำระ',
-                            confirmButtonColor: '#00B900',
+                            confirmButtonColor: '#fc0303',
                             cancelButtonText: 'ยกเลิก',
                             allowOutsideClick: false,
                             preConfirm: () => {

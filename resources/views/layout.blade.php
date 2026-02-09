@@ -77,6 +77,7 @@
         $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo_hm.png';
     @endphp
 
+    {{-- ★★★ NAVBAR ★★★ --}}
     <div class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
         <div class="container mx-auto px-4 md:px-6">
             <div class="navbar min-h-[4rem] px-0">
@@ -186,6 +187,7 @@
         </div>
     </div>
 
+        
     <div class="min-h-screen">
         @yield('content')
     </div>

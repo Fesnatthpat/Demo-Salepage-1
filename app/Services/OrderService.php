@@ -106,10 +106,27 @@ class OrderService
                 $product->decrement('pd_sp_stock', $cartItem->quantity);
             }
 
-            // --- Start Fix: Update totals on the order ---
+            // --- Apply Session Discount ---
+            $additionalDiscountFromCode = 0;
+            if (session()->has('applied_discount_code')) {
+                $discountData = session('applied_discount_code');
+                if (isset($discountData['fixed']) && $discountData['fixed'] > 0) {
+                    $additionalDiscountFromCode = $discountData['fixed'];
+                } elseif (isset($discountData['percentage']) && $discountData['percentage'] > 0) {
+                    $additionalDiscountFromCode = $netAmount * $discountData['percentage'];
+                }
+                $additionalDiscountFromCode = round($additionalDiscountFromCode, 2); // Round to 2 decimal places
+                session()->forget('applied_discount_code'); // Clear discount from session after use
+            }
+
+            // Ensure netAmount doesn't go below zero
+            $netAmount = max(0, $netAmount - $additionalDiscountFromCode);
+            $totalDiscount += $additionalDiscountFromCode; // Add code discount to total discount
+
+            // --- Update totals on the order ---
             $order->total_price = $totalPrice;
             $order->total_discount = $totalDiscount;
-            $order->net_amount = $netAmount; // Assuming shipping_cost is 0
+            $order->net_amount = $netAmount; // Now includes code discount
             $order->save();
             // --- End Fix ---
 

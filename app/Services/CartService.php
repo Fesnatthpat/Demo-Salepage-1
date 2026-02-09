@@ -48,83 +48,71 @@ class CartService
         $userId = $this->getUserId();
         $cart = Cart::session($userId);
 
-                    if ($optionId) {
+        if ($optionId) {
 
-                        $option = \App\Models\ProductOption::find($optionId);
+            $option = \App\Models\ProductOption::find($optionId);
 
-                        if (! $option || $option->parent_id !== $productId) {
+            if (! $option || $option->parent_id !== $productId) {
 
-                            throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
+                throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
+            }
 
-                        }
+            if ($quantity > $option->option_stock) {
 
-                        if ($quantity > $option->option_stock) {
+                throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ");
+            }
 
-                            throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ");
+            $cartId = "{$productId}-{$optionId}";
 
-                        }
+            $cart->remove($cartId); // Remove existing to reset quantity
 
-        
+            $mainProductDetails = $this->getProductDetails($productId); // Get main product details for its discount
 
-                        $cartId = "{$productId}-{$optionId}";
+            $mainProductDiscount = $mainProductDetails ? $mainProductDetails->discount : 0;
 
-                        $cart->remove($cartId); // Remove existing to reset quantity
+            $optionOriginalPrice = (float) $option->option_price;
 
-        
+            $optionFinalPrice = max(0, $optionOriginalPrice - $mainProductDiscount);
 
-                        $mainProductDetails = $this->getProductDetails($productId); // Get main product details for its discount
+            $details = $this->getProductDetails($productId); // This 'details' will be used for image etc.
 
-                        $mainProductDiscount = $mainProductDetails ? $mainProductDetails->discount : 0;
+            $product = $this->checkStockAndGetProduct($productId, 0);
 
-        
+            if ($details) {
 
-                        $optionOriginalPrice = (float) $option->option_price;
+                $cart->add([
 
-                        $optionFinalPrice = max(0, $optionOriginalPrice - $mainProductDiscount);
+                    'id' => $cartId, // Use composite ID
 
-        
+                    'name' => $details->name.' ('.$option->option_name.')',
 
-                        $details = $this->getProductDetails($productId); // This 'details' will be used for image etc.
+                    'price' => $optionFinalPrice, // Apply discount here
 
-                        $product = $this->checkStockAndGetProduct($productId, 0);
+                    'quantity' => $quantity,
 
-        
+                    'attributes' => [
 
-                        if ($details) {
+                        'image' => $details->image,
 
-                            $cart->add([
+                        'original_price' => $optionOriginalPrice, // Store original option price
 
-                                'id' => $cartId, // Use composite ID
+                        'discount' => $mainProductDiscount, // Store applied discount
 
-                                'name' => $details->name.' ('.$option->option_name.')',
+                        'pd_code' => $details->pd_code,
 
-                                'price' => $optionFinalPrice, // Apply discount here
+                        'product_id' => $productId,
 
-                                'quantity' => $quantity,
+                        'option_id' => $optionId,
 
-                                'attributes' => [
+                    ],
 
-                                    'image' => $details->image,
+                    'associatedModel' => $product,
 
-                                    'original_price' => $optionOriginalPrice, // Store original option price
+                ]);
 
-                                    'discount' => $mainProductDiscount, // Store applied discount
+            }
 
-                                    'pd_code' => $details->pd_code,
-
-                                    'product_id' => $productId,
-
-                                    'option_id' => $optionId,
-
-                                ],
-
-                                'associatedModel' => $product,
-
-                            ]);
-
-                        }
-
-                    } else {
+        } else {
             // --- EXISTING LOGIC for products without options ---
             $existingKeys = $this->findCartKeys($productId);
             foreach ($existingKeys as $key) {
@@ -536,6 +524,7 @@ class CartService
             } catch (Exception $e) {
                 // Log the exception if needed, but continue merging other items
                 Log::warning('Skipping guest cart item due to error: '.$e->getMessage(), ['guestItem' => $guestItem]);
+
                 continue;
             }
         }
@@ -592,26 +581,36 @@ class CartService
             }
         })->pluck('promotion_id')->unique();
 
-        return Promotion::with(['rules', 'actions'])->whereIn('id', $potentialPromotionIds)->where('is_active', true)->get()->filter(function ($promo) use ($cartQuantities) {
-            $promoMultipliers = [];
-            foreach ($promo->rules as $rule) {
-                $pids = (array) ($rule->rules['product_id'] ?? []);
-                $reqQty = (int) ($rule->rules['quantity_to_buy'] ?? 1);
-                $totalMatched = 0;
-                foreach ($pids as $pid) {
-                    $totalMatched += $cartQuantities->get((int) $pid, 0);
+        // ... โค้ดก่อนหน้า ...
+
+        $now = now(); // ประกาศตัวแปร $now ตรงนี้
+
+        return Promotion::with(['rules', 'actions'])
+            ->whereIn('id', $potentialPromotionIds)
+            ->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now)) // $now จะใช้งานได้แล้ว
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))   // $now จะใช้งานได้แล้ว
+        // ...
+            ->get()->filter(function ($promo) use ($cartQuantities) {
+                $promoMultipliers = [];
+                foreach ($promo->rules as $rule) {
+                    $pids = (array) ($rule->rules['product_id'] ?? []);
+                    $reqQty = (int) ($rule->rules['quantity_to_buy'] ?? 1);
+                    $totalMatched = 0;
+                    foreach ($pids as $pid) {
+                        $totalMatched += $cartQuantities->get((int) $pid, 0);
+                    }
+                    $promoMultipliers[] = $reqQty > 0 ? floor($totalMatched / $reqQty) : 0;
                 }
-                $promoMultipliers[] = $reqQty > 0 ? floor($totalMatched / $reqQty) : 0;
-            }
-            $finalMultiplier = ($promo->condition_type === 'all') ? (empty($promoMultipliers) ? 0 : min($promoMultipliers)) : array_sum($promoMultipliers);
-            if ($finalMultiplier > 0) {
-                $promo->multiplier = $finalMultiplier;
+                $finalMultiplier = ($promo->condition_type === 'all') ? (empty($promoMultipliers) ? 0 : min($promoMultipliers)) : array_sum($promoMultipliers);
+                if ($finalMultiplier > 0) {
+                    $promo->multiplier = $finalMultiplier;
 
-                return true;
-            }
+                    return true;
+                }
 
-            return false;
-        });
+                return false;
+            });
     }
 
     private function saveCartToDatabase(int|string $userId, $cartContent): void

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\ProductSalepage;
+use App\Models\Promotion;
 use App\Models\Province;
 use App\Services\OrderService;
 use App\Services\PromptPayService;
@@ -13,6 +14,7 @@ use Darryldecode\Cart\ItemCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -165,6 +167,7 @@ class PaymentController extends Controller
         return back()->with('error', 'ไม่สามารถรีเฟรชได้');
     }
 
+    // [Apply Discount Logic - Fixed with explicit USE]
     public function applyDiscount(Request $request)
     {
         try {
@@ -176,7 +179,10 @@ class PaymentController extends Controller
                 'selected_freebies.*' => 'numeric',
             ]);
 
-            $discountCode = $request->input('code');
+            // ประกาศตัวแปร $now
+            $now = now();
+
+            $discountCode = trim($request->input('code'));
             $selectedItems = $request->input('selected_items');
             $selectedFreebies = $request->input('selected_freebies', []);
             $userId = auth()->id();
@@ -186,20 +192,42 @@ class PaymentController extends Controller
             $fixedDiscountValue = 0;
             $percentageDiscountRate = 0;
 
-            // --- เพิ่ม KAWIN100 ตรงนี้ ---
-            if ($discountCode === 'FIXED100') {
-                $fixedDiscountValue = 100;
+            Log::info('applyDiscount: Processing code', ['code' => $discountCode, 'current_time' => $now]);
+
+            // [FIX] ใช้ function($q) use ($now) แทน fn เพื่อป้องกันปัญหา Scope ของตัวแปร
+            $promotion = Promotion::where('code', $discountCode)
+                ->where('is_discount_code', true)
+                ->where('is_active', true)
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
+                })
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('end_date')->orWhereDate('end_date', '>=', $now);
+                })
+                ->first();
+
+            if ($promotion) {
+                Log::info('applyDiscount: Promotion found', [
+                    'promotion_id' => $promotion->id,
+                    'is_active' => $promotion->is_active,
+                    'start_date' => $promotion->start_date,
+                    'end_date' => $promotion->end_date,
+                    'current_time' => $now,
+                ]);
+
                 $success = true;
-                $message = 'ใช้รหัสส่วนลดสำเร็จ! ได้รับส่วนลด 100 บาท';
-            } elseif ($discountCode === 'PERCENT10') {
-                $percentageDiscountRate = 0.10; // 10%
-                $success = true;
-                $message = 'ใช้รหัสส่วนลดสำเร็จ! ได้รับส่วนลด 10%';
-            } elseif ($discountCode === 'KAWIN100') { // เพิ่มเงื่อนไขนี้
-                $fixedDiscountValue = 100;
-                $success = true;
-                $message = 'ใช้รหัสส่วนลด KAWIN100 สำเร็จ! ลด 100 บาท';
+                $message = 'ใช้รหัสส่วนลด '.$discountCode.' สำเร็จ!';
+                if ($promotion->discount_type === 'fixed') {
+                    $fixedDiscountValue = $promotion->discount_value;
+                } elseif ($promotion->discount_type === 'percentage') {
+                    $percentageDiscountRate = $promotion->discount_value / 100;
+                }
             } else {
+                Log::warning('applyDiscount: Code invalid or expired', [
+                    'code_attempted' => $discountCode,
+                    'server_time' => $now->toDateTimeString(),
+                    'timezone' => config('app.timezone'),
+                ]);
                 session()->forget('applied_discount_code');
             }
 

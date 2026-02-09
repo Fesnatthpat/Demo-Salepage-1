@@ -264,10 +264,27 @@
                             $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
 
-                            $productDb = $products[$item->id] ?? null;
-                            $displayImage = $productDb
-                                ? $productDb->cover_image_url
-                                : 'https://via.placeholder.com/150?text=No+Image';
+                            // --- แก้ไข: ดึงข้อมูลสินค้าจาก Collection เพื่อความแม่นยำ ---
+                            $productDb = isset($products) ? $products->where('id', $item->id)->first() : null;
+
+                            // เตรียมรูปภาพ
+                            $imgUrl = $productDb ? $productDb->cover_image_url : null;
+
+                            // ตรวจสอบว่าเป็น URL เต็มหรือ Path ในเครื่อง
+                            if ($imgUrl) {
+                                if (strpos($imgUrl, 'http') === 0) {
+                                    $displayImage = $imgUrl;
+                                } else {
+                                    // ถ้าเป็น Path ให้ใช้ asset()
+                                    // หมายเหตุ: ถ้าเก็บใน storage/app/public อาจต้องใช้ asset('storage/' . $imgUrl)
+                                    $displayImage = asset($imgUrl);
+                                }
+                            } else {
+                                // ถ้าไม่มีใน DB ให้ลองดูใน Attribute ของ Cart หรือใช้ภาพ Default
+                                $displayImage = isset($attrs['image'])
+                                    ? asset($attrs['image'])
+                                    : 'https://via.placeholder.com/150?text=No+Image';
+                            }
                         ?>
 
                         <div
@@ -323,7 +340,9 @@
                         <input type="checkbox" checked
                             class="checkbox border-gray-400 checked:border-red-600 [--chkbg:theme(colors.red.600)] [--chkfg:white] rounded-sm w-5 h-5" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
-                            <img src="<?php echo e(asset('images/ci-qrpayment-img-01.png')); ?>" alt="PromptPay" class="w-24">
+                            
+                            <img src="<?php echo e(asset('images/ci-qrpayment-img-01.png')); ?>" alt="PromptPay" class="w-24"
+                                onerror="this.style.display='none'">
                         </div>
                         <span class="text-gray-700">ชำระผ่านพร้อมเพย์</span>
                     </div>
@@ -335,8 +354,8 @@
                     initialShippingCost: <?php echo e($shippingCost); ?>,
                     initialTotalDiscount: <?php echo e($discount); ?>,
                     initialFinalTotal: <?php echo e($finalTotal); ?>,
-                    selectedItems: <?php echo \Illuminate\Support\Js::from($selectedItems)->toHtml() ?>, // ✅ ส่งค่าสินค้าที่เลือกไปด้วย
-                    selectedFreebies: <?php echo \Illuminate\Support\Js::from($selectedFreebies)->toHtml() ?> // ✅ ส่งค่าของแถมไปด้วย
+                    selectedItems: <?php echo \Illuminate\Support\Js::from($selectedItems)->toHtml() ?>,
+                    selectedFreebies: <?php echo \Illuminate\Support\Js::from($selectedFreebies)->toHtml() ?>
                 })">
                     <h3 class="font-bold text-gray-800 mb-4">สรุปยอดชำระ:</h3>
 
@@ -592,20 +611,20 @@
 
                     try {
                         const response = await fetch(
-                        '/payment/apply-discount', { // This URL needs to be defined
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
-                            },
-                            // ส่งข้อมูลให้ครบถ้วนตามที่ Controller ต้องการ
-                            body: JSON.stringify({
-                                code: this.discountCode,
-                                selected_items: this.selectedItems,
-                                selected_freebies: this.selectedFreebies
-                            }),
-                        });
+                            '/payment/apply-discount', { // This URL needs to be defined
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').content,
+                                },
+                                // ส่งข้อมูลให้ครบถ้วนตามที่ Controller ต้องการ
+                                body: JSON.stringify({
+                                    code: this.discountCode,
+                                    selected_items: this.selectedItems,
+                                    selected_freebies: this.selectedFreebies
+                                }),
+                            });
 
                         const data = await response.json();
 

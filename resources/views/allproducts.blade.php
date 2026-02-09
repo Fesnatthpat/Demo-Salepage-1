@@ -15,6 +15,11 @@
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-24">
                         <h3 class="font-bold text-lg mb-4 text-gray-800">ตัวกรองค้นหา</h3>
                         <form action="{{ route('allproducts') }}" method="GET">
+                            {{-- คงค่า Sort ไว้เมื่อกดค้นหาใหม่ --}}
+                            @if (request('sort'))
+                                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                            @endif
+
                             <div class="form-control mb-4">
                                 <label class="label"><span class="label-text text-gray-600">ค้นหาชื่อสินค้า</span></label>
                                 <div class="relative">
@@ -37,7 +42,7 @@
                                         class="label-text font-bold text-gray-700">หมวดหมู่</span></label>
                                 <ul class="menu bg-base-100 w-full p-0 text-gray-600 rounded-box">
                                     <li>
-                                        <a href="{{ route('allproducts') }}"
+                                        <a href="{{ route('allproducts', array_merge(request()->query(), ['category' => null])) }}"
                                             class="{{ !request('category') ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600' }}">
                                             ทั้งหมด
                                         </a>
@@ -45,7 +50,8 @@
                                     @if (isset($categories))
                                         @foreach ($categories as $cat)
                                             <li>
-                                                <a href="{{ route('allproducts', ['category' => $cat]) }}"
+                                                {{-- ใช้ array_merge เพื่อคงค่า search และ sort ไว้เวลาเปลี่ยนหมวดหมู่ --}}
+                                                <a href="{{ route('allproducts', array_merge(request()->query(), ['category' => $cat])) }}"
                                                     class="{{ request('category') == $cat ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600' }}">
                                                     {{ $cat }}
                                                 </a>
@@ -65,45 +71,41 @@
                 {{-- MAIN CONTENT (เนื้อหาหลัก) --}}
                 <main class="w-full lg:w-3/4">
 
-                    {{-- ★★★ SMALL SLIDER (ย้ายมาตรงนี้ ตามที่ขีดเส้นไว้) ★★★ --}}
+                    {{-- ★★★ SMALL SLIDER ★★★ --}}
                     <div
                         class="w-full h-[150px] md:h-[250px] lg:h-[300px] rounded-2xl overflow-hidden mb-6 shadow-sm group relative">
                         <div class="swiper mySwiper w-full h-full">
                             <div class="swiper-wrapper">
-                                {{-- Slide 1 --}}
                                 <div class="swiper-slide">
                                     <a href="#" class="block w-full">
                                         <img src="{{ asset('images/th-1.png') }}" class="w-full object-cover object-center"
-                                            alt="โปรโมชั่น Sale"
+                                            alt="Banner 1"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/783630/ffffff?text=Banner+1';" />
                                     </a>
                                 </div>
-                                {{-- Slide 2 --}}
                                 <div class="swiper-slide">
                                     <a href="#" class="block w-full">
                                         <img src="{{ asset('images/th-2.png') }}" class="w-full object-cover object-center"
-                                            alt="จัดส่งวันไหน"
+                                            alt="Banner 2"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+2';" />
                                     </a>
                                 </div>
-                                {{-- Slide 3 --}}
                                 <div class="swiper-slide">
                                     <a href="#" class="block w-full">
                                         <img src="{{ asset('images/th-3.png') }}" class="w-full object-cover object-center"
-                                            alt="ขอขอบคุณลูกค้า"
+                                            alt="Banner 3"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+3';" />
                                     </a>
                                 </div>
                             </div>
-                            {{-- ปุ่มเลื่อนสไลด์ (ปรับขนาดให้เล็กลงหน่อยเพื่อให้เข้ากับแบนเนอร์เล็ก) --}}
                             <div class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
                             <div class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
                             <div class="swiper-pagination"></div>
                         </div>
                     </div>
 
-                    {{-- ★★★ CATEGORY MENU SECTION (Sticky Top) ★★★ --}}
-                    <div class="w-full  py-4 rounded-2xl mt-10 mb-10 shadow-lg ">
+                    {{-- ★★★ CATEGORY MENU SECTION ★★★ --}}
+                    <div class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-sm bg-white border border-gray-100">
                         <div class="container mx-auto px-4">
                             <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
                                 @php
@@ -120,17 +122,17 @@
                                         ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
                                     ];
                                 @endphp
-
                                 @foreach ($menuItems as $menu)
                                     <a href="/allproducts?category={{ strip_tags($menu['name']) }}"
                                         class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
                                         <div
-                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white hover:bg-red-600 rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
+                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 group-hover:bg-red-600 rounded-full flex items-center justify-center p-2 mb-1 shadow-sm transition-colors">
                                             <img src="{{ asset('images/' . $menu['image']) }}"
                                                 alt="{{ strip_tags($menu['name']) }}" class="w-full h-full object-contain"
                                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
                                         </div>
-                                        <span class="text-[10px] md:text-xs font-bold text-red-600 text-center leading-tight">
+                                        <span
+                                            class="text-[10px] md:text-xs font-bold text-gray-600 group-hover:text-red-600 text-center leading-tight">
                                             {!! $menu['name'] !!}
                                         </span>
                                     </a>
@@ -139,11 +141,44 @@
                         </div>
                     </div>
 
-                    {{-- แถบแสดงจำนวนสินค้า --}}
-                    {{-- <div
-                        class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 flex justify-between items-center">
-                        <span class="text-gray-600 font-medium">สินค้าทั้งหมด ({{ $products->total() }} รายการ)</span>
-                    </div> --}}
+                    {{-- ★★★ SORTING BAR (ส่วนที่เพิ่มใหม่) ★★★ --}}
+                    <div
+                        class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+                        <div class="mb-3 sm:mb-0">
+                            <h2 class="text-gray-800 font-bold text-lg flex items-center gap-2">
+                                สินค้าทั้งหมด
+                                <span class="badge badge-outline text-xs font-normal text-gray-500">
+                                    {{ $products->total() }} รายการ
+                                </span>
+                            </h2>
+                        </div>
+
+                        <form id="sortForm" action="{{ route('allproducts') }}" method="GET"
+                            class="flex items-center gap-3 w-full sm:w-auto">
+                            {{-- คงค่า Search และ Category ไว้เวลาเปลี่ยน Sort --}}
+                            @if (request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if (request('category'))
+                                <input type="hidden" name="category" value="{{ request('category') }}">
+                            @endif
+
+                            <label class="text-sm text-gray-600 whitespace-nowrap hidden sm:block">เรียงตาม:</label>
+                            <select name="sort" onchange="document.getElementById('sortForm').submit();"
+                                class="select select-bordered select-sm w-full sm:w-48 bg-gray-50 focus:border-red-500 focus:ring-red-500 text-gray-700">
+                                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>ล่าสุด (Newest)
+                                </option>
+                                <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>ยอดนิยม
+                                    (Popular)</option>
+                                <option value="bestseller" {{ request('sort') == 'bestseller' ? 'selected' : '' }}>ขายดี
+                                    (Best Seller)</option>
+                                <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>ราคา: ต่ำ
+                                    - สูง</option>
+                                <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>ราคา:
+                                    สูง - ต่ำ</option>
+                            </select>
+                        </form>
+                    </div>
 
                     {{-- Grid สินค้า --}}
                     @if ($products->count() > 0)
@@ -151,7 +186,6 @@
                             @foreach ($products as $product)
                                 @if ($product)
                                     @php
-                                        // --- Logic for Eloquent Model ---
                                         $originalPrice = (float) ($product->pd_sp_price ?? 0);
                                         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
                                         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
@@ -199,9 +233,11 @@
                                             <h2
                                                 class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
                                                 <a href="{{ route('product.show', $product->pd_sp_id) }}"
-                                                    class="hover:text-red-600 transition">{{ $product->pd_sp_name ?? 'Missing Product Name' }}</a>
+                                                    class="hover:text-red-600 transition">
+                                                    {{ $product->pd_sp_name ?? 'Missing Product Name' }}
+                                                </a>
                                             </h2>
-                                            <p class="text-xs text-gray-500 mt-1">Code: {{ $product->pd_sp_code }}</p>
+                                            {{-- <p class="text-xs text-gray-500 mt-1">Code: {{ $product->pd_sp_code }}</p> --}}
 
                                             <p
                                                 class="text-xs font-medium mt-1 {{ $product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500' }}">
@@ -276,10 +312,9 @@
         </div>
     </div>
 
-    {{-- Script สำหรับจัดการปุ่มเพิ่มตะกร้าในหน้า Loop --}}
+    {{-- Script สำหรับจัดการ Swiper และ Add to Cart --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Initialize Swiper
             var swiper1 = new Swiper(".mySwiper", {
                 slidesPerView: 1,
                 spaceBetween: 0,
@@ -301,20 +336,17 @@
                 },
             });
 
-            // 2. จัดการ Cart
+            // Cart Logic
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
-
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-
                     const currentForm = this;
                     const submitBtn = currentForm.querySelector('button[type="submit"]');
                     const actionUrl = currentForm.getAttribute('data-action');
                     const quantity = currentForm.querySelector('[name="quantity"]').value;
-
-                    // เพิ่ม Effect กดปุ่มให้รู้ว่ากดแล้ว
                     const originalBtnContent = submitBtn.innerHTML;
+
                     submitBtn.disabled = true;
                     submitBtn.innerHTML =
                         '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
@@ -335,12 +367,9 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // 1. Animation Fly (ถ้ามี)
                                 if (typeof window.flyToCart === 'function') {
                                     window.flyToCart(submitBtn);
                                 }
-
-                                // 2. Popup Success
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'เพิ่มลงตะกร้าแล้ว',
@@ -349,11 +378,9 @@
                                     toast: true,
                                     showConfirmButton: false,
                                     timer: 1500,
-                                    background: '#FEF2F2', // พื้นหลังสีแดงอ่อน
-                                    iconColor: '#DC2626' // ไอคอนสีแดง
+                                    background: '#FEF2F2',
+                                    iconColor: '#DC2626'
                                 });
-
-                                // 3. Dispatch Livewire event
                                 setTimeout(() => {
                                     Livewire.dispatch('cartUpdated');
                                 }, 500);
@@ -370,11 +397,10 @@
                                 position: 'center',
                                 showConfirmButton: false,
                                 timer: 1500,
-                                confirmButtonColor: '#DC2626' // ปุ่มยืนยันสีแดง
+                                confirmButtonColor: '#DC2626'
                             });
                         })
                         .finally(() => {
-                            // คืนค่าปุ่มกลับสู่สภาพเดิม
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = originalBtnContent;
                         });

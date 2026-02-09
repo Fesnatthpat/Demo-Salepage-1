@@ -13,6 +13,11 @@
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-24">
                         <h3 class="font-bold text-lg mb-4 text-gray-800">ตัวกรองค้นหา</h3>
                         <form action="<?php echo e(route('allproducts')); ?>" method="GET">
+                            
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('sort')): ?>
+                                <input type="hidden" name="sort" value="<?php echo e(request('sort')); ?>">
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
                             <div class="form-control mb-4">
                                 <label class="label"><span class="label-text text-gray-600">ค้นหาชื่อสินค้า</span></label>
                                 <div class="relative">
@@ -35,7 +40,7 @@
                                         class="label-text font-bold text-gray-700">หมวดหมู่</span></label>
                                 <ul class="menu bg-base-100 w-full p-0 text-gray-600 rounded-box">
                                     <li>
-                                        <a href="<?php echo e(route('allproducts')); ?>"
+                                        <a href="<?php echo e(route('allproducts', array_merge(request()->query(), ['category' => null]))); ?>"
                                             class="<?php echo e(!request('category') ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600'); ?>">
                                             ทั้งหมด
                                         </a>
@@ -43,7 +48,8 @@
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($categories)): ?>
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                             <li>
-                                                <a href="<?php echo e(route('allproducts', ['category' => $cat])); ?>"
+                                                
+                                                <a href="<?php echo e(route('allproducts', array_merge(request()->query(), ['category' => $cat]))); ?>"
                                                     class="<?php echo e(request('category') == $cat ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600'); ?>">
                                                     <?php echo e($cat); ?>
 
@@ -69,32 +75,28 @@
                         class="w-full h-[150px] md:h-[250px] lg:h-[300px] rounded-2xl overflow-hidden mb-6 shadow-sm group relative">
                         <div class="swiper mySwiper w-full h-full">
                             <div class="swiper-wrapper">
-                                
                                 <div class="swiper-slide">
                                     <a href="#" class="block w-full">
                                         <img src="<?php echo e(asset('images/th-1.png')); ?>" class="w-full object-cover object-center"
-                                            alt="โปรโมชั่น Sale"
+                                            alt="Banner 1"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/783630/ffffff?text=Banner+1';" />
                                     </a>
                                 </div>
-                                
                                 <div class="swiper-slide">
                                     <a href="#" class="block w-full">
                                         <img src="<?php echo e(asset('images/th-2.png')); ?>" class="w-full object-cover object-center"
-                                            alt="จัดส่งวันไหน"
+                                            alt="Banner 2"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+2';" />
                                     </a>
                                 </div>
-                                
                                 <div class="swiper-slide">
                                     <a href="#" class="block w-full">
                                         <img src="<?php echo e(asset('images/th-3.png')); ?>" class="w-full object-cover object-center"
-                                            alt="ขอขอบคุณลูกค้า"
+                                            alt="Banner 3"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+3';" />
                                     </a>
                                 </div>
                             </div>
-                            
                             <div class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
                             <div class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
                             <div class="swiper-pagination"></div>
@@ -102,7 +104,7 @@
                     </div>
 
                     
-                    <div class="w-full  py-4 rounded-2xl mt-10 mb-10 shadow-lg ">
+                    <div class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-sm bg-white border border-gray-100">
                         <div class="container mx-auto px-4">
                             <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
                                 <?php
@@ -119,17 +121,17 @@
                                         ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
                                     ];
                                 ?>
-
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                     <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
                                         class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
                                         <div
-                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white hover:bg-red-600 rounded-full flex items-center justify-center p-1.5 mb-1 shadow-sm">
+                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 group-hover:bg-red-600 rounded-full flex items-center justify-center p-2 mb-1 shadow-sm transition-colors">
                                             <img src="<?php echo e(asset('images/' . $menu['image'])); ?>"
                                                 alt="<?php echo e(strip_tags($menu['name'])); ?>" class="w-full h-full object-contain"
                                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
                                         </div>
-                                        <span class="text-[10px] md:text-xs font-bold text-red-600 text-center leading-tight">
+                                        <span
+                                            class="text-[10px] md:text-xs font-bold text-gray-600 group-hover:text-red-600 text-center leading-tight">
                                             <?php echo $menu['name']; ?>
 
                                         </span>
@@ -140,7 +142,43 @@
                     </div>
 
                     
-                    
+                    <div
+                        class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+                        <div class="mb-3 sm:mb-0">
+                            <h2 class="text-gray-800 font-bold text-lg flex items-center gap-2">
+                                สินค้าทั้งหมด
+                                <span class="badge badge-outline text-xs font-normal text-gray-500">
+                                    <?php echo e($products->total()); ?> รายการ
+                                </span>
+                            </h2>
+                        </div>
+
+                        <form id="sortForm" action="<?php echo e(route('allproducts')); ?>" method="GET"
+                            class="flex items-center gap-3 w-full sm:w-auto">
+                            
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('search')): ?>
+                                <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('category')): ?>
+                                <input type="hidden" name="category" value="<?php echo e(request('category')); ?>">
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                            <label class="text-sm text-gray-600 whitespace-nowrap hidden sm:block">เรียงตาม:</label>
+                            <select name="sort" onchange="document.getElementById('sortForm').submit();"
+                                class="select select-bordered select-sm w-full sm:w-48 bg-gray-50 focus:border-red-500 focus:ring-red-500 text-gray-700">
+                                <option value="newest" <?php echo e(request('sort') == 'newest' ? 'selected' : ''); ?>>ล่าสุด (Newest)
+                                </option>
+                                <option value="popular" <?php echo e(request('sort') == 'popular' ? 'selected' : ''); ?>>ยอดนิยม
+                                    (Popular)</option>
+                                <option value="bestseller" <?php echo e(request('sort') == 'bestseller' ? 'selected' : ''); ?>>ขายดี
+                                    (Best Seller)</option>
+                                <option value="price_asc" <?php echo e(request('sort') == 'price_asc' ? 'selected' : ''); ?>>ราคา: ต่ำ
+                                    - สูง</option>
+                                <option value="price_desc" <?php echo e(request('sort') == 'price_desc' ? 'selected' : ''); ?>>ราคา:
+                                    สูง - ต่ำ</option>
+                            </select>
+                        </form>
+                    </div>
 
                     
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($products->count() > 0): ?>
@@ -148,7 +186,6 @@
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product): ?>
                                     <?php
-                                        // --- Logic for Eloquent Model ---
                                         $originalPrice = (float) ($product->pd_sp_price ?? 0);
                                         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
                                         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
@@ -198,9 +235,12 @@
                                             <h2
                                                 class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
                                                 <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"
-                                                    class="hover:text-red-600 transition"><?php echo e($product->pd_sp_name ?? 'Missing Product Name'); ?></a>
+                                                    class="hover:text-red-600 transition">
+                                                    <?php echo e($product->pd_sp_name ?? 'Missing Product Name'); ?>
+
+                                                </a>
                                             </h2>
-                                            <p class="text-xs text-gray-500 mt-1">Code: <?php echo e($product->pd_sp_code); ?></p>
+                                            
 
                                             <p
                                                 class="text-xs font-medium mt-1 <?php echo e($product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500'); ?>">
@@ -280,7 +320,6 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Initialize Swiper
             var swiper1 = new Swiper(".mySwiper", {
                 slidesPerView: 1,
                 spaceBetween: 0,
@@ -302,20 +341,17 @@
                 },
             });
 
-            // 2. จัดการ Cart
+            // Cart Logic
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
-
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-
                     const currentForm = this;
                     const submitBtn = currentForm.querySelector('button[type="submit"]');
                     const actionUrl = currentForm.getAttribute('data-action');
                     const quantity = currentForm.querySelector('[name="quantity"]').value;
-
-                    // เพิ่ม Effect กดปุ่มให้รู้ว่ากดแล้ว
                     const originalBtnContent = submitBtn.innerHTML;
+
                     submitBtn.disabled = true;
                     submitBtn.innerHTML =
                         '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
@@ -336,12 +372,9 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // 1. Animation Fly (ถ้ามี)
                                 if (typeof window.flyToCart === 'function') {
                                     window.flyToCart(submitBtn);
                                 }
-
-                                // 2. Popup Success
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'เพิ่มลงตะกร้าแล้ว',
@@ -350,11 +383,9 @@
                                     toast: true,
                                     showConfirmButton: false,
                                     timer: 1500,
-                                    background: '#FEF2F2', // พื้นหลังสีแดงอ่อน
-                                    iconColor: '#DC2626' // ไอคอนสีแดง
+                                    background: '#FEF2F2',
+                                    iconColor: '#DC2626'
                                 });
-
-                                // 3. Dispatch Livewire event
                                 setTimeout(() => {
                                     Livewire.dispatch('cartUpdated');
                                 }, 500);
@@ -371,11 +402,10 @@
                                 position: 'center',
                                 showConfirmButton: false,
                                 timer: 1500,
-                                confirmButtonColor: '#DC2626' // ปุ่มยืนยันสีแดง
+                                confirmButtonColor: '#DC2626'
                             });
                         })
                         .finally(() => {
-                            // คืนค่าปุ่มกลับสู่สภาพเดิม
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = originalBtnContent;
                         });

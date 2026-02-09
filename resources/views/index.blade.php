@@ -307,7 +307,7 @@
                                     <h2 class="text-lg font-bold text-gray-800 leading-tight line-clamp-2 hover:text-red-600 transition cursor-pointer"
                                         onclick="window.location='{{ route('product.show', $product->pd_sp_id) }}'">
                                         {{ $product->pd_sp_name }}</h2>
-                                    <p class="text-xs text-gray-400 mt-1">รหัส: {{ $product->pd_sp_code }}</p>
+                                    {{-- <p class="text-xs text-gray-400 mt-1">รหัส: {{ $product->pd_sp_code }}</p> --}}
                                 </div>
                                 <div class="mt-auto">
                                     <div class="flex justify-between items-center mb-4">

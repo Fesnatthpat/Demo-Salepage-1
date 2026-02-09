@@ -71,35 +71,32 @@
                 <main class="w-full lg:w-3/4">
 
                     
-                    <div
-                        class="w-full h-[150px] md:h-[250px] lg:h-[300px] rounded-2xl overflow-hidden mb-6 shadow-sm group relative">
-                        <div class="swiper mySwiper w-full h-full">
-                            <div class="swiper-wrapper">
-                                <div class="swiper-slide">
-                                    <a href="#" class="block w-full">
-                                        <img src="<?php echo e(asset('images/th-1.png')); ?>" class="w-full object-cover object-center"
-                                            alt="Banner 1"
-                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/783630/ffffff?text=Banner+1';" />
-                                    </a>
+                    <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
+                        
+                        
+                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[4/1] w-full relative">
+                            <div class="swiper mySwiper w-full h-full absolute inset-0">
+                                <div class="swiper-wrapper">
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                        <div class="swiper-slide">
+                                            <a href="#" class="block w-full h-full">
+                                                <img src="<?php echo e(asset('images/' . $image)); ?>"
+                                                    class="w-full h-full object-cover object-center"
+                                                    alt="Banner <?php echo e($index + 1); ?>"
+                                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner+<?php echo e($index + 1); ?>';" />
+                                            </a>
+                                        </div>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </div>
-                                <div class="swiper-slide">
-                                    <a href="#" class="block w-full">
-                                        <img src="<?php echo e(asset('images/th-2.png')); ?>" class="w-full object-cover object-center"
-                                            alt="Banner 2"
-                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+2';" />
-                                    </a>
+                                
+                                <div
+                                    class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10 !text-white drop-shadow-md">
                                 </div>
-                                <div class="swiper-slide">
-                                    <a href="#" class="block w-full">
-                                        <img src="<?php echo e(asset('images/th-3.png')); ?>" class="w-full object-cover object-center"
-                                            alt="Banner 3"
-                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+3';" />
-                                    </a>
+                                <div
+                                    class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10 !text-white drop-shadow-md">
                                 </div>
+                                <div class="swiper-pagination"></div>
                             </div>
-                            <div class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
-                            <div class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
-                            <div class="swiper-pagination"></div>
                         </div>
                     </div>
 

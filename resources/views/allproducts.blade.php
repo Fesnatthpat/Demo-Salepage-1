@@ -72,35 +72,32 @@
                 <main class="w-full lg:w-3/4">
 
                     {{-- ★★★ SMALL SLIDER ★★★ --}}
-                    <div
-                        class="w-full h-[150px] md:h-[250px] lg:h-[300px] rounded-2xl overflow-hidden mb-6 shadow-sm group relative">
-                        <div class="swiper mySwiper w-full h-full">
-                            <div class="swiper-wrapper">
-                                <div class="swiper-slide">
-                                    <a href="#" class="block w-full">
-                                        <img src="{{ asset('images/th-1.png') }}" class="w-full object-cover object-center"
-                                            alt="Banner 1"
-                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/783630/ffffff?text=Banner+1';" />
-                                    </a>
+                    <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
+                        {{-- ปรับ aspect-ratio ตรงนี้ให้ตรงกับขนาดรูปจริงของคุณ (เช่น 16/9, 3/1, หรือ 21/9) --}}
+                        {{-- ตัวอย่างนี้ใช้ aspect-[3/1] คือ กว้าง 3 ส่วน สูง 1 ส่วน (เหมาะสำหรับ Banner แนวนอน) --}}
+                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[4/1] w-full relative">
+                            <div class="swiper mySwiper w-full h-full absolute inset-0">
+                                <div class="swiper-wrapper">
+                                    @foreach (['th-1.png', 'th-2.png', 'th-3.png'] as $index => $image)
+                                        <div class="swiper-slide">
+                                            <a href="#" class="block w-full h-full">
+                                                <img src="{{ asset('images/' . $image) }}"
+                                                    class="w-full h-full object-cover object-center"
+                                                    alt="Banner {{ $index + 1 }}"
+                                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner+{{ $index + 1 }}';" />
+                                            </a>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="swiper-slide">
-                                    <a href="#" class="block w-full">
-                                        <img src="{{ asset('images/th-2.png') }}" class="w-full object-cover object-center"
-                                            alt="Banner 2"
-                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+2';" />
-                                    </a>
+                                {{-- Navigation Buttons (Optional styling adjustments) --}}
+                                <div
+                                    class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10 !text-white drop-shadow-md">
                                 </div>
-                                <div class="swiper-slide">
-                                    <a href="#" class="block w-full">
-                                        <img src="{{ asset('images/th-3.png') }}" class="w-full object-cover object-center"
-                                            alt="Banner 3"
-                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/800x300/ef4444/ffffff?text=Banner+3';" />
-                                    </a>
+                                <div
+                                    class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10 !text-white drop-shadow-md">
                                 </div>
+                                <div class="swiper-pagination"></div>
                             </div>
-                            <div class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
-                            <div class="swiper-button-prev !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10"></div>
-                            <div class="swiper-pagination"></div>
                         </div>
                     </div>
 

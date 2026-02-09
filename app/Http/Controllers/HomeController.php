@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductSalepage;
+use App\Models\SiteSetting;
 
 class HomeController extends Controller
 {
@@ -15,7 +16,11 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
-        return view('index', compact('recommendedProducts'));
+        $settings = SiteSetting::all()->mapWithKeys(function ($setting) {
+            return [$setting->key => SiteSetting::get($setting->key)]; // Use SiteSetting::get() to decode JSON
+        })->toArray();
+
+        return view('index', compact('recommendedProducts', 'settings'));
     }
 
     public function about()

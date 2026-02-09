@@ -16,9 +16,8 @@
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    {{-- Tom Select --}}
+    {{-- Tom Select (Dark Theme Overrides) --}}
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     {{-- Alpine.js --}}
@@ -33,51 +32,51 @@
             font-family: 'Sarabun', sans-serif;
         }
 
-        /* Scrollbar สีเข้ม */
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Dark Mode Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #1f2937;
+            background: #111827;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #4b5563;
+            background: #374151;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
+            background: #4b5563;
         }
 
-        /* ปรับแต่ง TomSelect สำหรับ Dark Mode */
+        /* TomSelect Dark Mode */
         .ts-control {
-            background-color: #374151;
-            /* gray-700 */
-            border-color: #4b5563;
-            /* gray-600 */
-            color: #f3f4f6;
-            /* gray-100 */
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
             border-radius: 0.5rem;
-            padding: 0.6rem;
-        }
-
-        .ts-control input {
-            color: #f3f4f6;
         }
 
         .ts-dropdown {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #f3f4f6;
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
         }
 
         .ts-dropdown .option:hover,
         .ts-dropdown .active {
-            background-color: #4b5563;
-            color: #fff;
+            background-color: #4b5563 !important;
+            color: #fff !important;
+        }
+
+        .ts-input {
+            color: #fff !important;
         }
     </style>
 </head>
@@ -120,6 +119,7 @@
                     โปรโมชั่น
                 </a>
 
+                {{-- ส่วนเมนู Super Admin ที่นำกลับมา --}}
                 @if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin')
                     <div class="pt-4 pb-2">
                         <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
@@ -148,18 +148,18 @@
                     <i class="fas fa-globe mr-3 w-5 text-center"></i>
                     ไปหน้าเว็บไซต์
                 </a>
-                <a href="{{ route('admin.logout') }}"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                    class="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-900/30 rounded-md mt-2 transition-colors">
-                    <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i>
-                    ออกจากระบบ
-                </a>
-                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
+                <form method="POST" action="{{ route('admin.logout') }}" id="logout-form">
                     @csrf
+                    <button type="submit"
+                        class="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-900/30 rounded-md mt-2 transition-colors">
+                        <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i>
+                        ออกจากระบบ
+                    </button>
                 </form>
             </div>
         </aside>
 
+        {{-- Main Content Wrapper --}}
         <div class="flex-1 flex flex-col overflow-hidden bg-gray-900">
             {{-- Header --}}
             <header class="flex justify-between items-center p-4 bg-gray-800 border-b border-gray-700 shadow-sm z-20">
@@ -170,7 +170,6 @@
                     </button>
                     <h1 class="text-xl font-semibold ml-4 text-gray-100">@yield('page-title', 'Dashboard')</h1>
                 </div>
-
                 <div class="flex items-center">
                     @if (auth()->guard('admin')->check())
                         <div x-data="{ dropdownOpen: false }" class="relative">
@@ -212,11 +211,9 @@
                 </div>
             </header>
 
+            {{-- Page Content --}}
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6">
-                {{-- Container รองรับ Content --}}
-                <div class="container mx-auto">
-                    @yield('content')
-                </div>
+                @yield('content')
             </main>
         </div>
     </div>

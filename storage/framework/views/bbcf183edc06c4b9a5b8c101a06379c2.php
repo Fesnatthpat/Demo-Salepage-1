@@ -18,7 +18,6 @@
 
     
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     
@@ -33,51 +32,51 @@
             font-family: 'Sarabun', sans-serif;
         }
 
-        /* Scrollbar สีเข้ม */
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Dark Mode Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #1f2937;
+            background: #111827;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #4b5563;
+            background: #374151;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
+            background: #4b5563;
         }
 
-        /* ปรับแต่ง TomSelect สำหรับ Dark Mode */
+        /* TomSelect Dark Mode */
         .ts-control {
-            background-color: #374151;
-            /* gray-700 */
-            border-color: #4b5563;
-            /* gray-600 */
-            color: #f3f4f6;
-            /* gray-100 */
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
             border-radius: 0.5rem;
-            padding: 0.6rem;
-        }
-
-        .ts-control input {
-            color: #f3f4f6;
         }
 
         .ts-dropdown {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #f3f4f6;
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
         }
 
         .ts-dropdown .option:hover,
         .ts-dropdown .active {
-            background-color: #4b5563;
-            color: #fff;
+            background-color: #4b5563 !important;
+            color: #fff !important;
+        }
+
+        .ts-input {
+            color: #fff !important;
         }
     </style>
 </head>
@@ -120,7 +119,8 @@
                     โปรโมชั่น
                 </a>
 
-                <?php if(auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin'): ?>
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin'): ?>
                     <div class="pt-4 pb-2">
                         <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
                     </div>
@@ -139,7 +139,7 @@
                         <i class="fas fa-cogs mr-3 w-5 text-center"></i>
                         ตั้งค่าเว็บไซต์
                     </a>
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </nav>
 
             <div class="px-4 py-4 border-t border-gray-700 bg-gray-800">
@@ -148,18 +148,18 @@
                     <i class="fas fa-globe mr-3 w-5 text-center"></i>
                     ไปหน้าเว็บไซต์
                 </a>
-                <a href="<?php echo e(route('admin.logout')); ?>"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                    class="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-900/30 rounded-md mt-2 transition-colors">
-                    <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i>
-                    ออกจากระบบ
-                </a>
-                <form id="logout-form" action="<?php echo e(route('admin.logout')); ?>" method="POST" style="display: none;">
+                <form method="POST" action="<?php echo e(route('admin.logout')); ?>" id="logout-form">
                     <?php echo csrf_field(); ?>
+                    <button type="submit"
+                        class="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-900/30 rounded-md mt-2 transition-colors">
+                        <i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i>
+                        ออกจากระบบ
+                    </button>
                 </form>
             </div>
         </aside>
 
+        
         <div class="flex-1 flex flex-col overflow-hidden bg-gray-900">
             
             <header class="flex justify-between items-center p-4 bg-gray-800 border-b border-gray-700 shadow-sm z-20">
@@ -170,7 +170,6 @@
                     </button>
                     <h1 class="text-xl font-semibold ml-4 text-gray-100"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h1>
                 </div>
-
                 <div class="flex items-center">
                     <?php if(auth()->guard('admin')->check()): ?>
                         <div x-data="{ dropdownOpen: false }" class="relative">
@@ -208,15 +207,13 @@
                                 </a>
                             </div>
                         </div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </header>
 
+            
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6">
-                
-                <div class="container mx-auto">
-                    <?php echo $__env->yieldContent('content'); ?>
-                </div>
+                <?php echo $__env->yieldContent('content'); ?>
             </main>
         </div>
     </div>

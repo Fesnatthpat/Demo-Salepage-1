@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AddressController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -149,8 +149,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
 
     // Settings
-    Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
-    Route::delete('/settings/{key}', [App\Http\Controllers\Admin\SettingController::class, 'destroy'])->name('settings.destroy');
+    Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
+    // Route::delete('/settings/{key}', [App\Http\Controllers\Admin\SettingController::class, 'destroy'])->name('settings.destroy');
 
 });

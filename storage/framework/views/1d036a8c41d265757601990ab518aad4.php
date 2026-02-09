@@ -1,27 +1,16 @@
 <?php $__env->startSection('title', 'ตั้งค่าเว็บไซต์'); ?>
 
-<?php $__env->startSection('page-title'); ?>
-    <div class="flex items-center gap-2 text-sm text-gray-400">
-        <i class="fas fa-cogs mr-1"></i>
-        <span class="text-gray-100 font-medium">การตั้งค่าหน้าหลักเว็บไซต์</span>
-    </div>
-<?php $__env->stopSection(); ?>
-
 <?php $__env->startSection('content'); ?>
-    <div class="max-w-7xl mx-auto pb-24">
+    <div class="container mx-auto pb-24">
 
         
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
-            <div class="alert alert-error shadow-lg mb-6 bg-red-900/50 border-red-800 text-red-200">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                        <h3 class="font-bold">พบข้อผิดพลาด!</h3>
-                        <ul class="list-disc pl-5 mt-2 text-sm">
+            <div class="bg-red-900/50 border-l-4 border-red-500 text-red-200 p-4 mb-6 rounded shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0"><i class="fas fa-exclamation-circle text-red-400"></i></div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium">พบข้อผิดพลาด</h3>
+                        <ul class="mt-2 text-sm text-red-300 list-disc list-inside">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <li><?php echo e($error); ?></li>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
@@ -33,14 +22,12 @@
 
         
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
-            <div class="alert alert-success shadow-lg mb-6 bg-emerald-900/50 border-emerald-800 text-emerald-200">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span><?php echo e(session('success')); ?></span>
+            <div class="bg-emerald-900/50 border-l-4 border-emerald-500 text-emerald-200 p-4 mb-6 rounded shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0"><i class="fas fa-check-circle text-emerald-400"></i></div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium"><?php echo e(session('success')); ?></p>
+                    </div>
                 </div>
             </div>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -48,1333 +35,307 @@
         <form action="<?php echo e(route('admin.settings.update')); ?>" method="POST" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
 
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                <div class="xl:col-span-2 space-y-8">
+                <div class="lg:col-span-2 space-y-8">
 
                     
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
-                                <i class="fas fa-images"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">Hero Section Slider (สไลด์หลัก)</h3>
+                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
+                            <i class="fas fa-images text-red-400"></i>
+                            <h3 class="text-lg font-medium text-gray-100">Hero Slider (สไลด์หลัก)</h3>
                         </div>
+                        <div class="p-6">
+                            <input type="hidden" name="hero_slider_items" id="hero_slider_input"
+                                value="<?php echo e(old('hero_slider_items', json_encode($settings['hero_slider_items'] ?? []))); ?>">
+                            <div id="hero_slider_list" class="space-y-3 mb-4"></div>
 
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <input type="hidden" name="hero_slider_items" id="hero_slider_items_input"
-                                value="<?php echo e(old('hero_slider_items', $settings['hero_slider_items'] ?? '[]')); ?>">
-
-                            <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
-                                
-                                <div
-                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                    <div class="col-span-3">รูปภาพ (URL)</div>
-                                    <div class="col-span-3">หัวข้อ</div>
-                                    <div class="col-span-5">คำอธิบาย</div>
-                                    <div class="col-span-1 text-center">ลบ</div>
-                                </div>
-
-                                
-                                <div id="hero-slider-list" class="space-y-2">
-                                    
-                                </div>
-
-                                
-                                <div id="hero-slider-empty-state"
-                                    class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                    ยังไม่มีสไลด์
-                                </div>
-
-                                
-                                <div class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_hero_slide_image"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="URL รูปภาพ">
-                                    </div>
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_hero_slide_title"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="หัวข้อ">
-                                    </div>
-                                    <div class="col-span-5">
-                                        <input type="text" id="new_hero_slide_description"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="คำอธิบาย">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <button type="button" onclick="addHeroSlideItem()"
-                                            class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
                             <div
-                                class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">ข้อมูลแพ้อาหาร</h3>
-                        </div>
-
-                        <div class="card-body p-6 space-y-6">
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">ข้อความข้อมูลแพ้อาหาร</span>
-                                    <span class="label-text-alt text-gray-500">แสดงในหน้าสินค้า</span>
-                                </label>
-                                <textarea name="allergy_info_content" rows="5"
-                                    class="textarea textarea-bordered w-full bg-gray-700 text-gray-100 text-base leading-relaxed"><?php echo e($settings['allergy_info_content'] ?? ''); ?></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
-                                <i class="fas fa-list-ul"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">6 Reasons Section</h3>
-                        </div>
-
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <input type="hidden" name="reasons_section_items" id="reasons_section_items_input"
-                                value="<?php echo e(old('reasons_section_items', $settings['reasons_section_items'] ?? '[]')); ?>">
-
-                            <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
-                                
-                                <div
-                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                    <div class="col-span-3">รูปภาพ (URL)</div>
-                                    <div class="col-span-4">หัวข้อ</div>
-                                    <div class="col-span-4">คำอธิบาย</div>
-                                    <div class="col-span-1 text-center">ลบ</div>
+                                class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gray-900/50 p-3 rounded border border-gray-700">
+                                <div class="md:col-span-4"><input type="text" id="new_hero_img" placeholder="URL รูปภาพ"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div id="reasons-list" class="space-y-2">
-                                    
+                                <div class="md:col-span-3"><input type="text" id="new_hero_title"
+                                        placeholder="หัวข้อ (ถ้ามี)"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div id="reasons-empty-state"
-                                    class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                    ยังไม่มีเหตุผล
+                                <div class="md:col-span-4"><input type="text" id="new_hero_desc"
+                                        placeholder="คำอธิบาย (ถ้ามี)"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_reason_image"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="URL รูปภาพ">
-                                    </div>
-                                    <div class="col-span-4">
-                                        <input type="text" id="new_reason_title"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="หัวข้อ">
-                                    </div>
-                                    <div class="col-span-4">
-                                        <input type="text" id="new_reason_description"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="คำอธิบาย">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <button type="button" onclick="addReasonItem()"
-                                            class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ
-                                </div>
+                                <div class="md:col-span-1"><button type="button" onclick="addItem('hero_slider')"
+                                        class="w-full bg-emerald-600 text-white rounded hover:bg-emerald-700 py-1.5 h-full"><i
+                                            class="fas fa-plus"></i></button></div>
                             </div>
                         </div>
                     </div>
 
                     
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400">
-                                <i class="fas fa-images"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">สไลด์ตัวที่ 2</h3>
+                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
+                            <i class="fas fa-list-ul text-emerald-400"></i>
+                            <h3 class="text-lg font-medium text-gray-100">6 Reasons Section</h3>
                         </div>
+                        <div class="p-6">
+                            <input type="hidden" name="reasons_section_items" id="reasons_input"
+                                value="<?php echo e(old('reasons_section_items', json_encode($settings['reasons_section_items'] ?? []))); ?>">
+                            <div id="reasons_list" class="space-y-3 mb-4"></div>
 
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <input type="hidden" name="second_slider_items" id="second_slider_items_input"
-                                value="<?php echo e(old('second_slider_items', $settings['second_slider_items'] ?? '[]')); ?>">
-
-                            <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
-                                
-                                <div
-                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                    <div class="col-span-3">รูปภาพ (URL)</div>
-                                    <div class="col-span-3">หัวข้อ</div>
-                                    <div class="col-span-4">คำอธิบาย</div>
-                                    <div class="col-span-1 text-center">ลิงก์</div>
-                                    <div class="col-span-1 text-center">ลบ</div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gray-900/50 p-3 rounded border border-gray-700">
+                                <div class="md:col-span-3"><input type="text" id="new_reason_img"
+                                        placeholder="URL รูปภาพ"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div id="second-slider-list" class="space-y-2">
-                                    
+                                <div class="md:col-span-4"><input type="text" id="new_reason_title" placeholder="หัวข้อ"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div id="second-slider-empty-state"
-                                    class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                    ยังไม่มีสไลด์
+                                <div class="md:col-span-4"><input type="text" id="new_reason_desc" placeholder="คำอธิบาย"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_second_slide_image"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="URL รูปภาพ">
-                                    </div>
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_second_slide_title"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="หัวข้อ">
-                                    </div>
-                                    <div class="col-span-4">
-                                        <input type="text" id="new_second_slide_description"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="คำอธิบาย">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <input type="text" id="new_second_slide_link"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="ลิงก์">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <button type="button" onclick="addSecondSlideItem()"
-                                            class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ
-                                </div>
+                                <div class="md:col-span-1"><button type="button" onclick="addItem('reasons')"
+                                        class="w-full bg-emerald-600 text-white rounded hover:bg-emerald-700 py-1.5 h-full"><i
+                                            class="fas fa-plus"></i></button></div>
                             </div>
                         </div>
                     </div>
 
                     
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
-                                <i class="fas fa-th-list"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">Category Menu Section (Sticky Top)</h3>
+                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-blue-400"></i>
+                            <h3 class="text-lg font-medium text-gray-100">Service Bar Items</h3>
                         </div>
+                        <div class="p-6">
+                            <input type="hidden" name="service_bar_items" id="service_input"
+                                value="<?php echo e(old('service_bar_items', json_encode($settings['service_bar_items'] ?? []))); ?>">
+                            <div id="service_list" class="space-y-3 mb-4"></div>
 
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <input type="hidden" name="category_menu_items" id="category_menu_items_input"
-                                value="<?php echo e(old('category_menu_items', $settings['category_menu_items'] ?? '[]')); ?>">
-
-                            <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
-                                
-                                <div
-                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                    <div class="col-span-3">รูปภาพ (URL)</div>
-                                    <div class="col-span-5">ชื่อหมวดหมู่</div>
-                                    <div class="col-span-3">ลิงก์</div>
-                                    <div class="col-span-1 text-center">ลบ</div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gray-900/50 p-3 rounded border border-gray-700">
+                                <div class="md:col-span-4"><input type="text" id="new_service_icon"
+                                        placeholder="Icon Class (เช่น fas fa-star)"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div id="category-menu-list" class="space-y-2">
-                                    
+                                <div class="md:col-span-7"><input type="text" id="new_service_text"
+                                        placeholder="ข้อความ"
+                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400">
                                 </div>
-
-                                
-                                <div id="category-menu-empty-state"
-                                    class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                    ยังไม่มีรายการหมวดหมู่
-                                </div>
-
-                                
-                                <div class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_category_image"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="URL รูปภาพ">
-                                    </div>
-                                    <div class="col-span-5">
-                                        <input type="text" id="new_category_name"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="ชื่อหมวดหมู่">
-                                    </div>
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_category_link"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="ลิงก์ (เช่น /allproducts?category=...)">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <button type="button" onclick="addCategoryMenuItem()"
-                                            class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ. สำหรับลิงก์
-                                    ใช้ `allproducts?category=[หมวดหมู่]`
-                                </div>
+                                <div class="md:col-span-1"><button type="button" onclick="addItem('service')"
+                                        class="w-full bg-emerald-600 text-white rounded hover:bg-emerald-700 py-1.5 h-full"><i
+                                            class="fas fa-plus"></i></button></div>
                             </div>
+                            <small class="text-gray-500 mt-2 block">ดูรายชื่อไอคอนได้ที่ <a
+                                    href="https://fontawesome.com/v5/search" target="_blank"
+                                    class="text-blue-400 hover:underline">FontAwesome 5</a></small>
                         </div>
                     </div>
 
                     
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400">
-                                <i class="fas fa-images"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">Small Slider (หน้าสินค้าทั้งหมด)</h3>
+                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
+                            <i class="fas fa-file-alt text-yellow-400"></i>
+                            <h3 class="text-lg font-medium text-gray-100">เนื้อหาข้อความ</h3>
                         </div>
-
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <input type="hidden" name="small_slider_allproducts_items"
-                                id="small_slider_allproducts_items_input"
-                                value="<?php echo e(old('small_slider_allproducts_items', $settings['small_slider_allproducts_items'] ?? '[]')); ?>">
-
-                            <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
-                                
-                                <div
-                                    class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                    <div class="col-span-3">รูปภาพ (URL)</div>
-                                    <div class="col-span-5">หัวข้อ</div>
-                                    <div class="col-span-3">ลิงก์</div>
-                                    <div class="col-span-1 text-center">ลบ</div>
-                                </div>
-
-                                
-                                <div id="small-slider-allproducts-list" class="space-y-2">
-                                    
-                                </div>
-
-                                
-                                <div id="small-slider-allproducts-empty-state"
-                                    class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                    ยังไม่มีสไลด์
-                                </div>
-
-                                
-                                <div class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_small_slider_allproducts_image"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="URL รูปภาพ">
-                                    </div>
-                                    <div class="col-span-5">
-                                        <input type="text" id="new_small_slider_allproducts_title"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="หัวข้อ">
-                                    </div>
-                                    <div class="col-span-3">
-                                        <input type="text" id="new_small_slider_allproducts_link"
-                                            class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                            placeholder="ลิงก์">
-                                    </div>
-                                    <div class="col-span-1">
-                                        <button type="button" onclick="addSmallSliderAllproductsItem()"
-                                            class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i> สำหรับรูปภาพ กรุณาใช้ URL รูปภาพ
-                                </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">ข้อมูลแพ้อาหาร</label>
+                                <textarea name="allergy_info_content" rows="3"
+                                    class="w-full bg-gray-700 border-gray-600 text-gray-100 rounded shadow-sm focus:ring-yellow-500 focus:border-yellow-500"><?php echo e(old('allergy_info_content', $settings['allergy_info_content'] ?? '')); ?></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">คำอธิบายเว็บไซต์ (SEO)</label>
+                                <textarea name="site_description" rows="3"
+                                    class="w-full bg-gray-700 border-gray-600 text-gray-100 rounded shadow-sm focus:ring-yellow-500 focus:border-yellow-500"><?php echo e(old('site_description', $settings['site_description'] ?? '')); ?></textarea>
                             </div>
                         </div>
                     </div>
 
-                    
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
-                                <i class="fas fa-globe"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">ข้อมูลทั่วไป (General)</h3>
-                        </div>
-
-                        <div class="card-body p-6 space-y-6">
-                            
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">รายละเอียดเว็บไซต์ (SEO &
-                                        Footer)</span>
-                                </label>
-                                <textarea name="site_description" rows="3" class="textarea textarea-bordered w-full bg-gray-700 text-gray-100"
-                                    placeholder="คำอธิบายสั้นๆ เกี่ยวกับเว็บไซต์ของคุณ"><?php echo e($settings['site_description'] ?? ''); ?></textarea>
-                            </div>
-
-                            
-                            <div class="form-control w-full">
-                                <div class="flex justify-between items-end mb-2">
-                                    <label class="label p-0">
-                                        <span class="label-text font-bold text-gray-300">Service Bar Items</span>
-                                    </label>
-                                </div>
-
-                                
-                                <input type="hidden" name="service_bar_items" id="service_bar_items_input"
-                                    value="<?php echo e(old('service_bar_items', $settings['service_bar_items'] ?? '[]')); ?>">
-
-                                <div class="bg-gray-700/30 p-4 rounded-xl border border-gray-600 space-y-4">
-                                    
-                                    <div
-                                        class="grid grid-cols-12 gap-2 text-xs text-gray-400 font-bold uppercase tracking-wider px-1">
-                                        <div class="col-span-4">Icon (FontAwesome Class)</div>
-                                        <div class="col-span-7">ข้อความ (Text)</div>
-                                        <div class="col-span-1 text-center">ลบ</div>
-                                    </div>
-
-                                    
-                                    <div id="service-builder-list" class="space-y-2">
-                                        
-                                    </div>
-
-                                    
-                                    <div id="service-empty-state"
-                                        class="hidden text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-600 rounded-lg">
-                                        ยังไม่มีรายการ Service Bar
-                                    </div>
-
-                                    
-                                    <div
-                                        class="grid grid-cols-12 gap-2 items-center pt-3 border-t border-gray-600/50 mt-2">
-                                        <div class="col-span-4">
-                                            <div class="relative">
-                                                <input type="text" id="new_service_icon"
-                                                    class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500 pl-8"
-                                                    placeholder="fa-check-circle">
-                                                <i class="fas fa-icons absolute left-2.5 top-2 text-gray-500"></i>
-                                            </div>
-                                        </div>
-                                        <div class="col-span-6">
-                                            <input type="text" id="new_service_text"
-                                                class="input input-sm input-bordered w-full bg-gray-800 text-white placeholder-gray-500"
-                                                placeholder="เช่น สินค้าแท้ 100%">
-                                        </div>
-                                        <div class="col-span-2">
-                                            <button type="button" onclick="addServiceItem()"
-                                                class="btn btn-sm btn-success w-full text-white shadow-lg shadow-emerald-900/20">
-                                                <i class="fas fa-plus"></i> <span
-                                                    class="hidden sm:inline ml-1">เพิ่ม</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="text-xs text-gray-500 mt-2">
-                                        <i class="fas fa-info-circle mr-1"></i> ใช้ชื่อคลาสจาก <a
-                                            href="https://fontawesome.com/v5/search" target="_blank"
-                                            class="text-blue-400 hover:underline">FontAwesome 5</a> เช่น <code>fas
-                                            fa-shipping-fast</code>, <code>fas fa-shield-alt</code>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 
-                <div class="xl:col-span-1 space-y-8">
-                    <div class="card bg-gray-800 shadow-xl border border-gray-700 rounded-xl overflow-hidden sticky top-8">
-                        <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                                <i class="fas fa-images"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-100">รูปภาพเว็บไซต์</h3>
+                <div class="lg:col-span-1 space-y-8">
+                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden sticky top-6">
+                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
+                            <i class="fas fa-camera text-purple-400"></i>
+                            <h3 class="text-lg font-medium text-gray-100">รูปภาพหลัก</h3>
                         </div>
-
-                        <div class="card-body p-6 space-y-8">
-
+                        <div class="p-6 space-y-6">
                             
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">โลโก้ (Logo)</span>
-                                    <span class="label-text-alt text-gray-500">PNG พื้นหลังใส</span>
-                                </label>
-
-                                <div
-                                    class="bg-gray-900/50 rounded-xl border border-gray-700 p-4 text-center group relative overflow-hidden transition-all hover:border-gray-600">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($settings['site_logo'])): ?>
-                                        <div id="logo-preview-wrapper">
-                                            <img src="<?php echo e(asset('storage/' . $settings['site_logo'])); ?>" alt="Site Logo"
-                                                class="h-16 mx-auto object-contain">
-                                            <button type="button"
-                                                class="btn btn-xs btn-circle btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity delete-setting"
-                                                data-key="site_logo" title="ลบรูปภาพ">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="h-16 flex items-center justify-center text-gray-600">
-                                            <i class="fas fa-image text-3xl"></i>
-                                            <span class="ml-2 text-sm">ยังไม่มีโลโก้</span>
-                                        </div>
-                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">โลโก้ (Logo)</label>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($settings['site_logo'])): ?>
+                                    <div
+                                        class="mb-3 p-4 border border-dashed border-gray-600 rounded bg-gray-900/50 text-center">
+                                        <img src="<?php echo e(Storage::url($settings['site_logo'])); ?>" alt="Logo"
+                                            class="h-16 mx-auto object-contain">
+                                    </div>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <input type="file" name="site_logo"
-                                    class="file-input file-input-bordered file-input-sm w-full bg-gray-700 mt-3 text-gray-300"
-                                    accept="image/png, image/jpeg, image/webp" />
+                                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600">
                             </div>
 
-                            <div class="divider bg-gray-700 h-px my-0"></div>
+                            <hr class="border-gray-700">
 
                             
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-bold text-gray-300">รูปปก (Banner)</span>
-                                    <span class="label-text-alt text-gray-500">แนะนำ 1920x1080px</span>
-                                </label>
-
-                                <div
-                                    class="bg-gray-900/50 rounded-xl border border-gray-700 p-1 group relative overflow-hidden transition-all hover:border-gray-600">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($settings['site_cover_image'])): ?>
-                                        <div id="cover-image-preview-wrapper"
-                                            class="relative aspect-video rounded-lg overflow-hidden">
-                                            <img src="<?php echo e(asset('storage/' . $settings['site_cover_image'])); ?>"
-                                                alt="Cover Image" class="w-full h-full object-cover">
-                                            <div
-                                                class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button type="button" class="btn btn-sm btn-error delete-setting"
-                                                    data-key="site_cover_image">
-                                                    <i class="fas fa-trash mr-1"></i> ลบรูป
-                                                </button>
-                                            </div>
-                                        </div>
-                                    <?php else: ?>
-                                        <div
-                                            class="aspect-video rounded-lg bg-gray-800 flex flex-col items-center justify-center text-gray-600 border border-dashed border-gray-600">
-                                            <i class="far fa-image text-4xl mb-2"></i>
-                                            <span class="text-sm">ยังไม่มีรูปปก</span>
-                                        </div>
-                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">รูปปก (Cover)</label>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($settings['site_cover_image'])): ?>
+                                    <div class="mb-3 rounded border border-gray-600 overflow-hidden">
+                                        <img src="<?php echo e(Storage::url($settings['site_cover_image'])); ?>" alt="Cover"
+                                            class="w-full h-32 object-cover">
+                                    </div>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <input type="file" name="site_cover_image"
-                                    class="file-input file-input-bordered file-input-sm w-full bg-gray-700 mt-3 text-gray-300"
-                                    accept="image/*" />
+                                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600">
                             </div>
-
                         </div>
-                    </div>
-                </div>
-
-            </div>
-
-            
-            <div
-                class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 p-4 z-50 transition-transform duration-300 shadow-2xl">
-                <div class="max-w-7xl mx-auto flex justify-between items-center">
-                    <div class="text-sm text-gray-400 hidden sm:block">
-                        <i class="fas fa-info-circle mr-1"></i> การเปลี่ยนแปลงจะมีผลทันทีที่หน้าเว็บไซต์หลัก
-                    </div>
-                    <div class="flex gap-3">
-                        <a href="<?php echo e(route('home')); ?>" target="_blank"
-                            class="btn btn-ghost text-gray-300 hover:text-white">
-                            <i class="fas fa-external-link-alt mr-2"></i> ดูหน้าเว็บ
-                        </a>
-                        <button type="submit"
-                            class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white px-8 shadow-lg shadow-emerald-900/20">
-                            <i class="fas fa-save mr-2"></i> บันทึกการตั้งค่า
-                        </button>
+                        <div class="px-6 py-4 bg-gray-900/30 border-t border-gray-700">
+                            <button type="submit"
+                                class="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded shadow-lg hover:bg-emerald-700 transition duration-150 flex items-center justify-center gap-2">
+                                <i class="fas fa-save"></i> บันทึกการตั้งค่า
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </form>
     </div>
-<?php $__env->stopSection(); ?>
 
-<?php $__env->startPush('scripts'); ?>
     <script>
-        // --- Service Bar Builder Logic ---
-        let serviceItems = [];
+        const builders = {
+            'hero_slider': {
+                fields: ['image', 'title', 'description']
+            },
+            'reasons': {
+                fields: ['image', 'title', 'description']
+            },
+            'service': {
+                fields: ['icon', 'text']
+            }
+        };
 
-        // Initialize
-        function initServiceBuilder() {
-            const input = document.getElementById('service_bar_items_input');
+        function getItems(key) {
             try {
-                const rawValue = input.value.trim();
-                // Handle potentially malformed JSON from previous manual edits
-                serviceItems = rawValue ? JSON.parse(rawValue) : [];
-
-                // Convert old format (SVG string) to new format (Icon Class) if necessary
-                // This is a basic migration, assumes user will fix manually if complex
-                serviceItems = serviceItems.map(item => {
-                    if (item.icon && item.icon.includes('<svg')) {
-                        return {
-                            icon: 'fas fa-check-circle',
-                            text: item.text
-                        }; // Default icon for migration
-                    }
-                    return item;
-                });
-
+                const val = document.getElementById(key + '_input').value;
+                return val ? JSON.parse(val.startsWith('"') ? JSON.parse(val) : val) : [];
             } catch (e) {
-                console.error('Invalid JSON for service bar:', e);
-                serviceItems = [];
+                return [];
             }
-            renderServiceBuilder();
         }
 
-        // Render List
-        function renderServiceBuilder() {
-            const container = document.getElementById('service-builder-list');
-            const emptyState = document.getElementById('service-empty-state');
-            container.innerHTML = '';
-
-            if (serviceItems.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                serviceItems.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className =
-                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
-
-                    // Icon Preview logic
-                    let iconPreview = `<i class="${item.icon} text-emerald-400"></i>`;
-
-                    row.innerHTML = `
-                    <div class="col-span-4 flex items-center gap-2">
-                        <div class="w-6 h-6 flex items-center justify-center bg-gray-700 rounded">${iconPreview}</div>
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-blue-300 focus:ring-0 px-0 font-mono" 
-                            value="${item.icon}" 
-                            onchange="updateServiceItem(${index}, 'icon', this.value)" placeholder="Icon Class">
-                    </div>
-                    <div class="col-span-7 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0" 
-                            value="${item.text}" 
-                            onchange="updateServiceItem(${index}, 'text', this.value)" placeholder="Text">
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeServiceItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                    container.appendChild(row);
-                });
-            }
-            updateServiceHiddenInput();
+        function saveItems(key, items) {
+            document.getElementById(key + '_input').value = JSON.stringify(items);
+            renderList(key);
         }
 
-        // Add Item
-        window.addServiceItem = function() {
-            const iconInput = document.getElementById('new_service_icon');
-            const textInput = document.getElementById('new_service_text');
+        function renderList(key) {
+            const listEl = document.getElementById(key + '_list');
+            const items = getItems(key);
+            listEl.innerHTML = '';
 
-            // Add "fas " prefix if user forgets it but types something like "fa-check"
-            let icon = iconInput.value.trim();
-            if (icon && !icon.startsWith('fas ') && !icon.startsWith('far ') && !icon.startsWith('fab ')) {
-                icon = 'fas ' + icon;
-            }
-
-            const text = textInput.value.trim();
-
-            if (!text) {
-                alert('กรุณากรอกข้อความ (Text)');
+            if (items.length === 0) {
+                listEl.innerHTML =
+                    '<div class="text-center text-gray-500 py-4 text-sm bg-gray-900/50 rounded border border-dashed border-gray-700">ยังไม่มีรายการ</div>';
                 return;
             }
 
-            serviceItems.push({
-                icon: icon || 'fas fa-check-circle', // Default icon if empty
-                text: text
+            items.forEach((item, index) => {
+                const fieldsHtml = builders[key].fields.map(field => {
+                    let val = item[field] || '';
+                    let placeholder = field.charAt(0).toUpperCase() + field.slice(1);
+                    // Dark theme inputs
+                    return `<input type="text" value="${val.replace(/"/g, '&quot;')}" onchange="updateItem('${key}', ${index}, '${field}', this.value)" class="flex-1 min-w-0 block w-full px-3 py-1.5 rounded text-sm bg-gray-700 border-gray-600 text-gray-100 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400" placeholder="${placeholder}">`;
+                }).join('');
+
+                const row = document.createElement('div');
+                // Dark theme row item
+                row.className =
+                    'flex gap-2 items-center bg-gray-900/50 p-2 rounded border border-gray-700 animate-fade-in';
+                row.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-${builders[key].fields.length} gap-2 flex-grow">
+                    ${fieldsHtml}
+                </div>
+                <button type="button" onclick="removeItem('${key}', ${index})" class="text-red-400 hover:text-red-300 p-2 rounded hover:bg-red-900/30 transition"><i class="fas fa-trash"></i></button>
+            `;
+                listEl.appendChild(row);
+            });
+        }
+
+        function addItem(key) {
+            const newItem = {};
+            let valid = false;
+
+            const idMap = {
+                'hero_slider': {
+                    image: 'new_hero_img',
+                    title: 'new_hero_title',
+                    description: 'new_hero_desc'
+                },
+                'reasons': {
+                    image: 'new_reason_img',
+                    title: 'new_reason_title',
+                    description: 'new_reason_desc'
+                },
+                'service': {
+                    icon: 'new_service_icon',
+                    text: 'new_service_text'
+                }
+            };
+
+            builders[key].fields.forEach(field => {
+                const inputId = idMap[key][field];
+                const el = document.getElementById(inputId);
+                const val = el.value.trim();
+                newItem[field] = val;
+                if (val) valid = true;
+                el.value = '';
             });
 
-            // Clear inputs
-            iconInput.value = '';
-            textInput.value = '';
-            iconInput.focus();
-
-            renderServiceBuilder();
-        }
-
-        // Remove Item
-        window.removeServiceItem = function(index) {
-            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                serviceItems.splice(index, 1);
-                renderServiceBuilder();
-            }
-        }
-
-        // Update Item
-        window.updateServiceItem = function(index, field, value) {
-            serviceItems[index][field] = value;
-            renderServiceBuilder(); // Re-render to update icon preview
-        }
-
-        // Sync to Hidden Input
-        function updateServiceHiddenInput() {
-            const input = document.getElementById('service_bar_items_input');
-            input.value = JSON.stringify(serviceItems);
-        }
-
-        // --- Hero Slider Builder Logic ---
-        let heroSliderItems = [];
-
-        // Initialize
-        function initHeroSliderBuilder() {
-            const input = document.getElementById('hero_slider_items_input');
-            try {
-                heroSliderItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-            } catch (e) {
-                console.error('Invalid JSON for hero slider:', e);
-                heroSliderItems = [];
-            }
-            renderHeroSliderBuilder();
-        }
-
-        // Render List
-        function renderHeroSliderBuilder() {
-            const container = document.getElementById('hero-slider-list');
-            const emptyState = document.getElementById('hero-slider-empty-state');
-            container.innerHTML = '';
-
-            if (heroSliderItems.length === 0) {
-                emptyState.classList.remove('hidden');
+            if (valid) {
+                const items = getItems(key);
+                items.push(newItem);
+                saveItems(key, items);
             } else {
-                emptyState.classList.add('hidden');
-                heroSliderItems.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className =
-                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
-
-                    // Image preview (simple text for URL for now)
-                    let imagePreview = item.image ?
-                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
-                        `<i class="fas fa-image text-gray-500"></i>`;
-
-                    row.innerHTML = `
-                    <div class="col-span-3 flex items-center gap-2">
-                        <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.image || ''}"
-                            onchange="updateHeroSlideItem(${index}, 'image', this.value)" placeholder="URL รูปภาพ">
-                    </div>
-                    <div class="col-span-3 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.title || ''}"
-                            onchange="updateHeroSlideItem(${index}, 'title', this.value)" placeholder="หัวข้อ">
-                    </div>
-                    <div class="col-span-4 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.description || ''}"
-                            onchange="updateHeroSlideItem(${index}, 'description', this.value)" placeholder="คำอธิบาย">
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeHeroSlideItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                    container.appendChild(row);
-                });
-            }
-            updateHeroSliderHiddenInput();
-        }
-
-        // Add Item
-        window.addHeroSlideItem = function() {
-            const imageInput = document.getElementById('new_hero_slide_image');
-            const titleInput = document.getElementById('new_hero_slide_title');
-            const descriptionInput = document.getElementById('new_hero_slide_description');
-
-            const image = imageInput.value.trim();
-            const title = titleInput.value.trim();
-            const description = descriptionInput.value.trim();
-
-            if (!image && !title && !description) {
-                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
-                return;
-            }
-
-            heroSliderItems.push({
-                image: image,
-                title: title,
-                description: description,
-                link: '#' // Default link
-            });
-
-            // Clear inputs
-            imageInput.value = '';
-            titleInput.value = '';
-            descriptionInput.value = '';
-            imageInput.focus();
-
-            renderHeroSliderBuilder();
-        }
-
-        // Remove Item
-        window.removeHeroSlideItem = function(index) {
-            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                heroSliderItems.splice(index, 1);
-                renderHeroSliderBuilder();
+                alert('กรุณากรอกข้อมูลอย่างน้อย 1 ช่อง');
             }
         }
 
-        // Update Item
-        window.updateHeroSlideItem = function(index, field, value) {
-            heroSliderItems[index][field] = value;
-            renderHeroSliderBuilder(); // Re-render to update image preview
+        function updateItem(key, index, field, value) {
+            const items = getItems(key);
+            items[index][field] = value;
+            document.getElementById(key + '_input').value = JSON.stringify(items);
         }
 
-        // Sync to Hidden Input
-        function updateHeroSliderHiddenInput() {
-            const input = document.getElementById('hero_slider_items_input');
-            input.value = JSON.stringify(heroSliderItems);
+        function removeItem(key, index) {
+            if (!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
+            const items = getItems(key);
+            items.splice(index, 1);
+            saveItems(key, items);
         }
 
-        // --- Reasons Section Builder Logic ---
-        let reasonsSectionItems = [];
-
-        // Initialize
-        function initReasonsSectionBuilder() {
-            const input = document.getElementById('reasons_section_items_input');
-            try {
-                reasonsSectionItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-            } catch (e) {
-                console.error('Invalid JSON for reasons section:', e);
-                reasonsSectionItems = [];
-            }
-            renderReasonsSectionBuilder();
-        }
-
-        // Render List
-        function renderReasonsSectionBuilder() {
-            const container = document.getElementById('reasons-list');
-            const emptyState = document.getElementById('reasons-empty-state');
-            container.innerHTML = '';
-
-            if (reasonsSectionItems.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                reasonsSectionItems.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className =
-                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
-
-                    // Image preview (simple text for URL for now)
-                    let imagePreview = item.image ?
-                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
-                        `<i class="fas fa-image text-gray-500"></i>`;
-
-                    row.innerHTML = `
-                    <div class="col-span-3 flex items-center gap-2">
-                        <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.image || ''}"
-                            onchange="updateReasonItem(${index}, 'image', this.value)" placeholder="URL รูปภาพ">
-                    </div>
-                    <div class="col-span-4 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.title || ''}"
-                            onchange="updateReasonItem(${index}, 'title', this.value)" placeholder="หัวข้อ">
-                    </div>
-                    <div class="col-span-4 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.description || ''}"
-                            onchange="updateReasonItem(${index}, 'description', this.value)" placeholder="คำอธิบาย">
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeReasonItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                    container.appendChild(row);
-                });
-            }
-            updateReasonsSectionHiddenInput();
-        }
-
-        // Add Item
-        window.addReasonItem = function() {
-            const imageInput = document.getElementById('new_reason_image');
-            const titleInput = document.getElementById('new_reason_title');
-            const descriptionInput = document.getElementById('new_reason_description');
-
-            const image = imageInput.value.trim();
-            const title = titleInput.value.trim();
-            const description = descriptionInput.value.trim();
-
-            if (!image && !title && !description) {
-                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับเหตุผล');
-                return;
-            }
-
-            reasonsSectionItems.push({
-                image: image,
-                title: title,
-                description: description,
-            });
-
-            // Clear inputs
-            imageInput.value = '';
-            titleInput.value = '';
-            descriptionInput.value = '';
-            imageInput.focus();
-
-            renderReasonsSectionBuilder();
-        }
-
-        // Remove Item
-        window.removeReasonItem = function(index) {
-            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                reasonsSectionItems.splice(index, 1);
-                renderReasonsSectionBuilder();
-            }
-        }
-
-        // Update Item
-        window.updateReasonItem = function(index, field, value) {
-            reasonsSectionItems[index][field] = value;
-            renderReasonsSectionBuilder();
-        }
-
-        // Sync to Hidden Input
-        function updateReasonsSectionHiddenInput() {
-            const input = document.getElementById('reasons_section_items_input');
-            input.value = JSON.stringify(reasonsSectionItems);
-        }
-
-        // --- Second Slider Builder Logic ---
-        let secondSliderItems = [];
-
-        // Initialize
-        function initSecondSliderBuilder() {
-            const input = document.getElementById('second_slider_items_input');
-            try {
-                secondSliderItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-            } catch (e) {
-                console.error('Invalid JSON for second slider:', e);
-                secondSliderItems = [];
-            }
-            renderSecondSliderBuilder();
-        }
-
-        // Render List
-        function renderSecondSliderBuilder() {
-            const container = document.getElementById('second-slider-list');
-            const emptyState = document.getElementById('second-slider-empty-state');
-            container.innerHTML = '';
-
-            if (secondSliderItems.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                secondSliderItems.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className =
-                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
-
-                    // Image preview
-                    let imagePreview = item.image ?
-                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
-                        `<i class="fas fa-image text-gray-500"></i>`;
-
-                    row.innerHTML = `
-                    <div class="col-span-3 flex items-center gap-2">
-                        <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.image || ''}"
-                            onchange="updateSecondSlideItem(${index}, 'image', this.value)" placeholder="URL รูปภาพ">
-                    </div>
-                    <div class="col-span-3 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.title || ''}"
-                            onchange="updateSecondSlideItem(${index}, 'title', this.value)" placeholder="หัวข้อ">
-                    </div>
-                    <div class="col-span-4 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.description || ''}"
-                            onchange="updateSecondSlideItem(${index}, 'description', this.value)" placeholder="คำอธิบาย">
-                    </div>
-                    <div class="col-span-1 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.link || ''}"
-                            onchange="updateSecondSlideItem(${index}, 'link', this.value)" placeholder="ลิงก์">
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeSecondSlideItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                    container.appendChild(row);
-                });
-            }
-            updateSecondSliderHiddenInput();
-        }
-
-        // Add Item
-        window.addSecondSlideItem = function() {
-            const imageInput = document.getElementById('new_second_slide_image');
-            const titleInput = document.getElementById('new_second_slide_title');
-            const descriptionInput = document.getElementById('new_second_slide_description');
-            const linkInput = document.getElementById('new_second_slide_link');
-
-
-            const image = imageInput.value.trim();
-            const title = titleInput.value.trim();
-            const description = descriptionInput.value.trim();
-            const link = linkInput.value.trim();
-
-            if (!image && !title && !description && !link) {
-                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
-                return;
-            }
-
-            secondSliderItems.push({
-                image: image,
-                title: title,
-                description: description,
-                link: link
-            });
-
-            // Clear inputs
-            imageInput.value = '';
-            titleInput.value = '';
-            descriptionInput.value = '';
-            linkInput.value = '';
-            imageInput.focus();
-
-            renderSecondSliderBuilder();
-        }
-
-        // Remove Item
-        window.removeSecondSlideItem = function(index) {
-            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                secondSliderItems.splice(index, 1);
-                renderSecondSliderBuilder();
-            }
-        }
-
-        // Update Item
-        window.updateSecondSlideItem = function(index, field, value) {
-            secondSliderItems[index][field] = value;
-            renderSecondSliderBuilder();
-        }
-
-        // Sync to Hidden Input
-        function updateSecondSliderHiddenInput() {
-            const input = document.getElementById('second_slider_items_input');
-            input.value = JSON.stringify(secondSliderItems);
-        }
-
-        // --- Category Menu Builder Logic ---
-        let categoryMenuItems = [];
-
-        // Initialize
-        function initCategoryMenuBuilder() {
-            const input = document.getElementById('category_menu_items_input');
-            try {
-                categoryMenuItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-            } catch (e) {
-                console.error('Invalid JSON for category menu:', e);
-                categoryMenuItems = [];
-            }
-            renderCategoryMenuBuilder();
-        }
-
-        // Render List
-        function renderCategoryMenuBuilder() {
-            const container = document.getElementById('category-menu-list');
-            const emptyState = document.getElementById('category-menu-empty-state');
-            container.innerHTML = '';
-
-            if (categoryMenuItems.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                categoryMenuItems.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className =
-                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
-
-                    // Image preview
-                    let imagePreview = item.image ?
-                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
-                        `<i class="fas fa-image text-gray-500"></i>`;
-
-                    row.innerHTML = `
-                    <div class="col-span-3 flex items-center gap-2">
-                        <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.image || ''}"
-                            onchange="updateCategoryMenuItem(${index}, 'image', this.value)" placeholder="URL รูปภาพ">
-                    </div>
-                    <div class="col-span-5 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.name || ''}"
-                            onchange="updateCategoryMenuItem(${index}, 'name', this.value)" placeholder="ชื่อหมวดหมู่">
-                    </div>
-                    <div class="col-span-3 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.link || ''}"
-                            onchange="updateCategoryMenuItem(${index}, 'link', this.value)" placeholder="ลิงก์">
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeCategoryMenuItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                    container.appendChild(row);
-                });
-            }
-            updateCategoryMenuHiddenInput();
-        }
-
-        // Add Item
-        window.addCategoryMenuItem = function() {
-            const imageInput = document.getElementById('new_category_image');
-            const nameInput = document.getElementById('new_category_name');
-            const linkInput = document.getElementById('new_category_link');
-
-
-            const image = imageInput.value.trim();
-            const name = nameInput.value.trim();
-            const link = linkInput.value.trim();
-
-            if (!image && !name && !link) {
-                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับหมวดหมู่');
-                return;
-            }
-
-            categoryMenuItems.push({
-                image: image,
-                name: name,
-                link: link
-            });
-
-            // Clear inputs
-            imageInput.value = '';
-            nameInput.value = '';
-            linkInput.value = '';
-            imageInput.focus();
-
-            renderCategoryMenuBuilder();
-        }
-
-        // Remove Item
-        window.removeCategoryMenuItem = function(index) {
-            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                categoryMenuItems.splice(index, 1);
-                renderCategoryMenuBuilder();
-            }
-        }
-
-        // Update Item
-        window.updateCategoryMenuItem = function(index, field, value) {
-            categoryMenuItems[index][field] = value;
-            renderCategoryMenuBuilder();
-        }
-
-        // Sync to Hidden Input
-        function updateCategoryMenuHiddenInput() {
-            const input = document.getElementById('category_menu_items_input');
-            input.value = JSON.stringify(categoryMenuItems);
-        }
-
-        // --- Small Slider All Products Builder Logic ---
-        let smallSliderAllproductsItems = [];
-
-        // Initialize
-        function initSmallSliderAllproductsBuilder() {
-            const input = document.getElementById('small_slider_allproducts_items_input');
-            try {
-                smallSliderAllproductsItems = input.value.trim() ? JSON.parse(input.value.trim()) : [];
-            } catch (e) {
-                console.error('Invalid JSON for small slider all products:', e);
-                smallSliderAllproductsItems = [];
-            }
-            renderSmallSliderAllproductsBuilder();
-        }
-
-        // Render List
-        function renderSmallSliderAllproductsBuilder() {
-            const container = document.getElementById('small-slider-allproducts-list');
-            const emptyState = document.getElementById('small-slider-allproducts-empty-state');
-            container.innerHTML = '';
-
-            if (smallSliderAllproductsItems.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                smallSliderAllproductsItems.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.className =
-                        'grid grid-cols-12 gap-2 items-center bg-gray-800/50 p-2 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors';
-
-                    // Image preview
-                    let imagePreview = item.image ?
-                        `<img src="${item.image}" class="h-8 w-8 object-cover rounded" onerror="this.src='https://via.placeholder.com/80?text=No%20Image'">` :
-                        `<i class="fas fa-image text-gray-500"></i>`;
-
-                    row.innerHTML = `
-                    <div class="col-span-3 flex items-center gap-2">
-                        <div class="w-8 h-8 flex items-center justify-center bg-gray-700 rounded">${imagePreview}</div>
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.image || ''}"
-                            onchange="updateSmallSliderAllproductsItem(${index}, 'image', this.value)" placeholder="URL รูปภาพ">
-                    </div>
-                    <div class="col-span-5 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.title || ''}"
-                            onchange="updateSmallSliderAllproductsItem(${index}, 'title', this.value)" placeholder="หัวข้อ">
-                    </div>
-                    <div class="col-span-3 border-l border-gray-700 pl-2">
-                        <input type="text" class="input input-xs w-full bg-transparent border-0 text-gray-200 focus:ring-0 px-0"
-                            value="${item.link || ''}"
-                            onchange="updateSmallSliderAllproductsItem(${index}, 'link', this.value)" placeholder="ลิงก์">
-                    </div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" onclick="removeSmallSliderAllproductsItem(${index})" class="text-gray-500 hover:text-red-400 transition-colors p-1">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                    container.appendChild(row);
-                });
-            }
-            updateSmallSliderAllproductsHiddenInput();
-        }
-
-        // Add Item
-        window.addSmallSliderAllproductsItem = function() {
-            const imageInput = document.getElementById('new_small_slider_allproducts_image');
-            const titleInput = document.getElementById('new_small_slider_allproducts_title');
-            const linkInput = document.getElementById('new_small_slider_allproducts_link');
-
-
-            const image = imageInput.value.trim();
-            const title = titleInput.value.trim();
-            const link = linkInput.value.trim();
-
-            if (!image && !title && !link) {
-                alert('กรุณากรอกข้อมูลอย่างน้อยหนึ่งช่องสำหรับสไลด์');
-                return;
-            }
-
-            smallSliderAllproductsItems.push({
-                image: image,
-                title: title,
-                link: link
-            });
-
-            // Clear inputs
-            imageInput.value = '';
-            titleInput.value = '';
-            linkInput.value = '';
-            imageInput.focus();
-
-            renderSmallSliderAllproductsBuilder();
-        }
-
-        // Remove Item
-        window.removeSmallSliderAllproductsItem = function(index) {
-            if (confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) {
-                smallSliderAllproductsItems.splice(index, 1);
-                renderSmallSliderAllproductsBuilder();
-            }
-        }
-
-        // Update Item
-        window.updateSmallSliderAllproductsItem = function(index, field, value) {
-            smallSliderAllproductsItems[index][field] = value;
-            renderSmallSliderAllproductsBuilder();
-        }
-
-        // Sync to Hidden Input
-        function updateSmallSliderAllproductsHiddenInput() {
-            const input = document.getElementById('small_slider_allproducts_items_input');
-            input.value = JSON.stringify(smallSliderAllproductsItems);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Start Service Builder
-            initServiceBuilder();
-            initHeroSliderBuilder(); // Initialize the new builder
-            initReasonsSectionBuilder(); // Initialize the new builder
-            initSecondSliderBuilder(); // Initialize the new builder
-            initCategoryMenuBuilder(); // Initialize the new builder
-            initSmallSliderAllproductsBuilder(); // Initialize the new builder
-
-            // --- Image Deletion Logic (Existing) ---
-            document.querySelectorAll('.delete-setting').forEach(button => {
-                button.addEventListener('click', function() {
-                    const key = this.dataset.key;
-                    if (!key || !confirm(
-                            `คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้? การกระทำนี้ไม่สามารถย้อนกลับได้`
-                        )) {
-                        return;
-                    }
-
-                    // Change button to loading state
-                    const originalContent = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    this.disabled = true;
-
-                    fetch(`/admin/settings/${key}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
-                                'Accept': 'application/json',
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.reload();
-                            } else {
-                                alert('เกิดข้อผิดพลาด: ' + data.message);
-                                this.innerHTML = originalContent;
-                                this.disabled = false;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-                            this.innerHTML = originalContent;
-                            this.disabled = false;
-                        });
-                });
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            Object.keys(builders).forEach(key => renderList(key));
         });
     </script>
-<?php $__env->stopPush(); ?>
+
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+<?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/settings/index.blade.php ENDPATH**/ ?>

@@ -114,6 +114,7 @@ class ProductController extends Controller
             'pd_code' => $salePageProduct->pd_sp_code,
             'pd_details' => $salePageProduct->pd_sp_description,
             'pd_price' => (float) $salePageProduct->pd_sp_price,
+            'pd_price2' => (float) ($salePageProduct->pd_sp_price2 ?? 0), // Add this line
             'pd_sp_discount' => (float) ($salePageProduct->pd_sp_discount ?? 0),
             'pd_sp_stock' => $salePageProduct->pd_sp_stock,
             'cover_image_url' => $activeImageUrl,

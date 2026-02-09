@@ -15,6 +15,7 @@ class ProductSalepage extends Model
 
     // ✅ ต้องมีบรรทัดนี้เพื่อแก้ Error 1364 (Field doesn't have default value)
     protected $fillable = [
+        'pd_sp_price2',
         'pd_sp_code',
         'pd_sp_name',
         'pd_sp_description',

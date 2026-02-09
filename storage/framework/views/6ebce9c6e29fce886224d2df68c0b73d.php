@@ -90,6 +90,17 @@
 
             
             <div class="md:col-span-4 form-control">
+                <label class="label font-bold text-gray-300">ราคาขาย 2 (บาท)</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
+                    <input type="number" step="0.01" name="pd_sp_price2"
+                        class="input input-bordered w-full pl-10 font-mono text-xl bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
+                        placeholder="0.00" value="<?php echo e(old('pd_sp_price2', $productSalepage->pd_sp_price2 ?? '')); ?>" />
+                </div>
+            </div>
+
+            
+            <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ส่วนลด (บาท)</label>
                 <div class="relative">
                     <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
@@ -146,7 +157,7 @@
             <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
         </h3>
         <button type="button"
-            @click="options.push({ id: Date.now(), option_name: '', option_price: '', option_stock: '' })"
+            @click="options.push({ id: Date.now(), option_name: '', option_price: '', option_price2: '', option_stock: '' })"
             class="btn btn-sm btn-emerald bg-emerald-600 hover:bg-emerald-700 border-none text-white">
             <i class="fas fa-plus mr-1"></i> เพิ่มตัวเลือก
         </button>
@@ -172,10 +183,19 @@
                     </div>
 
                     
-                    <div class="form-control w-full md:w-40">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา (บาท)</span></label>
+                    <div class="form-control w-full md:w-32">
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1 (บาท)</span></label>
                         <input type="number" step="0.01" :name="`product_options[${index}][option_price]`"
                             x-model="option.option_price"
+                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                            placeholder="ใช้ราคาหลัก">
+                    </div>
+
+                    
+                    <div class="form-control w-full md:w-32">
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 2 (บาท)</span></label>
+                        <input type="number" step="0.01" :name="`product_options[${index}][option_price2]`"
+                            x-model="option.option_price2"
                             class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
                             placeholder="ใช้ราคาหลัก">
                     </div>

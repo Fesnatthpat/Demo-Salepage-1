@@ -48,39 +48,83 @@ class CartService
         $userId = $this->getUserId();
         $cart = Cart::session($userId);
 
-        if ($optionId) {
-            $option = \App\Models\ProductOption::find($optionId);
-            if (! $option || $option->parent_id !== $productId) {
-                throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
-            }
-            if ($quantity > $option->option_stock) {
-                throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ");
-            }
+                    if ($optionId) {
 
-            $cartId = "{$productId}-{$optionId}";
-            $cart->remove($cartId); // Remove existing to reset quantity
+                        $option = \App\Models\ProductOption::find($optionId);
 
-            $details = $this->getProductDetails($productId);
-            $product = $this->checkStockAndGetProduct($productId, 0); // Check base product exists
+                        if (! $option || $option->parent_id !== $productId) {
 
-            if ($details) {
-                $cart->add([
-                    'id' => $cartId, // Use composite ID
-                    'name' => $details->name.' ('.$option->option_name.')',
-                    'price' => $option->option_price,
-                    'quantity' => $quantity,
-                    'attributes' => [
-                        'image' => $details->image,
-                        'original_price' => $option->option_price,
-                        'discount' => 0, // Options have final price
-                        'pd_code' => $details->pd_code,
-                        'product_id' => $productId, // Store original product ID
-                        'option_id' => $optionId,
-                    ],
-                    'associatedModel' => $product,
-                ]);
-            }
-        } else {
+                            throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
+
+                        }
+
+                        if ($quantity > $option->option_stock) {
+
+                            throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ");
+
+                        }
+
+        
+
+                        $cartId = "{$productId}-{$optionId}";
+
+                        $cart->remove($cartId); // Remove existing to reset quantity
+
+        
+
+                        $mainProductDetails = $this->getProductDetails($productId); // Get main product details for its discount
+
+                        $mainProductDiscount = $mainProductDetails ? $mainProductDetails->discount : 0;
+
+        
+
+                        $optionOriginalPrice = (float) $option->option_price;
+
+                        $optionFinalPrice = max(0, $optionOriginalPrice - $mainProductDiscount);
+
+        
+
+                        $details = $this->getProductDetails($productId); // This 'details' will be used for image etc.
+
+                        $product = $this->checkStockAndGetProduct($productId, 0);
+
+        
+
+                        if ($details) {
+
+                            $cart->add([
+
+                                'id' => $cartId, // Use composite ID
+
+                                'name' => $details->name.' ('.$option->option_name.')',
+
+                                'price' => $optionFinalPrice, // Apply discount here
+
+                                'quantity' => $quantity,
+
+                                'attributes' => [
+
+                                    'image' => $details->image,
+
+                                    'original_price' => $optionOriginalPrice, // Store original option price
+
+                                    'discount' => $mainProductDiscount, // Store applied discount
+
+                                    'pd_code' => $details->pd_code,
+
+                                    'product_id' => $productId,
+
+                                    'option_id' => $optionId,
+
+                                ],
+
+                                'associatedModel' => $product,
+
+                            ]);
+
+                        }
+
+                    } else {
             // --- EXISTING LOGIC for products without options ---
             $existingKeys = $this->findCartKeys($productId);
             foreach ($existingKeys as $key) {

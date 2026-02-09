@@ -5,9 +5,10 @@
 @section('content')
     @php
         // --- 1. เตรียมข้อมูล PHP ---
-        $originalPrice = (float) $product->pd_price;
+        $initialBasePrice = (float) $product->pd_price;
+        $initialBasePrice2 = (float) $product->pd_price2;
         $discountAmount = (float) $product->pd_sp_discount;
-        $finalPrice = max(0, $originalPrice - $discountAmount);
+        $finalPrice = max(0, $initialBasePrice - $discountAmount);
         $allImages = $product->images->pluck('image_url')->all();
         if (empty($allImages)) {
             $allImages[] = $product->cover_image_url;
@@ -62,6 +63,7 @@
                 'id' => $option->id,
                 'name' => $option->option_name,
                 'price' => (float) $option->option_price,
+                'price2' => (float) $option->option_price2, // Added price2
                 'stock' => (int) $option->option_stock,
             ];
         });
@@ -72,7 +74,9 @@
         currentProductId: @js($product->pd_sp_id),
         initialImage: @js($product->cover_image_url),
         allImages: @js($allImages),
-        basePrice: @js($finalPrice),
+        initialBasePrice: @js($initialBasePrice),
+        initialBasePrice2: @js($initialBasePrice2),
+        discountAmount: @js($discountAmount),
         options: @js($optionsData),
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
         bundleAddUrl: @js(route('cart.addBundle')),
@@ -90,8 +94,15 @@
                 <div class="lg:col-span-5 p-8 bg-gray-50/50">
                     <div class="sticky top-8">
 
-                        {{-- รูปหลัก (คลิกเพื่อเปิด Modal) --}}
-                        <div class="relative aspect-square rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100 cursor-zoom-in group"
+                        {{-- Skeleton Loader for Main Image --}}
+                        <div x-show="!imagesLoaded"
+                            class="relative aspect-square rounded-2xl bg-gray-200 animate-pulse flex items-center justify-center">
+                            <i class="fas fa-spinner fa-spin text-gray-400 text-4xl"></i>
+                        </div>
+
+                        {{-- Main Image (คลิกเพื่อเปิด Modal) --}}
+                        <div x-show="imagesLoaded"
+                            class="relative aspect-square rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100 cursor-zoom-in group"
                             @click="isModalOpen = true">
 
                             {{-- ปุ่มเลื่อนซ้าย --}}
@@ -106,6 +117,7 @@
 
                             {{-- รูปภาพหลัก --}}
                             <img :src="activeImage"
+                                @load="imagesLoaded = true"
                                 class="w-full h-full object-contain p-4 transition-all duration-300 group-hover:scale-105"
                                 onerror="this.src='https://via.placeholder.com/600?text=Image+Error'">
 
@@ -126,9 +138,16 @@
                             </div>
                         </div>
 
+                        {{-- Skeleton Loader for Thumbnails --}}
+                        <div x-show="!imagesLoaded" class="grid grid-cols-5 gap-3 mt-6">
+                            <template x-for="i in 5" :key="i">
+                                <div class="aspect-square rounded-xl bg-gray-200 animate-pulse"></div>
+                            </template>
+                        </div>
+
                         {{-- Thumbnails --}}
                         @if (count($allImages) > 1)
-                            <div class="grid grid-cols-5 gap-3 mt-6">
+                            <div x-show="imagesLoaded" class="grid grid-cols-5 gap-3 mt-6">
                                 <template x-for="img in images" :key="img">
                                     <button @click="activeImage = img"
                                         class="aspect-square rounded-xl border-2 overflow-hidden bg-white transition-all"
@@ -157,17 +176,14 @@
                         {{-- Price Block --}}
                         <div class="inline-flex flex-col items-start bg-gray-50 rounded-2xl p-4 mb-8">
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-black text-red-600"
-                                    x-text="'฿' + finalPrice.toLocaleString()"></span>
-                                @if ($discountAmount > 0)
-                                    <span
-                                        class="text-lg text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
-                                @endif
+                                <span class="text-4xl font-black text-red-600" x-text="finalPrice"></span>
+                                <template x-if="originalPriceDisplay">
+                                    <span class="text-lg text-gray-400 line-through" x-text="originalPriceDisplay"></span>
+                                </template>
                             </div>
-                            @if ($discountAmount > 0)
-                                <span class="text-sm font-semibold text-red-500 mt-1">ประหยัด
-                                    ฿{{ number_format($discountAmount) }}</span>
-                            @endif
+                            <template x-if="discountDisplay">
+                                <span class="text-sm font-semibold text-red-500 mt-1" x-text="discountDisplay"></span>
+                            </template>
                         </div>
 
                         {{-- ★★★ แก้ไขตรงนี้: รายละเอียดสินค้าแบบย่อ/ขยายได้ ★★★ --}}
@@ -212,8 +228,13 @@
                                                 class="h-5 w-5 rounded-full border-gray-300 text-red-600 focus:ring-red-500">
                                             <div class="flex-1">
                                                 <p class="font-bold text-gray-800" x-text="option.name"></p>
-                                                <p class="text-sm text-red-600 font-bold"
-                                                    x-text="'฿' + option.price.toLocaleString(undefined, {minimumFractionDigits: 2})">
+                                                <p class="text-sm text-red-600 font-bold">
+                                                    <template x-if="option.price2 && option.price2 > 0">
+                                                        <span x-text="`฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${option.price2.toLocaleString(undefined, {minimumFractionDigits: 0})}`"></span>
+                                                    </template>
+                                                    <template x-if="!(option.price2 && option.price2 > 0)">
+                                                        <span x-text="`฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})}`"></span>
+                                                    </template>
                                                 </p>
                                             </div>
                                         </label>
@@ -377,7 +398,10 @@
                 images: config.allImages,
                 quantity: 1,
                 isLoading: false,
-                basePrice: config.basePrice || 0,
+                imagesLoaded: false,
+                basePrice: config.initialBasePrice || 0, // Updated
+                basePrice2: config.initialBasePrice2 || 0, // Added
+                discountAmount: config.discountAmount || 0, // Added
                 options: config.options || [],
                 selectedOption: null,
                 promotions: config.promotions || [],
@@ -400,18 +424,52 @@
                 // --------------------------
 
                 get finalPrice() {
+                    let currentPrice = this.basePrice;
+                    let currentPrice2 = this.basePrice2;
+                    let currentDiscount = this.discountAmount;
+
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id === this.selectedOption);
-                        if (option) return parseFloat(option.price);
+                        if (option) {
+                            currentPrice = option.price;
+                            currentPrice2 = option.price2;
+                            // For options, typically discounts are applied to the option's base price
+                            // or handled as fixed prices. Assuming here that option prices are final.
+                            currentDiscount = 0; 
+                        }
+                    } else {
+                        // Apply main product discount if no option selected
+                        currentPrice = Math.max(0, currentPrice - currentDiscount);
                     }
-                    return this.basePrice;
+                    
+                    if (currentPrice2 && currentPrice2 > 0) {
+                        return `฿${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${currentPrice2.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                    }
+                    return `฿${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                 },
-                get currentStock() {
+                get originalPriceDisplay() { // New getter for original price with discount
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id === this.selectedOption);
-                        return option ? option.stock : 0;
+                        if (option) {
+                            // If an option is selected, its price is considered its base.
+                            // If you want to show a line-through on option price,
+                            // you'd need to store option-specific originalPrice and discount.
+                            // For now, assuming option.price is the final price for the option.
+                            return null; 
+                        }
                     }
-                    return {{ $product->pd_sp_stock }};
+                    // For main product, show original if discount applies
+                    if (this.discountAmount > 0) {
+                        return `฿${this.basePrice.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                    }
+                    return null;
+                },
+                get discountDisplay() { // New getter for discount text
+                    // Always show discount if available, regardless of option selection
+                    if (this.discountAmount > 0) {
+                        return `ประหยัด ฿${this.discountAmount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                    }
+                    return null;
                 },
                 get activePromotion() {
                     return this.promotions.length > 0 ? this.promotions[0] : null;
@@ -434,6 +492,7 @@
                     return this.selectedGifts.length >= this.giftLimit;
                 },
                 init() {
+                    this.imagesLoaded = true; // Added this line
                     if (this.options.length > 0) this.selectedOption = this.options[0].id;
                     this.$watch('quantity', () => this.validateSelection());
 

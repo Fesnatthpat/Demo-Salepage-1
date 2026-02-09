@@ -15,6 +15,7 @@ class ProductOption extends Model
         'parent_id',
         'option_name',
         'option_price',
+        'option_price2',
         'option_stock',
         'option_active',
     ];

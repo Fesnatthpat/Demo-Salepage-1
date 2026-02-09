@@ -37,18 +37,7 @@ class CartController extends Controller
             'selected_option_id' => $optionId,
         ]);
 
-        // 🔥 ขั้นตอนที่ 2: ตรวจสอบข้อมูล (Validation)
-        $request->validate([
-            'quantity' => 'integer|min:1',
-            'selected_gift_ids' => 'array',
-            'selected_gift_ids.*' => 'integer',
-            'selected_option_id' => 'nullable|integer|exists:product_options,id',
-        ], [
-            'quantity.min' => 'ต้องสั่งซื้ออย่างน้อย 1 ชิ้น',
-            'integer' => 'ข้อมูลต้องเป็นตัวเลขจำนวนเต็ม',
-            'array' => 'ข้อมูลไม่ถูกต้อง',
-            'selected_option_id.exists' => 'ตัวเลือกสินค้าไม่ถูกต้อง',
-        ]);
+
 
         try {
             // 🔥 ขั้นตอนที่ 2: ตรวจสอบข้อมูล (Validation)
@@ -70,28 +59,21 @@ class CartController extends Controller
                 $this->cartService->addOrUpdate((int) $productId, $quantity, $optionId);
             }
 
-        // Always return JSON for this endpoint, as it's explicitly called via AJAX
-        return response()->json([
-            'success' => true,
-            'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
-            'cartCount' => $this->cartService->getTotalQuantity(),
-        ]);
+            // Always return JSON for this endpoint, as it's explicitly called via AJAX
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
+                'cartCount' => $this->cartService->getTotalQuantity(),
+            ]);
 
-    } catch (ValidationException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'ข้อมูลไม่ถูกต้อง',
-                    'errors' => $e->errors(),
-                ], 422);
-            }
-            return redirect()->back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
-            }
-
-            return redirect()->back()->with('error', $e->getMessage());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ข้อมูลไม่ถูกต้อง',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) { // Modified block
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
 
@@ -115,38 +97,20 @@ class CartController extends Controller
             'gift_ids' => $gifts,
         ]);
 
-        // 🔥 ขั้นตอนที่ 2: ตรวจสอบ
-        $request->validate([
-            'main_product_id' => 'required|integer|min:1',
-            'secondary_product_id' => 'required|integer|min:1',
-            'gift_ids' => 'array',
-            'gift_ids.*' => 'integer',
-        ], [
-            'main_product_id.required' => 'ไม่พบข้อมูลสินค้าหลัก',
-            'main_product_id.min' => 'รหัสสินค้าไม่ถูกต้อง',
-            'secondary_product_id.required' => 'กรุณาเลือกสินค้าคู่โปรโมชั่น',
-            'integer' => 'ข้อมูลต้องเป็นตัวเลข',
-        ]);
+
 
         try {
             $this->cartService->addBundle($mainId, $secId, $gifts);
 
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'เพิ่มสินค้าชุดโปรโมชั่นเรียบร้อยแล้ว',
-                    'cartCount' => $this->cartService->getTotalQuantity(),
-                ]);
-            }
+            // Always return JSON for this endpoint, as it's explicitly called via AJAX
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มสินค้าชุดโปรโมชั่นเรียบร้อยแล้ว',
+                'cartCount' => $this->cartService->getTotalQuantity(),
+            ]);
 
-            return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าชุดโปรโมชั่นแล้ว');
-
-        } catch (\Exception $e) {
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
-            }
-
-            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) { // Modified block
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
     }
 

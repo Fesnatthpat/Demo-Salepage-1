@@ -167,7 +167,7 @@ class PaymentController extends Controller
         return back()->with('error', 'ไม่สามารถรีเฟรชได้');
     }
 
-    // [Apply Discount Logic - Fixed with explicit USE]
+    // [Apply Discount Logic - Fixed Time Check]
     public function applyDiscount(Request $request)
     {
         try {
@@ -194,15 +194,15 @@ class PaymentController extends Controller
 
             Log::info('applyDiscount: Processing code', ['code' => $discountCode, 'current_time' => $now]);
 
-            // [FIX] ใช้ function($q) use ($now) แทน fn เพื่อป้องกันปัญหา Scope ของตัวแปร
             $promotion = Promotion::where('code', $discountCode)
                 ->where('is_discount_code', true)
                 ->where('is_active', true)
+                // [FIX] เปลี่ยนกลับมาใช้ where ธรรมดา เพื่อให้เช็คเวลาด้วย (HH:mm:ss)
                 ->where(function ($q) use ($now) {
                     $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
                 })
                 ->where(function ($q) use ($now) {
-                    $q->whereNull('end_date')->orWhereDate('end_date', '>=', $now);
+                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
                 })
                 ->first();
 

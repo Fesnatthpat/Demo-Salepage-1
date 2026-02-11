@@ -297,7 +297,7 @@
             </nav>
             {{-- Column 2 --}}
             <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
-                <h6 class="text-lg font-bold text-white mb-2 opacity-100">เกี่ยวกับเรา</h6>
+                <h6 class="text-lg font-bold text-white mb-2 opacity-100">เกี่ยวกับติดใจ</h6>
                 <a href="/about" class="link link-hover text-red-50 hover:text-white transition-colors">เรื่องราวของเรา</a>
                 <a href="#" class="link link-hover text-red-50 hover:text-white transition-colors">บทความน่ารู้</a>
                 <a href="#" class="link link-hover text-red-50 hover:text-white transition-colors">นโยบายความเป็นส่วนตัว</a>
@@ -305,7 +305,7 @@
             </nav>
             {{-- Column 3 --}}
             <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
-                <h6 class="text-lg font-bold text-white mb-2 opacity-100">ติดต่อเรา</h6>
+                <h6 class="text-lg font-bold text-white mb-2 opacity-100">ติดต่อติดใจ</h6>
                 <div class="flex items-start gap-2 text-red-50">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 flex-shrink-0 mt-0.5"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.006.003.002.001.003.001a.79.79 0 00.01.003zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>
                     <span>บริษัท ติดใจ จำกัด<br>123 ถนนสุขุมวิท แขวงคลองเตย<br>เขตคลองเตย กรุงเทพฯ 10110</span>

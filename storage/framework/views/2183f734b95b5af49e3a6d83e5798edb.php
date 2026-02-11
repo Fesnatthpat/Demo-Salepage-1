@@ -30,7 +30,7 @@
                 </div>
 
                 <h1 class="text-4xl md:text-6xl font-extrabold mb-4 tracking-wide text-shadow-lg">
-                    เกี่ยวกับเรา
+                    เกี่ยวกับติดใจ
                 </h1>
                 <p class="text-red-100 text-lg md:text-xl font-light max-w-2xl mx-auto">
                     ความตั้งใจของเรา...เพื่อส่งมอบความสุขให้คุณ

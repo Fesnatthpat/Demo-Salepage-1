@@ -62,9 +62,9 @@
 
     {{-- PRODUCTS SECTION (แก้ไขพื้นหลัง) --}}
     {{-- ▼▼▼ ใส่รูปพื้นหลัง f1.png ตรงนี้ ▼▼▼ --}}
-    <div class="w-full pb-12 pt-4 bg-cover bg-center bg-no-repeat" 
-         style="background-image: url('{{ asset('images/f1.png') }}');">
-         
+    <div class="w-full pb-12 pt-4 bg-cover bg-center bg-no-repeat"
+        style="background-image: url('{{ asset('images/f1.png') }}');">
+
         <div class="container mx-auto px-4 mb-10">
             <div class="flex justify-between items-end mb-8">
                 <div>
@@ -236,13 +236,14 @@
     {{-- ▼▼▼ ใส่รูปพื้นหลัง NATTHAPAT (1).png และปรับสีตัวอักษรเป็นสีขาว ▼▼▼ --}}
     <div class="w-full py-16 bg-cover bg-center bg-no-repeat"
         style="background-image: url('{{ asset('images/NATTHAPAT (1).png') }}');">
-        
+
         {{-- Optional Overlay (ถ้าพื้นหลังลายตาเกินไป สามารถเปิดใช้ overlay สีดำจางๆ ได้) --}}
         {{-- <div class="absolute inset-0 bg-black/20"></div> --}}
 
         <div class="container mx-auto px-4 relative z-10">
             {{-- เปลี่ยนสีหัวข้อเป็นขาว --}}
-            <h2 class="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-md">6 เหตุผลทำไมต้องเลือกเรา</h2>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-md">6
+                เหตุผลทำไมต้องเลือกเรา</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-10 lg:px-20">
 
@@ -401,7 +402,10 @@
                             background: '#FEF2F2',
                             iconColor: '#DC2626'
                         });
-                        if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
+                        setTimeout(() => { // Add setTimeout
+                            Livewire.dispatch('cartUpdated');
+                            console.log('Dispatched cartUpdated from index.blade.php'); // Add log
+                        }, 50); // Small delay
                     } else {
                         Swal.fire({
                             icon: 'error',

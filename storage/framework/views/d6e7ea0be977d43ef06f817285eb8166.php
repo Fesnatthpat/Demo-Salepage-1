@@ -60,9 +60,9 @@
 
     
     
-    <div class="w-full pb-12 pt-4 bg-cover bg-center bg-no-repeat" 
-         style="background-image: url('<?php echo e(asset('images/f1.png')); ?>');">
-         
+    <div class="w-full pb-12 pt-4 bg-cover bg-center bg-no-repeat"
+        style="background-image: url('<?php echo e(asset('images/f1.png')); ?>');">
+
         <div class="container mx-auto px-4 mb-10">
             <div class="flex justify-between items-end mb-8">
                 <div>
@@ -234,13 +234,14 @@
     
     <div class="w-full py-16 bg-cover bg-center bg-no-repeat"
         style="background-image: url('<?php echo e(asset('images/NATTHAPAT (1).png')); ?>');">
-        
+
         
         
 
         <div class="container mx-auto px-4 relative z-10">
             
-            <h2 class="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-md">6 เหตุผลทำไมต้องเลือกเรา</h2>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-md">6
+                เหตุผลทำไมต้องเลือกเรา</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-10 lg:px-20">
 
@@ -399,7 +400,10 @@
                             background: '#FEF2F2',
                             iconColor: '#DC2626'
                         });
-                        if (window.updateCartBadge) window.updateCartBadge(data.cartCount);
+                        setTimeout(() => { // Add setTimeout
+                            Livewire.dispatch('cartUpdated');
+                            console.log('Dispatched cartUpdated from index.blade.php'); // Add log
+                        }, 50); // Small delay
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -424,4 +428,5 @@
         }
     </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/index.blade.php ENDPATH**/ ?>

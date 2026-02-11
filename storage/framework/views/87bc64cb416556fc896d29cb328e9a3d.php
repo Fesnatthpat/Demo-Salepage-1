@@ -388,9 +388,10 @@
                                     background: '#FEF2F2',
                                     iconColor: '#DC2626'
                                 });
-                                setTimeout(() => {
+                                setTimeout(() => { // Add setTimeout
+                                    console.log('Dispatching cartUpdated from allproducts.blade.php'); // Log
                                     Livewire.dispatch('cartUpdated');
-                                }, 500);
+                                }, 50); // Small delay
                             } else {
                                 throw new Error(data.message || 'Unknown error');
                             }

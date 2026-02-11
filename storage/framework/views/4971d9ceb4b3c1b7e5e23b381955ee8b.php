@@ -3,7 +3,7 @@
 <?php $__env->startSection('content'); ?>
 <div class="container mx-auto px-4 py-8 md:py-12 min-h-screen">
     <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 max-w-3xl mx-auto mt-8">
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-6">ติดต่อเรา</h1>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-6">ติดต่อติดใจ</h1>
 
         <p class="text-gray-600 text-lg text-center mb-8">
             เรายินดีให้บริการและพร้อมตอบทุกคำถามของคุณ กรุณาติดต่อเราผ่านช่องทางด้านล่าง

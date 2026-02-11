@@ -1,335 +1,398 @@
 @extends('layouts.admin')
 
-@section('title', 'ตั้งค่าเว็บไซต์')
+@section('title', 'ตั้งค่าหน้าเว็บไซต์ & Live Preview')
 
 @section('content')
-    <div class="container mx-auto pb-24">
+    <div class="container mx-auto pb-24" x-data="siteSettings()">
 
-        {{-- Error Messages --}}
-        @if ($errors->any())
-            <div class="bg-red-900/50 border-l-4 border-red-500 text-red-200 p-4 mb-6 rounded shadow-sm">
-                <div class="flex">
-                    <div class="flex-shrink-0"><i class="fas fa-exclamation-circle text-red-400"></i></div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium">พบข้อผิดพลาด</h3>
-                        <ul class="mt-2 text-sm text-red-300 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        @endif
+        {{-- Header --}}
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-100"><i class="fas fa-magic mr-2 text-emerald-400"></i> ตกแต่งหน้าเว็บไซต์
+            </h1>
 
-        {{-- Success Message --}}
-        @if (session('success'))
-            <div class="bg-emerald-900/50 border-l-4 border-emerald-500 text-emerald-200 p-4 mb-6 rounded shadow-sm">
-                <div class="flex">
-                    <div class="flex-shrink-0"><i class="fas fa-check-circle text-emerald-400"></i></div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium">{{ session('success') }}</p>
-                    </div>
+            {{-- Flash Messages --}}
+            @if (session('success'))
+                <div
+                    class="px-4 py-2 bg-emerald-500/20 border border-emerald-500 text-emerald-300 rounded-lg flex items-center gap-2 animate-fade-in">
+                    <i class="fas fa-check-circle"></i> {{ session('success') }}
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
 
         <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {{-- Left Column: Content Builders --}}
-                <div class="lg:col-span-2 space-y-8">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
 
-                    {{-- 1. Hero Slider --}}
-                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
-                            <i class="fas fa-images text-red-400"></i>
-                            <h3 class="text-lg font-medium text-gray-100">Hero Slider (สไลด์หลัก)</h3>
-                        </div>
-                        <div class="p-6">
-                            <input type="hidden" name="hero_slider_items" id="hero_slider_input"
-                                value="{{ old('hero_slider_items', json_encode($settings['hero_slider_items'] ?? [])) }}">
-                            <div id="hero_slider_list" class="space-y-3 mb-4"></div>
+                {{-- ================= LEFT COLUMN: FORM EDITORS ================= --}}
+                <div class="space-y-6">
 
-                            <div
-                                class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gray-900/50 p-3 rounded border border-gray-700">
-                                <div class="md:col-span-4"><input type="text" id="new_hero_img" placeholder="URL รูปภาพ"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-3"><input type="text" id="new_hero_title"
-                                        placeholder="หัวข้อ (ถ้ามี)"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-4"><input type="text" id="new_hero_desc"
-                                        placeholder="คำอธิบาย (ถ้ามี)"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-red-500 focus:border-red-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-1"><button type="button" onclick="addItem('hero_slider')"
-                                        class="w-full bg-emerald-600 text-white rounded hover:bg-emerald-700 py-1.5 h-full"><i
-                                            class="fas fa-plus"></i></button></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- 2. 6 Reasons --}}
-                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
-                            <i class="fas fa-list-ul text-emerald-400"></i>
-                            <h3 class="text-lg font-medium text-gray-100">6 Reasons Section</h3>
-                        </div>
-                        <div class="p-6">
-                            <input type="hidden" name="reasons_section_items" id="reasons_input"
-                                value="{{ old('reasons_section_items', json_encode($settings['reasons_section_items'] ?? [])) }}">
-                            <div id="reasons_list" class="space-y-3 mb-4"></div>
-
-                            <div
-                                class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gray-900/50 p-3 rounded border border-gray-700">
-                                <div class="md:col-span-3"><input type="text" id="new_reason_img"
-                                        placeholder="URL รูปภาพ"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-4"><input type="text" id="new_reason_title" placeholder="หัวข้อ"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-4"><input type="text" id="new_reason_desc" placeholder="คำอธิบาย"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-emerald-500 focus:border-emerald-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-1"><button type="button" onclick="addItem('reasons')"
-                                        class="w-full bg-emerald-600 text-white rounded hover:bg-emerald-700 py-1.5 h-full"><i
-                                            class="fas fa-plus"></i></button></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- 3. Service Bar --}}
-                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
-                            <i class="fas fa-check-circle text-blue-400"></i>
-                            <h3 class="text-lg font-medium text-gray-100">Service Bar Items</h3>
-                        </div>
-                        <div class="p-6">
-                            <input type="hidden" name="service_bar_items" id="service_input"
-                                value="{{ old('service_bar_items', json_encode($settings['service_bar_items'] ?? [])) }}">
-                            <div id="service_list" class="space-y-3 mb-4"></div>
-
-                            <div
-                                class="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gray-900/50 p-3 rounded border border-gray-700">
-                                <div class="md:col-span-4"><input type="text" id="new_service_icon"
-                                        placeholder="Icon Class (เช่น fas fa-star)"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-7"><input type="text" id="new_service_text"
-                                        placeholder="ข้อความ"
-                                        class="w-full text-sm bg-gray-700 border-gray-600 text-gray-100 rounded focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400">
-                                </div>
-                                <div class="md:col-span-1"><button type="button" onclick="addItem('service')"
-                                        class="w-full bg-emerald-600 text-white rounded hover:bg-emerald-700 py-1.5 h-full"><i
-                                            class="fas fa-plus"></i></button></div>
-                            </div>
-                            <small class="text-gray-500 mt-2 block">ดูรายชื่อไอคอนได้ที่ <a
-                                    href="https://fontawesome.com/v5/search" target="_blank"
-                                    class="text-blue-400 hover:underline">FontAwesome 5</a></small>
-                        </div>
-                    </div>
-
-                    {{-- 4. Text Content --}}
-                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
-                            <i class="fas fa-file-alt text-yellow-400"></i>
-                            <h3 class="text-lg font-medium text-gray-100">เนื้อหาข้อความ</h3>
+                    {{-- 1. HERO SLIDER (5 Slots) --}}
+                    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                        <div class="px-6 py-4 bg-gray-900/50 border-b border-gray-700 flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-gray-200"><i class="fas fa-images text-red-400 mr-2"></i> Hero
+                                Slides (สไลด์หลัก)</h3>
+                            <span class="text-xs text-gray-500">แนะนำขนาด 1200x500px</span>
                         </div>
                         <div class="p-6 space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">ข้อมูลแพ้อาหาร</label>
-                                <textarea name="allergy_info_content" rows="3"
-                                    class="w-full bg-gray-700 border-gray-600 text-gray-100 rounded shadow-sm focus:ring-yellow-500 focus:border-yellow-500">{{ old('allergy_info_content', $settings['allergy_info_content'] ?? '') }}</textarea>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">คำอธิบายเว็บไซต์ (SEO)</label>
-                                <textarea name="site_description" rows="3"
-                                    class="w-full bg-gray-700 border-gray-600 text-gray-100 rounded shadow-sm focus:ring-yellow-500 focus:border-yellow-500">{{ old('site_description', $settings['site_description'] ?? '') }}</textarea>
+                            @foreach (range(1, 5) as $i)
+                                <div class="p-4 bg-gray-700/30 rounded-lg border border-gray-600">
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Slide ที่
+                                        {{ $i }}</label>
+                                    <div class="flex gap-4 items-center">
+                                        <div
+                                            class="flex-shrink-0 w-20 h-12 bg-gray-800 rounded border border-gray-600 overflow-hidden relative">
+                                            <img :src="hero_slides[{{ $i }}]" class="w-full h-full object-cover">
+                                        </div>
+                                        <input type="file" name="hero_slide_{{ $i }}" accept="image/*"
+                                            @change="previewImage($event, 'hero_slides', {{ $i }})"
+                                            class="block w-full text-sm text-gray-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-600 file:text-gray-200 hover:file:bg-gray-500 cursor-pointer">
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- 2. ALLERGY INFO --}}
+                    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                        <div class="px-6 py-4 bg-gray-900/50 border-b border-gray-700">
+                            <h3 class="font-bold text-lg text-gray-200"><i
+                                    class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i> ข้อมูลแพ้อาหาร</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex flex-col items-center gap-4">
+                                <div
+                                    class="w-full h-32 bg-red-50/10 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden relative">
+                                    <img :src="allergy_img" class="w-full h-full object-contain">
+                                </div>
+                                <input type="file" name="allergy_image" accept="image/*"
+                                    @change="previewImage($event, 'allergy_img')"
+                                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-600 file:text-white hover:file:bg-yellow-700 cursor-pointer">
                             </div>
                         </div>
                     </div>
 
+                    {{-- 3. SECONDARY SLIDER (3 Slots) --}}
+                    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                        <div class="px-6 py-4 bg-gray-900/50 border-b border-gray-700">
+                            <h3 class="font-bold text-lg text-gray-200"><i
+                                    class="fas fa-photo-video text-blue-400 mr-2"></i> สไลด์รอง (3 รูป)</h3>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            @foreach (range(1, 3) as $i)
+                                <div class="flex items-center gap-4 p-3 bg-gray-700/30 rounded border border-gray-600">
+                                    <span class="text-gray-400 font-bold">#{{ $i }}</span>
+                                    <input type="file" name="sec_slide_{{ $i }}" accept="image/*"
+                                        @change="previewImage($event, 'sec_slides', {{ $i }})"
+                                        class="block w-full text-sm text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-900/50 file:text-blue-200 hover:file:bg-blue-900">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- 4. SERVICE BAR (4 Items) --}}
+                    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                        <div class="px-6 py-4 bg-gray-900/50 border-b border-gray-700">
+                            <h3 class="font-bold text-lg text-gray-200"><i
+                                    class="fas fa-concierge-bell text-purple-400 mr-2"></i> Service Bar (4 รายการ)</h3>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @foreach (range(1, 4) as $i)
+                                <div class="p-4 bg-gray-700/30 rounded border border-gray-600 space-y-2">
+                                    <div class="text-xs text-purple-300 font-bold mb-1">Service {{ $i }}</div>
+                                    {{-- Icon --}}
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="w-8 h-8 bg-gray-800 rounded flex items-center justify-center text-gray-400">
+                                            <i :class="services[{{ $i }}].icon"></i>
+                                        </div>
+                                        <input type="text" name="service_{{ $i }}_icon"
+                                            x-model="services[{{ $i }}].icon"
+                                            placeholder="Icon class (e.g. fas fa-star)"
+                                            class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-200 px-2 py-1">
+                                    </div>
+                                    {{-- Text --}}
+                                    <input type="text" name="service_{{ $i }}_text"
+                                        x-model="services[{{ $i }}].text" placeholder="ข้อความบริการ"
+                                        class="w-full bg-gray-900 border-gray-700 rounded text-sm text-gray-200 px-2 py-1.5 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- 5. 6 REASONS SECTION --}}
+                    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                        <div class="px-6 py-4 bg-gray-900/50 border-b border-gray-700">
+                            <h3 class="font-bold text-lg text-gray-200"><i class="fas fa-th text-emerald-400 mr-2"></i> 6
+                                Reasons Section</h3>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 gap-4">
+                            @foreach (range(1, 6) as $i)
+                                <div class="p-4 bg-gray-700/30 rounded border border-gray-600 flex gap-4">
+                                    <div class="flex-shrink-0 flex flex-col gap-2 items-center justify-center w-12">
+                                        <span class="text-lg font-bold text-emerald-500/50">{{ $i }}</span>
+                                    </div>
+                                    <div class="flex-grow space-y-2">
+                                        <input type="text" name="reason_{{ $i }}_title"
+                                            x-model="reasons[{{ $i }}].title"
+                                            placeholder="หัวข้อเหตุผลที่ {{ $i }}"
+                                            class="w-full bg-gray-900 border-gray-700 rounded text-sm font-bold text-emerald-400 px-3 py-1.5">
+                                        <textarea name="reason_{{ $i }}_desc" x-model="reasons[{{ $i }}].desc" rows="2"
+                                            placeholder="คำอธิบาย..." class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-300 px-3 py-1.5"></textarea>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Save Button --}}
+                    <div class="sticky bottom-4 z-20">
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-4 px-6 rounded-xl shadow-xl transform transition hover:-translate-y-1 flex items-center justify-center gap-3">
+                            <i class="fas fa-save text-xl"></i>
+                            <span class="text-lg">บันทึกการตั้งค่าทั้งหมด</span>
+                        </button>
+                    </div>
+
                 </div>
 
-                {{-- Right Column --}}
-                <div class="lg:col-span-1 space-y-8">
-                    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 overflow-hidden sticky top-6">
-                        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
-                            <i class="fas fa-camera text-purple-400"></i>
-                            <h3 class="text-lg font-medium text-gray-100">รูปภาพหลัก</h3>
-                        </div>
-                        <div class="p-6 space-y-6">
-                            {{-- Logo --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">โลโก้ (Logo)</label>
-                                @if (!empty($settings['site_logo']))
-                                    <div
-                                        class="mb-3 p-4 border border-dashed border-gray-600 rounded bg-gray-900/50 text-center">
-                                        <img src="{{ Storage::url($settings['site_logo']) }}" alt="Logo"
-                                            class="h-16 mx-auto object-contain">
-                                    </div>
-                                @endif
-                                <input type="file" name="site_logo"
-                                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600">
+                {{-- ================= RIGHT COLUMN: LIVE PREVIEW (Mockup) ================= --}}
+                <div class="hidden xl:block relative">
+                    <div class="sticky top-6">
+                        <div
+                            class="bg-white rounded-[2rem] border-8 border-gray-800 shadow-2xl overflow-hidden h-[850px] relative">
+                            {{-- Browser Header --}}
+                            <div class="bg-gray-100 border-b border-gray-200 px-4 py-2 flex items-center gap-2">
+                                <div class="flex gap-1.5">
+                                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                </div>
+                                <div
+                                    class="flex-1 bg-white rounded-md px-3 py-1 text-xs text-gray-400 text-center shadow-sm">
+                                    tidjai-thaisnack.com
+                                </div>
                             </div>
 
-                            <hr class="border-gray-700">
+                            {{-- Website Content (Mockup) --}}
+                            <div class="h-full overflow-y-auto bg-gray-50 pb-20 custom-scrollbar">
 
-                            {{-- Cover Image --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">รูปปก (Cover)</label>
-                                @if (!empty($settings['site_cover_image']))
-                                    <div class="mb-3 rounded border border-gray-600 overflow-hidden">
-                                        <img src="{{ Storage::url($settings['site_cover_image']) }}" alt="Cover"
-                                            class="w-full h-32 object-cover">
+                                {{-- Navbar Mockup --}}
+                                <div
+                                    class="bg-red-600 h-14 flex items-center justify-between px-4 shadow-sm sticky top-0 z-10">
+                                    <div class="w-8 h-8 bg-white/20 rounded-full"></div>
+                                    <div class="flex gap-2">
+                                        <div class="w-16 h-2 bg-white/20 rounded-full"></div>
+                                        <div class="w-16 h-2 bg-white/20 rounded-full"></div>
                                     </div>
-                                @endif
-                                <input type="file" name="site_cover_image"
-                                    class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600">
+                                    <div class="w-6 h-6 bg-white/20 rounded-full"></div>
+                                </div>
+
+                                {{-- Hero Slider Preview --}}
+                                <div class="relative w-full aspect-[2.5/1] bg-gray-200 group overflow-hidden">
+                                    <template x-for="i in 5">
+                                        <img :src="hero_slides[i]" x-show="currentSlide === i"
+                                            class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                                            x-transition:enter="opacity-0" x-transition:enter-end="opacity-100">
+                                    </template>
+                                    {{-- Fake Navigation --}}
+                                    <div class="absolute inset-0 flex justify-between items-center px-2">
+                                        <button @click="currentSlide = currentSlide > 1 ? currentSlide - 1 : 5"
+                                            class="w-6 h-6 bg-black/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-black/50"><i
+                                                class="fas fa-chevron-left"></i></button>
+                                        <button @click="currentSlide = currentSlide < 5 ? currentSlide + 1 : 1"
+                                            class="w-6 h-6 bg-black/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-black/50"><i
+                                                class="fas fa-chevron-right"></i></button>
+                                    </div>
+                                </div>
+
+                                {{-- Allergy Info Preview --}}
+                                <div class="w-full bg-red-50 p-2">
+                                    <img :src="allergy_img" class="w-full h-auto rounded shadow-sm">
+                                </div>
+
+                                {{-- Products Mockup (Static) --}}
+                                <div class="p-4">
+                                    <div class="h-4 w-32 bg-gray-200 rounded mb-4"></div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="aspect-square bg-white rounded shadow-sm border border-gray-100"></div>
+                                        <div class="aspect-square bg-white rounded shadow-sm border border-gray-100"></div>
+                                    </div>
+                                </div>
+
+                                {{-- Secondary Slider Preview --}}
+                                <div class="p-4 bg-white/50">
+                                    <div class="flex gap-2 overflow-x-auto pb-2 snap-x">
+                                        <template x-for="i in 3">
+                                            <div class="flex-shrink-0 w-3/4 snap-center">
+                                                <img :src="sec_slides[i]"
+                                                    class="w-full h-24 object-cover rounded-lg shadow-sm bg-gray-200">
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Service Bar Preview --}}
+                                <div class="bg-white py-4 px-2 border-t border-gray-100">
+                                    <div class="grid grid-cols-4 gap-1 text-center divide-x divide-gray-100">
+                                        <template x-for="i in 4">
+                                            <div class="flex flex-col items-center gap-1">
+                                                <div
+                                                    class="w-6 h-6 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-[10px]">
+                                                    <i :class="services[i].icon"></i>
+                                                </div>
+                                                <span class="text-[8px] font-bold text-gray-600 truncate w-full"
+                                                    x-text="services[i].text"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- 6 Reasons Preview --}}
+                                <div class="py-6 bg-white px-4">
+                                    <h3 class="text-center font-bold text-gray-800 text-sm mb-4">6 เหตุผลทำไมต้องเลือกเรา
+                                    </h3>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <template x-for="i in 6">
+                                            <div class="text-center group">
+                                                <div
+                                                    class="text-red-600 mb-1 text-xs transform group-hover:scale-110 transition">
+                                                    <i class="fas fa-heart"></i>
+                                                </div>
+                                                <h4 class="text-[10px] font-bold text-red-700" x-text="reasons[i].title">
+                                                </h4>
+                                                <p class="text-[9px] text-gray-500 leading-tight mt-0.5 line-clamp-2"
+                                                    x-text="reasons[i].desc"></p>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Footer Mockup --}}
+                                <div class="bg-red-600 p-4 mt-4">
+                                    <div class="flex gap-2 mb-2">
+                                        <div class="w-10 h-10 bg-white rounded-full"></div>
+                                        <div class="flex-1 space-y-1">
+                                            <div class="w-20 h-2 bg-white/20 rounded"></div>
+                                            <div class="w-32 h-1.5 bg-white/20 rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2 mt-4">
+                                        <div class="space-y-1">
+                                            <div class="w-full h-1 bg-white/20"></div>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="w-full h-1 bg-white/20"></div>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="w-full h-1 bg-white/20"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {{-- Phone Frame Button --}}
+                            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 rounded-full">
                             </div>
                         </div>
-                        <div class="px-6 py-4 bg-gray-900/30 border-t border-gray-700">
-                            <button type="submit"
-                                class="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded shadow-lg hover:bg-emerald-700 transition duration-150 flex items-center justify-center gap-2">
-                                <i class="fas fa-save"></i> บันทึกการตั้งค่า
-                            </button>
+                        <div class="text-center mt-4 text-gray-500 text-sm">
+                            <i class="fas fa-mobile-alt animate-pulse"></i> Live Preview (จำลองหน้าจอ)
                         </div>
                     </div>
                 </div>
+
             </div>
         </form>
     </div>
 
     <script>
-        const builders = {
-            'hero_slider': {
-                fields: ['image', 'title', 'description']
-            },
-            'reasons': {
-                fields: ['image', 'title', 'description']
-            },
-            'service': {
-                fields: ['icon', 'text']
-            }
-        };
-
-        function getItems(key) {
-            try {
-                const val = document.getElementById(key + '_input').value;
-                return val ? JSON.parse(val.startsWith('"') ? JSON.parse(val) : val) : [];
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function saveItems(key, items) {
-            document.getElementById(key + '_input').value = JSON.stringify(items);
-            renderList(key);
-        }
-
-        function renderList(key) {
-            const listEl = document.getElementById(key + '_list');
-            const items = getItems(key);
-            listEl.innerHTML = '';
-
-            if (items.length === 0) {
-                listEl.innerHTML =
-                    '<div class="text-center text-gray-500 py-4 text-sm bg-gray-900/50 rounded border border-dashed border-gray-700">ยังไม่มีรายการ</div>';
-                return;
-            }
-
-            items.forEach((item, index) => {
-                const fieldsHtml = builders[key].fields.map(field => {
-                    let val = item[field] || '';
-                    let placeholder = field.charAt(0).toUpperCase() + field.slice(1);
-                    // Dark theme inputs
-                    return `<input type="text" value="${val.replace(/"/g, '&quot;')}" onchange="updateItem('${key}', ${index}, '${field}', this.value)" class="flex-1 min-w-0 block w-full px-3 py-1.5 rounded text-sm bg-gray-700 border-gray-600 text-gray-100 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400" placeholder="${placeholder}">`;
-                }).join('');
-
-                const row = document.createElement('div');
-                // Dark theme row item
-                row.className =
-                    'flex gap-2 items-center bg-gray-900/50 p-2 rounded border border-gray-700 animate-fade-in';
-                row.innerHTML = `
-                <div class="grid grid-cols-1 sm:grid-cols-${builders[key].fields.length} gap-2 flex-grow">
-                    ${fieldsHtml}
-                </div>
-                <button type="button" onclick="removeItem('${key}', ${index})" class="text-red-400 hover:text-red-300 p-2 rounded hover:bg-red-900/30 transition"><i class="fas fa-trash"></i></button>
-            `;
-                listEl.appendChild(row);
-            });
-        }
-
-        function addItem(key) {
-            const newItem = {};
-            let valid = false;
-
-            const idMap = {
-                'hero_slider': {
-                    image: 'new_hero_img',
-                    title: 'new_hero_title',
-                    description: 'new_hero_desc'
+        function siteSettings() {
+            return {
+                // State for Hero Slides
+                currentSlide: 1,
+                hero_slides: {
+                    @foreach (range(1, 5) as $i)
+                        {{-- FIX: Check if key exists before accessing --}}
+                        {{ $i }}:
+                            "{{ !empty($settings['hero_slide_' . $i]) ? Storage::url($settings['hero_slide_' . $i]) : asset('images/th-' . $i . '.png') }}",
+                    @endforeach
                 },
-                'reasons': {
-                    image: 'new_reason_img',
-                    title: 'new_reason_title',
-                    description: 'new_reason_desc'
+
+                // State for Allergy Image
+                {{-- FIX: Check if key exists --}}
+                allergy_img: "{{ !empty($settings['allergy_image']) ? Storage::url($settings['allergy_image']) : asset('images/image_27e610.png') }}",
+
+                // State for Secondary Slides
+                sec_slides: {
+                    @foreach (range(1, 3) as $i)
+                        {{-- FIX: Check if key exists --}}
+                        {{ $i }}:
+                            "{{ !empty($settings['sec_slide_' . $i]) ? Storage::url($settings['sec_slide_' . $i]) : 'https://via.placeholder.com/400x200?text=Promo+' . $i }}",
+                    @endforeach
                 },
-                'service': {
-                    icon: 'new_service_icon',
-                    text: 'new_service_text'
+
+                // State for Services (Fixed 4 slots)
+                services: {
+                    @foreach (range(1, 4) as $i)
+                        {{ $i }}: {
+                            icon: "{{ $settings['service_' . $i . '_icon'] ?? 'fas fa-star' }}",
+                            text: "{{ $settings['service_' . $i . '_text'] ?? 'บริการที่ ' . $i }}"
+                        },
+                    @endforeach
+                },
+
+                // State for Reasons (Fixed 6 slots)
+                reasons: {
+                    @foreach (range(1, 6) as $i)
+                        {{ $i }}: {
+                            title: "{{ $settings['reason_' . $i . '_title'] ?? 'เหตุผลที่ ' . $i }}",
+                            desc: "{{ $settings['reason_' . $i . '_desc'] ?? 'รายละเอียดสั้นๆ...' }}"
+                        },
+                    @endforeach
+                },
+
+                // Helper to preview uploaded image immediately
+                previewImage(event, targetObj, index = null) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            if (index) {
+                                this[targetObj][index] = e.target.result;
+                            } else {
+                                this[targetObj] = e.target.result;
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 }
-            };
-
-            builders[key].fields.forEach(field => {
-                const inputId = idMap[key][field];
-                const el = document.getElementById(inputId);
-                const val = el.value.trim();
-                newItem[field] = val;
-                if (val) valid = true;
-                el.value = '';
-            });
-
-            if (valid) {
-                const items = getItems(key);
-                items.push(newItem);
-                saveItems(key, items);
-            } else {
-                alert('กรุณากรอกข้อมูลอย่างน้อย 1 ช่อง');
             }
         }
-
-        function updateItem(key, index, field, value) {
-            const items = getItems(key);
-            items[index][field] = value;
-            document.getElementById(key + '_input').value = JSON.stringify(items);
-        }
-
-        function removeItem(key, index) {
-            if (!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
-            const items = getItems(key);
-            items.splice(index, 1);
-            saveItems(key, items);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            Object.keys(builders).forEach(key => renderList(key));
-        });
     </script>
 
     <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
         .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.5s ease-in-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-5px);
+                transform: translateY(-10px);
             }
 
             to {

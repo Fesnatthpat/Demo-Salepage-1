@@ -564,6 +564,10 @@
                         const data = await response.json();
                         if (data.success) {
                             localStorage.setItem('justAddedPartner', 'true');
+                            setTimeout(() => { // Add setTimeout
+                                Livewire.dispatch('cartUpdated');
+                                console.log('Dispatched cartUpdated from product.blade.php (addToCartPartner)'); // Add log
+                            }, 50); // Small delay
                             window.location.reload();
                         } else throw new Error(data.message);
                     } catch (e) {
@@ -622,7 +626,10 @@
                                     showConfirmButton: false,
                                     timer: 1500
                                 });
-                                Livewire.dispatch('cartUpdated');
+                                setTimeout(() => { // Add setTimeout
+                                    Livewire.dispatch('cartUpdated');
+                                    console.log('Dispatched cartUpdated from product.blade.php (handleAddToCartClick)'); // Add log
+                                }, 50); // Small delay
                             }
                         } else throw new Error(data.message);
                     } catch (e) {

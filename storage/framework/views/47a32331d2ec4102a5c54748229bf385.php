@@ -1,13 +1,13 @@
 <?php $__env->startSection('title', 'แก้ไขข้อมูลส่วนตัว'); ?>
 
 <?php $__env->startSection('content'); ?>
-    <div class="min-h-[80vh] bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="min-h-[80vh]  flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         
         <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
-            <h2 class="text-3xl font-extrabold text-gray-900">
+            <h2 class="text-3xl font-extrabold text-white">
                 แก้ไขข้อมูลส่วนตัว
             </h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <p class="mt-2 text-sm text-white">
                 อัปเดตข้อมูลส่วนตัวของคุณ
             </p>
         </div>

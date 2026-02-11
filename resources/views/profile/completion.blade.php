@@ -1,13 +1,13 @@
 @extends('layout')
 
 @section('content')
-    <div class="min-h-[80vh] bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         {{-- Header Section --}}
         <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
             <h2 class="text-3xl font-extrabold text-gray-900">
                 Complete Your Profile
             </h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <p class="mt-2 text-sm text-white">
                 กรุณากรอกข้อมูลเพิ่มเติมเพื่อดำเนินการต่อ
             </p>
         </div>

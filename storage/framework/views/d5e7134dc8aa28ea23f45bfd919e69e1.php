@@ -110,8 +110,8 @@
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                                     <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a></li>
-                                    <li><a href="/about" class="py-3 font-bold hover:text-red-600">เกี่ยวกับเรา</a></li>
-                                    <li><a href="/contact" class="py-3 font-bold hover:text-red-600">ติดต่อเรา</a></li>
+                                    <li><a href="/about" class="py-3 font-bold hover:text-red-600">เกี่ยวกับติดใจ</a></li>
+                                    <li><a href="/contact" class="py-3 font-bold hover:text-red-600">ติดต่อติดใจ</a></li>
                                     <li><a href="<?php echo e(route('profile.edit')); ?>"
                                             class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
                                     <li>
@@ -210,8 +210,8 @@ unset($__split);
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                                 <a href="/orderhistory" class="hover:text-red-100 transition-colors">ประวัติการสั่งซื้อ</a>
-                                <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับเรา</a>
-                                <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อเรา</a>
+                                <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับติดใจ</a>
+                                <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อติดใจ</a>
                                 <a href="https://kawinbrothers.com/tracking/index.php" target="_blank" rel="noopener noreferrer" class="hover:text-red-100 transition-colors">เช็คพัสดุ</a>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </nav>

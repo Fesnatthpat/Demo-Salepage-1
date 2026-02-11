@@ -3,7 +3,7 @@
 <?php $__env->startSection('title', 'QR Code สำหรับออเดอร์ ' . $order->ord_code . ' | Salepage Demo'); ?>
 
 <?php $__env->startSection('content'); ?>
-    <div class="container mx-auto p-4 min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="container mx-auto p-4 min-h-screen flex items-center justify-center ">
 
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
 

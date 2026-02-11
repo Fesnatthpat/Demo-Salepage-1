@@ -34,6 +34,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::get('/contact', function () { return view('contact'); })->name('contact');
+Route::get('/faq', function () { return view('faq'); })->name('faq');
 
 // ==========================================
 // 2. ระบบตะกร้าสินค้า (Cart)

@@ -51,3 +51,49 @@
 *   Route ที่ไม่จำเป็นถูกลบออกแล้ว
 *   `PaymentController` ได้รับการ Refactor เพื่อลดความซับซ้อนและใช้ Service Class สำหรับ Logic การสร้าง PromptPay
 
+---
+
+## การแก้ไขปัญหาระบบ Login (11 กุมภาพันธ์ 2026)
+
+### ปัญหาที่พบ
+
+- เมื่อผู้ใช้ (User) หรือผู้ดูแลระบบ (Admin) คนใดคนหนึ่งออกจากระบบ (Logout) จะส่งผลให้อีกคนหนึ่งหลุดออกจากระบบไปด้วย
+
+### สาเหตุ
+
+- การออกจากระบบใน `AuthController` (สำหรับ User) และ `AdminController` (สำหรับ Admin) มีการเรียกใช้คำสั่ง `session()->invalidate()` ซึ่งเป็นการทำลาย Session ทั้งหมด ทำให้ทุกคนที่ใช้ Session นั้นอยู่หลุดออกจากระบบพร้อมกัน แม้จะมีการระบุ Guard ที่ถูกต้อง (`Auth::guard('admin')->logout()`) แล้วก็ตาม
+
+### การแก้ไข
+
+1.  **`app/Http/Controllers/AuthController.php`:**
+    -   แก้ไขฟังก์ชัน `logout` ให้เรียกใช้ `Auth::guard('web')->logout()` เพื่อระบุให้เป็นการออกจากระบบของ `web` Guard โดยเฉพาะ
+    -   ลบคำสั่ง `$request->session()->invalidate()` และ `$request->session()->regenerateToken()` ออก เพื่อไม่ให้กระทบต่อ Session ของ Guard อื่น
+
+2.  **`app/Http/Controllers/Admin/AdminController.php`:**
+    -   แก้ไขฟังก์ชัน `logout` โดยลบคำสั่ง `$request->session()->invalidate()` และ `$request->session()->regenerateToken()` ออกเช่นกัน คงเหลือไว้เพียง `Auth::guard('admin')->logout()` ซึ่งเป็นการออกจากระบบที่ถูกต้องสำหรับ Admin อยู่แล้ว
+
+### ผลลัพธ์
+
+- การออกจากระบบของ User และ Admin จะไม่ส่งผลกระทบต่อกันอีกต่อไป ทำให้สามารถลงชื่อเข้าใช้ทั้งสองส่วนได้พร้อมกันอย่างอิสระ
+
+---
+
+## การปรับปรุง Navbar และ Search Bar (11 กุมภาพันธ์ 2026)
+
+### การแก้ไข Navbar สำหรับหน้าเฉพาะ
+
+-   **ปัญหา:** Navbar หายไปในหน้า `qr` และ `contact` ตามคำขอเดิม
+-   **สาเหตุ:** มีการใช้ตัวแปร `$hideNavbar = true;` ในไฟล์ `qr.blade.php` และ `contact.blade.php` ซึ่งไปซ่อน Navbar ทั้งหมดตามเงื่อนไขใน `layout.blade.php`
+-   **การแก้ไข:** ลบคำสั่ง `@php $hideNavbar = true; @endphp` ออกจาก `qr.blade.php` และ `contact.blade.php` เพื่อให้ Navbar กลับมาแสดงผลตามปกติในทุกหน้า
+
+### การซ่อน Search Bar ใน Navbar
+
+-   **ความต้องการ:** ซ่อนช่องค้นหาที่อยู่ใน Navbar
+-   **การแก้ไข:**
+    1.  เพิ่มเงื่อนไข `@unless(isset($hideSearchBar) && $hideSearchBar)` ครอบส่วนของช่องค้นหาในไฟล์ `layout.blade.php`
+    2.  หากต้องการซ่อนช่องค้นหาในหน้าใดๆ ให้เพิ่ม `@php $hideSearchBar = true; @endphp` ในไฟล์ Blade ของหน้านั้นๆ
+
+### ผลลัพธ์
+
+-   Navbar กลับมาแสดงผลตามปกติในทุกหน้า รวมถึงหน้า `qr` และ `contact`
+-   ช่องค้นหาใน Navbar จะถูกซ่อนไว้เป็นค่าเริ่มต้น และสามารถเปิดใช้งานได้ตามต้องการโดยการกำหนดตัวแปร `$hideSearchBar = false;` ในหน้า Blade ที่ต้องการแสดงช่องค้นหา

@@ -2,7 +2,10 @@
 
 <?php $__env->startSection('content'); ?>
 
-    <div class="bg-gray-50 min-h-screen py-8">
+    
+    <div class="min-h-screen py-8 bg-cover bg-center bg-no-repeat bg-fixed"
+        style="background-image: url('<?php echo e(asset('images/f1.png')); ?>');">
+
         <div class="container mx-auto px-4">
 
             
@@ -11,30 +14,11 @@
                 
                 <aside class="w-full lg:w-1/4">
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-24">
-                        <h3 class="font-bold text-lg mb-4 text-gray-800">ตัวกรองค้นหา</h3>
                         <form action="<?php echo e(route('allproducts')); ?>" method="GET">
-                            
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('sort')): ?>
                                 <input type="hidden" name="sort" value="<?php echo e(request('sort')); ?>">
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-                            <div class="form-control mb-4">
-                                <label class="label"><span class="label-text text-gray-600">ค้นหาชื่อสินค้า</span></label>
-                                <div class="relative">
-                                    <input type="text" name="search" value="<?php echo e(request('search')); ?>"
-                                        placeholder="พิมพ์คำค้นหา..."
-                                        class="input input-bordered w-full pr-10 bg-gray-50 focus:border-red-500 focus:ring-red-500" />
-                                    <button type="submit"
-                                        class="absolute right-2 top-2.5 text-gray-400 hover:text-red-600 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="divider my-2"></div>
+                            
                             <div class="mb-4">
                                 <label class="label"><span
                                         class="label-text font-bold text-gray-700">หมวดหมู่</span></label>
@@ -48,7 +32,6 @@
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($categories)): ?>
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                             <li>
-                                                
                                                 <a href="<?php echo e(route('allproducts', array_merge(request()->query(), ['category' => $cat]))); ?>"
                                                     class="<?php echo e(request('category') == $cat ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600'); ?>">
                                                     <?php echo e($cat); ?>
@@ -59,10 +42,6 @@
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </ul>
                             </div>
-                            <button type="submit"
-                                class="btn btn-block bg-red-600 hover:bg-red-700 border-none text-white mt-4 shadow-md">
-                                ค้นหา
-                            </button>
                         </form>
                     </div>
                 </aside>
@@ -72,8 +51,6 @@
 
                     
                     <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
-                        
-                        
                         <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[4/1] w-full relative">
                             <div class="swiper mySwiper w-full h-full absolute inset-0">
                                 <div class="swiper-wrapper">
@@ -88,7 +65,6 @@
                                         </div>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </div>
-                                
                                 <div
                                     class="swiper-button-next !w-8 !h-8 !after:text-xs md:!w-10 md:!h-10 !text-white drop-shadow-md">
                                 </div>
@@ -101,39 +77,47 @@
                     </div>
 
                     
-                    <div class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-sm bg-white border border-gray-100">
-                        <div class="container mx-auto px-4">
-                            <div class="grid grid-cols-5 lg:grid-cols-10 gap-2 justify-items-center items-start">
-                                <?php
-                                    $menuItems = [
-                                        ['name' => 'กิมจิ', 'image' => 'menu-kimchi.png'],
-                                        ['name' => 'ซอส<br>เกาหลี', 'image' => 'menu-korean-sauce.png'],
-                                        ['name' => 'combo<br>set', 'image' => 'menu-combo.png'],
-                                        ['name' => 'น้ำดอง<br>ผักดอง', 'image' => 'menu-pickle.png'],
-                                        ['name' => 'เครื่องปรุง<br>เกาหลี', 'image' => 'menu-korean-seasoning.png'],
-                                        ['name' => 'แป้ง/ข้าว/<br>เส้น', 'image' => 'menu-flour.png'],
-                                        ['name' => 'สาหร่าย', 'image' => 'menu-seaweed.png'],
-                                        ['name' => 'เครื่อง<br>ครัว', 'image' => 'menu-kitchenware.png'],
-                                        ['name' => 'ซอส<br>ญี่ปุ่น', 'image' => 'menu-japan-sauce.png'],
-                                        ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
-                                    ];
-                                ?>
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                    <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
-                                        class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
-                                        <div
-                                            class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 group-hover:bg-red-600 rounded-full flex items-center justify-center p-2 mb-1 shadow-sm transition-colors">
-                                            <img src="<?php echo e(asset('images/' . $menu['image'])); ?>"
-                                                alt="<?php echo e(strip_tags($menu['name'])); ?>" class="w-full h-full object-contain"
-                                                onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
-                                        </div>
-                                        <span
-                                            class="text-[10px] md:text-xs font-bold text-gray-600 group-hover:text-red-600 text-center leading-tight">
-                                            <?php echo $menu['name']; ?>
+                    <div
+                        class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-sm bg-red-600 border border-gray-100 overflow-hidden">
+                        <div class="container mx-auto px-2">
+                            
+                            <div class="swiper categorySwiper w-full">
+                                <div class="swiper-wrapper items-start">
+                                    <?php
+                                        $menuItems = [
+                                            ['name' => 'กิมจิ', 'image' => 'menu-kimchi.png'],
+                                            ['name' => 'ซอส<br>เกาหลี', 'image' => 'menu-korean-sauce.png'],
+                                            ['name' => 'combo<br>set', 'image' => 'menu-combo.png'],
+                                            ['name' => 'น้ำดอง<br>ผักดอง', 'image' => 'menu-pickle.png'],
+                                            ['name' => 'เครื่องปรุง<br>เกาหลี', 'image' => 'menu-korean-seasoning.png'],
+                                            ['name' => 'แป้ง/ข้าว/<br>เส้น', 'image' => 'menu-flour.png'],
+                                            ['name' => 'สาหร่าย', 'image' => 'menu-seaweed.png'],
+                                            ['name' => 'เครื่อง<br>ครัว', 'image' => 'menu-kitchenware.png'],
+                                            ['name' => 'ซอส<br>ญี่ปุ่น', 'image' => 'menu-japan-sauce.png'],
+                                            ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
+                                        ];
+                                    ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                        
+                                        <div class="swiper-slide !h-auto">
+                                            <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
+                                                class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
+                                                <div
+                                                    class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-1 shadow-sm transition-colors">
+                                                    <img src="<?php echo e(asset('images/' . $menu['image'])); ?>"
+                                                        alt="<?php echo e(strip_tags($menu['name'])); ?>"
+                                                        class="w-full h-full object-contain"
+                                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
+                                                </div>
+                                                <span
+                                                    class="text-[10px] md:text-xs font-bold text-white text-center leading-tight select-none">
+                                                    <?php echo $menu['name']; ?>
 
-                                        </span>
-                                    </a>
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                                </span>
+                                            </a>
+                                        </div>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,7 +136,6 @@
 
                         <form id="sortForm" action="<?php echo e(route('allproducts')); ?>" method="GET"
                             class="flex items-center gap-3 w-full sm:w-auto">
-                            
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('search')): ?>
                                 <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -237,7 +220,6 @@
 
                                                 </a>
                                             </h2>
-                                            
 
                                             <p
                                                 class="text-xs font-medium mt-1 <?php echo e($product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500'); ?>">
@@ -317,6 +299,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Banner Swiper
             var swiper1 = new Swiper(".mySwiper", {
                 slidesPerView: 1,
                 spaceBetween: 0,
@@ -338,7 +321,29 @@
                 },
             });
 
-            // Cart Logic
+            // ★★★ Category Menu Swiper (เพิ่มใหม่) ★★★
+            var swiperCategory = new Swiper(".categorySwiper", {
+                slidesPerView: 4.5, // มือถือโชว์ 4.5 รูป (ให้เห็นว่ามีต่อ)
+                spaceBetween: 10,
+                loop: true,
+                autoplay: {
+                    delay: 2500, // เลื่อนทุก 2.5 วินาที
+                    disableOnInteraction: false,
+                },
+                breakpoints: {
+                    640: { // แท็บเล็ต
+                        slidesPerView: 6,
+                        spaceBetween: 10,
+                    },
+                    1024: { // Desktop
+                        slidesPerView: 10, // โชว์ครบ 10 รูป
+                        spaceBetween: 10,
+                        autoplay: false, // Desktop ไม่ต้องเลื่อน
+                    },
+                },
+            });
+
+            // Cart Logic (เหมือนเดิม)
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {

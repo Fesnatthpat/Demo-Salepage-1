@@ -109,8 +109,8 @@
                                 @endforeach
                                 @auth
                                     <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a></li>
-                                    <li><a href="/about" class="py-3 font-bold hover:text-red-600">เกี่ยวกับเรา</a></li>
-                                    <li><a href="/contact" class="py-3 font-bold hover:text-red-600">ติดต่อเรา</a></li>
+                                    <li><a href="/about" class="py-3 font-bold hover:text-red-600">เกี่ยวกับติดใจ</a></li>
+                                    <li><a href="/contact" class="py-3 font-bold hover:text-red-600">ติดต่อติดใจ</a></li>
                                     <li><a href="{{ route('profile.edit') }}"
                                             class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
                                     <li>
@@ -189,8 +189,8 @@
                             @endforeach
                             @auth
                                 <a href="/orderhistory" class="hover:text-red-100 transition-colors">ประวัติการสั่งซื้อ</a>
-                                <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับเรา</a>
-                                <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อเรา</a>
+                                <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับติดใจ</a>
+                                <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อติดใจ</a>
                                 <a href="https://kawinbrothers.com/tracking/index.php" target="_blank" rel="noopener noreferrer" class="hover:text-red-100 transition-colors">เช็คพัสดุ</a>
                             @endauth
                         </nav>

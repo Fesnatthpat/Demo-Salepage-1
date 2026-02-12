@@ -62,9 +62,21 @@
             <div
                 class="mb-6 flex items-center gap-2 text-sm text-blue-300 bg-blue-900/30 p-3 rounded-lg border border-blue-800">
                 <i class="fas fa-tag"></i>
-                <span>รหัสสินค้า: <strong><?php echo e($productSalepage->pd_sp_code); ?></strong></span>
+                <span>รหัสสินค้า (System): <strong><?php echo e($productSalepage->pd_sp_code); ?></strong></span>
             </div>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+        
+        <div class="form-control w-full mb-6">
+            <label class="label font-bold text-gray-300">รหัส SKU</label>
+            <div class="relative">
+                <span class="absolute left-4 top-3 text-gray-500"><i class="fas fa-barcode"></i></span>
+                <input type="text" name="pd_sp_SKU"
+                    class="input input-bordered w-full pl-10 text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
+                    placeholder="ระบุรหัส SKU (ถ้ามี)"
+                    value="<?php echo e(old('pd_sp_SKU', $productSalepage->pd_sp_SKU ?? '')); ?>" />
+            </div>
+        </div>
 
         
         <div class="form-control w-full mb-6">
@@ -148,10 +160,11 @@
 </div>
 
 
-<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6" x-data="{
-    options: <?php echo e(json_encode(old('product_options', isset($productSalepage) && $productSalepage->options ? $productSalepage->options : []))); ?>
+<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6"
+    x-data="{
+        options: <?php echo e(json_encode(old('product_options', isset($productSalepage) && $productSalepage->options ? $productSalepage->options : []))); ?>
 
-}">
+    }">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
             <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
@@ -184,7 +197,8 @@
 
                     
                     <div class="form-control w-full md:w-32">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1 (บาท)</span></label>
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1
+                                (บาท)</span></label>
                         <input type="number" step="0.01" :name="`product_options[${index}][option_price]`"
                             x-model="option.option_price"
                             class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
@@ -193,7 +207,8 @@
 
                     
                     <div class="form-control w-full md:w-32">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 2 (บาท)</span></label>
+                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 2
+                                (บาท)</span></label>
                         <input type="number" step="0.01" :name="`product_options[${index}][option_price2]`"
                             x-model="option.option_price2"
                             class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"

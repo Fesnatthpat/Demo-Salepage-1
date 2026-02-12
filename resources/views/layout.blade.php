@@ -191,7 +191,7 @@
                                 <a href="/orderhistory" class="hover:text-red-100 transition-colors">ประวัติการสั่งซื้อ</a>
                                 <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับติดใจ</a>
                                 <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อติดใจ</a>
-                                <a href="https://kawinbrothers.com/tracking/index.php" target="_blank" rel="noopener noreferrer" class="hover:text-red-100 transition-colors">เช็คพัสดุ</a>
+                                <a href="{{ route('order.tracking.form') }}" class="hover:text-red-100 transition-colors">เช็คพัสดุ</a>
                             @endauth
                         </nav>
                     </div>
@@ -290,7 +290,7 @@
             {{-- Column 1 --}}
             <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
                 <h6 class="text-lg font-bold text-white mb-2 opacity-100">ศูนย์ช่วยเหลือ</h6>
-                <a href="/track" class="link link-hover text-red-50 hover:text-white transition-colors">ติดตามสถานะคำสั่งซื้อ</a>
+                <a href="{{ route('order.tracking.form') }}" class="link link-hover text-red-50 hover:text-white transition-colors">ติดตามสถานะคำสั่งซื้อ</a>
                 <a href="#" class="link link-hover text-red-50 hover:text-white transition-colors">การรับประกันสินค้า</a>
                 <a href="#" class="link link-hover text-red-50 hover:text-white transition-colors">การคืนสินค้าและการคืนเงิน</a>
                 <a href="#" class="link link-hover text-red-50 hover:text-white transition-colors">วิธีการสั่งซื้อ</a>

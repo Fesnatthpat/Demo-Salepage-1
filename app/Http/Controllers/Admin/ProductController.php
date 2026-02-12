@@ -57,6 +57,7 @@ class ProductController extends Controller
             // 2. บันทึกข้อมูลหลัก
             $salePage = ProductSalepage::create([
                 'pd_sp_code' => $generatedCode,
+                'pd_sp_SKU' => $request->pd_sp_SKU,
                 'pd_sp_name' => $request->pd_sp_name,
                 'pd_sp_description' => $request->pd_sp_details,
                 'pd_sp_price' => $request->pd_sp_price,
@@ -123,6 +124,7 @@ class ProductController extends Controller
             // 1. อัปเดตข้อมูลหลัก
             $productSalepage->update([
                 'pd_sp_name' => $request->pd_sp_name,
+                'pd_sp_SKU' => $request->pd_sp_SKU,
                 'pd_sp_price' => $request->pd_sp_price,
                 'pd_sp_price2' => $request->pd_sp_price2,
                 'pd_sp_discount' => $request->pd_sp_discount ?? 0,
@@ -232,6 +234,7 @@ class ProductController extends Controller
     {
         return $request->validate([
             'pd_sp_name' => 'required|string|max:255',
+            'pd_sp_SKU' => 'nullable|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
             'pd_sp_price2' => 'nullable|numeric|min:0',
             'pd_sp_stock' => 'required|integer|min:0',

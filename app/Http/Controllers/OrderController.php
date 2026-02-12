@@ -31,6 +31,26 @@ class OrderController extends Controller
         return view('orderdetail', compact('order')); // Assuming 'orderdetail.blade.php'
     }
 
+    public function showTrackingForm(Request $request)
+    {
+        return view('order.tracking_form');
+    }
+
+    public function trackOrder(Request $request)
+    {
+        $request->validate([
+            'order_code' => 'required|string',
+        ]);
+
+        $order = Order::where('ord_code', $request->order_code)->first();
+
+        if ($order) {
+            return view('order.tracking_form', compact('order'));
+        }
+
+        return back()->with('error', 'ไม่พบข้อมูลการสั่งซื้อสำหรับรหัสที่ระบุ');
+    }
+
     public function store(Request $request)
     {
         $request->validate([

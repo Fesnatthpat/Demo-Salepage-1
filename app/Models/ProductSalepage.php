@@ -17,6 +17,7 @@ class ProductSalepage extends Model
     protected $fillable = [
         'pd_sp_price2',
         'pd_sp_code',
+        'pd_sp_SKU',
         'pd_sp_name',
         'pd_sp_description',
         'pd_sp_price',

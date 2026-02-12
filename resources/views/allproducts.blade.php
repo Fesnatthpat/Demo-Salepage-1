@@ -1,54 +1,23 @@
+{{-- resources/views/allproducts.blade.php --}}
 @extends('layout')
 
 @section('title', 'สินค้าทั้งหมด | Salepage Demo')
 
 @section('content')
 
-    {{-- พื้นหลังรูป f1.png จากการแก้ไขครั้งก่อน --}}
+    {{-- พื้นหลังรูป f1.png --}}
     <div class="min-h-screen py-8 bg-cover bg-center bg-no-repeat bg-fixed"
         style="background-image: url('{{ asset('images/f1.png') }}');">
 
         <div class="container mx-auto px-4">
 
-            {{-- Layout: Sidebar + Main Content --}}
-            <div class="flex flex-col lg:flex-row gap-8">
+            {{-- Layout: ปรับเป็น Column เดียว เพราะลบ Sidebar ออกแล้ว --}}
+            <div class="flex flex-col gap-8">
 
-                {{-- SIDEBAR (ตัวกรองด้านซ้าย) --}}
-                <aside class="w-full lg:w-1/4">
-                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 sticky top-24">
-                        <form action="{{ route('allproducts') }}" method="GET">
-                            @if (request('sort'))
-                                <input type="hidden" name="sort" value="{{ request('sort') }}">
-                            @endif
-                            {{-- <div class="divider my-2"></div> --}}
-                            <div class="mb-4">
-                                <label class="label"><span
-                                        class="label-text font-bold text-gray-700">หมวดหมู่</span></label>
-                                <ul class="menu bg-base-100 w-full p-0 text-gray-600 rounded-box">
-                                    <li>
-                                        <a href="{{ route('allproducts', array_merge(request()->query(), ['category' => null])) }}"
-                                            class="{{ !request('category') ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600' }}">
-                                            ทั้งหมด
-                                        </a>
-                                    </li>
-                                    @if (isset($categories))
-                                        @foreach ($categories as $cat)
-                                            <li>
-                                                <a href="{{ route('allproducts', array_merge(request()->query(), ['category' => $cat])) }}"
-                                                    class="{{ request('category') == $cat ? 'active bg-red-100 text-red-700' : 'hover:bg-red-50 hover:text-red-600' }}">
-                                                    {{ $cat }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    @endif
-                                </ul>
-                            </div>
-                        </form>
-                    </div>
-                </aside>
+                {{-- ★★★ ลบ Sidebar (หมวดหมู่ด้านซ้าย) ออกไปแล้ว ★★★ --}}
 
-                {{-- MAIN CONTENT (เนื้อหาหลัก) --}}
-                <main class="w-full lg:w-3/4">
+                {{-- MAIN CONTENT (เนื้อหาหลัก - ปรับให้เต็มจอ w-full) --}}
+                <main class="w-full">
 
                     {{-- ★★★ BANNER SLIDER ★★★ --}}
                     <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
@@ -77,12 +46,31 @@
                         </div>
                     </div>
 
-                    {{-- ★★★ CATEGORY MENU SECTION (แก้ไขใหม่: เป็น Swiper Slider) ★★★ --}}
+                    {{-- ★★★ CATEGORY MENU SECTION (Slider สีแดง - ยังคงไว้เพื่อความสวยงาม) ★★★ --}}
+                    <style>
+                        /* ลูกศร Navigation */
+                        .categorySwiper .swiper-button-next,
+                        .categorySwiper .swiper-button-prev {
+                            color: white !important;
+                            width: 30px !important;
+                            height: 30px !important;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            z-index: 10;
+                        }
+
+                        .categorySwiper .swiper-button-next::after,
+                        .categorySwiper .swiper-button-prev::after {
+                            font-size: 18px !important;
+                            font-weight: bold;
+                            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+                        }
+                    </style>
+
                     <div
-                        class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-sm bg-red-600 border border-gray-100 overflow-hidden">
-                        <div class="container mx-auto px-2">
-                            {{-- ใช้ Swiper Container --}}
-                            <div class="swiper categorySwiper w-full">
+                        class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-sm bg-red-600 border border-gray-100 overflow-hidden relative group">
+                        <div class="container mx-auto px-10 relative">
+                            <div class="swiper categorySwiper w-full pb-4">
                                 <div class="swiper-wrapper items-start">
                                     @php
                                         $menuItems = [
@@ -99,12 +87,11 @@
                                         ];
                                     @endphp
                                     @foreach ($menuItems as $menu)
-                                        {{-- เปลี่ยนเป็น swiper-slide --}}
                                         <div class="swiper-slide !h-auto">
                                             <a href="/allproducts?category={{ strip_tags($menu['name']) }}"
                                                 class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
                                                 <div
-                                                    class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-1 shadow-sm transition-colors">
+                                                    class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-2 shadow-sm transition-colors">
                                                     <img src="{{ asset('images/' . $menu['image']) }}"
                                                         alt="{{ strip_tags($menu['name']) }}"
                                                         class="w-full h-full object-contain"
@@ -119,6 +106,8 @@
                                     @endforeach
                                 </div>
                             </div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
                         </div>
                     </div>
 
@@ -146,16 +135,17 @@
                             <label class="text-sm text-gray-600 whitespace-nowrap hidden sm:block">เรียงตาม:</label>
                             <select name="sort" onchange="document.getElementById('sortForm').submit();"
                                 class="select select-bordered select-sm w-full sm:w-48 bg-gray-50 focus:border-red-500 focus:ring-red-500 text-gray-700">
-                                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>ล่าสุด (Newest)
+                                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>ล่าสุด
+                                    (Newest)
                                 </option>
                                 <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>ยอดนิยม
                                     (Popular)</option>
                                 <option value="bestseller" {{ request('sort') == 'bestseller' ? 'selected' : '' }}>ขายดี
                                     (Best Seller)</option>
-                                <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>ราคา: ต่ำ
-                                    - สูง</option>
-                                <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>ราคา:
-                                    สูง - ต่ำ</option>
+                                <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>
+                                    ราคา: ต่ำ - สูง</option>
+                                <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>
+                                    ราคา: สูง - ต่ำ</option>
                             </select>
                         </form>
                     </div>
@@ -316,14 +306,18 @@
                 },
             });
 
-            // ★★★ Category Menu Swiper (เพิ่มใหม่) ★★★
+            // ★★★ Category Menu Swiper ★★★
             var swiperCategory = new Swiper(".categorySwiper", {
-                slidesPerView: 4.5, // มือถือโชว์ 4.5 รูป (ให้เห็นว่ามีต่อ)
+                slidesPerView: 4.5,
                 spaceBetween: 10,
                 loop: true,
                 autoplay: {
-                    delay: 2500, // เลื่อนทุก 2.5 วินาที
+                    delay: 3000,
                     disableOnInteraction: false,
+                },
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
                 },
                 breakpoints: {
                     640: { // แท็บเล็ต
@@ -331,14 +325,13 @@
                         spaceBetween: 10,
                     },
                     1024: { // Desktop
-                        slidesPerView: 10, // โชว์ครบ 10 รูป
-                        spaceBetween: 10,
-                        autoplay: false, // Desktop ไม่ต้องเลื่อน
+                        slidesPerView: 8,
+                        spaceBetween: 15,
                     },
                 },
             });
 
-            // Cart Logic (เหมือนเดิม)
+            // Cart Logic
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
@@ -384,7 +377,9 @@
                                     iconColor: '#DC2626'
                                 });
                                 setTimeout(() => { // Add setTimeout
-                                    console.log('Dispatching cartUpdated from allproducts.blade.php'); // Log
+                                    console.log(
+                                        'Dispatching cartUpdated from allproducts.blade.php'
+                                    ); // Log
                                     Livewire.dispatch('cartUpdated');
                                 }, 50); // Small delay
                             } else {

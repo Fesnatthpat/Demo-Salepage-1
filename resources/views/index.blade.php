@@ -107,8 +107,15 @@
                             class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">
                             <a href="{{ route('product.show', $product->pd_sp_id) }}"
                                 class="block overflow-hidden relative pt-[100%]">
+                                @if ($product->pd_sp_stock <= 0)
+                                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                                        <div class="w-28 h-28 rounded-full bg-black bg-opacity-60 flex items-center justify-center shadow-lg">
+                                            <span class="text-white font-bold text-md text-center">สินค้าหมด</span>
+                                        </div>
+                                    </div>
+                                @endif
                                 <img src="{{ $displayImage }}" alt="{{ $product->pd_sp_name }}"
-                                    class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                                    class="absolute top-0 left-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 {{ $product->pd_sp_stock <= 0 ? 'opacity-50' : '' }}"
                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/400x400.png?text=No+Image';" />
                                 @if ($isOnSale)
                                     <div

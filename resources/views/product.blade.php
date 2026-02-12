@@ -76,6 +76,7 @@
         allImages: @js($allImages),
         initialBasePrice: @js($initialBasePrice),
         initialBasePrice2: @js($initialBasePrice2),
+        initialStock: @js($product->pd_sp_stock),
         discountAmount: @js($discountAmount),
         options: @js($optionsData),
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
@@ -317,13 +318,26 @@
                         </div>
                         <div class="flex-1 w-full grid grid-cols-2 gap-4">
                             <button @click="handleAddToCartClick(false)"
-                                class="h-14 rounded-2xl border-2 border-red-600 text-red-600 font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2 text-lg">
-                                <span x-show="!isLoading">ใส่ตะกร้า</span>
+                                :disabled="currentStock <= 0 || isLoading"
+                                :class="{
+                                    'border-red-600 text-red-600 hover:bg-red-50': currentStock > 0,
+                                    'border-gray-300 bg-gray-200 text-gray-400 cursor-not-allowed': currentStock <= 0
+                                }"
+                                class="h-14 rounded-2xl border-2 font-bold transition-all flex items-center justify-center gap-2 text-lg">
+                                <span x-show="!isLoading && currentStock > 0">ใส่ตะกร้า</span>
+                                <span x-show="!isLoading && currentStock <= 0">สินค้าหมด</span>
                                 <span x-show="isLoading" class="loading loading-spinner"></span>
                             </button>
                             <button @click="handleAddToCartClick(true)"
-                                class="h-14 rounded-2xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all text-lg">Buy
-                                Now</button>
+                                :disabled="currentStock <= 0 || isLoading"
+                                :class="{
+                                    'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/30': currentStock > 0,
+                                    'bg-gray-400 text-gray-100 cursor-not-allowed': currentStock <= 0
+                                }"
+                                class="h-14 rounded-2xl font-bold transition-all text-lg">
+                                <span x-show="currentStock > 0">Buy Now</span>
+                                <span x-show="currentStock <= 0">สินค้าหมด</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -401,6 +415,7 @@
                 imagesLoaded: false,
                 basePrice: config.initialBasePrice || 0, // Updated
                 basePrice2: config.initialBasePrice2 || 0, // Added
+                initialStock: config.initialStock || 0,
                 discountAmount: config.discountAmount || 0, // Added
                 options: config.options || [],
                 selectedOption: null,
@@ -423,51 +438,65 @@
                 },
                 // --------------------------
 
+                get currentStock() {
+                    if (this.selectedOption) {
+                        const option = this.options.find(o => o.id === this.selectedOption);
+                        return option ? option.stock : 0;
+                    }
+                    return this.initialStock;
+                },
+
                 get finalPrice() {
-                    let currentPrice = this.basePrice;
-                    let currentPrice2 = this.basePrice2;
-                    let currentDiscount = this.discountAmount;
+                    let priceToDisplay = this.basePrice;
+                    let price2ToDisplay = this.basePrice2;
+                    let actualDiscount = this.discountAmount;
 
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id === this.selectedOption);
                         if (option) {
-                            currentPrice = option.price;
-                            currentPrice2 = option.price2;
-                            // For options, typically discounts are applied to the option's base price
-                            // or handled as fixed prices. Assuming here that option prices are final.
-                            currentDiscount = 0; 
+                            priceToDisplay = option.price;
+                            price2ToDisplay = option.price2;
+                            actualDiscount = 0; // Option price is usually considered final, no further discount from main product
                         }
-                    } else {
-                        // Apply main product discount if no option selected
-                        currentPrice = Math.max(0, currentPrice - currentDiscount);
                     }
-                    
-                    if (currentPrice2 && currentPrice2 > 0) {
-                        return `฿${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${currentPrice2.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+
+                    let final = Math.max(0, priceToDisplay - actualDiscount);
+
+                    if (price2ToDisplay && price2ToDisplay > 0) {
+                        // If price2 exists, it implies a price range, discount usually not applied to range.
+                        // Or you might need more complex logic here if price2 also gets discounted.
+                        return `฿${priceToDisplay.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${price2ToDisplay.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                     }
-                    return `฿${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                    return `฿${final.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                 },
-                get originalPriceDisplay() { // New getter for original price with discount
+                get originalPriceDisplay() {
+                    let priceBeforeDiscount = this.basePrice;
+                    let actualDiscount = this.discountAmount;
+
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id === this.selectedOption);
                         if (option) {
-                            // If an option is selected, its price is considered its base.
-                            // If you want to show a line-through on option price,
-                            // you'd need to store option-specific originalPrice and discount.
-                            // For now, assuming option.price is the final price for the option.
-                            return null; 
+                            priceBeforeDiscount = option.price;
+                            actualDiscount = 0; // No discount from main product if option selected
                         }
                     }
-                    // For main product, show original if discount applies
-                    if (this.discountAmount > 0) {
-                        return `฿${this.basePrice.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+
+                    if (actualDiscount > 0) {
+                        return `฿${priceBeforeDiscount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                     }
                     return null;
                 },
-                get discountDisplay() { // New getter for discount text
-                    // Always show discount if available, regardless of option selection
-                    if (this.discountAmount > 0) {
-                        return `ประหยัด ฿${this.discountAmount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                get discountDisplay() {
+                    let actualDiscount = this.discountAmount;
+
+                    if (this.selectedOption) {
+                        // If an option is selected, the main product discount typically doesn't apply to it.
+                        // If options can have their own discounts, that logic would go here.
+                        actualDiscount = 0;
+                    }
+
+                    if (actualDiscount > 0) {
+                        return `ประหยัด ฿${actualDiscount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                     }
                     return null;
                 },
@@ -493,7 +522,8 @@
                 },
                 init() {
                     this.imagesLoaded = true; // Added this line
-                    if (this.options.length > 0) this.selectedOption = this.options[0].id;
+                    // No default selection for options. User must choose.
+                    // if (this.options.length > 0) this.selectedOption = this.options[0].id;
                     this.$watch('quantity', () => this.validateSelection());
 
                     if (localStorage.getItem('justAddedPartner') === 'true') {
@@ -576,6 +606,7 @@
                     }
                 },
                 async handleAddToCartClick(isBuyNow) {
+                    if (this.currentStock <= 0) return; // Do nothing if out of stock
                     if (this.options.length > 0 && !this.selectedOption) {
                         Swal.fire('กรุณาเลือกตัวเลือก', 'เลือกตัวเลือกก่อน', 'warning');
                         return;

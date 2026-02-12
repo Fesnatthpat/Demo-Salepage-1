@@ -168,12 +168,19 @@
                                     @endphp
 
                                     <div
-                                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-xl overflow-hidden duration-300 group flex flex-col h-full">
+                                        class="card relative bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-xl overflow-hidden duration-300 group flex flex-col h-full">
                                         <a href="{{ route('product.show', $product->pd_sp_id) }}">
                                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                                                @if ($product->pd_sp_stock <= 0)
+                                                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                                                        <div class="w-28 h-28 rounded-full bg-black bg-opacity-60 flex items-center justify-center shadow-lg">
+                                                            <span class="text-white font-bold text-md text-center">สินค้าหมด</span>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                                 <img src="{{ Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath) }}"
                                                     alt="{{ $product->pd_sp_name }}"
-                                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500 {{ $product->pd_sp_stock <= 0 ? 'opacity-50' : '' }}"
                                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500.png?text=No+Image';" />
 
                                                 @if ($isOnSale)

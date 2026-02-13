@@ -234,7 +234,7 @@
     {{-- ★★★ สไลด์ตัวที่ 2 ★★★ --}}
     <div class="w-full bg-gray-50/50 pt-8 pb-4">
         <div class="container mx-auto px-4">
-            <div class="swiper mySwiper2 w-full rounded-2xl shadow-md overflow-hidden relative">
+            <div class="swiper mySwiper2 w-[900px] rounded-2xl shadow-md overflow-hidden relative">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide"><img src="{{ asset('images/th-a.png') }}" class="w-full h-auto block"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+A';" />

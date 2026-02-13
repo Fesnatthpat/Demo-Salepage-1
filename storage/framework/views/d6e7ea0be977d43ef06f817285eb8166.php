@@ -3,48 +3,77 @@
 <?php $__env->startSection('content'); ?>
 
     
-    <div class="relative w-full h-[200px] md:h-[350px] lg:h-[700px] bg-gray-100 group">
-        <div class="swiper mySwiper w-full h-full">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <a href="/allproducts" class="block max-w-full">
-                        <img src="<?php echo e(asset('images/th-1.png')); ?>" class="w-full h-full object-cover object-center"
-                            alt="Slide 1"
-                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/783630/ffffff?text=Image+1';" />
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="/allproducts" class="block max-w-full">
-                        <img src="<?php echo e(asset('images/th-2.png')); ?>" class="w-full h-full object-cover object-center"
-                            alt="Slide 2"
-                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+2';" />
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="/allproducts" class="block max-w-full">
-                        <img src="<?php echo e(asset('images/th-3.png')); ?>" class="w-full h-full object-cover object-center"
-                            alt="Slide 3"
-                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+3';" />
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="/allproducts" class="block max-w-full">
-                        <img src="<?php echo e(asset('images/th-4.png')); ?>" class="w-full h-full object-cover object-center"
-                            alt="Slide 4"
-                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+4';" />
-                    </a>
-                </div>
-                <div class="swiper-slide">
-                    <a href="/allproducts" class="block max-w-full">
-                        <img src="<?php echo e(asset('images/th-5.png')); ?>" class="w-full h-full object-cover object-center"
-                            alt="Slide 5"
-                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+5';" />
-                    </a>
+
+    <style>
+        /* ปรับแต่งจุด (Pagination) ของ Hero Slider เป็นสีขาว */
+        .mySwiper .swiper-pagination-bullet {
+            background-color: #ffffff !important;
+            opacity: 0.5 !important;
+            transition: all 0.3s ease;
+        }
+
+        .mySwiper .swiper-pagination-bullet-active,
+        .mySwiper .swiper-pagination-bullet-active-main {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+            transform: scale(1.2);
+            /* ขยายจุดที่เลือกรอบๆ นิดนึงให้ดูชัดเจน */
+        }
+
+        /* ปรับสีลูกศรซ้ายขวาให้เป็นสีขาว (ถ้าต้องการ) */
+        .mySwiper {
+            --swiper-navigation-color: #ffffff;
+        }
+    </style>
+
+    <div class="w-full bg-white py-6"> 
+        <div class="container mx-auto px-4"> 
+            <div
+                class="relative w-full h-[180px] md:h-[300px] lg:h-[500px] bg-gray-100 group rounded-[5px] overflow-hidden shadow-lg">
+                
+                <div class="swiper mySwiper w-full h-full">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <a href="/allproducts" class="block max-w-full h-full">
+                                <img src="<?php echo e(asset('images/th-1.png')); ?>" class="w-full h-full object-cover object-center"
+                                    alt="Slide 1"
+                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/783630/ffffff?text=Image+1';" />
+                            </a>
+                        </div>
+                        <div class="swiper-slide">
+                            <a href="/allproducts" class="block max-w-full h-full">
+                                <img src="<?php echo e(asset('images/th-2.png')); ?>" class="w-full h-full object-cover object-center"
+                                    alt="Slide 2"
+                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+2';" />
+                            </a>
+                        </div>
+                        <div class="swiper-slide">
+                            <a href="/allproducts" class="block max-w-full h-full">
+                                <img src="<?php echo e(asset('images/th-3.png')); ?>" class="w-full h-full object-cover object-center"
+                                    alt="Slide 3"
+                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+3';" />
+                            </a>
+                        </div>
+                        <div class="swiper-slide">
+                            <a href="/allproducts" class="block max-w-full h-full">
+                                <img src="<?php echo e(asset('images/th-4.png')); ?>" class="w-full h-full object-cover object-center"
+                                    alt="Slide 4"
+                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+4';" />
+                            </a>
+                        </div>
+                        <div class="swiper-slide">
+                            <a href="/allproducts" class="block max-w-full h-full">
+                                <img src="<?php echo e(asset('images/th-5.png')); ?>" class="w-full h-full object-cover object-center"
+                                    alt="Slide 5"
+                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x500/ef4444/ffffff?text=Image+5';" />
+                            </a>
+                        </div>
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-pagination"></div>
                 </div>
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-pagination"></div>
         </div>
     </div>
 
@@ -107,7 +136,8 @@
                                 class="block overflow-hidden relative pt-[100%]">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_stock <= 0): ?>
                                     <div class="absolute inset-0 flex items-center justify-center z-10">
-                                        <div class="w-28 h-28 rounded-full bg-black bg-opacity-60 flex items-center justify-center shadow-lg">
+                                        <div
+                                            class="w-28 h-28 rounded-full bg-black bg-opacity-60 flex items-center justify-center shadow-lg">
                                             <span class="text-white font-bold text-md text-center">สินค้าหมด</span>
                                         </div>
                                     </div>
@@ -126,7 +156,6 @@
                                     <h2 class="text-lg font-bold text-gray-800 leading-tight line-clamp-2 hover:text-red-600 transition cursor-pointer"
                                         onclick="window.location='<?php echo e(route('product.show', $product->pd_sp_id)); ?>'">
                                         <?php echo e($product->pd_sp_name); ?></h2>
-                                    
                                 </div>
                                 <div class="mt-auto">
                                     <div class="flex justify-between items-center mb-4">

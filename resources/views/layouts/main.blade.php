@@ -11,6 +11,18 @@
         .text-primary { color: var(--primary-color) !important; }
         .bg-primary { background-color: var(--primary-color) !important; }
         .hero-title { font-size: var(--hero-font-size); }
+
+        /* General Swiper Arrow Styling */
+        .swiper-button-next,
+        .swiper-button-prev {
+            width: 28px !important;
+            height: 28px !important;
+        }
+
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 14px !important;
+        }
     </style>
 </head>
 <body class="{{ $settings['bg_tone'] ?? 'bg-white' }}" id="main-body">

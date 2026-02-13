@@ -4,10 +4,9 @@
 
 @section('content')
 
-    {{-- ★★★ HERO SECTION (สไลด์หลัก - ปรับปรุงใหม่) ★★★ --}}
-
+    {{-- ★★★ CSS ปรับแต่งสไลเดอร์ (ใส่ไว้ส่วนบน) ★★★ --}}
     <style>
-        /* ปรับแต่งจุด (Pagination) ของ Hero Slider เป็นสีขาว */
+        /* --- 1. ปรับแต่งจุด (Pagination) ของ Hero Slider เป็นสีขาว --- */
         .mySwiper .swiper-pagination-bullet {
             background-color: #ffffff !important;
             opacity: 0.5 !important;
@@ -19,20 +18,47 @@
             background-color: #ffffff !important;
             opacity: 1 !important;
             transform: scale(1.2);
-            /* ขยายจุดที่เลือกรอบๆ นิดนึงให้ดูชัดเจน */
         }
 
-        /* ปรับสีลูกศรซ้ายขวาให้เป็นสีขาว (ถ้าต้องการ) */
-        .mySwiper {
-            --swiper-navigation-color: #ffffff;
+        /* --- 2. ปรับแต่งลูกศร (Navigation) ให้เล็กลงและดูพรีเมียม --- */
+        /* CSS นี้จะส่งผลกับปุ่มลูกศรของทั้ง mySwiper และ mySwiper2 */
+        .swiper-button-next,
+        .swiper-button-prev {
+            width: 32px !important;       /* ขนาดความกว้างปุ่มให้พอดี */
+            height: 32px !important;      /* ขนาดความสูงปุ่มให้พอดี */
+            background-color: rgba(255, 255, 255, 0.95) !important; /* พื้นหลังสีขาว */
+            border-radius: 50% !important;           /* ทำเป็นรูปวงกลม */
+            color: #dc2626 !important;      /* สีลูกศรเป็นสีแดง */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important; /* เพิ่มเงาให้ปุ่มดูลอยขึ้น */
+            transition: all 0.3s ease !important;
+            margin-top: -16px !important; /* ดึงให้ปุ่มอยู่กึ่งกลางแนวตั้งพอดี */
         }
+
+        /* เอฟเฟกต์ตอนนำเมาส์ไปชี้ (Hover) */
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            background-color: #dc2626 !important; /* เปลี่ยนพื้นหลังเป็นสีแดง */
+            color: #ffffff !important;          /* เปลี่ยนลูกศรเป็นสีขาว */
+            transform: scale(1.1) !important;   /* ขยายขนาดปุ่มขึ้นเล็กน้อย */
+        }
+
+        /* ปรับขนาดของตัวไอคอนลูกศรด้านในให้เล็กลงรับกับกรอบ */
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 14px !important; 
+            font-weight: 900 !important;
+        }
+
+        /* จัดตำแหน่งไม่ให้ชิดขอบจอจนเกินไป */
+        .swiper-button-prev { left: 12px !important; }
+        .swiper-button-next { right: 12px !important; }
     </style>
 
-    <div class="w-full bg-white py-6"> {{-- เพิ่มพื้นที่ว่างบนล่าง --}}
-        <div class="container mx-auto px-4"> {{-- จัดกึ่งกลางและเว้นขอบซ้ายขวา --}}
+    {{-- ★★★ HERO SECTION (สไลด์หลัก) ★★★ --}}
+    <div class="w-full bg-white py-6">
+        <div class="container mx-auto px-4">
             <div
                 class="relative w-full h-[180px] md:h-[300px] lg:h-[500px] bg-gray-100 group rounded-[5px] overflow-hidden shadow-lg">
-                {{-- ปรับความสูงลดลง และเพิ่มมุมโค้ง (rounded-3xl) --}}
                 <div class="swiper mySwiper w-full h-full">
                     <div class="swiper-wrapper">
                         <div class="swiper-slide">
@@ -89,8 +115,7 @@
     </div>
 
 
-    {{-- PRODUCTS SECTION (แก้ไขพื้นหลัง) --}}
-    {{-- ▼▼▼ ใส่รูปพื้นหลัง f1.png ตรงนี้ ▼▼▼ --}}
+    {{-- PRODUCTS SECTION (เมนูแนะนำ) --}}
     <div class="w-full pb-12 pt-4 bg-cover bg-center bg-no-repeat"
         style="background-image: url('{{ asset('images/f1.png') }}');">
 
@@ -210,7 +235,7 @@
     {{-- ★★★ สไลด์ตัวที่ 2 ★★★ --}}
     <div class="w-full bg-gray-50/50 pt-8 pb-4">
         <div class="container mx-auto px-4">
-            <div class="swiper mySwiper2 w-full rounded-2xl shadow-md overflow-hidden">
+            <div class="swiper mySwiper2 w-full rounded-2xl shadow-md overflow-hidden relative">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide"><img src="{{ asset('images/th-a.png') }}" class="w-full h-auto block"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+A';" />
@@ -222,6 +247,9 @@
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+C';" />
                     </div>
                 </div>
+                {{-- เพิ่มปุ่มลูกศรให้สไลด์ตัวที่ 2 --}}
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
                 <div class="swiper-pagination"></div>
             </div>
         </div>
@@ -268,16 +296,11 @@
     </div>
 
 
-    {{-- ★★★ 6 REASONS SECTION (แก้ไขพื้นหลังและสีตัวอักษร) ★★★ --}}
-    {{-- ▼▼▼ ใส่รูปพื้นหลัง NATTHAPAT (1).png และปรับสีตัวอักษรเป็นสีขาว ▼▼▼ --}}
+    {{-- ★★★ 6 REASONS SECTION ★★★ --}}
     <div class="w-full py-16 bg-cover bg-center bg-no-repeat"
         style="background-image: url('{{ asset('images/NATTHAPAT (1).png') }}');">
 
-        {{-- Optional Overlay (ถ้าพื้นหลังลายตาเกินไป สามารถเปิดใช้ overlay สีดำจางๆ ได้) --}}
-        {{-- <div class="absolute inset-0 bg-black/20"></div> --}}
-
         <div class="container mx-auto px-4 relative z-10">
-            {{-- เปลี่ยนสีหัวข้อเป็นขาว --}}
             <h2 class="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-md">6
                 เหตุผลทำไมต้องเลือกเรา</h2>
 
@@ -386,8 +409,8 @@
                     dynamicBullets: true
                 },
                 navigation: {
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev"
+                    nextEl: ".mySwiper .swiper-button-next",
+                    prevEl: ".mySwiper .swiper-button-prev"
                 },
             });
             var swiper2 = new Swiper(".mySwiper2", {
@@ -403,6 +426,11 @@
                 pagination: {
                     el: ".swiper-pagination",
                     clickable: true
+                },
+                // เปิดใช้งาน Navigation สำหรับสไลด์ที่ 2
+                navigation: {
+                    nextEl: ".mySwiper2 .swiper-button-next",
+                    prevEl: ".mySwiper2 .swiper-button-prev"
                 },
             });
         });

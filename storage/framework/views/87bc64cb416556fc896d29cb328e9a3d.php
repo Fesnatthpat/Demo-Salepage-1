@@ -3,6 +3,83 @@
 <?php $__env->startSection('content'); ?>
 
     
+    <style>
+        /* --- 1. ปรับแต่งจุด (Pagination) --- */
+        .mySwiper .swiper-pagination-bullet {
+            background-color: #ffffff !important;
+            opacity: 0.5 !important;
+            width: 8px !important;
+            height: 8px !important;
+            transition: all 0.3s ease;
+        }
+        .mySwiper .swiper-pagination-bullet-active,
+        .mySwiper .swiper-pagination-bullet-active-main {
+            background-color: #ffffff !important;
+            opacity: 1 !important;
+            transform: scale(1.3);
+        }
+
+        /* --- 2. ปรับแต่งลูกศร Hero Slider (Banner) ให้ดูพรีเมียม --- */
+        .mySwiper .swiper-button-next,
+        .mySwiper .swiper-button-prev {
+            width: 32px !important;
+            height: 32px !important;
+            background-color: rgba(255, 255, 255, 0.9) !important; /* พื้นหลังสีขาว */
+            border-radius: 50% !important;
+            color: #dc2626 !important; /* สีลูกศรแดง */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+            transition: all 0.3s ease !important;
+            margin-top: -16px !important; /* จัดกึ่งกลางเป๊ะๆ */
+        }
+        .mySwiper .swiper-button-next:hover,
+        .mySwiper .swiper-button-prev:hover {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            transform: scale(1.1) !important;
+        }
+        .mySwiper .swiper-button-next::after,
+        .mySwiper .swiper-button-prev::after {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+        }
+
+        /* --- 3. ปรับแต่งลูกศร Category Slider (แถบแดง) ให้เล็กลงและมินิมอล --- */
+        .categorySwiper .swiper-button-next,
+        .categorySwiper .swiper-button-prev {
+            width: 42px !important;  /* เล็กลงพอดี ไม่เบียดเมนู */
+            height: 42px !important; 
+            background-color: #ffffff !important;
+            border-radius: 50% !important;
+            color: #dc2626 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+            transition: all 0.3s ease !important;
+            top: 45% !important; /* จัดให้อยู่กลางไอคอน (ชดเชยที่มี pb-4 ด้านล่าง) */
+            margin-top: -14px !important; 
+            z-index: 10 !important;
+        }
+        .categorySwiper .swiper-button-next:hover,
+        .categorySwiper .swiper-button-prev:hover {
+            transform: scale(1.15) !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+        .categorySwiper .swiper-button-next::after,
+        .categorySwiper .swiper-button-prev::after {
+            font-size: 12px !important; /* ขนาดไอคอนลูกศรด้านใน */
+            font-weight: 900 !important;
+        }
+        /* ขยับให้อยู่ขอบซ้ายขวาพอดี */
+        .categorySwiper .swiper-button-prev { left: 4px !important; }
+        .categorySwiper .swiper-button-next { right: 4px !important; }
+
+        /* สไตล์ปุ่มที่กดไม่ได้ (ถึงปลายทางแล้ว) */
+        .categorySwiper .swiper-button-disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+            transform: scale(1) !important;
+        }
+    </style>
+
+    
     <div class="min-h-screen py-8 bg-cover bg-center bg-no-repeat bg-fixed"
         style="background-image: url('<?php echo e(asset('images/f1.png')); ?>');">
 
@@ -12,52 +89,9 @@
             <div class="flex flex-col gap-8">
 
                 
-
-                
                 <main class="w-full">
 
                     
-                    <style>
-                        /* --- ปรับแต่งลูกศร Hero Slider (Banner) ให้เล็กลง --- */
-                        .mySwiper .swiper-button-next,
-                        .mySwiper .swiper-button-prev {
-                            width: 35px !important;
-                            height: 35px !important;
-                            background-color: rgba(255, 255, 255, 0.3); /* สีขาวโปร่งแสง */
-                            backdrop-filter: blur(4px);
-                            border-radius: 50%;
-                            color: #ffffff !important;
-                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-                            transition: all 0.3s ease;
-                        }
-                        .mySwiper .swiper-button-next:hover,
-                        .mySwiper .swiper-button-prev:hover {
-                            background-color: rgba(255, 255, 255, 0.9);
-                            color: #dc2626 !important; /* เปลี่ยนเป็นสีแดงเมื่อชี้ */
-                            transform: scale(1.1);
-                        }
-                        .mySwiper .swiper-button-next::after,
-                        .mySwiper .swiper-button-prev::after {
-                            font-size: 14px !important; /* ขนาดลูกศร */
-                            font-weight: 800;
-                        }
-
-                        /* --- ปรับแต่งจุด Pagination เป็นสีขาว --- */
-                        .mySwiper .swiper-pagination-bullet {
-                            background-color: #ffffff !important;
-                            opacity: 0.5 !important;
-                            width: 8px;
-                            height: 8px;
-                            transition: all 0.3s ease;
-                        }
-                        .mySwiper .swiper-pagination-bullet-active,
-                        .mySwiper .swiper-pagination-bullet-active-main {
-                            background-color: #ffffff !important;
-                            opacity: 1 !important;
-                            transform: scale(1.3);
-                        }
-                    </style>
-
                     <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
                         <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[4/1] w-full relative">
                             <div class="swiper mySwiper w-full h-full absolute inset-0">
@@ -73,60 +107,16 @@
                                         </div>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </div>
-                                <div class="swiper-button-next" tabindex="0" role="button" aria-label="Next slide"></div>
-                                <div class="swiper-button-prev" tabindex="0" role="button" aria-label="Previous slide"></div>
+                                <div class="swiper-button-next"></div>
+                                <div class="swiper-button-prev"></div>
                                 <div class="swiper-pagination"></div>
                             </div>
                         </div>
                     </div>
 
                     
-                    <style>
-                        /* --- ปรับแต่งลูกศร Category Slider (แถบแดง) ให้เล็กลงและชัดเจน --- */
-                        .categorySwiper .swiper-button-next,
-                        .categorySwiper .swiper-button-prev {
-                            width: 25px !important;  /* ปรับให้เล็กลง */
-                            height: 25px !important; /* ปรับให้เล็กลง */
-                            background-color: #ffffff; /* พื้นหลังสีขาว */
-                            border-radius: 50%;
-                            color: #dc2626 !important; /* ลูกศรสีแดงเข้ม */
-                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                            transition: all 0.3s ease;
-                            top: 50%;
-                            transform: translateY(-50%);
-                            z-index: 10;
-                            opacity: 0.9;
-                        }
-
-                        .categorySwiper .swiper-button-next:hover,
-                        .categorySwiper .swiper-button-prev:hover {
-                            opacity: 1;
-                            transform: translateY(-50%) scale(1.1);
-                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-                        }
-
-                        .categorySwiper .swiper-button-next::after,
-                        .categorySwiper .swiper-button-prev::after {
-                            font-size: 12px !important; /* ขนาดลูกศรเล็กลงให้พอดีวงกลม */
-                            font-weight: 900;
-                        }
-
-                        /* จัดตำแหน่งซ้าย-ขวา ให้ห่างขอบนิดนึง */
-                        .categorySwiper .swiper-button-prev { left: 10px; }
-                        .categorySwiper .swiper-button-next { right: 10px; }
-
-                        /* สไตล์สำหรับปุ่มที่กดไม่ได้ (สุดขอบ) */
-                        .categorySwiper .swiper-button-disabled {
-                            opacity: 0.4 !important;
-                            cursor: not-allowed;
-                            background-color: #f3f4f6;
-                            color: #9ca3af !important;
-                        }
-                    </style>
-
-                    <div
-                        class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-md shadow-gray-300 bg-red-600 overflow-hidden relative group select-none">
-                        <div class="container mx-auto px-10 relative">
+                    <div class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-md shadow-gray-300 bg-red-600 overflow-hidden relative group select-none">
+                        <div class="container mx-auto px-8 md:px-10 relative">
                             <div class="swiper categorySwiper w-full pb-4">
                                 <div class="swiper-wrapper items-start">
                                     <?php
@@ -163,15 +153,17 @@
                                         </div>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </div>
+                                
+                                
+                                <div class="swiper-button-next"></div>
+                                <div class="swiper-button-prev"></div>
+                                
                             </div>
-                            <div class="swiper-button-next" tabindex="0" role="button" aria-label="Next slide"></div>
-                            <div class="swiper-button-prev" tabindex="0" role="button" aria-label="Previous slide"></div>
                         </div>
                     </div>
 
                     
-                    <div
-                        class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
                         <div class="mb-3 sm:mb-0">
                             <h2 class="text-gray-800 font-bold text-lg flex items-center gap-2">
                                 สินค้าทั้งหมด
@@ -371,8 +363,8 @@
                     dynamicBullets: true,
                 },
                 navigation: {
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
+                    nextEl: ".mySwiper .swiper-button-next",
+                    prevEl: ".mySwiper .swiper-button-prev",
                 },
             });
 
@@ -386,8 +378,8 @@
                     disableOnInteraction: false,
                 },
                 navigation: {
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
+                    nextEl: ".categorySwiper .swiper-button-next",
+                    prevEl: ".categorySwiper .swiper-button-prev",
                 },
                 breakpoints: {
                     640: { // แท็บเล็ต

@@ -63,8 +63,9 @@
                                             class="w-20 h-20 object-cover rounded-lg bg-gray-100 border border-gray-100">
                                     </div>
                                     <div class="flex-1 mt-1">
-                                        <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->name }}</h1>
-                                        <p class="text-xs text-gray-500">Code: {{ $item->attributes->pd_code ?? '-' }}</p>
+                                        <h1 class="font-bold text-gray-800 text-sm md:text-base break-words">
+                                            {{ $item->name }}</h1>
+
                                         <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น:
                                             @if ($isFree)
                                                 <span class="font-bold text-red-600">ฟรี</span>

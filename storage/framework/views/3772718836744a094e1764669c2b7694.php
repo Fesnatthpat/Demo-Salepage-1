@@ -7,23 +7,23 @@
                 <div class="">
                     
                     <div class="mb-6 border-b border-gray-200 pb-4 flex items-center gap-3">
-                        <?php if(isset($items) && !$items->isEmpty()): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($items) && !$items->isEmpty()): ?>
                             <div class="flex items-center">
                                 <input type="checkbox" id="select-all" checked
                                     class="w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
                                     onclick="toggleAll(this)">
                             </div>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <h1 class="text-2xl font-bold text-gray-800">ตะกร้าสินค้า</h1>
                     </div>
 
-                    <?php if(isset($items) && !$items->isEmpty()): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($items) && !$items->isEmpty()): ?>
                         <?php
                             $summaryTotalPrice = 0;
                             $summaryTotalOriginal = 0;
                         ?>
 
-                        <?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                             <?php
                                 $quantity = $item->quantity;
                                 $price = $item->price;
@@ -61,10 +61,11 @@
                                             class="w-20 h-20 object-cover rounded-lg bg-gray-100 border border-gray-100">
                                     </div>
                                     <div class="flex-1 mt-1">
-                                        <h1 class="font-bold text-gray-800 text-sm md:text-base"><?php echo e($item->name); ?></h1>
-                                        <p class="text-xs text-gray-500">Code: <?php echo e($item->attributes->pd_code ?? '-'); ?></p>
+                                        <h1 class="font-bold text-gray-800 text-sm md:text-base break-words">
+                                            <?php echo e($item->name); ?></h1>
+
                                         <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น:
-                                            <?php if($isFree): ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isFree): ?>
                                                 <span class="font-bold text-red-600">ฟรี</span>
                                             <?php elseif($hasDiscount): ?>
                                                 <s class="text-gray-400">฿<?php echo e(number_format($originalPrice)); ?></s>
@@ -72,7 +73,7 @@
                                                     class="font-semibold text-red-600 ml-1">฿<?php echo e(number_format($price)); ?></span>
                                             <?php else: ?>
                                                 <span class="text-gray-800">฿<?php echo e(number_format($price)); ?></span>
-                                            <?php endif; ?>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         </p>
                                     </div>
                                 </div>
@@ -81,12 +82,12 @@
                                 <div
                                     class="flex flex-row justify-between items-center md:flex-col md:items-end gap-4 w-full md:w-auto mt-2 md:mt-0 pl-9 md:pl-0">
                                     <div class="flex flex-col items-end">
-                                        <?php if($isFree): ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isFree): ?>
                                             <div class="text-2xl font-bold text-red-600">ฟรี</div>
                                         <?php else: ?>
                                             <div class="text-2xl font-bold text-red-600">
                                                 ฿<?php echo e(number_format($totalPrice)); ?></div>
-                                        <?php endif; ?>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </div>
                                     <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                                         <div class="flex items-center border border-gray-300 rounded h-10 md:h-12 bg-white">
@@ -108,7 +109,7 @@
                                     </div>
                                 </div>
                             </div>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
 
                         
                         <div class="flex flex-col lg:flex-row justify-end gap-5 mt-10">
@@ -140,7 +141,7 @@
                             <a href="<?php echo e(route('allproducts')); ?>"
                                 class="btn bg-red-600 hover:bg-red-700 border-none text-white mt-4">ไปเลือกซื้อสินค้า</a>
                         </div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </form>
         </div>

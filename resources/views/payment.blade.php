@@ -59,7 +59,7 @@
                                 'border-gray-300 hover:border-red-300'"
                             @click="selectAddress({{ $address->id }})">
 
-                            <div class="flex justify-between items-start">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                                 <div>
                                     <div class="flex items-center gap-3 mb-2">
                                         <h3 class="font-bold text-gray-800 text-base">บ้านของฉัน</h3>
@@ -95,7 +95,7 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-2">
+                                <div class="flex-shrink-0 flex items-center justify-end gap-2 w-full sm:w-auto">
                                     <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
                                         class="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal px-4">
                                         แก้ไขที่อยู่

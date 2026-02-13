@@ -18,38 +18,73 @@
             transform: scale(1.2);
         }
 
-        /* --- 2. ปรับแต่งลูกศร (Navigation) ให้เล็กลงและดูพรีเมียม --- */
-        /* CSS นี้จะส่งผลกับปุ่มลูกศรของทั้ง mySwiper และ mySwiper2 */
+        /* --- 2. ปรับแต่งลูกศร (Navigation) แยกขนาดมือถือและคอมพิวเตอร์ --- */
+
+        /* 📱 1. ขนาดสำหรับมือถือ (Mobile First) */
         .swiper-button-next,
         .swiper-button-prev {
-            width: 32px !important;       /* ขนาดความกว้างปุ่มให้พอดี */
-            height: 32px !important;      /* ขนาดความสูงปุ่มให้พอดี */
-            background-color: rgba(255, 255, 255, 0.95) !important; /* พื้นหลังสีขาว */
-            border-radius: 50% !important;           /* ทำเป็นรูปวงกลม */
-            color: #dc2626 !important;      /* สีลูกศรเป็นสีแดง */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important; /* เพิ่มเงาให้ปุ่มดูลอยขึ้น */
+            width: 26px !important;
+            /* ขนาดปุ่มเล็กลงในมือถือ */
+            height: 26px !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 50% !important;
+            color: #dc2626 !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.3s ease !important;
-            margin-top: -16px !important; /* ดึงให้ปุ่มอยู่กึ่งกลางแนวตั้งพอดี */
+            margin-top: -13px !important;
+            /* ดึงให้ปุ่มอยู่กึ่งกลางแนวตั้งพอดี */
+        }
+
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 11px !important;
+            /* ไอคอนลูกศรเล็กลง */
+            font-weight: 900 !important;
+        }
+
+        /* จัดตำแหน่งไม่ให้ชิดขอบจอจนเกินไปในมือถือ */
+        .swiper-button-prev {
+            left: 8px !important;
+        }
+
+        .swiper-button-next {
+            right: 8px !important;
+        }
+
+        /* 💻 2. ขนาดสำหรับคอมพิวเตอร์และแท็บเล็ต (Tablet/Desktop) */
+        /* ทำงานเมื่อหน้าจอกว้าง 768px ขึ้นไป */
+        @media (min-width: 768px) {
+
+            .swiper-button-next,
+            .swiper-button-prev {
+                width: 35px !important;
+                /* ขยายปุ่มให้ใหญ่ขึ้น */
+                height: 35px !important;
+                margin-top: -17.5px !important;
+            }
+
+            .swiper-button-next::after,
+            .swiper-button-prev::after {
+                font-size: 14px !important;
+                /* ขยายไอคอนลูกศร */
+            }
+
+            .swiper-button-prev {
+                left: 16px !important;
+            }
+
+            .swiper-button-next {
+                right: 16px !important;
+            }
         }
 
         /* เอฟเฟกต์ตอนนำเมาส์ไปชี้ (Hover) */
         .swiper-button-next:hover,
         .swiper-button-prev:hover {
-            background-color: #dc2626 !important; /* เปลี่ยนพื้นหลังเป็นสีแดง */
-            color: #ffffff !important;          /* เปลี่ยนลูกศรเป็นสีขาว */
-            transform: scale(1.1) !important;   /* ขยายขนาดปุ่มขึ้นเล็กน้อย */
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            transform: scale(1.1) !important;
         }
-
-        /* ปรับขนาดของตัวไอคอนลูกศรด้านในให้เล็กลงรับกับกรอบ */
-        .swiper-button-next::after,
-        .swiper-button-prev::after {
-            font-size: 14px !important; 
-            font-weight: 900 !important;
-        }
-
-        /* จัดตำแหน่งไม่ให้ชิดขอบจอจนเกินไป */
-        .swiper-button-prev { left: 12px !important; }
-        .swiper-button-next { right: 12px !important; }
     </style>
 
     
@@ -232,7 +267,8 @@
     
     <div class="w-full bg-gray-50/50 pt-8 pb-4">
         <div class="container mx-auto px-4">
-            <div class="swiper mySwiper2 w-[900px] rounded-2xl shadow-md overflow-hidden relative">
+            
+            <div class="swiper mySwiper2 w-full max-w-[900px] mx-auto rounded-2xl shadow-md overflow-hidden relative">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide"><img src="<?php echo e(asset('images/th-a.png')); ?>" class="w-full h-auto block"
                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Image+A';" />
@@ -490,4 +526,5 @@
         }
     </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/index.blade.php ENDPATH**/ ?>

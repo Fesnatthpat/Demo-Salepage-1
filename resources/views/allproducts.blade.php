@@ -84,7 +84,7 @@
 
     {{-- พื้นหลังรูป f1.png --}}
     <div class="min-h-screen py-8 bg-cover bg-center bg-no-repeat bg-fixed"
-        style="background-image: url('{{ asset('images/f1.png') }}');">
+        style="background-image: url('{{ asset('') }}');">
 
         <div class="container mx-auto px-4">
 
@@ -95,8 +95,8 @@
                 <main class="w-full">
 
                     {{-- ★★★ BANNER SLIDER ★★★ --}}
-                    <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
-                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[4/1] w-full relative">
+                    <div class="w-full mb-6 shadow-sm group relative rounded-[5px] overflow-hidden">
+                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[ 5/1] w-full relative">
                             <div class="swiper mySwiper w-full h-full absolute inset-0">
                                 <div class="swiper-wrapper">
                                     @foreach (['th-1.png', 'th-2.png', 'th-3.png'] as $index => $image)

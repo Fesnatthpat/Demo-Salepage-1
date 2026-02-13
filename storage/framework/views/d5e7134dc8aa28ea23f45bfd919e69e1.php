@@ -64,8 +64,7 @@
 
 
 
-<body class="font-['Noto_Sans_Thai'] bg-cover bg-center bg-fixed bg-no-repeatfoo"
-    style="background-image: url('<?php echo e(asset('images/f2.png')); ?>');">
+<body class="font-['Noto_Sans_Thai'] bg-gray-100">
 
     
     <?php

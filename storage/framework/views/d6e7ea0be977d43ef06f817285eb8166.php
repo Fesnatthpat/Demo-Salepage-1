@@ -114,8 +114,7 @@
 
 
     
-    <div class="w-full pb-12 pt-4 bg-cover bg-center bg-no-repeat"
-        style="background-image: url('<?php echo e(asset('images/f1.png')); ?>');">
+    <div class="w-full pb-12 pt-4 bg-gray-100">
 
         <div class="container mx-auto px-4 mb-10">
             <div class="flex justify-between items-end mb-8">
@@ -295,8 +294,7 @@
 
 
     
-    <div class="w-full py-16 bg-cover bg-center bg-no-repeat"
-        style="background-image: url('<?php echo e(asset('images/NATTHAPAT (1).png')); ?>');">
+    <div class="w-full py-16 bg-red-700">
 
         <div class="container mx-auto px-4 relative z-10">
             <h2 class="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-md">6

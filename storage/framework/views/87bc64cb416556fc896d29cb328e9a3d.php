@@ -81,7 +81,7 @@
 
     
     <div class="min-h-screen py-8 bg-cover bg-center bg-no-repeat bg-fixed"
-        style="background-image: url('<?php echo e(asset('images/f1.png')); ?>');">
+        style="background-image: url('<?php echo e(asset('')); ?>');">
 
         <div class="container mx-auto px-4">
 
@@ -92,8 +92,8 @@
                 <main class="w-full">
 
                     
-                    <div class="w-full mb-6 shadow-sm group relative rounded-2xl overflow-hidden">
-                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[4/1] w-full relative">
+                    <div class="w-full mb-6 shadow-sm group relative rounded-[5px] overflow-hidden">
+                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[ 5/1] w-full relative">
                             <div class="swiper mySwiper w-full h-full absolute inset-0">
                                 <div class="swiper-wrapper">
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>

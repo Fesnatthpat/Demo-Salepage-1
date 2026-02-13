@@ -4,10 +4,10 @@
     <div class="min-h-[80vh]  flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         
         <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
-            <h2 class="text-3xl font-extrabold text-white">
+            <h2 class="text-3xl font-extrabold text-black">
                 แก้ไขข้อมูลส่วนตัว
             </h2>
-            <p class="mt-2 text-sm text-white">
+            <p class="mt-2 text-sm text-black">
                 อัปเดตข้อมูลส่วนตัวของคุณ
             </p>
         </div>

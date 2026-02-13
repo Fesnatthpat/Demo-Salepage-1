@@ -116,7 +116,7 @@
 
                     
                     <div class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-md shadow-gray-300 bg-red-600 overflow-hidden relative group select-none">
-                        <div class="container mx-auto px-8 md:px-10 relative">
+                        <div class="container mx-auto px-4 relative">
                             <div class="swiper categorySwiper w-full pb-4">
                                 <div class="swiper-wrapper items-start">
                                     <?php

@@ -54,7 +54,7 @@
                 <div class="lg:col-span-2">
                     <h2 class="text-lg font-bold text-gray-800 mb-4">รายการสินค้า</h2>
                     <div class="space-y-4">
-                        <?php $__currentLoopData = $order->details; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detail): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $order->details; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $detail): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                             <div
                                 class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                 <div class="flex items-center gap-4">
@@ -72,13 +72,11 @@
                                             <?php echo e($detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า'); ?>
 
                                         </p>
-                                        <p class="text-xs text-gray-500">Code:
-                                            <?php echo e($detail->productSalepage->pd_code ?? 'N/A'); ?></p>
-                                        <p class="text-sm text-gray-500">จำนวน: <?php echo e($detail->ordd_count); ?> ชิ้น</p>
+                                        
 
                                         
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:
-                                            <?php if((float) $detail->ordd_price <= 0): ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((float) $detail->ordd_price <= 0): ?>
                                                 
                                                 <span class="font-bold text-red-500 ml-1">ฟรี (0 บาท)</span>
                                             <?php elseif($detail->ordd_original_price > $detail->ordd_price): ?>
@@ -91,7 +89,7 @@
                                                 
                                                 <span
                                                     class="text-gray-800">฿<?php echo e(number_format($detail->ordd_price, 2)); ?></span>
-                                            <?php endif; ?>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         </p>
                                         
 
@@ -99,18 +97,18 @@
                                 </div>
                                 <div class="text-right flex-shrink-0">
                                     
-                                    <?php if((float) $detail->ordd_price <= 0): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((float) $detail->ordd_price <= 0): ?>
                                         <p class="font-bold text-red-500">ฟรี</p>
                                     <?php else: ?>
                                         <p class="font-bold text-emerald-600">
                                             ฿<?php echo e(number_format($detail->ordd_price * $detail->ordd_count, 2)); ?>
 
                                         </p>
-                                    <?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     
                                 </div>
                             </div>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     </div>
                 </div>
 
@@ -132,11 +130,11 @@
                                     class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span> <?php echo e($order->shipping_phone); ?>
 
                             </p>
-                            <?php if($noteText): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($noteText): ?>
                                 <div class="divider my-2"></div>
                                 <p class="max-h-20 overflow-y-auto"><span
                                         class="font-semibold text-gray-700">หมายเหตุ:</span> <?php echo e($noteText); ?></p>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
                     </div>
 
@@ -153,12 +151,12 @@
                                 <span
                                     class="font-medium text-gray-900">฿<?php echo e(number_format($order->shipping_cost, 2)); ?></span>
                             </div>
-                            <?php if($order->total_discount > 0): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($order->total_discount > 0): ?>
                                 <div class="flex justify-between text-green-600">
                                     <span>ส่วนลด</span>
                                     <span>-฿<?php echo e(number_format($order->total_discount, 2)); ?></span>
                                 </div>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         <div class="flex justify-between items-center border-t border-gray-200 pt-4">
@@ -168,7 +166,7 @@
                             <?php else: ?>
                                 <span
                                     class="font-bold text-red-500 text-xl">฿<?php echo e(number_format($order->net_amount, 2)); ?></span>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                     </div>

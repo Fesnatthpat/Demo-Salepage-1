@@ -71,9 +71,7 @@
                                         <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-2">
                                             {{ $detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า' }}
                                         </p>
-                                        <p class="text-xs text-gray-500">Code:
-                                            {{ $detail->productSalepage->pd_code ?? 'N/A' }}</p>
-                                        <p class="text-sm text-gray-500">จำนวน: {{ $detail->ordd_count }} ชิ้น</p>
+                                        
 
                                         {{-- ========== ส่วนที่แก้ไข: ราคาต่อชิ้น ========== --}}
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:

@@ -106,7 +106,7 @@
 
                             
                             <button x-show="images.length > 1" @click.stop="prevImage()"
-                                class="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 text-gray-800 shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600 hover:text-white transform hover:scale-110">
+                                class="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 text-gray-800 shadow-md transition-all duration-300 hover:bg-red-600 hover:text-white transform hover:scale-110 opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,14 +115,13 @@
                             </button>
 
                             
-                            <img :src="activeImage"
-                                @load="imagesLoaded = true"
+                            <img :src="activeImage" @load="imagesLoaded = true"
                                 class="w-full h-full object-contain p-4 transition-all duration-300 group-hover:scale-105"
                                 onerror="this.src='https://via.placeholder.com/600?text=Image+Error'">
 
                             
                             <button x-show="images.length > 1" @click.stop="nextImage()"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 text-gray-800 shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600 hover:text-white transform hover:scale-110">
+                                class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 text-gray-800 shadow-md transition-all duration-300 hover:bg-red-600 hover:text-white transform hover:scale-110 opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -230,10 +229,12 @@
                                                 <p class="font-bold text-gray-800" x-text="option.name"></p>
                                                 <p class="text-sm text-red-600 font-bold">
                                                     <template x-if="option.price2 && option.price2 > 0">
-                                                        <span x-text="`฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${option.price2.toLocaleString(undefined, {minimumFractionDigits: 0})}`"></span>
+                                                        <span
+                                                            x-text="`฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${option.price2.toLocaleString(undefined, {minimumFractionDigits: 0})}`"></span>
                                                     </template>
                                                     <template x-if="!(option.price2 && option.price2 > 0)">
-                                                        <span x-text="`฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})}`"></span>
+                                                        <span
+                                                            x-text="`฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})}`"></span>
                                                     </template>
                                                 </p>
                                             </div>
@@ -316,8 +317,7 @@
                                 class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-red-600 font-bold text-lg">+</button>
                         </div>
                         <div class="flex-1 w-full grid grid-cols-2 gap-4">
-                            <button @click="handleAddToCartClick(false)"
-                                :disabled="currentStock <= 0 || isLoading"
+                            <button @click="handleAddToCartClick(false)" :disabled="currentStock <= 0 || isLoading"
                                 :class="{
                                     'border-red-600 text-red-600 hover:bg-red-50': currentStock > 0,
                                     'border-gray-300 bg-gray-200 text-gray-400 cursor-not-allowed': currentStock <= 0
@@ -327,10 +327,10 @@
                                 <span x-show="!isLoading && currentStock <= 0">สินค้าหมด</span>
                                 <span x-show="isLoading" class="loading loading-spinner"></span>
                             </button>
-                            <button @click="handleAddToCartClick(true)"
-                                :disabled="currentStock <= 0 || isLoading"
+                            <button @click="handleAddToCartClick(true)" :disabled="currentStock <= 0 || isLoading"
                                 :class="{
-                                    'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/30': currentStock > 0,
+                                    'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/30': currentStock >
+                                        0,
                                     'bg-gray-400 text-gray-100 cursor-not-allowed': currentStock <= 0
                                 }"
                                 class="h-14 rounded-2xl font-bold transition-all text-lg">
@@ -455,7 +455,8 @@
                         if (option) {
                             priceToDisplay = option.price;
                             price2ToDisplay = option.price2;
-                            actualDiscount = 0; // Option price is usually considered final, no further discount from main product
+                            actualDiscount =
+                            0; // Option price is usually considered final, no further discount from main product
                         }
                     }
 
@@ -595,7 +596,9 @@
                             localStorage.setItem('justAddedPartner', 'true');
                             setTimeout(() => { // Add setTimeout
                                 Livewire.dispatch('cartUpdated');
-                                console.log('Dispatched cartUpdated from product.blade.php (addToCartPartner)'); // Add log
+                                console.log(
+                                    'Dispatched cartUpdated from product.blade.php (addToCartPartner)'
+                                    ); // Add log
                             }, 50); // Small delay
                             window.location.reload();
                         } else throw new Error(data.message);
@@ -658,7 +661,9 @@
                                 });
                                 setTimeout(() => { // Add setTimeout
                                     Livewire.dispatch('cartUpdated');
-                                    console.log('Dispatched cartUpdated from product.blade.php (handleAddToCartClick)'); // Add log
+                                    console.log(
+                                        'Dispatched cartUpdated from product.blade.php (handleAddToCartClick)'
+                                        ); // Add log
                                 }, 50); // Small delay
                             }
                         } else throw new Error(data.message);

@@ -440,7 +440,7 @@
 
                 get currentStock() {
                     if (this.selectedOption) {
-                        const option = this.options.find(o => o.id === this.selectedOption);
+                        const option = this.options.find(o => o.id == this.selectedOption);
                         return option ? option.stock : 0;
                     }
                     return this.initialStock;
@@ -452,7 +452,7 @@
                     let actualDiscount = this.discountAmount;
 
                     if (this.selectedOption) {
-                        const option = this.options.find(o => o.id === this.selectedOption);
+                        const option = this.options.find(o => o.id == this.selectedOption);
                         if (option) {
                             priceToDisplay = option.price;
                             price2ToDisplay = option.price2;
@@ -474,7 +474,7 @@
                     let actualDiscount = this.discountAmount;
 
                     if (this.selectedOption) {
-                        const option = this.options.find(o => o.id === this.selectedOption);
+                        const option = this.options.find(o => o.id == this.selectedOption);
                         if (option) {
                             priceBeforeDiscount = option.price;
                             actualDiscount = 0; // No discount from main product if option selected

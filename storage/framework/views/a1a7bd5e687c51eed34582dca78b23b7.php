@@ -364,7 +364,7 @@
                 <h2 class="text-2xl font-bold text-center text-gray-800 mb-8 flex items-center justify-center gap-2">
                     <i class="fas fa-camera text-red-500"></i> รูปรีวิวจากลูกค้า
                 </h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-2 gap-4">
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $product->reviewImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $reviewImage): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <?php
                             $imgUrl = filter_var($reviewImage->image_url, FILTER_VALIDATE_URL)

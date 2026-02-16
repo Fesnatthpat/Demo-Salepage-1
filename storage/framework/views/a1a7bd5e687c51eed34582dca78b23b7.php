@@ -347,7 +347,7 @@
                                     'bg-gray-400 text-gray-100 cursor-not-allowed': currentStock <= 0
                                 }"
                                 class="h-14 rounded-2xl font-bold transition-all text-lg">
-                                <span x-show="currentStock > 0">Buy Now</span>
+                                <span x-show="currentStock > 0">สั่งเลย</span>
                                 <span x-show="currentStock <= 0">สินค้าหมด</span>
                             </button>
                         </div>

@@ -27,4 +27,12 @@ class ProductOption extends Model
     {
         return $this->belongsTo(ProductSalepage::class, 'parent_id', 'pd_sp_id');
     }
+
+    public function getFinalPriceAttribute(): float
+    {
+        // The 'product' relationship should be loaded before calling this.
+        $parentDiscount = $this->product ? (float) $this->product->pd_sp_discount : 0;
+        
+        return max(0, (float) $this->option_price - $parentDiscount);
+    }
 }

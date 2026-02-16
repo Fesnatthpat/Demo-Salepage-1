@@ -45,7 +45,9 @@ class CartService
         $cart = Cart::session($userId);
 
         if ($optionId) {
-            $option = \App\Models\ProductOption::find($optionId);
+            // Eager load the 'product' relationship to use in the accessor
+            $option = \App\Models\ProductOption::with('product')->find($optionId);
+            
             if (! $option || $option->parent_id !== $productId) {
                 throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
             }
@@ -56,33 +58,32 @@ class CartService
             $cartId = "{$productId}-{$optionId}";
             $cart->remove($cartId);
 
-            $mainProductDetails = $this->getProductDetails($productId);
-            $mainProductDiscount = $mainProductDetails ? $mainProductDetails->discount : 0;
-
-            $optionOriginalPrice = (float) $option->option_price;
-            $optionFinalPrice = max(0, $optionOriginalPrice - $mainProductDiscount);
-
+            // We still need the main product's details for name, image etc.
             $details = $this->getProductDetails($productId);
+            if (! $details) {
+                throw new Exception("ไม่พบสินค้า ID: {$productId}");
+            }
+            
             $product = $this->checkStockAndGetProduct($productId, 0);
 
-            if ($details) {
-                $cart->add([
-                    'id' => $cartId,
-                    'name' => $details->name.' ('.$option->option_name.')',
-                    'price' => $optionFinalPrice,
-                    'quantity' => $quantity,
-                    'attributes' => [
-                        'image' => $details->image,
-                        'original_price' => $optionOriginalPrice,
-                        'discount' => $mainProductDiscount,
-                        'pd_code' => $details->pd_code,
-                        'product_id' => $productId,
-                        'option_id' => $optionId,
-                    ],
-                    'associatedModel' => $product,
-                ]);
-            }
+            $cart->add([
+                'id' => $cartId,
+                'name' => $details->name.' ('.$option->option_name.')',
+                'price' => $option->final_price, // Use the new accessor!
+                'quantity' => $quantity,
+                'attributes' => [
+                    'image' => $details->image,
+                    'original_price' => (float) $option->option_price,
+                    'discount' => $option->product ? (float) $option->product->pd_sp_discount : 0,
+                    'pd_code' => $details->pd_code,
+                    'product_id' => $productId,
+                    'option_id' => $optionId,
+                ],
+                'associatedModel' => $product,
+            ]);
+            
         } else {
+            // This part for products without options is already mostly correct.
             $existingKeys = $this->findCartKeys($productId);
             foreach ($existingKeys as $key) {
                 $item = $cart->get($key);
@@ -98,7 +99,7 @@ class CartService
                 $cart->add([
                     'id' => $details->id,
                     'name' => $details->name,
-                    'price' => $details->price,
+                    'price' => $details->price, // This uses the accessor from ProductSalepage
                     'quantity' => $quantity,
                     'attributes' => [
                         'image' => $details->image,
@@ -369,7 +370,6 @@ class CartService
         if (! $product) {
             return null;
         }
-        $price = max(0, (float) $product->pd_sp_price - (float) $product->pd_sp_discount);
         $img = $product->images->first();
         $imgPath = $img ? ($img->img_path ?? $img->image_path) : null;
         if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
@@ -377,7 +377,7 @@ class CartService
         }
 
         return (object) [
-            'id' => $product->pd_sp_id, 'name' => $product->pd_sp_name, 'price' => $price,
+            'id' => $product->pd_sp_id, 'name' => $product->pd_sp_name, 'price' => $product->final_price,
             'original_price' => (float) $product->pd_sp_price, 'discount' => (float) $product->pd_sp_discount,
             'image' => $imgPath, 'pd_code' => $product->pd_code, 'stock' => $product->pd_sp_stock ?? 0,
         ];

@@ -48,6 +48,11 @@ class ProductSalepage extends Model
         return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/'.ltrim($rawPath, '/'));
     }
 
+    public function getFinalPriceAttribute(): float
+    {
+        return max(0, (float) $this->pd_sp_price - (float) $this->pd_sp_discount);
+    }
+
     public function images()
     {
         return $this->hasMany(ProductImage::class, 'pd_sp_id', 'pd_sp_id')->orderBy('img_sort', 'asc');

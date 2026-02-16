@@ -150,6 +150,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // Promotion Management (จัดการโปรโมชั่น)
     Route::resource('promotions', PromotionController::class);
 
+    // FAQ Management (จัดการคำถามที่พบบ่อย)
+    Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
+
     // Admin Management (จัดการผู้ดูแลระบบ)
     Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class)->middleware('is.superadmin');
 

@@ -118,6 +118,11 @@
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
                 </a>
+                <a href="{{ route('admin.faqs.index') }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.faqs.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
+                    <i class="fas fa-question-circle mr-3 w-5 text-center"></i>
+                    จัดการคำถามที่พบบ่อย
+                </a>
 
                 {{-- ส่วนเมนู Super Admin ที่นำกลับมา --}}
                 @if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin')

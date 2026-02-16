@@ -78,7 +78,7 @@
         }
         $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo1.png';
 
-        $menuItems = [['name' => 'หน้าหลัก', 'url' => '/'], ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts']];
+        $menuItems = [['name' => 'หน้าหลัก', 'url' => '/'], ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts'], ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq']];
     @endphp
 
     {{-- ★★★ NAVBAR (แก้ไข: เอา Background Image ออก และใส่ bg-red-600 กลับคืนมา) ★★★ --}}
@@ -274,7 +274,7 @@
     </div>
 
     {{-- ★★★ FOOTER ★★★ --}}
-    <div class="bg-red-600 text-white mt-10 border-t border-red-700">
+    <div class="bg-red-600 text-white  border-t border-red-700">
         <footer class="container mx-auto p-10 flex flex-wrap lg:flex-nowrap justify-between gap-10">
 
             {{-- โลโก้ใน Footer --}}

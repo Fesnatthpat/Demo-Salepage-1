@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
@@ -35,7 +36,7 @@ Route::get('/allproducts', [AllProductController::class, 'index'])->name('allpro
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', function () { return view('contact'); })->name('contact');
-Route::get('/faq', function () { return view('faq'); })->name('faq');
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
 // ==========================================
 // 2. ระบบตะกร้าสินค้า (Cart)

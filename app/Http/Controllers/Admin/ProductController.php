@@ -246,4 +246,45 @@ class ProductController extends Controller
             'product_options.*.option_stock' => 'nullable|integer|min:0',
         ]);
     }
+
+    public function showReviewImages(ProductSalepage $product)
+    {
+        $product->load('reviewImages');
+        return view('admin.products.review-images', compact('product'));
+    }
+
+    public function storeReviewImage(Request $request, ProductSalepage $product)
+    {
+        $request->validate([
+            'images' => 'required|array',
+            'images.*' => 'image|max:5120',
+        ]);
+
+        if ($request->hasFile('images')) {
+            // Find the current maximum sort order for this product's review images.
+            $maxSortOrder = $product->reviewImages()->max('sort_order') ?? -1;
+
+            foreach ($request->file('images') as $index => $file) {
+                $path = $file->store('review_images', 'public');
+                $product->reviewImages()->create([
+                    'image_url' => $path,
+                    // Set the sort order, incrementing from the max.
+                    'sort_order' => $maxSortOrder + 1 + $index,
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Review images uploaded successfully.');
+    }
+
+    public function destroyReviewImage($reviewImageId)
+    {
+        $reviewImage = \App\Models\ProductReviewImage::findOrFail($reviewImageId);
+
+        Storage::disk('public')->delete($reviewImage->image_url);
+
+        $reviewImage->delete();
+
+        return back()->with('success', 'Review image deleted successfully.');
+    }
 }

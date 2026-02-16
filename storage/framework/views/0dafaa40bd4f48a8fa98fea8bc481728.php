@@ -59,12 +59,12 @@
                     
                     <form action="<?php echo e(route('admin.products.index')); ?>" method="GET" class="w-full sm:w-auto">
                         
-                        <?php if(request('status') !== null): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('status') !== null): ?>
                             <input type="hidden" name="status" value="<?php echo e(request('status')); ?>">
-                        <?php endif; ?>
-                        <?php if(request('type')): ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('type')): ?>
                             <input type="hidden" name="type" value="<?php echo e(request('type')); ?>">
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         <div class="flex w-full sm:w-auto relative">
                             <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
@@ -91,14 +91,14 @@
                 </div>
             </div>
 
-            <?php if(session('success')): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
                 <div class="alert alert-success bg-green-900/50 border-green-800 text-green-200 shadow-sm mb-6">
                     <div>
                         <i class="fas fa-check-circle"></i>
                         <span><?php echo e(session('success')); ?></span>
                     </div>
                 </div>
-            <?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
             
             <div
@@ -183,7 +183,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                             <tr class="hover:bg-gray-700/50 transition-colors border-b border-gray-700 last:border-0">
                                 <td class="align-middle text-center">
                                     <?php
@@ -214,14 +214,14 @@
 
 
                                                 
-                                                <?php if($product->is_recommended): ?>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->is_recommended): ?>
                                                     <span class="badge badge-warning badge-xs text-yellow-900"
                                                         title="สินค้าแนะนำ">แนะนำ</span>
-                                                <?php endif; ?>
-                                                <?php if($product->pd_sp_discount > 0): ?>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_discount > 0): ?>
                                                     <span class="badge badge-secondary badge-xs text-white"
                                                         title="ลดราคา">Sale</span>
-                                                <?php endif; ?>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </div>
                                             <div class="text-sm text-gray-500"><?php echo e($product->pd_sp_code); ?></div>
                                         </div>
@@ -229,30 +229,30 @@
                                 </td>
                                 <td class="text-right text-gray-300">฿<?php echo e(number_format($product->pd_sp_price, 2)); ?></td>
                                 <td class="text-right text-red-400">
-                                    <?php if($product->pd_sp_discount > 0): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_discount > 0): ?>
                                         - ฿<?php echo e(number_format($product->pd_sp_discount, 2)); ?>
 
                                     <?php else: ?>
                                         <span class="text-gray-600">-</span>
-                                    <?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </td>
                                 <td class="text-right">
-                                    <?php if($product->pd_sp_stock > 0): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_stock > 0): ?>
                                         <span class="text-emerald-400"><?php echo e(number_format($product->pd_sp_stock)); ?></span>
                                     <?php else: ?>
                                         <span class="font-bold text-red-500">สินค้าหมด</span>
-                                    <?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </td>
                                 <td>
                                     <span
                                         class="text-sm text-gray-500 line-clamp-2 max-w-xs"><?php echo e($product->pd_sp_description ?? '-'); ?></span>
                                 </td>
                                 <td class="text-center">
-                                    <?php if($product->pd_sp_active == 1): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_active == 1): ?>
                                         <span class="badge badge-success text-white">ใช้งาน</span>
                                     <?php else: ?>
                                         <span class="badge badge-ghost text-gray-400 bg-gray-700">ไม่ใช้งาน</span>
-                                    <?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </td>
                                 <td>
                                     <div class="flex justify-center items-center gap-2">
@@ -294,7 +294,7 @@
                                     </div>
                                 </td>
                             </tr>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             <tr>
                                 <td colspan="8" class="text-center py-12 text-gray-500">
                                     <div class="flex flex-col items-center opacity-60">
@@ -303,7 +303,7 @@
                                     </div>
                                 </td>
                             </tr>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
                 </table>
             </div>

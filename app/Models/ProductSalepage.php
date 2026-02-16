@@ -63,4 +63,9 @@ class ProductSalepage extends Model
     {
         return $this->belongsToMany(ProductSalepage::class, 'product_bogo_options', 'parent_id', 'child_id');
     }
+
+    public function reviewImages()
+    {
+        return $this->hasMany(ProductReviewImage::class, 'product_salepage_id', 'pd_sp_id')->orderBy('sort_order', 'asc');
+    }
 }

@@ -138,6 +138,11 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // Route สำหรับลบรูปสินค้า (Ajax)
     Route::delete('/products/image/{product_image}', [AdminProductController::class, 'destroyImage'])->name('products.image.destroy');
 
+    // Review Images
+    Route::get('/products/{product}/review-images', [AdminProductController::class, 'showReviewImages'])->name('products.review-images.show');
+    Route::post('/products/{product}/review-images', [AdminProductController::class, 'storeReviewImage'])->name('products.review-images.store');
+    Route::delete('/products/review-images/{review_image}', [AdminProductController::class, 'destroyReviewImage'])->name('products.review-images.destroy');
+
     // ✅ Route สำหรับตั้งค่ารูปหลัก (ใหม่)
     Route::post('/products/image/{image}/set-main', [AdminProductController::class, 'setMainImage'])->name('products.setMainImage');
 

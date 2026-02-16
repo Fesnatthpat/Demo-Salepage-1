@@ -21,6 +21,12 @@
 
             @include('admin.products._form')
 
+            <div class="text-center mt-8">
+                <a href="{{ route('admin.products.review-images.show', $productSalepage->pd_sp_id) }}" class="btn btn-secondary">
+                    <i class="fas fa-images mr-2"></i> จัดการรูปรีวิว
+                </a>
+            </div>
+
             <div
                 class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-4 z-50 md:static md:bg-transparent md:border-0 md:p-0 md:mt-8">
                 <div class="flex justify-end gap-3 max-w-7xl mx-auto">

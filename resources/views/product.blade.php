@@ -67,6 +67,18 @@
                 'stock' => (int) $option->option_stock,
             ];
         });
+
+        // --- เตรียมข้อมูลรูปรีวิวให้ Alpine.js ใช้งาน ---
+        $reviewImagesList = [];
+        if ($product->reviewImages && $product->reviewImages->count() > 0) {
+            $reviewImagesList = $product->reviewImages
+                ->map(function ($img) {
+                    return filter_var($img->image_url, FILTER_VALIDATE_URL)
+                        ? $img->image_url
+                        : asset('storage/' . $img->image_url);
+                })
+                ->all();
+        }
     @endphp
 
     {{-- --- 2. Alpine Data --- --}}
@@ -82,11 +94,12 @@
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
         bundleAddUrl: @js(route('cart.addBundle')),
         checkoutUrl: @js(route('payment.checkout')),
-        promotions: @js($promotionsData)
+        promotions: @js($promotionsData),
+        reviewImages: @js($reviewImagesList)
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased"
-        @keydown.escape.window="isModalOpen = false"
-        @keydown.arrow-left.window="if(isModalOpen) prevImage(); else prevImage()"
-        @keydown.arrow-right.window="if(isModalOpen) nextImage(); else nextImage()">
+        @keydown.escape.window="isModalOpen = false; isReviewModalOpen = false;"
+        @keydown.arrow-left.window="if(isModalOpen) prevImage(); if(isReviewModalOpen) prevReviewImage();"
+        @keydown.arrow-right.window="if(isModalOpen) nextImage(); if(isReviewModalOpen) nextReviewImage();">
 
         <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
             <div class="grid grid-cols-1 lg:grid-cols-12">
@@ -106,7 +119,7 @@
                             class="relative aspect-square rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100 cursor-zoom-in group"
                             @click="isModalOpen = true">
 
-                            {{-- ปุ่มเลื่อนซ้าย (แก้ไข: แสดงตลอดบนมือถือ / ซ่อนบนคอมและแสดงเมื่อ Hover) --}}
+                            {{-- ปุ่มเลื่อนซ้าย --}}
                             <button x-show="images.length > 1" @click.stop="prevImage()"
                                 class="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 text-gray-800 shadow-md transition-all duration-300 hover:bg-red-600 hover:text-white transform hover:scale-110 opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -121,7 +134,7 @@
                                 class="w-full h-full object-contain p-4 transition-all duration-300 group-hover:scale-105"
                                 onerror="this.src='https://via.placeholder.com/600?text=Image+Error'">
 
-                            {{-- ปุ่มเลื่อนขวา (แก้ไข: แสดงตลอดบนมือถือ / ซ่อนบนคอมและแสดงเมื่อ Hover) --}}
+                            {{-- ปุ่มเลื่อนขวา --}}
                             <button x-show="images.length > 1" @click.stop="nextImage()"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/90 text-gray-800 shadow-md transition-all duration-300 hover:bg-red-600 hover:text-white transform hover:scale-110 opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -345,7 +358,40 @@
         </div>
 
         {{-- ========================================== --}}
-        {{-- 🖼️ MODAL POPUP & SLIDER --}}
+        {{-- 🌟 Review Images Section (อัปเกรดคลิกเพื่อขยายได้) --}}
+        {{-- ========================================== --}}
+        @if ($product->reviewImages && $product->reviewImages->count() > 0)
+            <div class="mt-12 mb-8">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-8 flex items-center justify-center gap-2">
+                    <i class="fas fa-camera text-red-500"></i> รูปรีวิวจากลูกค้า
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    @foreach ($product->reviewImages as $index => $reviewImage)
+                        @php
+                            $imgUrl = filter_var($reviewImage->image_url, FILTER_VALIDATE_URL)
+                                ? $reviewImage->image_url
+                                : asset('storage/' . $reviewImage->image_url);
+                        @endphp
+                        {{-- กล่องรูปรีวิว เปลี่ยนเคอร์เซอร์เป็นแว่นขยาย และเรียกเปิด Modal เมื่อคลิก --}}
+                        <div class="rounded-xl overflow-hidden border-2 border-transparent hover:border-red-400 shadow-sm hover:shadow-md cursor-zoom-in group relative aspect-square transition-all duration-300"
+                            @click="openReviewModal('{{ $imgUrl }}')">
+
+                            <img src="{{ $imgUrl }}" alt="Product Review Image"
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+
+                            {{-- Hover Effect รูปแว่นขยาย --}}
+                            <div
+                                class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                <i class="fas fa-search-plus text-white text-3xl drop-shadow-lg"></i>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- ========================================== --}}
+        {{-- 🖼️ MODAL POPUP สำหรับรูปสินค้าหลัก --}}
         {{-- ========================================== --}}
         <div x-show="isModalOpen" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -399,6 +445,64 @@
                 <span x-text="images.indexOf(activeImage) + 1"></span> / <span x-text="images.length"></span>
             </div>
         </div>
+
+        {{-- ========================================== --}}
+        {{-- 📸 MODAL POPUP สำหรับรูปรีวิวโดยเฉพาะ --}}
+        {{-- ========================================== --}}
+        <div x-show="isReviewModalOpen" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm"
+            @click.self="isReviewModalOpen = false" style="display: none;">
+
+            {{-- Close Button --}}
+            <button @click="isReviewModalOpen = false"
+                class="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white transition-colors bg-black/20 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-10 md:w-10" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            {{-- Slider Container --}}
+            <div class="relative w-full max-w-5xl h-full flex items-center justify-center">
+
+                {{-- Left Button (Previous) --}}
+                <button x-show="reviewImages.length > 1" @click.stop="prevReviewImage()"
+                    class="absolute left-2 md:left-4 z-40 p-2 md:p-3 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/10 backdrop-blur-sm transition-all transform hover:scale-110 focus:outline-none shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+
+                {{-- Image Display --}}
+                <div class="relative max-h-full w-full flex justify-center items-center" @click.stop>
+                    <img :src="activeReviewImage"
+                        class="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl transition-all duration-300 select-none"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-50 scale-95" x-transition:enter-end="opacity-100 scale-100">
+                </div>
+
+                {{-- Right Button (Next) --}}
+                <button x-show="reviewImages.length > 1" @click.stop="nextReviewImage()"
+                    class="absolute right-2 md:right-4 z-40 p-2 md:p-3 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/10 backdrop-blur-sm transition-all transform hover:scale-110 focus:outline-none shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-8 md:w-8" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Review Image Counter Indicator --}}
+            <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/60 border border-white/10 px-4 py-1.5 rounded-full text-white text-sm font-medium backdrop-blur-md"
+                x-show="reviewImages.length > 1">
+                รีวิว <span x-text="reviewImages.indexOf(activeReviewImage) + 1"></span> / <span
+                    x-text="reviewImages.length"></span>
+            </div>
+        </div>
+
     </div>
 
 @endsection
@@ -410,6 +514,13 @@
                 isModalOpen: false,
                 activeImage: config.initialImage,
                 images: config.allImages,
+
+                // --- เพิ่ม State สำหรับ Review Images ---
+                reviewImages: config.reviewImages || [],
+                isReviewModalOpen: false,
+                activeReviewImage: null,
+                // ------------------------------------
+
                 quantity: 1,
                 isLoading: false,
                 imagesLoaded: false,
@@ -422,7 +533,7 @@
                 promotions: config.promotions || [],
                 selectedGifts: [],
 
-                // --- ฟังก์ชัน Slider ---
+                // --- ฟังก์ชัน Slider รูปหลัก ---
                 prevImage() {
                     let currentIndex = this.images.indexOf(this.activeImage);
                     if (currentIndex === -1) currentIndex = 0;
@@ -435,6 +546,27 @@
                     if (currentIndex === -1) currentIndex = 0;
                     let nextIndex = (currentIndex + 1) % this.images.length;
                     this.activeImage = this.images[nextIndex];
+                },
+
+                // --- ฟังก์ชัน Slider รูปรีวิว ---
+                openReviewModal(imgUrl) {
+                    this.activeReviewImage = imgUrl;
+                    this.isReviewModalOpen = true;
+                },
+
+                prevReviewImage() {
+                    let currentIndex = this.reviewImages.indexOf(this.activeReviewImage);
+                    if (currentIndex === -1) currentIndex = 0;
+                    let prevIndex = (currentIndex - 1 + this.reviewImages.length) % this.reviewImages
+                        .length;
+                    this.activeReviewImage = this.reviewImages[prevIndex];
+                },
+
+                nextReviewImage() {
+                    let currentIndex = this.reviewImages.indexOf(this.activeReviewImage);
+                    if (currentIndex === -1) currentIndex = 0;
+                    let nextIndex = (currentIndex + 1) % this.reviewImages.length;
+                    this.activeReviewImage = this.reviewImages[nextIndex];
                 },
                 // --------------------------
 
@@ -457,7 +589,7 @@
                             priceToDisplay = option.price;
                             price2ToDisplay = option.price2;
                             actualDiscount =
-                            0; // Option price is usually considered final, no further discount from main product
+                                0; // Option price is usually considered final, no further discount from main product
                         }
                     }
 
@@ -599,7 +731,7 @@
                                 Livewire.dispatch('cartUpdated');
                                 console.log(
                                     'Dispatched cartUpdated from product.blade.php (addToCartPartner)'
-                                    ); // Add log
+                                ); // Add log
                             }, 50); // Small delay
                             window.location.reload();
                         } else throw new Error(data.message);
@@ -664,7 +796,7 @@
                                     Livewire.dispatch('cartUpdated');
                                     console.log(
                                         'Dispatched cartUpdated from product.blade.php (handleAddToCartClick)'
-                                        ); // Add log
+                                    ); // Add log
                                 }, 50); // Small delay
                             }
                         } else throw new Error(data.message);

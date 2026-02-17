@@ -1,278 +1,94 @@
-@extends('layouts.admin')
+@extends('layouts.app') {{-- หรือชื่อ Layout หลักของหน้าร้านคุณ เช่น layouts.frontend --}}
 
-@section('title', 'จัดการออเดอร์')
-@section('page-title', 'รายการออเดอร์ทั้งหมด')
-
-@section('styles')
-    <style>
-        .slip-thumbnail {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: transform 0.2s;
-            border: 1px solid #4b5563;
-            /* gray-600 */
-        }
-
-        .slip-thumbnail:hover {
-            transform: scale(1.1);
-            border-color: #10b981;
-            /* emerald-500 */
-        }
-    </style>
-@endsection
+@section('title', 'ประวัติการสั่งซื้อของฉัน')
 
 @section('content')
-    <div class="card bg-gray-800 shadow-lg border border-gray-700">
-        <div class="card-body">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                <h2 class="card-title text-gray-100">ออเดอร์ทั้งหมด <span
-                        class="text-gray-500 text-sm font-normal">({{ $orders->total() }})</span></h2>
-                <form action="{{ route('admin.orders.index') }}" method="GET">
-                    <div class="form-control">
-                        <div class="relative">
-                            <input type="text" name="search" placeholder="ค้นหา รหัส, ชื่อลูกค้า..."
-                                class="input input-bordered w-full sm:w-64 pr-10 bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
-                                value="{{ request('search') }}">
-                            <button type="submit"
-                                class="absolute top-0 right-0 rounded-l-none btn btn-square btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </form>
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-5xl mx-auto">
+
+            <div class="flex items-center justify-between mb-6 border-b pb-4">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-box-open mr-2 text-emerald-600"></i>ประวัติการสั่งซื้อของฉัน
+                </h1>
             </div>
 
-            <div class="mb-4 overflow-x-auto">
-                <div class="join bg-gray-700 p-1 rounded-lg border border-gray-600">
-                    {{-- All Statuses --}}
-                    <a href="{{ route('admin.orders.index', array_merge(request()->except('status'), ['status' => 'all'])) }}"
-                        class="join-item btn btn-sm border-none {{ !request('status') || request('status') == 'all' ? 'bg-emerald-600 text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-600' }}">
-                        ทั้งหมด
-                    </a>
-                    {{-- Specific Statuses --}}
-                    @php
-                        $statusOptions = [
-                            1 => 'รอชำระเงิน',
-                            2 => 'กำลังดำเนินการ',
-                            3 => 'จัดส่งแล้ว',
-                            4 => 'สำเร็จ',
-                            5 => 'ยกเลิก',
-                        ];
-                    @endphp
-                    @foreach ($statusOptions as $id => $text)
-                        <a href="{{ route('admin.orders.index', array_merge(request()->except('status'), ['status' => $id])) }}"
-                            class="join-item btn btn-sm border-none {{ request('status') == $id ? 'bg-emerald-600 text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-600' }}">
-                            {{ $text }}
-                        </a>
-                    @endforeach
+            @if (session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6 shadow-sm">
+                    <span class="block sm:inline"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</span>
                 </div>
-            </div>
+            @endif
 
-            <div class="overflow-x-auto">
-                <table class="table w-full text-gray-300">
-                    <thead>
-                        <tr class="border-b border-gray-700 bg-gray-900/50 text-gray-400">
-                            <th>รหัสออเดอร์</th>
-                            <th>ลูกค้า</th>
-                            <th class="text-right">ยอดรวม</th>
-                            <th class="text-right">ส่วนลด</th>
-                            <th class="text-right">ยอดสุทธิ</th>
-                            <th class="text-center">สลิป</th>
-                            <th class="text-center">สถานะ</th>
-                            <th>วันที่สั่งซื้อ</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $statusMap = [
-                                1 => 'รอชำระเงิน',
-                                2 => 'แจ้งชำระเงินแล้ว',
-                                3 => 'กำลังเตรียมจัดส่ง',
-                                4 => 'จัดส่งแล้ว',
-                                5 => 'ยกเลิก',
-                            ];
-                        @endphp
-                        @forelse ($orders as $order)
-                            <tr class="border-b border-gray-700 hover:bg-gray-700/50 transition-colors group">
-                                <td class="align-middle">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-mono font-semibold text-emerald-400">{{ $order->ord_code }}</span>
-                                        <button onclick="copyToClipboard('{{ $order->ord_code }}')"
-                                            class="btn btn-ghost btn-xs btn-square text-gray-500 hover:text-emerald-400 hover:bg-gray-700"
-                                            title="คลิกเพื่อคัดลอก">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="font-bold text-gray-200">{{ $order->shipping_name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $order->user->email ?? 'N/A' }}</div>
-                                </td>
-                                <td class="align-middle text-right text-gray-400">
-                                    ฿{{ number_format($order->total_price, 2) }}</td>
-                                <td class="align-middle text-right text-red-400">
-                                    -฿{{ number_format($order->total_discount, 2) }}</td>
-                                <td class="align-middle text-right font-bold text-emerald-400">
-                                    ฿{{ number_format($order->net_amount, 2) }}
-                                </td>
-                                <td class="align-middle text-center">
-                                    @if ($order->slip_path)
-                                        <img src="{{ asset('storage/' . $order->slip_path) }}" alt="Slip"
-                                            class="slip-thumbnail bg-gray-700"
-                                            data-slip-src="{{ asset('storage/' . $order->slip_path) }}">
-                                    @else
-                                        <span class="text-xs text-gray-600">ไม่มีรูป</span>
-                                    @endif
-                                </td>
-                                <td class="align-middle text-center">
-                                    <span
-                                        class="badge border-none text-xs font-medium px-3 py-3
-                                    @switch($order->status_id)
-                                        @case(1) bg-yellow-900/50 text-yellow-300 @break
-                                        @case(2) bg-blue-900/50 text-blue-300 @break
-                                        @case(3) bg-indigo-900/50 text-indigo-300 @break
-                                        @case(4) bg-emerald-900/50 text-emerald-300 @break
-                                        @case(5) bg-red-900/50 text-red-300 @break
-                                        @default bg-gray-700 text-gray-400
-                                    @endswitch">
-                                        {{ $statusMap[$order->status_id] ?? 'ไม่ทราบสถานะ' }}
-                                    </span>
-                                </td>
-                                <td class="align-middle text-gray-400">{{ $order->ord_date->format('d M Y, H:i') }}</td>
-                                <td class="align-middle">
-                                    <a href="{{ route('admin.orders.show', $order) }}"
-                                        class="text-blue-400 font-semibold hover:text-blue-300 hover:underline flex items-center gap-1 transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        ดู
-                                    </a>
-                                </td>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-700 uppercase text-sm leading-normal border-b">
+                                <th class="py-3 px-6 text-left">รหัสออเดอร์</th>
+                                <th class="py-3 px-6 text-left">วันที่สั่งซื้อ</th>
+                                <th class="py-3 px-6 text-right">ยอดรวม</th>
+                                <th class="py-3 px-6 text-center">สถานะ</th>
+                                <th class="py-3 px-6 text-center">จัดการ</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="text-center py-12 text-gray-500">
-                                    <div class="flex flex-col items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-700 mb-3"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                        </svg>
-                                        @if (request('search'))
-                                            ไม่พบออเดอร์ที่ตรงกับ "{{ request('search') }}"
-                                        @else
-                                            ยังไม่มีข้อมูลออเดอร์ในระบบ
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
+                            @forelse($orders as $order)
+                                <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 px-6 text-left whitespace-nowrap">
+                                        <span class="font-medium text-gray-800">{{ $order->ord_code }}</span>
+                                    </td>
+                                    <td class="py-3 px-6 text-left">
+                                        <span>{{ \Carbon\Carbon::parse($order->ord_date)->addYears(543)->format('d/m/Y H:i') }}</span>
+                                    </td>
+                                    <td class="py-3 px-6 text-right font-semibold text-emerald-600">
+                                        ฿{{ number_format($order->total_price, 2) }}
+                                    </td>
+                                    <td class="py-3 px-6 text-center">
+                                        @php
+                                            $statusClass = 'bg-gray-100 text-gray-700';
+                                            $statusText = $order->status;
 
-            <div class="mt-8">
-                {{ $orders->appends(request()->query())->links() }}
+                                            if ($order->status == 'pending' || $order->status_id == 1) {
+                                                $statusClass = 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+                                                $statusText = 'รอชำระเงิน';
+                                            } elseif ($order->status == 'paid' || $order->status_id == 2) {
+                                                $statusClass = 'bg-blue-100 text-blue-800 border border-blue-200';
+                                                $statusText = 'ชำระเงินแล้ว';
+                                            } elseif ($order->status_id == 3) {
+                                                $statusClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200';
+                                                $statusText = 'กำลังเตรียมจัดส่ง';
+                                            } elseif ($order->status_id == 4) {
+                                                $statusClass = 'bg-green-100 text-green-800 border border-green-200';
+                                                $statusText = 'จัดส่งแล้ว';
+                                            }
+                                        @endphp
+                                        <span class="py-1 px-3 rounded-full text-xs font-medium {{ $statusClass }}">
+                                            {{ $statusText }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-6 text-center">
+                                        <a href="{{ route('orders.show', $order->ord_code) }}"
+                                            class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
+                                            ดูรายละเอียด
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="py-12 text-center text-gray-500">
+                                        <p class="text-lg font-medium text-gray-600">ยังไม่มีประวัติการสั่งซื้อ</p>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if ($orders->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        {{ $orders->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>
-
-    {{-- Modal Preview รูปสลิป --}}
-    <div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; pointer-events: none;">
-        <img src="" alt="Slip Preview"
-            style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); background-color: #1f2937; border: 2px solid #374151;">
-    </div>
 @endsection
-
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 2000,
-                    background: '#1f2937',
-                    color: '#fff',
-                    timerProgressBar: false,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
-                });
-                Toast.fire({
-                    icon: 'success',
-                    title: 'คัดลอกรหัสออเดอร์แล้ว'
-                });
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('slip-preview-modal');
-            if (!modal) return;
-
-            const modalImage = modal.querySelector('img');
-            const thumbnails = document.querySelectorAll('.slip-thumbnail');
-            let hideTimeout;
-
-            thumbnails.forEach(thumb => {
-                thumb.addEventListener('mouseenter', (e) => {
-                    clearTimeout(hideTimeout);
-                    const rect = e.target.getBoundingClientRect();
-                    modalImage.src = e.target.dataset.slipSrc;
-                    modal.style.opacity = 0;
-                    modal.style.display = 'block';
-                    modal.style.transition = 'opacity 0.2s ease-in-out';
-
-                    setTimeout(() => {
-                        const modalRect = modal.getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-                        const viewportHeight = window.innerHeight;
-                        const margin = 15;
-
-                        let top = rect.top;
-                        let left = rect.right + margin;
-
-                        if (left + modalRect.width > viewportWidth - margin) {
-                            left = rect.left - modalRect.width - margin;
-                        }
-                        if (top + modalRect.height > viewportHeight - margin) {
-                            top = viewportHeight - modalRect.height - margin;
-                        }
-                        if (top < margin) top = margin;
-                        if (left < margin) left = margin;
-
-                        modal.style.top = `${top}px`;
-                        modal.style.left = `${left}px`;
-                        modal.style.opacity = 1;
-                    }, 10);
-                });
-
-                thumb.addEventListener('mouseleave', () => {
-                    hideTimeout = setTimeout(() => {
-                        modal.style.opacity = 0;
-                        setTimeout(() => modal.style.display = 'none', 200);
-                    }, 100);
-                });
-            });
-        });
-    </script>
-@endpush

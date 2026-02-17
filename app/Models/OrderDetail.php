@@ -13,18 +13,24 @@ class OrderDetail extends Model
 
     protected $primaryKey = 'ordd_id';
 
-    // ✅ ปรับชื่อคอลัมน์ให้ตรงกับฐานข้อมูลในรูปภาพ 100%
     protected $fillable = [
         'ord_id',
         'pd_id',
-        'ordd_price',           // ราคาขาย
-        'ordd_original_price',  // ราคาเต็ม
-        'ordd_count',           // จำนวน
-        'ordd_discount',        // ส่วนลด
-        'ordd_create_date',     // วันที่สร้าง
+        'option_name',
+        'ordd_price',
+        'ordd_original_price',
+        'ordd_count',
+        'ordd_discount',
+        'ordd_create_date',
     ];
 
-    public $timestamps = true; // ในรูปมี created_at, updated_at ดังนั้นต้องเป็น true
+    public $timestamps = true;
+
+    // แก้ไขปัญหา Call to undefined relationship [product]
+    public function product()
+    {
+        return $this->belongsTo(ProductSalepage::class, 'pd_id', 'pd_sp_id');
+    }
 
     public function productSalepage()
     {

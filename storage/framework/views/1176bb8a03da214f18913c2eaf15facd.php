@@ -1,13 +1,11 @@
-@extends('layout')
+<?php $__env->startSection('title', 'ประวัติการสั่งซื้อ | Salepage Demo'); ?>
 
-@section('title', 'ประวัติการสั่งซื้อ | Salepage Demo')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
         <div class="bg-white border border-gray-200 rounded-lg p-6 lg:p-8 shadow-sm">
             <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-4">ประวัติการสั่งซื้อ</h1>
 
-            @if ($orders->isEmpty())
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($orders->isEmpty()): ?>
                 <div class="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-gray-300 mb-6" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
@@ -16,11 +14,11 @@
                     </svg>
                     <h2 class="text-2xl font-bold text-gray-400 mb-2">ไม่พบประวัติการสั่งซื้อ</h2>
                     <p class="text-gray-500 mb-6">คุณยังไม่มีคำสั่งซื้อใดๆ ในระบบ</p>
-                    {{-- ปรับปุ่มเป็นสีแดง --}}
-                    <a href="{{ route('allproducts') }}"
+                    
+                    <a href="<?php echo e(route('allproducts')); ?>"
                         class="btn bg-red-600 hover:bg-red-700 border-none text-white px-8">ไปเลือกซื้อสินค้า</a>
                 </div>
-            @else
+            <?php else: ?>
                 <div class="overflow-x-auto">
                     <table class="table w-full">
                         <thead class="bg-gray-50">
@@ -46,8 +44,8 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach ($orders as $order)
-                                @php
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                <?php
                                     // 1. Status Logic (คงสีสถานะไว้ตามมาตรฐานสากล เพื่อความเข้าใจง่าย)
                                     $statusText = 'ไม่ระบุ';
                                     $statusClass = 'bg-gray-100 text-gray-800';
@@ -132,23 +130,24 @@
                                             }
                                         }
                                     }
-                                @endphp
+                                ?>
                                 <tr>
-                                    {{-- ส่วนแสดงรูปภาพ --}}
+                                    
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex flex-col">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-14 w-14 relative group">
                                                     <img class="h-14 w-14 rounded-md object-cover border border-gray-200 shadow-sm"
-                                                        src="{{ $displayImage }}" alt="Product Image" loading="lazy"
+                                                        src="<?php echo e($displayImage); ?>" alt="Product Image" loading="lazy"
                                                         onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';">
 
-                                                    @if ($itemCount > 1)
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($itemCount > 1): ?>
                                                         <span
                                                             class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border-2 border-white font-bold shadow-md z-10">
-                                                            +{{ $itemCount - 1 }}
+                                                            +<?php echo e($itemCount - 1); ?>
+
                                                         </span>
-                                                    @endif
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -156,10 +155,10 @@
 
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <span id="order-code-{{ $order->id }}"
-                                                class="text-sm font-semibold text-gray-900">{{ $order->ord_code }}</span>
-                                            {{-- ปรับ hover และ focus ring เป็นสีแดง --}}
-                                            <button onclick="copyToClipboard('order-code-{{ $order->id }}', this)"
+                                            <span id="order-code-<?php echo e($order->id); ?>"
+                                                class="text-sm font-semibold text-gray-900"><?php echo e($order->ord_code); ?></span>
+                                            
+                                            <button onclick="copyToClipboard('order-code-<?php echo e($order->id); ?>', this)"
                                                 class="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 group relative transition-colors">
                                                 <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-600"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -176,45 +175,48 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-600">
-                                            {{ $order->formatted_ord_date ?? $order->created_at->format('d/m/Y H:i') }}
+                                            <?php echo e($order->formatted_ord_date ?? $order->created_at->format('d/m/Y H:i')); ?>
+
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                            {{ $statusText }}
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo e($statusClass); ?>">
+                                            <?php echo e($statusText); ?>
+
                                         </span>
                                     </td>
 
-                                    {{-- ปรับราคาสุทธิเป็นสีแดง --}}
+                                    
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        @if ((float) $order->net_amount <= 0)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((float) $order->net_amount <= 0): ?>
                                             <div class="text-sm font-bold text-red-500">
                                                 (แถมฟรี 0 บาท)
                                             </div>
-                                        @else
+                                        <?php else: ?>
                                             <div class="text-sm font-bold text-red-600">
-                                                ฿{{ number_format($order->net_amount, 2) }}
+                                                ฿<?php echo e(number_format($order->net_amount, 2)); ?>
+
                                             </div>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        {{-- ปรับลิงก์ดูรายละเอียดเป็นสีแดง --}}
-                                        <a href="{{ route('orders.show', ['orderCode' => $order->ord_code]) }}"
+                                        
+                                        <a href="<?php echo e(route('orders.show', ['orderCode' => $order->ord_code])); ?>"
                                             class="text-red-600 hover:text-red-900 font-semibold hover:underline">ดูรายละเอียด</a>
                                     </td>
                                 </tr>
-                            @endforeach
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
     <script>
         function copyToClipboard(elementId, buttonElement) {
             const textToCopy = document.getElementById(elementId).innerText;
@@ -235,4 +237,6 @@
             });
         }
     </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/orderhistory.blade.php ENDPATH**/ ?>

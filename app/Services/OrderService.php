@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendOrderToApiJob;
 use App\Models\CartStorage;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
@@ -137,6 +138,9 @@ class OrderService
             if (empty($user->id)) {
                 Cart::session($user->id)->clear();
             }
+
+            // Dispatch the job to send order data to the external API
+            SendOrderToApiJob::dispatch($order);
 
             return $order;
         });

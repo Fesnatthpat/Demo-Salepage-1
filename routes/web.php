@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -14,7 +15,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileController; // ✅ เพิ่ม AddressController เข้ามาเพื่อแก้ Error หา Class ไม่เจอ
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,7 +36,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
-Route::get('/contact', function () { return view('contact'); })->name('contact');
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
 // ==========================================
@@ -84,8 +87,11 @@ Route::middleware(['auth'])->group(function () {
     // -- กลุ่มที่ต้องกรอกข้อมูลส่วนตัวครบแล้ว --
     Route::middleware(['profile.completed'])->group(function () {
         // ประวัติการสั่งซื้อ (ฝั่งลูกค้า)
-        Route::get('/orderhistory', [OrderController::class, 'index'])->name('order.history');
-        Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('order.show');
+        Route::get('/orderhistory', [OrderController::class, 'index'])->name('orders.index'); // ✅ เปลี่ยนเป็น orders.index
+        Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('orders.show'); // ✅ เปลี่ยนเป็น orders.show เพื่อให้ตรงกับ Controller
+
+        // ✅ เพิ่ม Route สำหรับกดบันทึกคำสั่งซื้อ (เรียกไปที่ฟังก์ชัน store)
+        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     });
 
     // -- จัดการที่อยู่ (Address) --

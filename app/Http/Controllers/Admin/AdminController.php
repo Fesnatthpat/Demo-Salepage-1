@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -46,7 +46,7 @@ class AdminController extends Controller
             // Other validations can be added here
         ]);
 
-        // Handle site_logo upload
+        // 1. จัดการอัปโหลดโลโก้เว็บ (site_logo)
         if ($request->hasFile('site_logo')) {
             // Delete old logo if it exists
             $oldLogoPath = SiteSetting::get('site_logo');
@@ -57,7 +57,7 @@ class AdminController extends Controller
             SiteSetting::set('site_logo', $logoPath);
         }
 
-        // Handle site_cover_image upload
+        // 2. จัดการอัปโหลดรูปภาพปก (site_cover_image)
         if ($request->hasFile('site_cover_image')) {
             // Delete old cover image if it exists
             $oldCoverImagePath = SiteSetting::get('site_cover_image');
@@ -68,7 +68,15 @@ class AdminController extends Controller
             SiteSetting::set('site_cover_image', $coverImagePath);
         }
 
-        // JSON array inputs
+        // 🟢 3. ส่วนที่เพิ่มใหม่: จัดการข้อมูล Array จากหน้า Visual Editor (เช่น settings[about_title])
+        if ($request->has('settings') && is_array($request->settings)) {
+            foreach ($request->settings as $key => $value) {
+                // เซฟค่าลงฐานข้อมูลผ่านฟังก์ชันของระบบคุณ
+                SiteSetting::set($key, $value);
+            }
+        }
+
+        // 4. JSON array inputs (โค้ดเดิมของคุณ)
         $jsonKeys = [
             'hero_slider_items',
             'reasons_section_items',
@@ -102,7 +110,7 @@ class AdminController extends Controller
             }
         }
 
-        // Text inputs
+        // 5. Text inputs (โค้ดเดิมของคุณ)
         $textKeys = [
             'site_description',
             'allergy_info_content',

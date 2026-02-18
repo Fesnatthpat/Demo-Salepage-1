@@ -34,7 +34,7 @@
                             class="px-4 py-1.5 inline-flex text-sm leading-5 font-semibold rounded-full {{ $statusInfo['class'] }}">
                             {{ $statusInfo['text'] }}
                         </span>
-                        <a href="{{ route('order.history') }}" class="btn btn-sm btn-ghost text-gray-600 hover:bg-gray-100">
+                        <a href="{{ route('orders.index') }}" class="btn btn-sm btn-ghost text-gray-600 hover:bg-gray-100">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

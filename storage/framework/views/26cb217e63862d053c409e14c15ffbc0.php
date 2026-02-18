@@ -151,7 +151,7 @@
                     แจ้งชำระเงิน / แนบสลิป
                 </button>
 
-                <a href="<?php echo e(route('order.history')); ?>"
+                <a href="<?php echo e(route('orders.index')); ?>"
                     class="btn btn-ghost btn-sm w-full text-gray-400 font-normal hover:bg-transparent hover:text-gray-600">
                     กลับไปที่ประวัติการสั่งซื้อ
                 </a>

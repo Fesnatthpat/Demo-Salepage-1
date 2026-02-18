@@ -671,8 +671,6 @@
                                 icon: 'success',
                                 title: 'ปลดล็อคของแถมแล้ว!',
                                 text: 'คุณสามารถเลือกของแถมได้เลย',
-                                toast: true,
-                                position: 'top-end',
                                 showConfirmButton: false,
                                 timer: 3000
                             });

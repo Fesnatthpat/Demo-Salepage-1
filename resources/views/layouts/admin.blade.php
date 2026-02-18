@@ -118,11 +118,32 @@
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
                 </a>
-                <a href="{{ route('admin.faqs.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.faqs.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                    <i class="fas fa-question-circle mr-3 w-5 text-center"></i>
-                    จัดการคำถามที่พบบ่อย
-                </a>
+                {{-- Dropdown for Content Management --}}
+                <div x-data="{ open: {{ request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="open = !open"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
+                        <span class="flex items-center">
+                            <i class="fas fa-file-alt mr-3 w-5 text-center"></i>
+                            จัดการเนื้อหา
+                        </span>
+                        <i class="fas fa-chevron-down transform transition-transform duration-200"
+                            :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-transition class="pl-8 pr-4 space-y-1">
+                        <a href="{{ route('admin.faqs.index') }}"
+                            class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.faqs.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
+                            - จัดการคำถามที่พบบ่อย
+                        </a>
+                        <a href="{{ route('admin.favorites.index') }}"
+                            class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.favorites.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
+                            - จัดการเกี่ยวกับติดใจ
+                        </a>
+                        <a href="{{ route('admin.contacts.index') }}"
+                            class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.contacts.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
+                            - จัดการติดต่อเรา
+                        </a>
+                    </div>
+                </div>
 
                 {{-- ส่วนเมนู Super Admin ที่นำกลับมา --}}
                 @if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin')

@@ -11,6 +11,7 @@ class OrderDetail extends Model
 
     protected $table = 'order_detail';
 
+    // กำหนด Primary Key ถูกต้องแล้ว
     protected $primaryKey = 'ordd_id';
 
     protected $fillable = [
@@ -24,9 +25,10 @@ class OrderDetail extends Model
         'ordd_create_date',
     ];
 
-    public $timestamps = true;
+    // ✅ แก้เป็น false ป้องกัน Laravel บังคับหาคอลัมน์ created_at และ updated_at
+    public $timestamps = false;
 
-    // แก้ไขปัญหา Call to undefined relationship [product]
+    // Relation ไปหาสินค้า
     public function product()
     {
         return $this->belongsTo(ProductSalepage::class, 'pd_id', 'pd_sp_id');
@@ -37,8 +39,10 @@ class OrderDetail extends Model
         return $this->belongsTo(ProductSalepage::class, 'pd_id', 'pd_sp_id');
     }
 
+    // Relation ไปหาบิลหลัก
     public function order()
     {
-        return $this->belongsTo(Order::class, 'ord_id', 'ord_id');
+        // ✅ เปลี่ยนตัวแปรที่ 3 เป็น 'id' ซึ่งเป็น Primary Key ของตาราง orders
+        return $this->belongsTo(Order::class, 'ord_id', 'id');
     }
 }

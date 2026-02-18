@@ -151,7 +151,7 @@
                     แจ้งชำระเงิน / แนบสลิป
                 </button>
 
-                <a href="{{ route('order.history') }}"
+                <a href="{{ route('orders.index') }}"
                     class="btn btn-ghost btn-sm w-full text-gray-400 font-normal hover:bg-transparent hover:text-gray-600">
                     กลับไปที่ประวัติการสั่งซื้อ
                 </a>
@@ -191,15 +191,9 @@
         window.copyToClipboard = function(text) {
             navigator.clipboard.writeText(text).then(() => {
                 const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
                     showConfirmButton: false,
                     timer: 2000,
                     timerProgressBar: false,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
                 });
 
                 Toast.fire({

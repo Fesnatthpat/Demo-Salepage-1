@@ -494,11 +494,7 @@
                             icon: 'success',
                             title: 'เพิ่มเรียบร้อย!',
                             showConfirmButton: false,
-                            timer: 1500,
-                            position: 'top-end',
-                            toast: true,
-                            background: '#FEF2F2',
-                            iconColor: '#DC2626'
+                            timer: 1500
                         });
                         setTimeout(() => { // Add setTimeout
                             Livewire.dispatch('cartUpdated');

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
@@ -36,9 +37,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
 // ==========================================
@@ -158,6 +157,12 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
 
     // FAQ Management (จัดการคำถามที่พบบ่อย)
     Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
+
+    // Favorite Management (จัดการเกี่ยวกับติดใจ)
+    Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);
+
+    // Contact Management (จัดการติดต่อเรา)
+    Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);
 
     // Admin Management (จัดการผู้ดูแลระบบ)
     Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class)->middleware('is.superadmin');

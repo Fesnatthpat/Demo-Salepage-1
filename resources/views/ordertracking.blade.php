@@ -49,7 +49,7 @@
                 <div class="flex gap-3">
                     <a href="/contact" class="btn btn-outline btn-sm">ติดต่อร้านค้า</a>
                     @auth
-                        <a href="{{ route('order.history') }}" class="btn btn-ghost btn-sm">ย้อนกลับ</a>
+                        <a href="{{ route('orders.index') }}" class="btn btn-ghost btn-sm">ย้อนกลับ</a>
                     @endauth
                     @guest
                         <a href="{{ route('home') }}" class="btn btn-ghost btn-sm">กลับหน้าหลัก</a>

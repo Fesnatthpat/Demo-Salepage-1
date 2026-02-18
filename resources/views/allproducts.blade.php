@@ -428,12 +428,8 @@
                                     icon: 'success',
                                     title: 'เพิ่มลงตะกร้าแล้ว',
                                     text: 'สินค้าถูกเพิ่มเรียบร้อย',
-                                    position: 'top-end',
-                                    toast: true,
                                     showConfirmButton: false,
-                                    timer: 1500,
-                                    background: '#FEF2F2',
-                                    iconColor: '#DC2626'
+                                    timer: 1500
                                 });
                                 setTimeout(() => { // Add setTimeout
                                     console.log(

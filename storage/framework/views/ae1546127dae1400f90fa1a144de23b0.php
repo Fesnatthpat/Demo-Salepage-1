@@ -34,7 +34,7 @@
                             <?php echo e($statusInfo['text']); ?>
 
                         </span>
-                        <a href="<?php echo e(route('order.history')); ?>" class="btn btn-sm btn-ghost text-gray-600 hover:bg-gray-100">
+                        <a href="<?php echo e(route('orders.index')); ?>" class="btn btn-sm btn-ghost text-gray-600 hover:bg-gray-100">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -324,7 +324,7 @@ class PaymentController extends Controller
             $order->status_id = 2;
             $order->save();
 
-            return redirect()->route('order.show', ['orderCode' => $order->ord_code])
+            return redirect()->route('orders.show', ['orderCode' => $order->ord_code])
                 ->with('success', 'แนบสลิปเรียบร้อยแล้ว');
         }
 

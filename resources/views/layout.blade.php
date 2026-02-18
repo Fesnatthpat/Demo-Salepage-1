@@ -78,7 +78,15 @@
         }
         $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo1.png';
 
-        $menuItems = [['name' => 'หน้าหลัก', 'url' => '/'], ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts'], ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq']];
+        $menuItems = [
+            ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false],
+            ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts', 'auth_required' => false],
+            ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq', 'auth_required' => false],
+            ['name' => 'ประวัติการสั่งซื้อ', 'url' => '/orderhistory', 'auth_required' => true],
+            ['name' => 'เกี่ยวกับติดใจ', 'url' => '/about', 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+            ['name' => 'ติดต่อติดใจ', 'url' => '/contact', 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+            ['name' => 'เช็คพัสดุ', 'url' => route('order.tracking.form'), 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+        ];
     @endphp
 
     {{-- ★★★ NAVBAR (แก้ไข: เอา Background Image ออก และใส่ bg-red-600 กลับคืนมา) ★★★ --}}
@@ -101,14 +109,12 @@
                             <ul tabindex="-1"
                                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg text-gray-800">
                                 @foreach ($menuItems as $item)
+                                    @if (!$item['auth_required'] || auth()->check())
                                     <li><a href="{{ $item['url'] }}"
                                             class="py-3 font-bold hover:text-red-600">{{ $item['name'] }}</a></li>
+                                    @endif
                                 @endforeach
                                 @auth
-                                    <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a>
-                                    </li>
-                                    <li><a href="/about" class="py-3 font-bold hover:text-red-600">เกี่ยวกับติดใจ</a></li>
-                                    <li><a href="/contact" class="py-3 font-bold hover:text-red-600">ติดต่อติดใจ</a></li>
                                     <li><a href="{{ route('profile.edit') }}"
                                             class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
                                     <li>
@@ -184,16 +190,11 @@
                         {{-- Menu --}}
                         <nav class="flex items-center gap-4 text-white text-base font-bold">
                             @foreach ($menuItems as $item)
-                                <a href="{{ $item['url'] }}"
-                                    class="hover:text-red-100 transition-colors">{{ $item['name'] }}</a>
+                                @if (!$item['auth_required'] || auth()->check())
+                                    <a href="{{ $item['url'] }}"
+                                        class="hover:text-red-100 transition-colors">{{ $item['name'] }}</a>
+                                @endif
                             @endforeach
-                            @auth
-                                <a href="/orderhistory" class="hover:text-red-100 transition-colors">ประวัติการสั่งซื้อ</a>
-                                <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับติดใจ</a>
-                                <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อติดใจ</a>
-                                <a href="{{ route('order.tracking.form') }}"
-                                    class="hover:text-red-100 transition-colors">เช็คพัสดุ</a>
-                            @endauth
                         </nav>
                     </div>
 

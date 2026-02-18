@@ -79,7 +79,15 @@
         }
         $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo1.png';
 
-        $menuItems = [['name' => 'หน้าหลัก', 'url' => '/'], ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts'], ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq']];
+        $menuItems = [
+            ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false],
+            ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts', 'auth_required' => false],
+            ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq', 'auth_required' => false],
+            ['name' => 'ประวัติการสั่งซื้อ', 'url' => '/orderhistory', 'auth_required' => true],
+            ['name' => 'เกี่ยวกับติดใจ', 'url' => '/about', 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+            ['name' => 'ติดต่อติดใจ', 'url' => '/contact', 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+            ['name' => 'เช็คพัสดุ', 'url' => route('order.tracking.form'), 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+        ];
     ?>
 
     
@@ -102,14 +110,12 @@
                             <ul tabindex="-1"
                                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg text-gray-800">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$item['auth_required'] || auth()->check()): ?>
                                     <li><a href="<?php echo e($item['url']); ?>"
                                             class="py-3 font-bold hover:text-red-600"><?php echo e($item['name']); ?></a></li>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
-                                    <li><a href="/orderhistory" class="py-3 font-bold hover:text-red-600">ประวัติการสั่งซื้อ</a>
-                                    </li>
-                                    <li><a href="/about" class="py-3 font-bold hover:text-red-600">เกี่ยวกับติดใจ</a></li>
-                                    <li><a href="/contact" class="py-3 font-bold hover:text-red-600">ติดต่อติดใจ</a></li>
                                     <li><a href="<?php echo e(route('profile.edit')); ?>"
                                             class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
                                     <li>
@@ -205,16 +211,11 @@ unset($__split);
                         
                         <nav class="flex items-center gap-4 text-white text-base font-bold">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                <a href="<?php echo e($item['url']); ?>"
-                                    class="hover:text-red-100 transition-colors"><?php echo e($item['name']); ?></a>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$item['auth_required'] || auth()->check()): ?>
+                                    <a href="<?php echo e($item['url']); ?>"
+                                        class="hover:text-red-100 transition-colors"><?php echo e($item['name']); ?></a>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
-                                <a href="/orderhistory" class="hover:text-red-100 transition-colors">ประวัติการสั่งซื้อ</a>
-                                <a href="/about" class="hover:text-red-100 transition-colors">เกี่ยวกับติดใจ</a>
-                                <a href="/contact" class="hover:text-red-100 transition-colors">ติดต่อติดใจ</a>
-                                <a href="<?php echo e(route('order.tracking.form')); ?>"
-                                    class="hover:text-red-100 transition-colors">เช็คพัสดุ</a>
-                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </nav>
                     </div>
 

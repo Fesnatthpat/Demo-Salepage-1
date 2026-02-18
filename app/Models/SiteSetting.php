@@ -32,9 +32,8 @@ class SiteSetting extends Model
             $value = json_encode($value, JSON_UNESCAPED_UNICODE);
         }
 
-        return self::updateOrCreate(
-            ['key' => $key],
-            ['value' => $value]
-        );
+        $setting = self::firstOrNew(['key' => $key]);
+        $setting->value = $value;
+        return $setting->save();
     }
 }

@@ -43,11 +43,11 @@
         </div>
 
         {{-- ★★★ MAIN CONTENT ZONE ★★★ --}}
-        <div class="container mx-auto px-4 -mt-20 relative z-20">
+        <div class="container mx-auto max-w-5xl px-4 -mt-20 relative z-20">
 
             {{-- วนลูปแสดงเนื้อหา (ไม่มีปุ่มแอดมินแล้ว) --}}
             @forelse($favorites as $index => $fav)
-                <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-12 border-b-4 border-red-500" data-aos="fade-up">
+                <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-12" data-aos="fade-up">
                     <div class="flex flex-col md:flex-row items-center gap-12">
 
                         {{-- ข้อความ (สลับซ้าย/ขวาอัตโนมัติ) --}}
@@ -57,18 +57,18 @@
                                 <span class="w-1.5 h-8 bg-red-600 rounded-full"></span>
                                 <h2 class="text-3xl font-bold text-gray-800">{{ $fav->title }}</h2>
                             </div>
-                            <p class="text-gray-600 leading-loose text-lg whitespace-pre-line">{{ $fav->content }}</p>
+                            <div class="prose prose-lg text-gray-600 leading-loose">{!! $fav->content !!}</div>
                         </div>
 
                         {{-- รูปภาพ (ถ้ามี) --}}
                         @if ($fav->image_path)
                             <div
-                                class="w-full md:w-1/2 {{ $index % 2 == 0 ? 'order-1 md:order-2' : 'order-1 md:order-1' }} relative group-img">
+                                class="w-full md:w-1/2  {{ $index % 2 == 0 ? 'order-1 md:order-2' : 'order-1 md:order-1' }} relative group-img">
                                 <div
                                     class="absolute inset-0 bg-red-600 rounded-2xl transform rotate-3 transition-transform duration-300 opacity-10 group-hover:rotate-6">
                                 </div>
                                 <img src="{{ asset('storage/' . $fav->image_path) }}" alt="{{ $fav->title }}"
-                                    class="relative rounded-2xl shadow-lg w-full h-[350px] object-cover border-4 border-white transform transition-transform duration-300 group-hover:-translate-y-2">
+                                    class="relative rounded-2xl shadow-lg w-full h-full  object-cover border-4 border-white transform transition-transform duration-300 group-hover:-translate-y-2">
                             </div>
                         @endif
 

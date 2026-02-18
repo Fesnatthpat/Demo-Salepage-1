@@ -43,11 +43,11 @@
         </div>
 
         
-        <div class="container mx-auto px-4 -mt-20 relative z-20">
+        <div class="container mx-auto max-w-5xl px-4 -mt-20 relative z-20">
 
             
             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $favorites; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $fav): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-12 border-b-4 border-red-500" data-aos="fade-up">
+                <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-12" data-aos="fade-up">
                     <div class="flex flex-col md:flex-row items-center gap-12">
 
                         
@@ -57,18 +57,18 @@
                                 <span class="w-1.5 h-8 bg-red-600 rounded-full"></span>
                                 <h2 class="text-3xl font-bold text-gray-800"><?php echo e($fav->title); ?></h2>
                             </div>
-                            <p class="text-gray-600 leading-loose text-lg whitespace-pre-line"><?php echo e($fav->content); ?></p>
+                            <div class="prose prose-lg text-gray-600 leading-loose"><?php echo $fav->content; ?></div>
                         </div>
 
                         
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($fav->image_path): ?>
                             <div
-                                class="w-full md:w-1/2 <?php echo e($index % 2 == 0 ? 'order-1 md:order-2' : 'order-1 md:order-1'); ?> relative group-img">
+                                class="w-full md:w-1/2  <?php echo e($index % 2 == 0 ? 'order-1 md:order-2' : 'order-1 md:order-1'); ?> relative group-img">
                                 <div
                                     class="absolute inset-0 bg-red-600 rounded-2xl transform rotate-3 transition-transform duration-300 opacity-10 group-hover:rotate-6">
                                 </div>
                                 <img src="<?php echo e(asset('storage/' . $fav->image_path)); ?>" alt="<?php echo e($fav->title); ?>"
-                                    class="relative rounded-2xl shadow-lg w-full h-[350px] object-cover border-4 border-white transform transition-transform duration-300 group-hover:-translate-y-2">
+                                    class="relative rounded-2xl shadow-lg w-full h-full  object-cover border-4 border-white transform transition-transform duration-300 group-hover:-translate-y-2">
                             </div>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 

@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- หรือชื่อ Layout หลักของหน้าร้านคุณ --}}
+@extends('layouts.admin') {{-- หรือชื่อ Layout หลักของหน้าร้านคุณ --}}
 
 @section('title', 'รายละเอียดคำสั่งซื้อ ' . $order->ord_code)
 

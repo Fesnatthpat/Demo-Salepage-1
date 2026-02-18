@@ -1,35 +1,33 @@
-@extends('layouts.admin')
+<?php $__env->startSection('title', 'จัดการคำสั่งซื้อ'); ?>
 
-@section('title', 'จัดการคำสั่งซื้อ')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
     <div class="container mx-auto px-4 sm:px-8 py-8">
 
-        {{-- Header Section --}}
+        
         <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-8">
             <div>
                 <h2 class="text-3xl font-bold text-white tracking-tight">รายการคำสั่งซื้อ (Orders)</h2>
                 <p class="text-gray-400 mt-2 text-sm">ตรวจสอบและจัดการรายการสั่งซื้อทั้งหมดในระบบ</p>
             </div>
-            {{-- Badge บอกจำนวนรวม --}}
+            
             <div class="flex items-center gap-2">
                 <span class="px-4 py-2 bg-gray-800 rounded-lg border border-gray-700 text-gray-300 text-sm shadow-sm">
                     <i class="fas fa-list-ul mr-2 text-emerald-500"></i> ทั้งหมด: <span
-                        class="font-bold text-white">{{ $orders->total() }}</span> รายการ
+                        class="font-bold text-white"><?php echo e($orders->total()); ?></span> รายการ
                 </span>
             </div>
         </div>
 
-        {{-- Alert Success (ถ้ามี) --}}
-        @if (session('success'))
+        
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
             <div
                 class="mb-6 flex items-center gap-3 rounded-xl bg-green-500/10 border border-green-500/20 p-4 text-green-400 backdrop-blur-sm shadow-lg">
                 <i class="fas fa-check-circle text-xl"></i>
-                <span class="font-medium">{{ session('success') }}</span>
+                <span class="font-medium"><?php echo e(session('success')); ?></span>
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        {{-- Orders Table Card --}}
+        
         <div class="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full whitespace-nowrap text-left">
@@ -45,9 +43,9 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700">
-                        @forelse($orders as $order)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                             <tr class="group hover:bg-gray-700/30 transition-colors duration-200">
-                                {{-- 1. Order Code --}}
+                                
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div
@@ -55,42 +53,45 @@
                                             <i class="fas fa-box"></i>
                                         </div>
                                         <span class="font-mono font-bold text-blue-400 group-hover:underline">
-                                            {{ $order->ord_code }}
+                                            <?php echo e($order->ord_code); ?>
+
                                         </span>
                                     </div>
                                 </td>
 
-                                {{-- 2. Date --}}
+                                
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col text-sm">
                                         <span class="text-gray-200 font-medium">
-                                            {{ \Carbon\Carbon::parse($order->ord_date)->format('d/m/Y') }}
+                                            <?php echo e(\Carbon\Carbon::parse($order->ord_date)->format('d/m/Y')); ?>
+
                                         </span>
                                         <span class="text-gray-500 text-xs">
-                                            {{ \Carbon\Carbon::parse($order->ord_date)->format('H:i') }} น.
+                                            <?php echo e(\Carbon\Carbon::parse($order->ord_date)->format('H:i')); ?> น.
                                         </span>
                                     </div>
                                 </td>
 
-                                {{-- 3. Customer Info (ใช้เบอร์โทรหรือชื่อ) --}}
+                                
                                 <td class="px-6 py-4 text-sm text-gray-300">
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-user-circle text-gray-500 text-lg"></i>
-                                        {{-- ถ้ามี Relation User ให้แสดงชื่อ, ถ้าไม่มีแสดงเบอร์โทร --}}
-                                        <span>{{ $order->user->name ?? ($order->shipping_phone ?? 'Guest') }}</span>
+                                        
+                                        <span><?php echo e($order->user->name ?? ($order->shipping_phone ?? 'Guest')); ?></span>
                                     </div>
                                 </td>
 
-                                {{-- 4. Total Price --}}
+                                
                                 <td class="px-6 py-4 text-right">
                                     <span class="font-mono font-bold text-emerald-400 text-lg">
-                                        ฿{{ number_format($order->total_price, 2) }}
+                                        ฿<?php echo e(number_format($order->total_price, 2)); ?>
+
                                     </span>
                                 </td>
 
-                                {{-- 5. Status --}}
+                                
                                 <td class="px-6 py-4 text-center">
-                                    @php
+                                    <?php
                                         // ตั้งค่าสีป้ายสถานะ (Badge)
                                         $statusConfig = match ($order->status_id) {
                                             1 => [
@@ -140,25 +141,26 @@
                                                 'label' => 'ชำระแล้ว',
                                             ];
                                         }
-                                    @endphp
+                                    ?>
 
                                     <span
-                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border {{ $statusConfig['class'] }}">
-                                        <i class="{{ $statusConfig['icon'] }}"></i> {{ $statusConfig['label'] }}
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border <?php echo e($statusConfig['class']); ?>">
+                                        <i class="<?php echo e($statusConfig['icon']); ?>"></i> <?php echo e($statusConfig['label']); ?>
+
                                     </span>
                                 </td>
 
-                                {{-- 6. Actions --}}
+                                
                                 <td class="px-6 py-4 text-center">
-                                    <a href="{{ route('orders.show', $order->ord_code) }}"
+                                    <a href="<?php echo e(route('orders.show', $order->ord_code)); ?>"
                                         class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gray-700 text-gray-400 hover:bg-emerald-600 hover:text-white hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-200"
                                         title="ดูรายละเอียด">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
                             </tr>
-                        @empty
-                            {{-- Empty State --}}
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                            
                             <tr>
                                 <td colspan="6" class="py-20 text-center">
                                     <div class="flex flex-col items-center justify-center text-gray-500">
@@ -169,17 +171,20 @@
                                     </div>
                                 </td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
                 </table>
             </div>
 
-            {{-- Pagination --}}
-            @if ($orders->hasPages())
+            
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($orders->hasPages()): ?>
                 <div class="border-t border-gray-700 bg-gray-800 px-6 py-4">
-                    {{ $orders->links() }}
+                    <?php echo e($orders->links()); ?>
+
                 </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/orders/index.blade.php ENDPATH**/ ?>

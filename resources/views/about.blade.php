@@ -49,9 +49,18 @@
                 <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-12 relative overflow-hidden" data-aos="fade-up">
 
                     @php
-                        $hasMultipleImages = isset($fav->images) && $fav->images->count() > 1;
-                        $hasSingleImage = (isset($fav->images) && $fav->images->count() == 1) || $fav->image_path;
-                        $hasAnyImage = $hasMultipleImages || $hasSingleImage;
+                        // เตรียมข้อมูลรูปภาพทั้งหมดใส่ Array เพื่อส่งให้ JS
+                        $imageCollection = [];
+                        if (isset($fav->images) && $fav->images->count() > 0) {
+                            foreach ($fav->images as $img) {
+                                $imageCollection[] = asset('storage/' . $img->image_path);
+                            }
+                        } elseif ($fav->image_path) {
+                            $imageCollection[] = asset('storage/' . $fav->image_path);
+                        }
+
+                        $hasMultipleImages = count($imageCollection) > 1;
+                        $hasAnyImage = count($imageCollection) > 0;
                     @endphp
 
                     <div class="flex flex-col md:flex-row gap-12 {{ !$hasAnyImage ? 'justify-center' : '' }}">
@@ -75,16 +84,17 @@
 
                                 @if ($hasMultipleImages)
                                     {{-- ★ กรณีมีหลายรูป: Slider / Carousel --}}
-                                    <div class="relative group h-full min-h-[300px]  rounded-2xl overflow-hidden shadow-lg border-4 border-white bg-gray-100"
+                                    <div class="relative group h-full min-h-[300px] rounded-2xl overflow-hidden shadow-lg border-4 border-white bg-gray-100"
                                         id="carousel-{{ $fav->id }}">
 
                                         {{-- Image Wrapper --}}
                                         <div class="carousel-track flex transition-transform duration-500 ease-in-out h-full w-full"
                                             data-index="0">
-                                            @foreach ($fav->images as $img)
+                                            @foreach ($imageCollection as $key => $imgUrl)
+                                                {{-- 🛠️ ใช้ single quote ครอบ onclick --}}
                                                 <div class="min-w-full h-full relative cursor-pointer"
-                                                    onclick="openLightbox('{{ asset('storage/' . $img->image_path) }}')">
-                                                    <img src="{{ asset('storage/' . $img->image_path) }}"
+                                                    onclick='openLightbox(@json($imageCollection), {{ $key }})'>
+                                                    <img src="{{ $imgUrl }}"
                                                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                                                         alt="{{ $fav->title }}">
 
@@ -98,19 +108,20 @@
                                             @endforeach
                                         </div>
 
-                                        {{-- Navigation Buttons --}}
+                                        {{-- Navigation Buttons (Carousel) --}}
+                                        {{-- 🛠️ แก้ไข: เพิ่ม opacity-100 สำหรับมือถือ และ md:opacity-0 สำหรับจอใหญ่ --}}
                                         <button onclick="moveCarousel('{{ $fav->id }}', -1)"
-                                            class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
-                                            <i class="fas fa-chevron-left text-lg"></i>
+                                            class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-10">
+                                            <i class="fas fa-chevron-left text-base md:text-lg"></i>
                                         </button>
                                         <button onclick="moveCarousel('{{ $fav->id }}', 1)"
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
-                                            <i class="fas fa-chevron-right text-lg"></i>
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-10">
+                                            <i class="fas fa-chevron-right text-base md:text-lg"></i>
                                         </button>
 
                                         {{-- Dots Indicator --}}
                                         <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-                                            @foreach ($fav->images as $key => $img)
+                                            @foreach ($imageCollection as $key => $imgUrl)
                                                 <div class="carousel-dot w-2 h-2 rounded-full bg-white/50 transition-all duration-300 {{ $key == 0 ? 'bg-white w-4' : '' }}"
                                                     data-target="{{ $fav->id }}" data-slide="{{ $key }}">
                                                 </div>
@@ -119,18 +130,12 @@
                                     </div>
                                 @else
                                     {{-- ★ กรณีมีรูปเดียว: Static Image --}}
-                                    @php
-                                        $singleImgPath =
-                                            isset($fav->images) && $fav->images->count() > 0
-                                                ? $fav->images->first()->image_path
-                                                : $fav->image_path;
-                                    @endphp
                                     <div class="relative group-img h-full min-h-[300px] cursor-pointer"
-                                        onclick="openLightbox('{{ asset('storage/' . $singleImgPath) }}')">
+                                        onclick='openLightbox(@json($imageCollection), 0)'>
                                         <div
                                             class="absolute inset-0 bg-red-600 rounded-2xl transform rotate-3 transition-transform duration-300 opacity-10 group-hover:rotate-6">
                                         </div>
-                                        <img src="{{ asset('storage/' . $singleImgPath) }}" alt="{{ $fav->title }}"
+                                        <img src="{{ $imageCollection[0] }}" alt="{{ $fav->title }}"
                                             class="relative rounded-2xl shadow-lg w-full h-full object-cover border-4 border-white transform transition-transform duration-300 group-hover:-translate-y-2">
 
                                         {{-- Zoom Icon (รูปเดียว) --}}
@@ -160,11 +165,24 @@
 
     {{-- ★★★ LIGHTBOX MODAL (หน้าต่างขยายรูป) ★★★ --}}
     <div id="lightboxModal"
-        class="fixed inset-0 z-[999] bg-black/90 hidden items-center justify-center opacity-0 transition-opacity duration-300">
+        class="fixed inset-0 z-[999] bg-black/95 hidden items-center justify-center opacity-0 transition-opacity duration-300 select-none">
+
         {{-- Close Button --}}
         <button onclick="closeLightbox()"
             class="absolute top-4 right-4 text-white hover:text-red-500 transition-colors z-50 p-4">
             <i class="fas fa-times text-4xl shadow-lg"></i>
+        </button>
+
+        {{-- Previous Button (Lightbox) --}}
+        <button id="lb-prev-btn" onclick="navigateLightbox(-1)"
+            class="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4 rounded-full hover:bg-white/10 transition-all z-50 hidden">
+            <i class="fas fa-chevron-left text-4xl md:text-5xl drop-shadow-lg"></i>
+        </button>
+
+        {{-- Next Button (Lightbox) --}}
+        <button id="lb-next-btn" onclick="navigateLightbox(1)"
+            class="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4 rounded-full hover:bg-white/10 transition-all z-50 hidden">
+            <i class="fas fa-chevron-right text-4xl md:text-5xl drop-shadow-lg"></i>
         </button>
 
         {{-- Image Container --}}
@@ -172,6 +190,12 @@
             <img id="lightboxImage" src="" alt="Zoom"
                 class="max-w-full max-h-full object-contain rounded-lg shadow-2xl scale-95 transition-transform duration-300"
                 onclick="event.stopPropagation()"> {{-- Stop propagation เพื่อไม่ให้ปิดเวลากดที่รูป --}}
+
+            {{-- Image Counter --}}
+            <div id="lb-counter"
+                class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 bg-black/50 px-4 py-1 rounded-full text-sm font-light tracking-widest hidden">
+                1 / 5
+            </div>
         </div>
     </div>
 
@@ -194,21 +218,15 @@
             const items = track.children;
             const totalItems = items.length;
 
-            // อ่านค่า index ปัจจุบัน
             let currentIndex = parseInt(track.dataset.index || 0);
-
-            // คำนวณ index ใหม่
             let newIndex = currentIndex + direction;
 
-            // Loop logic (ถ้าเกินให้วนกลับ)
             if (newIndex < 0) newIndex = totalItems - 1;
             if (newIndex >= totalItems) newIndex = 0;
 
-            // บันทึกค่าและเลื่อน
             track.dataset.index = newIndex;
             track.style.transform = `translateX(-${newIndex * 100}%)`;
 
-            // Update Dots
             dots.forEach((dot, idx) => {
                 if (idx === newIndex) {
                     dot.classList.add('bg-white', 'w-4');
@@ -223,17 +241,56 @@
         // --- LIGHTBOX LOGIC ---
         const lightbox = document.getElementById('lightboxModal');
         const lightboxImg = document.getElementById('lightboxImage');
+        const lbPrevBtn = document.getElementById('lb-prev-btn');
+        const lbNextBtn = document.getElementById('lb-next-btn');
+        const lbCounter = document.getElementById('lb-counter');
 
-        function openLightbox(src) {
-            lightboxImg.src = src;
+        let currentLightboxImages = [];
+        let currentLightboxIndex = 0;
+
+        function openLightbox(images, startIndex) {
+            currentLightboxImages = images;
+            currentLightboxIndex = startIndex;
+
+            updateLightboxContent();
+
             lightbox.classList.remove('hidden');
-            // Delay เล็กน้อยเพื่อให้ CSS Transition ทำงาน
             setTimeout(() => {
                 lightbox.classList.remove('opacity-0');
                 lightboxImg.classList.remove('scale-95');
                 lightboxImg.classList.add('scale-100');
             }, 10);
-            document.body.style.overflow = 'hidden'; // ป้องกัน Scroll พื้นหลัง
+            document.body.style.overflow = 'hidden';
+        }
+
+        function updateLightboxContent() {
+            lightboxImg.src = currentLightboxImages[currentLightboxIndex];
+
+            if (currentLightboxImages.length > 1) {
+                lbPrevBtn.classList.remove('hidden');
+                lbNextBtn.classList.remove('hidden');
+                lbCounter.classList.remove('hidden');
+                lbCounter.innerText = `${currentLightboxIndex + 1} / ${currentLightboxImages.length}`;
+            } else {
+                lbPrevBtn.classList.add('hidden');
+                lbNextBtn.classList.add('hidden');
+                lbCounter.classList.add('hidden');
+            }
+        }
+
+        function navigateLightbox(direction) {
+            let newIndex = currentLightboxIndex + direction;
+
+            if (newIndex < 0) newIndex = currentLightboxImages.length - 1;
+            if (newIndex >= currentLightboxImages.length) newIndex = 0;
+
+            currentLightboxIndex = newIndex;
+
+            lightboxImg.style.opacity = '0.5';
+            setTimeout(() => {
+                updateLightboxContent();
+                lightboxImg.style.opacity = '1';
+            }, 150);
         }
 
         function closeLightbox() {
@@ -244,14 +301,20 @@
             setTimeout(() => {
                 lightbox.classList.add('hidden');
                 lightboxImg.src = '';
-            }, 300); // รอให้ Transition จบก่อนซ่อน
+                currentLightboxImages = [];
+            }, 300);
             document.body.style.overflow = '';
         }
 
-        // ปิดด้วยปุ่ม ESC
         document.addEventListener('keydown', function(event) {
+            if (lightbox.classList.contains('hidden')) return;
+
             if (event.key === "Escape") {
                 closeLightbox();
+            } else if (event.key === "ArrowLeft") {
+                if (currentLightboxImages.length > 1) navigateLightbox(-1);
+            } else if (event.key === "ArrowRight") {
+                if (currentLightboxImages.length > 1) navigateLightbox(1);
             }
         });
     </script>

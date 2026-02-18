@@ -9,7 +9,7 @@
         .stat-card {
             transition: transform 0.2s;
         }
-
+        
         .stat-card:hover {
             transform: translateY(-4px);
         }

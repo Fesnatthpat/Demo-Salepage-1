@@ -12,8 +12,16 @@ class Favorite extends Model
     protected $fillable = [
         'title',
         'content',
-        'image_path',
+        // 'image_path', // Removed as images are now handled by FavoriteImage model
         'is_active',
         'sort_order',
     ];
+
+    /**
+     * Get the images for the favorite item.
+     */
+    public function images()
+    {
+        return $this->hasMany(FavoriteImage::class);
+    }
 }

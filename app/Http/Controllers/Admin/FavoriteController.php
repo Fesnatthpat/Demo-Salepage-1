@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Favorite;
+use App\Models\FavoriteImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,7 +15,7 @@ class FavoriteController extends Controller
      */
     public function index()
     {
-        $favorites = Favorite::orderBy('sort_order', 'asc')->get();
+        $favorites = Favorite::with('images')->orderBy('sort_order', 'asc')->get();
         return view('admin.favorites.index', compact('favorites'));
     }
 
@@ -35,20 +36,22 @@ class FavoriteController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'sort_order' => 'nullable|integer',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data = $request->only('title', 'content', 'sort_order');
         $data['sort_order'] = $request->sort_order ?? 0;
         $data['is_active'] = $request->boolean('is_active');
-        $data['image_path'] = null;
+        
+        $favorite = Favorite::create($data);
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('favorites', 'public');
-            $data['image_path'] = $path;
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $imageFile) {
+                $path = $imageFile->store('favorites', 'public');
+                $favorite->images()->create(['image_path' => $path]);
+            }
         }
-
-        Favorite::create($data);
 
         return redirect()->route('admin.favorites.index')
                          ->with('success', 'สร้าง "เกี่ยวกับติดใจ" เรียบร้อยแล้ว');
@@ -67,6 +70,7 @@ class FavoriteController extends Controller
      */
     public function edit(Favorite $favorite)
     {
+        $favorite->load('images');
         return view('admin.favorites.edit', compact('favorite'));
     }
 
@@ -79,23 +83,22 @@ class FavoriteController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'sort_order' => 'nullable|integer',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data = $request->only('title', 'content', 'sort_order');
         $data['sort_order'] = $request->sort_order ?? 0;
         $data['is_active'] = $request->boolean('is_active');
 
-        if ($request->hasFile('image')) {
-            // Delete old image if it exists
-            if ($favorite->image_path) {
-                Storage::disk('public')->delete($favorite->image_path);
-            }
-            $path = $request->file('image')->store('favorites', 'public');
-            $data['image_path'] = $path;
-        }
-
         $favorite->update($data);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $imageFile) {
+                $path = $imageFile->store('favorites', 'public');
+                $favorite->images()->create(['image_path' => $path]);
+            }
+        }
 
         return redirect()->route('admin.favorites.index')
                          ->with('success', 'อัปเดต "เกี่ยวกับติดใจ" เรียบร้อยแล้ว');
@@ -106,13 +109,32 @@ class FavoriteController extends Controller
      */
     public function destroy(Favorite $favorite)
     {
-        if ($favorite->image_path) {
-            Storage::disk('public')->delete($favorite->image_path);
+        // Eager load images to ensure they are available
+        $favorite->load('images');
+
+        // Delete all associated image files from storage
+        foreach ($favorite->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
         }
         
+        // Deleting the favorite will trigger the 'onDelete('cascade')' 
+        // for the favorite_images table records.
         $favorite->delete();
 
         return redirect()->route('admin.favorites.index')
                          ->with('success', 'ลบ "เกี่ยวกับติดใจ" เรียบร้อยแล้ว');
+    }
+
+    /**
+     * Remove the specified image from storage and database.
+     */
+    public function destroyImage(FavoriteImage $image)
+    {
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+        $image->delete();
+
+        return response()->json(['success' => true, 'message' => 'Image deleted successfully.']);
     }
 }

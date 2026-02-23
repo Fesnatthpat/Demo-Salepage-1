@@ -53,7 +53,7 @@
                                 {{-- Checkbox & Details --}}
                                 <div class="flex flex-row gap-4 w-full md:w-auto items-start">
                                     <div class="mt-8 md:mt-10">
-                                        <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" checked
+                                        <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
                                             data-price="{{ $totalPrice }}" data-original-price="{{ $totalOriginalPrice }}"
                                             class="item-checkbox w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
                                             onchange="calculateTotal()">
@@ -150,6 +150,19 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'cart_selected_items';
+
+        function getSavedSelectedItems() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function saveSelectedItems() {
+            const selectedIds = Array.from(document.querySelectorAll('.item-checkbox:checked'))
+                .map(cb => cb.value);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedIds));
+        }
+
         function numberWithCommas(x) {
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
@@ -158,11 +171,24 @@
             let totalSale = 0,
                 totalOrig = 0;
             let count = 0;
-            document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
-                totalSale += parseFloat(cb.dataset.price) || 0;
-                totalOrig += parseFloat(cb.dataset.originalPrice) || 0;
-                count++;
+            
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    totalSale += parseFloat(cb.dataset.price) || 0;
+                    totalOrig += parseFloat(cb.dataset.originalPrice) || 0;
+                    count++;
+                }
             });
+
+            // บันทึกสถานะการเลือกลง localStorage ทันทีที่มีการเปลี่ยน
+            saveSelectedItems();
+
+            // อัปเดตตัวเลือก "เลือกทั้งหมด" (Select All)
+            const selectAll = document.getElementById('select-all');
+            if (selectAll) {
+                selectAll.checked = (checkboxes.length > 0 && checkboxes.length === count);
+            }
 
             let disc = totalOrig - totalSale;
             if (disc < 0) disc = 0;
@@ -189,7 +215,21 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            const savedIds = getSavedSelectedItems();
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            
+            if (savedIds === null) {
+                // ครั้งแรกที่เข้า หรือไม่มีการบันทึก: ให้ติ๊กถูกทั้งหมดตามเดิม
+                checkboxes.forEach(cb => cb.checked = true);
+            } else {
+                // ถ้ามีในบันทึก: ให้ติ๊กตามที่เคยเลือกไว้
+                checkboxes.forEach(cb => {
+                    cb.checked = savedIds.includes(cb.value);
+                });
+            }
+
             calculateTotal();
+            
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
             document.querySelectorAll('.cart-action-btn').forEach(btn => {

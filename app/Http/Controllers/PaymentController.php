@@ -113,10 +113,10 @@ class PaymentController extends Controller
         $request->validate([
             'delivery_address_id' => 'required|exists:delivery_addresses,id',
             'selected_items' => 'required|array|min:1',
+            'selected_freebies' => 'nullable|array',
         ]);
 
         $user = Auth::user();
-        $guestSessionKey = '_guest_'.session()->getId();
 
         try {
             $order = $this->orderService->createOrder(
@@ -125,7 +125,8 @@ class PaymentController extends Controller
                     'payment_method' => 'promptpay',
                 ],
                 $user,
-                $guestSessionKey
+                $request->input('selected_items', []),
+                $request->input('selected_freebies', [])
             );
 
             return redirect()->route('payment.qr', ['orderId' => $order->ord_code]);
@@ -310,6 +311,7 @@ class PaymentController extends Controller
 
     public function uploadSlip(Request $request, $orderCode)
     {
+        // ใช้ slip_image ตามที่โค้ดเก่าของคุณกำหนดไว้
         $request->validate(['slip_image' => 'required|image|max:5120']);
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
@@ -319,15 +321,16 @@ class PaymentController extends Controller
         }
 
         if ($request->hasFile('slip_image')) {
+            // เซฟรูปลงโฟลเดอร์ slips ใน public
             $path = $request->file('slip_image')->store('slips', 'public');
+
+            // อัปเดตข้อมูลสลิปและสถานะ
             $order->slip_path = $path;
-            $order->status_id = 2;
+            $order->status_id = 2; // สถานะชำระเงินแล้ว
             $order->save();
 
-            // 🌟 1. ดึงข้อมูลให้เป็นปัจจุบันที่สุด (ให้แน่ใจว่า slip_path บันทึกเรียบร้อย)
+            // 🌟 พระเอกอยู่ตรงนี้: รีเฟรชข้อมูลให้ชัวร์ และเรียก Job ส่ง API
             $order->refresh();
-
-            // 🌟 2. ยิง API เข้า CRM ได้เลย! ด่านตรวจสลิปใน Job จะเห็นว่ามีรูปแล้วและให้ผ่านแน่นอน
             \App\Jobs\SendOrderToApiJob::dispatchSync($order);
 
             return redirect()->route('orders.show', ['orderCode' => $order->ord_code])

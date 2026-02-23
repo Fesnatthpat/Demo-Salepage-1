@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log; // นำเข้า Carbon สำหรับจัดการวันที่
 
-class SendOrderToApiJob implements ShouldQueue
+class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่วคราวเพื่อให้ dd() แสดงผลบนหน้าเว็บได้
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -37,21 +37,20 @@ class SendOrderToApiJob implements ShouldQueue
     public function handle(): void
     {
         // 💡 คำแนะนำ: ในอนาคตควรย้าย URL กับ Token ไปไว้ในไฟล์ .env
-        // เช่น env('CRM_API_URL') เป็นต้น
         $apiUrl = 'https://demo.kawinbrothers.com/api/v1/create-order.php';
         $apiToken = 'cFVubW9zWUJyU3R4bDZhcXNiYjo1c21nNHJ1T1VDOVYzaHRabDNhdFNxVTcwN0RQVmpYUXUy';
 
-        // 1. ดึงข้อมูล SKU สินค้าทั้งหมดในครั้งเดียว (แก้ปัญหา N+1 Query)
+        // 1. ดึงข้อมูล SKU สินค้าทั้งหมดในครั้งเดียว
         $productIds = $this->order->details->pluck('pd_id')->toArray();
         $products = DB::table('product_salepage')
             ->whereIn('pd_sp_id', $productIds)
             ->get()
-            ->keyBy('pd_sp_id'); // จัดกลุ่มด้วย id เพื่อให้ค้นหาง่ายขึ้น
+            ->keyBy('pd_sp_id');
 
         $apiItems = [];
         foreach ($this->order->details as $detail) {
 
-            // ดึงข้อมูลสินค้าที่ Query มารอไว้แล้ว
+            // ดึงข้อมูลสินค้า
             $product = $products->get($detail->pd_id);
 
             $productSku = 'UNKNOWN';
@@ -59,18 +58,21 @@ class SendOrderToApiJob implements ShouldQueue
                 $productSku = $product->pd_sp_SKU ?? $product->pd_sp_code ?? 'UNKNOWN';
             }
 
-            if ($detail->option_name) {
-                $productSku .= '['.$detail->option_name.']';
-            }
+            // 🌟 พระเอกอยู่ตรงนี้: บังคับเติม [1] ต่อท้าย SKU เสมอ เพื่อให้เหมือน Postman ที่เทสผ่าน!
+            $productSku .= '[1]';
 
             $apiItems[] = [
+                // ส่งรหัสที่เติม [1] แล้วไปให้ CRM
                 'product_sku' => (string) $productSku,
+
                 'price_per_item' => (float) $detail->ordd_price,
-                'quantity' => (int) $detail->ordd_count,
+
+                // 🌟 บังคับจำนวนสินค้าเป็น 1 เสมอ เพื่อทดสอบโดยไม่ต้องสนหน้าเว็บ
+                'quantity' => 1,
             ];
         }
 
-        // ป้องกัน Error กรณี ord_date ไม่ได้ถูก Cast เป็น Datetime
+        // ป้องกัน Error วันที่
         $orderDateFormatted = Carbon::parse($this->order->ord_date)->format('Y-m-d H:i:s');
 
         // 2. จัดรูปแบบ Payload
@@ -91,7 +93,10 @@ class SendOrderToApiJob implements ShouldQueue
                 'phone_number2' => '',
                 'postal_code' => $this->addressData['postal_code'] ?? '',
                 'province' => $this->addressData['province'] ?? '',
-                'shipping_method' => $this->addressData['shipping_method'] ?? 'Standard Delivery',
+
+                // 🌟 สมมุติข้อมูลขนส่งไปเลย เพื่อทดสอบ
+                'shipping_method' => 'Shopee SPX Express',
+
                 'social_name' => '',
                 'store_name' => 'Sale Page',
                 'order_upload_status' => '',
@@ -106,8 +111,22 @@ class SendOrderToApiJob implements ShouldQueue
             $response = Http::withoutVerifying()
                 ->withToken($apiToken)
                 ->timeout(30)
-                ->asJson() // บังคับให้ส่งเป็น application/json
+                ->asJson()
                 ->post($apiUrl, $payload);
+
+            Log::channel('daily')->debug('CRM API Debug:', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+                'payload' => $payload,
+            ]);
+
+            // 🌟 แทรก dd() ตรงนี้ เพื่อดูผลลัพธ์ทันทีบนหน้าเว็บ
+            // dd([
+            //     'status' => $response->status(),
+            //     'crm_response' => $response->json(),
+            //     'sent_payload' => $payload,
+            //     'message' => 'ตรวจสอบข้อมูลได้ที่นี่เลยครับคู่หู!',
+            // ]);
 
             if ($response->successful()) {
                 Log::channel('daily')->info('✅ Successfully sent order to CRM: '.$this->order->ord_code, [
@@ -119,17 +138,11 @@ class SendOrderToApiJob implements ShouldQueue
                     'status' => $response->status(),
                     'response' => $response->body(),
                 ]);
-
-                // หากต้องการให้ Job นำกลับไปทำใหม่ เมื่อ API ปลายทางมีปัญหา
-                // $this->release(60); // ลองใหม่ในอีก 60 วินาที
             }
         } catch (\Exception $e) {
             Log::channel('daily')->critical('💥 Exception when sending order to CRM: '.$this->order->ord_code, [
                 'error' => $e->getMessage(),
             ]);
-
-            // ถ้าระบบพังเลย (เช่น เน็ตตัด) อาจจะให้ลองทำใหม่
-            // $this->release(60);
         }
     }
 }

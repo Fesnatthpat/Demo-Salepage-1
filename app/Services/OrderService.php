@@ -129,18 +129,24 @@ class OrderService
             $order->total_discount = $totalDiscount;
             $order->net_amount = $netAmount; // Now includes code discount
             $order->save();
-            // --- End Fix ---
 
             // Clear the cart after successful order creation
-            // This logic should be in CartService, but for now we'll leave it
             Cart::session($user->id)->clear();
             CartStorage::where('user_id', $user->id)->delete();
-            if (empty($user->id)) {
-                Cart::session($user->id)->clear();
-            }
+
+            // 3. เตรียมข้อมูลที่อยู่สำหรับส่งไป CRM
+            $addressData = [
+                'province' => $deliveryAddress->province->name_th ?? '',
+                'amphure' => $deliveryAddress->amphure->name_th ?? '',
+                'district' => $deliveryAddress->district->name_th ?? '',
+                'postal_code' => $deliveryAddress->zipcode ?? '',
+                'customer_name' => $deliveryAddress->fullname ?? $user->name ?? 'ลูกค้าทั่วไป',
+                'payment_method' => $data['payment_method'] ?? 'PromptPay',
+                'shipping_method' => 'Standard Delivery',
+            ];
 
             // Dispatch the job to send order data to the external API
-            SendOrderToApiJob::dispatch($order);
+            SendOrderToApiJob::dispatch($order, $addressData);
 
             return $order;
         });

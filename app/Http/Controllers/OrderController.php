@@ -7,7 +7,6 @@ use App\Models\OrderDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -22,7 +21,7 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10); // แบ่งหน้า หน้าละ 10 รายการ
 
-        // ✅ ชี้ไปที่ไฟล์ resources/views/orderhistory.blade.php
+        // ชี้ไปที่ไฟล์ resources/views/orderhistory.blade.php
         return view('orderhistory', compact('orders'));
     }
 
@@ -34,20 +33,26 @@ class OrderController extends Controller
         // ค้นหาออเดอร์จาก ord_code ถ้าไม่พบจะแสดงหน้า 404 Not Found
         $order = Order::where('ord_code', $ord_code)->firstOrFail();
 
-        // ✅ ชี้ไปที่ไฟล์ resources/views/orderdetail.blade.php
+        // ชี้ไปที่ไฟล์ resources/views/orderdetail.blade.php
         return view('orderdetail', compact('order'));
     }
 
     /**
-     * บันทึกคำสั่งซื้อใหม่ และส่ง API เข้า CRM
+     * บันทึกคำสั่งซื้อใหม่ และส่ง API เข้า CRM ทันที
      */
     public function store(Request $request)
     {
-        // 1. ตรวจสอบข้อมูลเบื้องต้น
+        // 1. ตรวจสอบข้อมูลเบื้องต้นให้ครอบคลุม เพื่อป้องกัน Error
         $request->validate([
             'phone' => 'required|string',
             'address' => 'required|string',
             'cart_items' => 'required|array',
+            'customer_name' => 'nullable|string|max:255',
+            'total_price' => 'nullable|numeric|min:0',
+            'province' => 'nullable|string',
+            'amphure' => 'nullable|string',
+            'district' => 'nullable|string',
+            'postal_code' => 'nullable|string',
         ]);
 
         try {
@@ -58,15 +63,15 @@ class OrderController extends Controller
                 'user_id' => Auth::id() ?? 0,
                 'ord_date' => now(),
                 'ord_code' => 'ORD-'.strtoupper(uniqid()),
+                'shipping_name' => $request->customer_name ?? 'ลูกค้าทั่วไป',
                 'shipping_phone' => $request->phone,
                 'shipping_address' => $request->address,
                 'total_price' => $request->total_price ?? 0,
-                'status' => 'pending',
+                'net_amount' => $request->total_price ?? 0,
+                'status_id' => 1, // Default pending status
             ]);
 
-            $apiItems = [];
-
-            // 3. บันทึกรายละเอียดสินค้าและเตรียมข้อมูล SKU ให้ตรงกับ CRM
+            // บันทึกรายละเอียดสินค้า
             foreach ($request->cart_items as $item) {
                 $item = (object) $item;
                 $attributes = (object) ($item->attributes ?? []);
@@ -89,96 +94,33 @@ class OrderController extends Controller
                     'ordd_discount' => $attributes->discount ?? 0,
                     'ordd_create_date' => now(),
                 ]);
-
-                // ค้นหา SKU ที่ถูกต้องจากตาราง product_salepage
-                $product = DB::table('product_salepage')->where('pd_sp_id', $productId)->first();
-                $productSku = 'UNKNOWN'; // ✅ Default SKU
-                if ($product) {
-                    $productSku = $product->pd_sp_SKU ?? $product->pd_sp_code ?? 'UNKNOWN';
-                } else {
-                    Log::warning("SKU not found for product_id: {$productId}");
-                }
-
-                if ($optionName) {
-                    $productSku .= '['.$optionName.']';
-                }
-
-                $apiItems[] = [
-                    'product_sku' => (string) $productSku,
-                    'price_per_item' => (float) $item->price,
-                    'quantity' => (int) $item->quantity,
-                ];
             }
 
             DB::commit();
 
-            // 4. เตรียมข้อมูล Payload สำหรับ CRM (✅ ครอบด้วย Array [] ชั้นนอกสุดให้เหมือน Postman)
-            $payload = [
-                [
-                    'address' => $request->address,
-                    'amphure' => $request->amphure ?? '',
-                    'channel_name' => 'Sale Page',
-                    'customer_name' => $request->customer_name ?? 'ลูกค้าทั่วไป',
-                    'district' => $request->district ?? '',
-                    'net_amount' => (float) ($request->total_price ?? 0),
-                    'order_date' => now()->format('Y-m-d H:i:s'),
-                    'order_id' => $order->ord_code,
-                    'tracking_number' => '',
-                    'payment_date' => now()->format('Y-m-d H:i:s'),
-                    'payment_method' => $request->payment_method ?? 'Prepaid',
-                    'phone_number1' => $request->phone,
-                    'phone_number2' => '',
-                    'postal_code' => $request->postal_code ?? '',
-                    'province' => $request->province ?? '',
-                    'shipping_method' => $request->shipping_method ?? 'Standard Delivery',
-                    'social_name' => '',
-                    'store_name' => 'Sale Page',
-                    'order_upload_status' => '',
-                    'comp_id' => 1,
-                    'items' => $apiItems,
-                ],
+            // 3. เตรียมข้อมูลที่อยู่สำหรับส่งไป CRM
+            $addressData = [
+                'province' => $request->province ?? '',
+                'amphure' => $request->amphure ?? '',
+                'district' => $request->district ?? '',
+                'postal_code' => $request->postal_code ?? '',
+                'customer_name' => $request->customer_name ?? 'ลูกค้าทั่วไป',
+                'payment_method' => $request->payment_method ?? 'Prepaid',
+                'shipping_method' => $request->shipping_method ?? 'Standard Delivery',
             ];
 
-            // 5. ยิง API และบันทึก Log อย่างละเอียด
-            try {
-                // Token ของคุณ
-                $apiToken = 'cFVubW9zWUJyU3R4bDZhcXNiYjo1c21nNHJ1T1VDOVYzaHRabDNhdFNxVTcwN0RQVmpYUXUy';
+            // 4. ⭐ ส่งข้อมูลเข้า CRM ทันที (ไม่ต้องรอคิว) โดยใช้ dispatchSync ⭐
+            \App\Jobs\SendOrderToApiJob::dispatchSync($order, $addressData);
 
-                // ✅ 5.1: Log ข้อมูลทั้งหมดที่จะส่งไป
-                Log::channel('daily')->info('CRM Payload for Order: '.$order->ord_code, $payload);
-
-                $response = Http::withoutVerifying()    // ป้องกันปัญหา SSL error ใน Localhost
-                    ->withToken($apiToken)  // ✅ แนบ Token เข้าไปใน Header แบบ Bearer
-                    ->timeout(15)
-                    ->asJson() // บังคับส่งแบบ Content-Type: application/json
-                    ->post('https://demo.kawinbrothers.com/api/v1/create-order.php', $payload);
-
-                // ✅ 5.2: Log คำตอบทั้งหมดที่ได้รับจาก CRM เสมอ
-                Log::channel('daily')->info('CRM Response for Order: '.$order->ord_code, [
-                    'status' => $response->status(),
-                    'headers' => $response->headers(),
-                    'body' => $response->json() ?? $response->body(),
-                ]);
-
-                if ($response->successful()) {
-                    Log::channel('daily')->info('✅ CRM Task Completed Successfully for Order: '.$order->ord_code);
-                } else {
-                    Log::channel('daily')->error('❌ CRM Task Failed with non-2xx status for Order: '.$order->ord_code);
-                }
-            } catch (\Exception $apiError) {
-                // ✅ 5.3: Log Error กรณีที่เชื่อมต่อไม่ได้
-                Log::channel('daily')->error('💥 API Connection Failed for Order: '.$order->ord_code, [
-                    'message' => $apiError->getMessage(),
-                    'trace' => $apiError->getTraceAsString(),
-                ]);
-            }
-
-            // 6. เมื่อทำงานเสร็จ ให้ส่งกลับไปหน้าประวัติ/รายละเอียดออเดอร์
+            // 5. เมื่อทำงานเสร็จ ให้ส่งกลับไปหน้าประวัติ/รายละเอียดออเดอร์
             return redirect()->route('orders.show', $order->ord_code)
                 ->with('success', 'สั่งซื้อสินค้าเรียบร้อยแล้ว');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // บันทึก Log เอาไว้เผื่อมีปัญหา จะได้ตามหาสาเหตุเจอ
+            Log::error('Order Creation Failed: '.$e->getMessage());
 
             return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }

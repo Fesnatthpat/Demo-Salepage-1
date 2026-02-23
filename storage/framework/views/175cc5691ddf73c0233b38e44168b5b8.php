@@ -1,173 +1,185 @@
-<?php $__env->startSection('title', 'จัดการคำสั่งซื้อ'); ?>
+<?php $__env->startSection('title', 'จัดการออเดอร์'); ?>
+<?php $__env->startSection('page-title', 'รายการออเดอร์ทั้งหมด'); ?>
+
+<?php $__env->startSection('styles'); ?>
+    <style>
+        .slip-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: transform 0.2s;
+            border: 1px solid #4b5563;
+            /* gray-600 */
+        }
+
+        .slip-thumbnail:hover {
+            transform: scale(1.1);
+            border-color: #10b981;
+            /* emerald-500 */
+        }
+    </style>
+<?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('content'); ?>
-    <div class="container mx-auto px-4 sm:px-8 py-8">
-
-        
-        <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-8">
-            <div>
-                <h2 class="text-3xl font-bold text-white tracking-tight">รายการคำสั่งซื้อ (Orders)</h2>
-                <p class="text-gray-400 mt-2 text-sm">ตรวจสอบและจัดการรายการสั่งซื้อทั้งหมดในระบบ</p>
+    <div class="card bg-gray-800 shadow-lg border border-gray-700">
+        <div class="card-body">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <h2 class="card-title text-gray-100">ออเดอร์ทั้งหมด <span
+                        class="text-gray-500 text-sm font-normal">(<?php echo e($orders->total()); ?>)</span></h2>
+                <form action="<?php echo e(route('admin.orders.index')); ?>" method="GET">
+                    <div class="form-control">
+                        <div class="relative">
+                            <input type="text" name="search" placeholder="ค้นหา รหัส, ชื่อลูกค้า..."
+                                class="input input-bordered w-full sm:w-64 pr-10 bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
+                                value="<?php echo e(request('search')); ?>">
+                            <button type="submit"
+                                class="absolute top-0 right-0 rounded-l-none btn btn-square btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            
-            <div class="flex items-center gap-2">
-                <span class="px-4 py-2 bg-gray-800 rounded-lg border border-gray-700 text-gray-300 text-sm shadow-sm">
-                    <i class="fas fa-list-ul mr-2 text-emerald-500"></i> ทั้งหมด: <span
-                        class="font-bold text-white"><?php echo e($orders->total()); ?></span> รายการ
-                </span>
-            </div>
-        </div>
 
-        
-        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
-            <div
-                class="mb-6 flex items-center gap-3 rounded-xl bg-green-500/10 border border-green-500/20 p-4 text-green-400 backdrop-blur-sm shadow-lg">
-                <i class="fas fa-check-circle text-xl"></i>
-                <span class="font-medium"><?php echo e(session('success')); ?></span>
-            </div>
-        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <div class="mb-4 overflow-x-auto">
+                <div class="join bg-gray-700 p-1 rounded-lg border border-gray-600">
+                    
+                    <a href="<?php echo e(route('admin.orders.index', array_merge(request()->except('status'), ['status' => 'all']))); ?>"
+                        class="join-item btn btn-sm border-none <?php echo e(!request('status') || request('status') == 'all' ? 'bg-emerald-600 text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-600'); ?>">
+                        ทั้งหมด
+                    </a>
+                    
+                    <?php
+                        $statusOptions = [
+                            1 => 'รอชำระเงิน',
+                            2 => 'กำลังดำเนินการ',
+                            3 => 'จัดส่งแล้ว',
+                            4 => 'สำเร็จ',
+                            5 => 'ยกเลิก',
+                        ];
+                    ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $statusOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $text): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                        <a href="<?php echo e(route('admin.orders.index', array_merge(request()->except('status'), ['status' => $id]))); ?>"
+                            class="join-item btn btn-sm border-none <?php echo e(request('status') == $id ? 'bg-emerald-600 text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-gray-600'); ?>">
+                            <?php echo e($text); ?>
 
-        
-        <div class="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
+                        </a>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
-                <table class="w-full whitespace-nowrap text-left">
+                <table class="table w-full text-gray-300">
                     <thead>
-                        <tr
-                            class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wider font-semibold border-b border-gray-700">
-                            <th class="px-6 py-4">รหัสออเดอร์</th>
-                            <th class="px-6 py-4">วันที่สั่งซื้อ</th>
-                            <th class="px-6 py-4">ข้อมูลลูกค้า</th>
-                            <th class="px-6 py-4 text-right">ยอดรวม</th>
-                            <th class="px-6 py-4 text-center">สถานะ</th>
-                            <th class="px-6 py-4 text-center">จัดการ</th>
+                        <tr class="border-b border-gray-700 bg-gray-900/50 text-gray-400">
+                            <th>รหัสออเดอร์</th>
+                            <th>ลูกค้า</th>
+                            <th class="text-right">ยอดรวม</th>
+                            <th class="text-right">ส่วนลด</th>
+                            <th class="text-right">ยอดสุทธิ</th>
+                            <th class="text-center">สลิป</th>
+                            <th class="text-center">สถานะ</th>
+                            <th>วันที่สั่งซื้อ</th>
+                            <th></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-700">
+                    <tbody>
+                        <?php
+                            $statusMap = [
+                                1 => 'รอชำระเงิน',
+                                2 => 'แจ้งชำระเงินแล้ว',
+                                3 => 'กำลังเตรียมจัดส่ง',
+                                4 => 'จัดส่งแล้ว',
+                                5 => 'ยกเลิก',
+                            ];
+                        ?>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                            <tr class="group hover:bg-gray-700/30 transition-colors duration-200">
-                                
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                            <i class="fas fa-box"></i>
-                                        </div>
-                                        <span class="font-mono font-bold text-blue-400 group-hover:underline">
-                                            <?php echo e($order->ord_code); ?>
-
-                                        </span>
-                                    </div>
-                                </td>
-
-                                
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col text-sm">
-                                        <span class="text-gray-200 font-medium">
-                                            <?php echo e(\Carbon\Carbon::parse($order->ord_date)->format('d/m/Y')); ?>
-
-                                        </span>
-                                        <span class="text-gray-500 text-xs">
-                                            <?php echo e(\Carbon\Carbon::parse($order->ord_date)->format('H:i')); ?> น.
-                                        </span>
-                                    </div>
-                                </td>
-
-                                
-                                <td class="px-6 py-4 text-sm text-gray-300">
+                            <tr class="border-b border-gray-700 hover:bg-gray-700/50 transition-colors group">
+                                <td class="align-middle">
                                     <div class="flex items-center gap-2">
-                                        <i class="fas fa-user-circle text-gray-500 text-lg"></i>
-                                        
-                                        <span><?php echo e($order->user->name ?? ($order->shipping_phone ?? 'Guest')); ?></span>
+                                        <span class="font-mono font-semibold text-emerald-400"><?php echo e($order->ord_code); ?></span>
+                                        <button onclick="copyToClipboard('<?php echo e($order->ord_code); ?>')"
+                                            class="btn btn-ghost btn-xs btn-square text-gray-500 hover:text-emerald-400 hover:bg-gray-700"
+                                            title="คลิกเพื่อคัดลอก">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </td>
-
-                                
-                                <td class="px-6 py-4 text-right">
-                                    <span class="font-mono font-bold text-emerald-400 text-lg">
-                                        ฿<?php echo e(number_format($order->total_price, 2)); ?>
-
-                                    </span>
+                                <td class="align-middle">
+                                    <div class="font-bold text-gray-200"><?php echo e($order->shipping_name); ?></div>
+                                    <div class="text-sm text-gray-500"><?php echo e($order->user->email ?? 'N/A'); ?></div>
                                 </td>
+                                <td class="align-middle text-right text-gray-400">
+                                    ฿<?php echo e(number_format($order->total_price, 2)); ?></td>
+                                <td class="align-middle text-right text-red-400">
+                                    -฿<?php echo e(number_format($order->total_discount, 2)); ?></td>
+                                <td class="align-middle text-right font-bold text-emerald-400">
+                                    ฿<?php echo e(number_format($order->net_amount, 2)); ?>
 
-                                
-                                <td class="px-6 py-4 text-center">
-                                    <?php
-                                        // ตั้งค่าสีป้ายสถานะ (Badge)
-                                        $statusConfig = match ($order->status_id) {
-                                            1 => [
-                                                'class' => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-                                                'icon' => 'far fa-clock',
-                                                'label' => 'รอชำระเงิน',
-                                            ],
-                                            2 => [
-                                                'class' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-                                                'icon' => 'fas fa-check',
-                                                'label' => 'ชำระแล้ว',
-                                            ],
-                                            3 => [
-                                                'class' => 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-                                                'icon' => 'fas fa-box-open',
-                                                'label' => 'เตรียมจัดส่ง',
-                                            ],
-                                            4 => [
-                                                'class' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                                                'icon' => 'fas fa-shipping-fast',
-                                                'label' => 'จัดส่งแล้ว',
-                                            ],
-                                            5 => [
-                                                'class' => 'bg-red-500/10 text-red-400 border-red-500/20',
-                                                'icon' => 'fas fa-times',
-                                                'label' => 'ยกเลิก',
-                                            ],
-                                            default => [
-                                                'class' => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
-                                                'icon' => 'fas fa-question',
-                                                'label' => $order->status,
-                                            ],
-                                        };
-
-                                        // เผื่อกรณีเก็บ status เป็น string (pending, paid)
-                                        if ($order->status == 'pending') {
-                                            $statusConfig = [
-                                                'class' => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-                                                'icon' => 'far fa-clock',
-                                                'label' => 'รอชำระเงิน',
-                                            ];
-                                        }
-                                        if ($order->status == 'paid') {
-                                            $statusConfig = [
-                                                'class' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-                                                'icon' => 'fas fa-check',
-                                                'label' => 'ชำระแล้ว',
-                                            ];
-                                        }
-                                    ?>
-
+                                </td>
+                                <td class="align-middle text-center">
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($order->slip_path): ?>
+                                        <img src="<?php echo e(asset('storage/' . $order->slip_path)); ?>" alt="Slip"
+                                            class="slip-thumbnail bg-gray-700"
+                                            data-slip-src="<?php echo e(asset('storage/' . $order->slip_path)); ?>">
+                                    <?php else: ?>
+                                        <span class="text-xs text-gray-600">ไม่มีรูป</span>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                </td>
+                                <td class="align-middle text-center">
                                     <span
-                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border <?php echo e($statusConfig['class']); ?>">
-                                        <i class="<?php echo e($statusConfig['icon']); ?>"></i> <?php echo e($statusConfig['label']); ?>
+                                        class="badge border-none text-xs font-medium px-3 py-3
+                                    <?php switch($order->status_id):
+                                        case (1): ?> bg-yellow-900/50 text-yellow-300 <?php break; ?>
+                                        <?php case (2): ?> bg-blue-900/50 text-blue-300 <?php break; ?>
+                                        <?php case (3): ?> bg-indigo-900/50 text-indigo-300 <?php break; ?>
+                                        <?php case (4): ?> bg-emerald-900/50 text-emerald-300 <?php break; ?>
+                                        <?php case (5): ?> bg-red-900/50 text-red-300 <?php break; ?>
+                                        <?php default: ?> bg-gray-700 text-gray-400
+                                    <?php endswitch; ?>">
+                                        <?php echo e($statusMap[$order->status_id] ?? 'ไม่ทราบสถานะ'); ?>
 
                                     </span>
                                 </td>
-
-                                
-                                <td class="px-6 py-4 text-center">
-                                    <a href="<?php echo e(route('orders.show', $order->ord_code)); ?>"
-                                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gray-700 text-gray-400 hover:bg-emerald-600 hover:text-white hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-200"
-                                        title="ดูรายละเอียด">
-                                        <i class="fas fa-eye"></i>
+                                <td class="align-middle text-gray-400"><?php echo e($order->ord_date->format('d M Y, H:i')); ?></td>
+                                <td class="align-middle">
+                                    <a href="<?php echo e(route('admin.orders.show', $order)); ?>"
+                                        class="text-blue-400 font-semibold hover:text-blue-300 hover:underline flex items-center gap-1 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        ดู
                                     </a>
                                 </td>
                             </tr>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                            
                             <tr>
-                                <td colspan="6" class="py-20 text-center">
-                                    <div class="flex flex-col items-center justify-center text-gray-500">
-                                        <div class="mb-4 rounded-full bg-gray-700/50 p-6">
-                                            <i class="fas fa-box-open text-4xl opacity-50"></i>
-                                        </div>
-                                        <p class="text-lg font-medium">ยังไม่มีรายการสั่งซื้อเข้ามา</p>
+                                <td colspan="9" class="text-center py-12 text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-700 mb-3"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('search')): ?>
+                                            ไม่พบออเดอร์ที่ตรงกับ "<?php echo e(request('search')); ?>"
+                                        <?php else: ?>
+                                            ยังไม่มีข้อมูลออเดอร์ในระบบ
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
@@ -176,15 +188,95 @@
                 </table>
             </div>
 
-            
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($orders->hasPages()): ?>
-                <div class="border-t border-gray-700 bg-gray-800 px-6 py-4">
-                    <?php echo e($orders->links()); ?>
+            <div class="mt-8">
+                <?php echo e($orders->appends(request()->query())->links()); ?>
 
-                </div>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
         </div>
     </div>
+
+    
+    <div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; pointer-events: none;">
+        <img src="" alt="Slip Preview"
+            style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); background-color: #1f2937; border: 2px solid #374151;">
+    </div>
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    background: '#1f2937',
+                    color: '#fff',
+                    timerProgressBar: false,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: 'คัดลอกรหัสออเดอร์แล้ว'
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('slip-preview-modal');
+            if (!modal) return;
+
+            const modalImage = modal.querySelector('img');
+            const thumbnails = document.querySelectorAll('.slip-thumbnail');
+            let hideTimeout;
+
+            thumbnails.forEach(thumb => {
+                thumb.addEventListener('mouseenter', (e) => {
+                    clearTimeout(hideTimeout);
+                    const rect = e.target.getBoundingClientRect();
+                    modalImage.src = e.target.dataset.slipSrc;
+                    modal.style.opacity = 0;
+                    modal.style.display = 'block';
+                    modal.style.transition = 'opacity 0.2s ease-in-out';
+
+                    setTimeout(() => {
+                        const modalRect = modal.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+                        const margin = 15;
+
+                        let top = rect.top;
+                        let left = rect.right + margin;
+
+                        if (left + modalRect.width > viewportWidth - margin) {
+                            left = rect.left - modalRect.width - margin;
+                        }
+                        if (top + modalRect.height > viewportHeight - margin) {
+                            top = viewportHeight - modalRect.height - margin;
+                        }
+                        if (top < margin) top = margin;
+                        if (left < margin) left = margin;
+
+                        modal.style.top = `${top}px`;
+                        modal.style.left = `${left}px`;
+                        modal.style.opacity = 1;
+                    }, 10);
+                });
+
+                thumb.addEventListener('mouseleave', () => {
+                    hideTimeout = setTimeout(() => {
+                        modal.style.opacity = 0;
+                        setTimeout(() => modal.style.display = 'none', 200);
+                    }, 100);
+                });
+            });
+        });
+    </script>
+<?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/orders/index.blade.php ENDPATH**/ ?>

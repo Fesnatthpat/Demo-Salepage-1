@@ -36,11 +36,19 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
      */
     public function handle(): void
     {
-        // 💡 คำแนะนำ: ในอนาคตควรย้าย URL กับ Token ไปไว้ในไฟล์ .env
-        $apiUrl = 'https://demo.kawinbrothers.com/api/v1/create-order.php';
-        $apiToken = 'cFVubW9zWUJyU3R4bDZhcXNiYjo1c21nNHJ1T1VDOVYzaHRabDNhdFNxVTcwN0RQVmpYUXUy';
+        // 🌟 1. ด่านตรวจสลิป: ตรวจสอบก่อนเลยว่ามีการแนบสลิปมาหรือไม่
+        if (empty($this->order->slip_path)) {
+            // ถ้าไม่มีสลิป ให้บันทึก Log แจ้งเตือนไว้ แล้วหยุดการทำงานทันที
+            Log::channel('daily')->info('⏳ ระงับการส่ง CRM: ออเดอร์ '.$this->order->ord_code.' ยังไม่ได้แนบสลิป');
 
-        // 1. ดึงข้อมูล SKU สินค้าทั้งหมดในครั้งเดียว
+            return;
+        }
+
+        // ดึงข้อมูล URL และ Token มาจากไฟล์ .env
+        $apiUrl = env('CRM_API_URL');
+        $apiToken = env('CRM_API_TOKEN');
+
+        // 2. ดึงข้อมูล SKU สินค้าทั้งหมดในครั้งเดียว
         $productIds = $this->order->details->pluck('pd_id')->toArray();
         $products = DB::table('product_salepage')
             ->whereIn('pd_sp_id', $productIds)
@@ -92,7 +100,7 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
             $maskedName = 'ลูกค้าทั่วไป';
         }
 
-        // 2. จัดรูปแบบ Payload
+        // 3. จัดรูปแบบ Payload
         $payload = [
             [
                 'address' => $this->order->shipping_address,
@@ -166,3 +174,4 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
         }
     }
 }
+    

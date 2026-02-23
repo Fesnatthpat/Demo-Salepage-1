@@ -324,8 +324,14 @@ class PaymentController extends Controller
             $order->status_id = 2;
             $order->save();
 
+            // 🌟 1. ดึงข้อมูลให้เป็นปัจจุบันที่สุด (ให้แน่ใจว่า slip_path บันทึกเรียบร้อย)
+            $order->refresh();
+
+            // 🌟 2. ยิง API เข้า CRM ได้เลย! ด่านตรวจสลิปใน Job จะเห็นว่ามีรูปแล้วและให้ผ่านแน่นอน
+            \App\Jobs\SendOrderToApiJob::dispatchSync($order);
+
             return redirect()->route('orders.show', ['orderCode' => $order->ord_code])
-                ->with('success', 'แนบสลิปเรียบร้อยแล้ว');
+                ->with('success', 'แนบสลิปเรียบร้อยแล้ว ข้อมูลถูกส่งไป CRM สำเร็จ!');
         }
 
         return back()->with('error', 'อัปโหลดไม่สำเร็จ');

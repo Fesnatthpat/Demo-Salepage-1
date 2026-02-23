@@ -16,12 +16,10 @@ class OrderController extends Controller
      */
     public function index()
     {
-        // ดึงข้อมูลรายการคำสั่งซื้อของ User ที่ Login อยู่ เรียงจากล่าสุดไปเก่าสุด
         $orders = Order::where('user_id', Auth::id() ?? 0)
             ->orderBy('created_at', 'desc')
-            ->paginate(10); // แบ่งหน้า หน้าละ 10 รายการ
+            ->paginate(10);
 
-        // ชี้ไปที่ไฟล์ resources/views/orderhistory.blade.php
         return view('orderhistory', compact('orders'));
     }
 
@@ -30,19 +28,15 @@ class OrderController extends Controller
      */
     public function show($ord_code)
     {
-        // ค้นหาออเดอร์จาก ord_code ถ้าไม่พบจะแสดงหน้า 404 Not Found
         $order = Order::where('ord_code', $ord_code)->firstOrFail();
-
-        // ชี้ไปที่ไฟล์ resources/views/orderdetail.blade.php
         return view('orderdetail', compact('order'));
     }
 
     /**
-     * บันทึกคำสั่งซื้อใหม่ และส่ง API เข้า CRM ทันที
+     * บันทึกคำสั่งซื้อใหม่ (ตอนลูกค้ากดสั่งซื้อครั้งแรก)
      */
     public function store(Request $request)
     {
-        // 1. ตรวจสอบข้อมูลเบื้องต้นให้ครอบคลุม เพื่อป้องกัน Error
         $request->validate([
             'phone' => 'required|string',
             'address' => 'required|string',
@@ -58,7 +52,6 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // 2. บันทึก Order ลงฐานข้อมูลเราเองก่อน
             $order = Order::create([
                 'user_id' => Auth::id() ?? 0,
                 'ord_date' => now(),
@@ -68,10 +61,9 @@ class OrderController extends Controller
                 'shipping_address' => $request->address,
                 'total_price' => $request->total_price ?? 0,
                 'net_amount' => $request->total_price ?? 0,
-                'status_id' => 1, // Default pending status
+                'status_id' => 1, // สถานะรอดำเนินการ/รอชำระเงิน
             ]);
 
-            // บันทึกรายละเอียดสินค้า
             foreach ($request->cart_items as $item) {
                 $item = (object) $item;
                 $attributes = (object) ($item->attributes ?? []);
@@ -98,7 +90,6 @@ class OrderController extends Controller
 
             DB::commit();
 
-            // 3. เตรียมข้อมูลที่อยู่สำหรับส่งไป CRM
             $addressData = [
                 'province' => $request->province ?? '',
                 'amphure' => $request->amphure ?? '',
@@ -106,24 +97,56 @@ class OrderController extends Controller
                 'postal_code' => $request->postal_code ?? '',
                 'customer_name' => $request->customer_name ?? 'ลูกค้าทั่วไป',
                 'payment_method' => $request->payment_method ?? 'Prepaid',
-                'shipping_method' => $request->shipping_method ?? 'Standard Delivery',
+                'shipping_method' => $request->shipping_method ?? 'Shopee SPX Express',
             ];
 
-            // 4. ⭐ ส่งข้อมูลเข้า CRM ทันที (ไม่ต้องรอคิว) โดยใช้ dispatchSync ⭐
+            // 💡 เรียก Job ส่ง CRM ไว้ตรงนี้ได้เลย (เพราะเราเขียนด่านตรวจสลิปดักไว้ใน Job แล้ว มันจะเบรกตัวเองถ้ายังไม่มีสลิป)
             \App\Jobs\SendOrderToApiJob::dispatchSync($order, $addressData);
 
-            // 5. เมื่อทำงานเสร็จ ให้ส่งกลับไปหน้าประวัติ/รายละเอียดออเดอร์
             return redirect()->route('orders.show', $order->ord_code)
-                ->with('success', 'สั่งซื้อสินค้าเรียบร้อยแล้ว');
+                ->with('success', 'สร้างคำสั่งซื้อเรียบร้อยแล้ว กรุณาแนบสลิปเพื่อยืนยัน');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // บันทึก Log เอาไว้เผื่อมีปัญหา จะได้ตามหาสาเหตุเจอ
             Log::error('Order Creation Failed: '.$e->getMessage());
-
             return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }
+    }
+
+    /**
+     * 🌟 [เพิ่มใหม่] ฟังก์ชันสำหรับอัปโหลดสลิป และส่งข้อมูลเข้า CRM!
+     */
+    public function uploadSlip(Request $request, $ord_code)
+    {
+        // 1. ตรวจสอบว่าแนบไฟล์รูปมาจริงๆ
+        $request->validate([
+            'slip' => 'required|image|mimes:jpeg,png,jpg|max:5120', // รับรูปขนาดไม่เกิน 5MB
+        ]);
+
+        // 2. หาออเดอร์ที่ต้องการแนบสลิป
+        $order = Order::where('ord_code', $ord_code)->firstOrFail();
+
+        try {
+            if ($request->hasFile('slip')) {
+                // 3. เซฟรูปลงโฟลเดอร์ slips ใน public
+                $path = $request->file('slip')->store('slips', 'public');
+                
+                // 4. อัปเดตฐานข้อมูล
+                $order->slip_path = $path;
+                $order->status_id = 2; // (ปรับตัวเลขตามที่คุณใช้) สมมติว่า 2 คือสถานะ 'ชำระเงินแล้ว'
+                $order->save();
+
+                // 🌟 5. พระเอกอยู่ตรงนี้: สั่งยิงข้อมูลเข้า CRM ทันทีที่อัปโหลดสลิปเสร็จ!!
+                \App\Jobs\SendOrderToApiJob::dispatchSync($order);
+
+                return back()->with('success', 'อัปโหลดสลิปเรียบร้อย ข้อมูลกำลังส่งไปยังระบบหลังบ้าน!');
+            }
+        } catch (\Exception $e) {
+            Log::error('Slip Upload Failed: '.$e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดสลิป: '.$e->getMessage());
+        }
+
+        return back()->with('error', 'กรุณาอัปโหลดไฟล์สลิป');
     }
 
     /**

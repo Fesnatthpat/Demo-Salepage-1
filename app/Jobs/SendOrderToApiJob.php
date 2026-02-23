@@ -58,7 +58,7 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
                 $productSku = $product->pd_sp_SKU ?? $product->pd_sp_code ?? 'UNKNOWN';
             }
 
-            // 🌟 พระเอกอยู่ตรงนี้: บังคับเติม [1] ต่อท้าย SKU เสมอ เพื่อให้เหมือน Postman ที่เทสผ่าน!
+            // 🌟 บังคับเติม [1] ต่อท้าย SKU เสมอ เพื่อให้เหมือน Postman ที่เทสผ่าน!
             $productSku .= '[1]';
 
             $apiItems[] = [
@@ -75,13 +75,33 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
         // ป้องกัน Error วันที่
         $orderDateFormatted = Carbon::parse($this->order->ord_date)->format('Y-m-d H:i:s');
 
+        // 🌟 ระบบเซ็นเซอร์ชื่อลูกค้า (Masking Name)
+        $realName = trim($this->order->shipping_name);
+        $nameLength = mb_strlen($realName, 'UTF-8');
+
+        if ($nameLength > 2) {
+            // ดึงตัวอักษรแรก และ ตัวอักษรสุดท้าย คั่นด้วย ******
+            $firstChar = mb_substr($realName, 0, 1, 'UTF-8');
+            $lastChar = mb_substr($realName, -1, 1, 'UTF-8');
+            $maskedName = $firstChar.'******'.$lastChar;
+        } elseif ($nameLength > 0) {
+            // ถ้าชื่อสั้นมาก ให้เอาดาวต่อท้ายเลย
+            $firstChar = mb_substr($realName, 0, 1, 'UTF-8');
+            $maskedName = $firstChar.'******';
+        } else {
+            $maskedName = 'ลูกค้าทั่วไป';
+        }
+
         // 2. จัดรูปแบบ Payload
         $payload = [
             [
                 'address' => $this->order->shipping_address,
                 'amphure' => $this->addressData['amphure'] ?? '',
                 'channel_name' => 'Sale Page',
-                'customer_name' => $this->order->shipping_name,
+
+                // ✅ ส่งชื่อที่ถูกเซ็นเซอร์ไปให้ CRM
+                'customer_name' => $maskedName,
+
                 'district' => $this->addressData['district'] ?? '',
                 'net_amount' => (float) $this->order->net_amount,
                 'order_date' => $orderDateFormatted,
@@ -120,7 +140,7 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
                 'payload' => $payload,
             ]);
 
-            // 🌟 แทรก dd() ตรงนี้ เพื่อดูผลลัพธ์ทันทีบนหน้าเว็บ
+            // 🌟 แทรก dd() ตรงนี้ เพื่อดูผลลัพธ์ทันทีบนหน้าเว็บ (เอาคอมเมนต์ออกถ้าอยากให้โชว์จอดำ)
             // dd([
             //     'status' => $response->status(),
             //     'crm_response' => $response->json(),
@@ -134,13 +154,13 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
                     'response' => $response->json(),
                 ]);
             } else {
-                Log::channel('daily')->error('❌ Failed to send order to CRM: '.$this->order->ord_code, [
+                Log::channel('daily')->error('Failed to send order to CRM: '.$this->order->ord_code, [
                     'status' => $response->status(),
                     'response' => $response->body(),
                 ]);
             }
         } catch (\Exception $e) {
-            Log::channel('daily')->critical('💥 Exception when sending order to CRM: '.$this->order->ord_code, [
+            Log::channel('daily')->critical('Exception when sending order to CRM: '.$this->order->ord_code, [
                 'error' => $e->getMessage(),
             ]);
         }

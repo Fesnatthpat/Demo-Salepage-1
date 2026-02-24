@@ -151,14 +151,15 @@ class HomepageContentController extends Controller
         if ($imageFile) {
             $path = $imageFile->store('public/homepage_images'); // Store image in storage/app/public/homepage_images
             $newValue = Storage::url($path); // Get public URL
-            // If the field is a nested image within 'data', we need to prepare the data array
+            
             if (str_starts_with($field, 'data.')) {
-                $homepageContent->data = $homepageContent->data ?? [];
-                data_set($homepageContent->data, substr($field, 5), $newValue);
-                $homepageContent->data = json_decode(json_encode($homepageContent->data)); // Ensure it's stored as JSON
+                $data = $homepageContent->data ?? [];
+                data_set($data, substr($field, 5), $newValue);
+                $homepageContent->data = $data;
             } else {
                 $homepageContent->value = $newValue;
             }
+            
             $homepageContent->save();
             return response()->json(['success' => true, 'message' => 'Image updated successfully.', 'new_image_url' => $newValue]);
         }
@@ -168,9 +169,9 @@ class HomepageContentController extends Controller
             $homepageContent->value = $newValue;
         } elseif (str_starts_with($field, 'data.')) {
             // Update nested data field
-            $homepageContent->data = $homepageContent->data ?? []; // Initialize if null
-            data_set($homepageContent->data, substr($field, 5), $newValue); // Use Laravel's data_set helper
-            $homepageContent->data = json_decode(json_encode($homepageContent->data)); // Ensure it's stored as JSON
+            $data = $homepageContent->data ?? []; // Initialize if null
+            data_set($data, substr($field, 5), $newValue); // Use Laravel's data_set helper
+            $homepageContent->data = $data;
         } elseif ($field === 'data') {
             // Update entire data object
             $homepageContent->data = json_decode($newValue, true);

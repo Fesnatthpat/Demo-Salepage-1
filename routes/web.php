@@ -16,7 +16,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProfileController; // ✅ เพิ่ม AddressController เข้ามาเพื่อแก้ Error หา Class ไม่เจอ
+use App\Http\Controllers\ProfileController; 
+use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -103,8 +104,8 @@ Route::middleware(['auth'])->group(function () {
 // ==========================================
 // 5. ติดตามพัสดุ (Tracking) - Guest เข้าได้
 // ==========================================
-Route::get('/ordertracking', [OrderController::class, 'showTrackingForm'])->name('order.tracking.form');
-Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('order.tracking');
+Route::get('/ordertracking', [TrackingController::class, 'index'])->name('order.tracking');
+Route::get('/ordertracking/form', [TrackingController::class, 'index'])->name('order.tracking.form'); // เพิ่มกลับมาเพื่อรองรับโค้ดเก่า
 
 // ==========================================
 // 6. API สำหรับ Dropdown ที่อยู่ (Ajax)
@@ -134,6 +135,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
     // Customer Management (จัดการลูกค้า)
+    Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
     Route::resource('customers', CustomerController::class);
 
     // Product Management (จัดการสินค้า)
@@ -160,6 +162,11 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
 
     // FAQ Management (จัดการคำถามที่พบบ่อย)
     Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
+
+    // Homepage Content Management
+    Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
+    Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');
+    Route::resource('homepage-content', App\Http\Controllers\Admin\HomepageContentController::class);
 
     // Favorite Management (จัดการเกี่ยวกับติดใจ)
     Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);

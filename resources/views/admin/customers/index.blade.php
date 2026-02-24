@@ -9,20 +9,36 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                 <h2 class="card-title text-gray-100">ลูกค้าทั้งหมด <span
                         class="text-gray-500 text-sm font-normal">({{ $customers->total() }})</span></h2>
-                <form action="{{ route('admin.customers.index') }}" method="GET">
-                    <div class="form-control">
-                        <div class="relative">
-                            <input type="text" name="search" placeholder="ค้นหาชื่อ, อีเมล, เบอร์โทร..."
-                                class="input input-bordered w-full sm:w-64 pr-10 bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
-                                value="{{ request('search') }}">
-                            <button type="submit"
-                                class="absolute top-0 right-0 rounded-l-none btn btn-square btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
-                                <i class="fas fa-search"></i>
-                            </button>
+
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    {{-- ปุ่ม Export Excel --}}
+                    <a href="{{ route('admin.customers.export', request()->query()) }}"
+                        class="btn btn-success bg-green-600 hover:bg-green-700 border-none text-white w-full sm:w-auto">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </a>
+
+                    {{-- ฟอร์มค้นหา --}}
+                    <form action="{{ route('admin.customers.index') }}" method="GET" class="w-full sm:w-auto">
+                        <div class="form-control">
+                            <div class="relative">
+                                <input type="text" name="search" placeholder="ค้นหาชื่อ, อีเมล, เบอร์โทร..."
+                                    class="input input-bordered w-full sm:w-64 pr-10 bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
+                                    value="{{ request('search') }}">
+                                <button type="submit"
+                                    class="absolute top-0 right-0 rounded-l-none btn btn-square btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
+
+            @php
+                // แปลงค่าเพศเป็นภาษาไทย
+                $genderMap = ['male' => 'ชาย', 'female' => 'หญิง', 'm' => 'ชาย', 'f' => 'หญิง', 'other' => 'อื่นๆ'];
+            @endphp
 
             <div class="overflow-x-auto">
                 <table class="table w-full text-gray-300">
@@ -52,9 +68,11 @@
                                 <td class="text-gray-400">{{ $customer->email }}</td>
                                 <td class="text-gray-400">{{ $customer->phone ?? 'N/A' }}</td>
                                 <td class="text-gray-400">{{ $customer->age ?? 'N/A' }}</td>
-                                <td class="text-gray-400">{{ $customer->gender ?? 'N/A' }}</td>
                                 <td class="text-gray-400">
-                                    {{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : 'N/A' }}
+                                    {{ $customer->gender ? $genderMap[strtolower($customer->gender)] ?? $customer->gender : 'N/A' }}
+                                </td>
+                                <td class="text-gray-400">
+                                    {{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->locale('th')->translatedFormat('d M ') . (\Carbon\Carbon::parse($customer->date_of_birth)->year + 543) : 'N/A' }}
                                 </td>
                                 <td>
                                     @if ($customer->line_id)
@@ -64,7 +82,9 @@
                                             class="badge badge-warning bg-yellow-600 border-none text-white">ไม่ได้เชื่อมต่อ</span>
                                     @endif
                                 </td>
-                                <td class="text-gray-500">{{ $customer->created_at->format('d M Y, H:i') }}</td>
+                                <td class="text-gray-500">
+                                    {{ $customer->created_at ? $customer->created_at->locale('th')->translatedFormat('d M ') . ($customer->created_at->year + 543) . ' เวลา ' . $customer->created_at->format('H:i') : 'N/A' }}
+                                </td>
                                 <td>
                                     <a href="{{ route('admin.customers.show', $customer) }}"
                                         class="btn btn-ghost btn-sm text-gray-400 hover:text-emerald-400">

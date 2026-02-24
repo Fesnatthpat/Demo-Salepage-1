@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\Attributes\On; // สำหรับ Livewire 3
+use Darryldecode\Cart\Facades\CartFacade as Cart;
 
 class CartIcon extends Component
 {
@@ -11,15 +12,13 @@ class CartIcon extends Component
 
     public function mount()
     {
-        // Assuming \Cart facade is available from darryldecode/cart package
-        // The previous cart badge logic uses Cart::session()->getTotalQuantity()
-        // so I'll use that for consistency.
+        // Using the Cart facade from darryldecode/cart package
         if (auth()->check()) {
             $cartSessionId = auth()->id();
         } else {
             $cartSessionId = '_guest_' . session()->getId();
         }
-        $this->count = \Cart::session($cartSessionId)->getTotalQuantity();
+        $this->count = Cart::session($cartSessionId)->getTotalQuantity();
     }
 
     #[On('cartUpdated')] // รอฟัง Event ชื่อ cartUpdated
@@ -30,7 +29,7 @@ class CartIcon extends Component
         } else {
             $cartSessionId = '_guest_' . session()->getId();
         }
-        $this->count = \Cart::session($cartSessionId)->getTotalQuantity();
+        $this->count = Cart::session($cartSessionId)->getTotalQuantity();
     }
 
     public function render()

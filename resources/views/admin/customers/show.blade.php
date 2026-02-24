@@ -7,6 +7,11 @@
 @endsection
 
 @section('content')
+    @php
+        // แปลงค่าเพศเป็นภาษาไทย
+        $genderMap = ['male' => 'ชาย', 'female' => 'หญิง', 'm' => 'ชาย', 'f' => 'หญิง', 'other' => 'อื่นๆ'];
+    @endphp
+
     <div class="card bg-gray-800 shadow-lg border border-gray-700">
         <div class="card-body">
             <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
@@ -61,12 +66,14 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">เพศ</p>
-                    <p class="text-lg font-bold text-gray-100">{{ $customer->gender ?? '-' }}</p>
+                    <p class="text-lg font-bold text-gray-100">
+                        {{ $customer->gender ? $genderMap[strtolower($customer->gender)] ?? $customer->gender : '-' }}
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">วันเกิด</p>
                     <p class="text-lg font-bold text-gray-100">
-                        {{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->format('d M Y') : '-' }}
+                        {{ $customer->date_of_birth ? \Carbon\Carbon::parse($customer->date_of_birth)->locale('th')->translatedFormat('d M ') . (\Carbon\Carbon::parse($customer->date_of_birth)->year + 543) : '-' }}
                     </p>
                 </div>
 
@@ -90,11 +97,15 @@
 
                 <div>
                     <p class="text-sm text-gray-500">วันที่ลงทะเบียน</p>
-                    <p class="text-lg font-bold text-gray-100">{{ $customer->created_at->format('d M Y, H:i') }}</p>
+                    <p class="text-lg font-bold text-gray-100">
+                        {{ $customer->created_at ? $customer->created_at->locale('th')->translatedFormat('d M ') . ($customer->created_at->year + 543) . ' เวลา ' . $customer->created_at->format('H:i') : '-' }}
+                    </p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">อัปเดตล่าสุด</p>
-                    <p class="text-lg font-bold text-gray-100">{{ $customer->updated_at->format('d M Y, H:i') }}</p>
+                    <p class="text-lg font-bold text-gray-100">
+                        {{ $customer->updated_at ? $customer->updated_at->locale('th')->translatedFormat('d M ') . ($customer->updated_at->year + 543) . ' เวลา ' . $customer->updated_at->format('H:i') : '-' }}
+                    </p>
                 </div>
             </div>
 
@@ -142,7 +153,9 @@
                                         {{ $statusText }}
                                     </span>
                                 </td>
-                                <td class="text-gray-400">{{ $order->ord_date->format('d M Y, H:i') }}</td>
+                                <td class="text-gray-400">
+                                    {{ $order->ord_date ? $order->ord_date->locale('th')->translatedFormat('d M ') . ($order->ord_date->year + 543) . ' เวลา ' . $order->ord_date->format('H:i') : '-' }}
+                                </td>
                                 <td>
                                     <a href="{{ route('admin.orders.show', $order) }}"
                                         class="btn btn-ghost btn-sm text-gray-400 hover:text-emerald-400">

@@ -23,7 +23,6 @@ class HomepageContentTest extends TestCase
         parent::setUp();
         // Create an admin user and authenticate
         $this->admin = Admin::factory()->create([
-        $this->admin = Admin::factory()->create([
             // 'username' is generated uniquely by the factory
             'password' => bcrypt('password'),
             'role' => 'superadmin',

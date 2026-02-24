@@ -26,47 +26,57 @@ class OrderService
         return DB::transaction(function () use ($data, $user, $selectedItems, $selectedFreebies) {
             $allCartItems = $this->cartService->getCartContents();
             
-            // กรองเอาเฉพาะสินค้าที่เลือกมาจากหน้า Checkout
+            // 1. กรองเอาเฉพาะสินค้าที่เลือก (ตรวจสอบทั้ง ID ที่เป็น String และ Integer)
             $cartItems = $allCartItems->filter(function ($item) use ($selectedItems) {
-                return empty($selectedItems) || in_array((string) $item->id, $selectedItems);
+                return in_array((string) $item->id, array_map('strval', $selectedItems));
             });
 
             if ($cartItems->isEmpty() && empty($selectedFreebies)) {
                 throw new \Exception('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
             }
 
-            // จัดการข้อมูลของแถม (ถ้ามี)
-            $freebieItems = collect();
+            // 2. จัดการข้อมูลของแถม
+            $itemsToProcess = collect();
+            
+            // เพิ่มสินค้าปกติเข้าคอลเลกชันที่จะประมวลผล
+            foreach ($cartItems as $item) {
+                $itemsToProcess->push([
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'price' => (float)$item->price,
+                    'quantity' => (int)$item->quantity,
+                    'attributes' => $item->attributes,
+                    'is_freebie' => false
+                ]);
+            }
+
+            // ดึงข้อมูลของแถมจากฐานข้อมูลและเพิ่มเข้าคอลเลกชัน
             if (!empty($selectedFreebies)) {
                 $freebieProducts = ProductSalepage::whereIn('pd_sp_id', $selectedFreebies)->get();
                 foreach ($freebieProducts as $fp) {
-                    $freebieItems->push((object)[
+                    $itemsToProcess->push([
                         'id' => $fp->pd_sp_id,
                         'name' => $fp->pd_sp_name . ' (ของแถม)',
-                        'price' => 0,
+                        'price' => 0.0,
                         'quantity' => 1,
-                        'attributes' => collect([
+                        'attributes' => [
                             'product_id' => $fp->pd_sp_id,
                             'original_price' => (float)$fp->pd_sp_price,
                             'is_freebie' => true
-                        ])
+                        ],
+                        'is_freebie' => true
                     ]);
                 }
             }
 
-            // รวมสินค้าปกติและของแถมเข้าด้วยกันเพื่อวนลูปสร้าง Order Detail
-            $itemsToProcess = $cartItems->concat($freebieItems);
-
-            // Ensure a delivery address is selected
+            // 3. เตรียมข้อมูลที่อยู่จัดส่ง
             $deliveryAddress = DeliveryAddress::with(['province', 'amphure', 'district'])
                 ->where('user_id', $user->id)
                 ->where('id', $data['delivery_address_id'])
                 ->firstOrFail();
 
-            // 1. Generate Order Code
             $ord_code = 'ORD-'.now()->format('YmdHis').'-'.str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
             
-            // 2. Create the order
             $order = Order::create([
                 'ord_code' => $ord_code,
                 'user_id' => $user->id,
@@ -92,27 +102,29 @@ class OrderService
             $totalDiscount = 0;
             $netAmount = 0;
 
-            foreach ($itemsToProcess as $cartItem) {
-                $productId = isset($cartItem->attributes['product_id']) ? $cartItem->attributes['product_id'] : $cartItem->id;
+            // 4. วนลูปสร้าง OrderDetail และตัดสต็อก
+            foreach ($itemsToProcess as $item) {
+                $item = (object)$item;
+                $productId = $item->attributes['product_id'] ?? $item->id;
                 
                 $product = ProductSalepage::lockForUpdate()->find($productId);
                 if (!$product) continue;
 
-                // ตรวจสอบสต็อก (ยกเว้นของแถมบางประเภทที่อาจจะไม่ตัดสต็อก หรือตรวจสอบตามปกติ)
-                if ($product->pd_sp_stock < $cartItem->quantity) {
-                    throw new \Exception('สินค้า '.$product->pd_sp_name.' มีไม่เพียงพอ');
+                // ตรวจสอบสต็อก
+                if ($product->pd_sp_stock < $item->quantity) {
+                    throw new \Exception('สินค้า '.$product->pd_sp_name.' มีไม่เพียงพอ (เหลือ '.$product->pd_sp_stock.' ชิ้น)');
                 }
 
-                $originalPrice = isset($cartItem->attributes['original_price']) ? $cartItem->attributes['original_price'] : $cartItem->price;
-                $finalItemPrice = $cartItem->price;
+                $originalPrice = $item->attributes['original_price'] ?? $item->price;
+                $finalItemPrice = $item->price;
 
-                $totalPrice += $originalPrice * $cartItem->quantity;
-                $netAmount += $finalItemPrice * $cartItem->quantity;
-                $totalDiscount += ($originalPrice * $cartItem->quantity) - ($finalItemPrice * $cartItem->quantity);
+                $totalPrice += ($originalPrice * $item->quantity);
+                $netAmount += ($finalItemPrice * $item->quantity);
+                $totalDiscount += (($originalPrice - $finalItemPrice) * $item->quantity);
 
                 $optionName = null;
-                if (isset($cartItem->name) && str_contains($cartItem->name, '(') && str_contains($cartItem->name, ')')) {
-                    preg_match('/\((.*?)\)/', $cartItem->name, $matches);
+                if (isset($item->name) && str_contains($item->name, '(') && str_contains($item->name, ')')) {
+                    preg_match('/\((.*?)\)/', $item->name, $matches);
                     $optionName = $matches[1] ?? null;
                 }
 
@@ -122,16 +134,17 @@ class OrderService
                     'option_name' => $optionName,
                     'ordd_price' => $finalItemPrice,
                     'ordd_original_price' => $originalPrice,
-                    'ordd_count' => $cartItem->quantity,
+                    'ordd_count' => $item->quantity,
                     'ordd_discount' => ($originalPrice - $finalItemPrice),
                     'ordd_create_date' => now(),
+                    'user_id' => $user->id, // บันทึก user_id ตามที่มีใน migration
                 ]);
 
                 // ตัดสต็อก
-                $product->decrement('pd_sp_stock', $cartItem->quantity);
+                $product->decrement('pd_sp_stock', $item->quantity);
             }
 
-            // --- Apply Session Discount ---
+            // 5. จัดการส่วนลดจากรหัสโปรโมชั่น
             $additionalDiscountFromCode = 0;
             if (session()->has('applied_discount_code')) {
                 $discountData = session('applied_discount_code');
@@ -152,18 +165,18 @@ class OrderService
             $order->net_amount = $netAmount;
             $order->save();
 
-            // ลบเฉพาะสินค้าที่สั่งซื้อออกจากตะกร้า (ไม่ลบทั้งหมด)
+            // 6. ลบสินค้าออกจากตะกร้า (เฉพาะที่สั่งซื้อจริง)
             foreach ($cartItems as $item) {
                 Cart::session($user->id)->remove($item->id);
             }
             
-            // อัปเดต Database Storage สำหรับตะกร้าที่เหลือ
+            // อัปเดต Database Storage
             CartStorage::updateOrCreate(
                 ['user_id' => $user->id],
                 ['cart_data' => Cart::session($user->id)->getContent()->toJson()]
             );
 
-            // 3. เตรียมข้อมูลที่อยู่สำหรับส่งไป CRM
+            // 7. ส่งข้อมูลเข้า CRM
             $addressData = [
                 'province' => $deliveryAddress->province->name_th ?? '',
                 'amphure' => $deliveryAddress->amphure->name_th ?? '',
@@ -182,11 +195,6 @@ class OrderService
 
     public function getPaymentQrCodeData(Order $order): string
     {
-        // This is simplified. In a real application, you'd integrate with a payment gateway.
-        // For PromptPay, you might generate a QR code string or image.
-        // For demonstration, let's return a simple string.
         return 'PromptPay QR Code Data for Order #'.$order->id.' Amount: '.$order->total_amount;
     }
-
-    // You might add methods for payment processing, slip uploads, etc.
 }

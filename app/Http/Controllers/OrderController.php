@@ -148,29 +148,4 @@ class OrderController extends Controller
 
         return back()->with('error', 'กรุณาอัปโหลดไฟล์สลิป');
     }
-
-    /**
-     * Show the form for tracking an order.
-     */
-    public function showTrackingForm()
-    {
-        return view('ordertracking');
-    }
-
-    /**
-     * Track an order based on the tracking code.
-     */
-    public function trackOrder(Request $request)
-    {
-        $request->validate([
-            'tracking_code' => 'required|string|max:255',
-        ]);
-
-        $order = Order::where('ord_code', $request->tracking_code)->first();
-
-        return view('ordertracking', [
-            'order' => $order,
-            'tracking_code' => $request->tracking_code,
-        ]);
-    }
 }

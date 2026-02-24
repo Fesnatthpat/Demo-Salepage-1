@@ -45,70 +45,77 @@ class CartService
         $cart = Cart::session($userId);
 
         if ($optionId) {
-            // Eager load the 'product' relationship to use in the accessor
             $option = \App\Models\ProductOption::with('product')->find($optionId);
             
             if (! $option || $option->parent_id !== $productId) {
                 throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
             }
-            if ($quantity > $option->option_stock) {
-                throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ");
-            }
 
             $cartId = "{$productId}-{$optionId}";
-            $cart->remove($cartId);
+            $existingItem = $cart->get($cartId);
+            $newQuantity = $existingItem ? $existingItem->quantity + $quantity : $quantity;
 
-            // We still need the main product's details for name, image etc.
-            $details = $this->getProductDetails($productId);
-            if (! $details) {
-                throw new Exception("ไม่พบสินค้า ID: {$productId}");
+            if ($newQuantity > $option->option_stock) {
+                throw new Exception("สินค้าตัวเลือก '{$option->option_name}' มีไม่เพียงพอ (เหลือในสต็อก {$option->option_stock} ชิ้น)");
             }
-            
-            $product = $this->checkStockAndGetProduct($productId, 0);
 
-            $cart->add([
-                'id' => $cartId,
-                'name' => $details->name.' ('.$option->option_name.')',
-                'price' => $option->final_price, // Use the new accessor!
-                'quantity' => $quantity,
-                'attributes' => [
-                    'image' => $details->image,
-                    'original_price' => (float) $option->option_price,
-                    'discount' => $option->product ? (float) $option->product->pd_sp_discount : 0,
-                    'pd_code' => $details->pd_code,
-                    'product_id' => $productId,
-                    'option_id' => $optionId,
-                ],
-                'associatedModel' => $product,
-            ]);
-            
-        } else {
-            // This part for products without options is already mostly correct.
-            $existingKeys = $this->findCartKeys($productId);
-            foreach ($existingKeys as $key) {
-                $item = $cart->get($key);
-                if (empty($item->attributes['promo_group_id'])) {
-                    $cart->remove($key);
+            // ถ้ามีอยู่แล้วให้ใช้ update แทนการ remove/add เพื่อรักษาพฤติกรรมสะสม
+            if ($existingItem) {
+                $cart->update($cartId, [
+                    'quantity' => $quantity // library ของ Darryldecode/Cart จะบวกเพิ่มให้เองถ้าใช้ update แบบปกติ
+                ]);
+            } else {
+                $details = $this->getProductDetails($productId);
+                if (! $details) {
+                    throw new Exception("ไม่พบสินค้า ID: {$productId}");
                 }
-            }
+                
+                $product = $this->checkStockAndGetProduct($productId, 0);
 
-            $product = $this->checkStockAndGetProduct($productId, $quantity);
-            $details = $this->getProductDetails($productId);
-
-            if ($details) {
                 $cart->add([
-                    'id' => $details->id,
-                    'name' => $details->name,
-                    'price' => $details->price, // This uses the accessor from ProductSalepage
+                    'id' => $cartId,
+                    'name' => $details->name.' ('.$option->option_name.')',
+                    'price' => $option->final_price,
                     'quantity' => $quantity,
                     'attributes' => [
                         'image' => $details->image,
-                        'original_price' => $details->original_price,
-                        'discount' => $details->discount,
+                        'original_price' => (float) $option->option_price,
+                        'discount' => $option->product ? (float) $option->product->pd_sp_discount : 0,
                         'pd_code' => $details->pd_code,
+                        'product_id' => $productId,
+                        'option_id' => $optionId,
                     ],
                     'associatedModel' => $product,
                 ]);
+            }
+            
+        } else {
+            $existingItem = $cart->get($productId);
+            $newQuantity = $existingItem ? $existingItem->quantity + $quantity : $quantity;
+            
+            $product = $this->checkStockAndGetProduct($productId, $newQuantity);
+            $details = $this->getProductDetails($productId);
+
+            if ($details) {
+                if ($existingItem) {
+                    $cart->update($productId, [
+                        'quantity' => $quantity
+                    ]);
+                } else {
+                    $cart->add([
+                        'id' => $details->id,
+                        'name' => $details->name,
+                        'price' => $details->price,
+                        'quantity' => $quantity,
+                        'attributes' => [
+                            'image' => $details->image,
+                            'original_price' => $details->original_price,
+                            'discount' => $details->discount,
+                            'pd_code' => $details->pd_code,
+                        ],
+                        'associatedModel' => $product,
+                    ]);
+                }
             }
         }
 
@@ -261,11 +268,38 @@ class CartService
         $userId = $this->getUserId();
         $this->getCartContents();
         $cart = Cart::session($userId);
-        $qty = ($action === 'increase') ? 1 : -1;
-
+        
         $keys = $this->findCartKeys($productId);
+        if (empty($keys)) {
+            return;
+        }
+
         foreach ($keys as $key) {
-            $cart->update($key, ['quantity' => $qty]);
+            $item = $cart->get($key);
+            if ($action === 'increase') {
+                // เช็คสต็อกก่อนเพิ่ม
+                $productIdReal = $item->attributes['product_id'] ?? $item->id;
+                $optionId = $item->attributes['option_id'] ?? null;
+                
+                if ($optionId) {
+                    $option = \App\Models\ProductOption::find($optionId);
+                    if ($option && $item->quantity + 1 > $option->option_stock) {
+                        throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$option->option_stock})");
+                    }
+                } else {
+                    $product = ProductSalepage::find($productIdReal);
+                    if ($product && $item->quantity + 1 > $product->pd_sp_stock) {
+                        throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$product->pd_sp_stock})");
+                    }
+                }
+                
+                $cart->update($key, ['quantity' => 1]);
+            } else {
+                // ลดจำนวน (Library จะไม่ลดจนติดลบให้อัตโนมัติถ้าลดเกิน แต่เราใส่เผื่อไว้)
+                if ($item->quantity > 1) {
+                    $cart->update($key, ['quantity' => -1]);
+                }
+            }
         }
 
         $this->validateFreebieConsistency($userId);
@@ -478,14 +512,12 @@ class CartService
         }
     }
 
-    // --- ส่วนที่แก้ไข (เพิ่ม $now = now();) ---
     private function getApplicablePromotions(Collection $cartItems): Collection
     {
         if ($cartItems->isEmpty()) {
             return collect();
         }
 
-        // [FIX] เพิ่มบรรทัดนี้ เพื่อประกาศตัวแปร $now
         $now = now();
 
         $cartProductIds = $cartItems->pluck('id')->toArray();
@@ -497,7 +529,6 @@ class CartService
         })->pluck('promotion_id')->unique();
 
         return Promotion::with(['rules', 'actions'])->whereIn('id', $potentialPromotionIds)->where('is_active', true)
-            // [FIX] เรียกใช้ $now ได้แล้ว เพราะประกาศไว้ด้านบน
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->get()->filter(function ($promo) use ($cartQuantities) {

@@ -437,18 +437,7 @@ class TrackingController extends Controller
                                         "country": "TH"
                                     }
                                 },
-                                {
-                                    "status": "77013",
-                                    "description": "Arrival at Facility",
-                                    "dateTime": "2026-02-18 17:12:02",
-                                    "timezone": "LT",
-                                    "address": {
-                                        "city": "Hub-Samut Prakarn",
-                                        "postCode": "10540",
-                                        "state": null,
-                                        "country": "TH"
-                                    }
-                                },
+                                
                                 {
                                     "status": "77206",
                                     "description": "Shipment picked up",

@@ -161,7 +161,7 @@
                             <div class="p-2 bg-red-50 rounded-lg">
                                 <i class="fas fa-stream text-red-600"></i>
                             </div>
-                            บันทึกการเดินทาง
+                            สถานะพัสดุ
                         </h3>
 
                         <div class="relative">

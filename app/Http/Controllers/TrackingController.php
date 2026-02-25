@@ -43,7 +43,7 @@ class TrackingController extends Controller
                     $date = Carbon::parse($event['dateTime']);
 
                     return [
-                        'date' => $index === 0 ? strtoupper($date->format('l')).'<br>'.$date->locale('th')->translatedFormat('M d, Y') : '',
+                        'date' => $index === 0 ? strtoupper($date->format('l')).''.$date->locale('th')->translatedFormat('M d, Y') : '',
                         'time' => $date->format('H:i'),
                         'status' => $event['description'],
                         'location' => $this->formatAddress($event['address']),

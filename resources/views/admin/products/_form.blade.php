@@ -22,7 +22,24 @@
 @endif
 
 {{-- ส่วนที่ 1: ข้อมูลหลัก --}}
-<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden">
+<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden"
+    x-data="{
+        options: {{ json_encode(old('product_options', isset($productSalepage) && $productSalepage->options ? $productSalepage->options->map(function($opt) { 
+            return [
+                'id' => $opt->option_id,
+                'option_name' => $opt->option_name,
+                'option_SKU' => $opt->option_SKU,
+                'option_price' => $opt->option_price,
+                'option_price2' => $opt->option_price2,
+                'option_stock' => $opt->stock ? $opt->stock->quantity : 0
+            ];
+        }) : [])) }},
+        mainStock: {{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? 0) }},
+        addOption() {
+            this.options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_price2: '', option_stock: 0 });
+            this.mainStock = 0;
+        }
+    }">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
             <i class="fas fa-info-circle text-emerald-500"></i> ข้อมูลทั่วไป
@@ -101,7 +118,7 @@
             </div>
 
             {{-- ราคาขาย 2 --}}
-            <div class="md:col-span-4 form-control">
+            {{-- <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ราคาขาย 2 (บาท)</label>
                 <div class="relative">
                     <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
@@ -109,7 +126,7 @@
                         class="input input-bordered w-full pl-10 font-mono text-xl bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                         placeholder="0.00" value="{{ old('pd_sp_price2', $productSalepage->pd_sp_price2 ?? '') }}" />
                 </div>
-            </div>
+            </div> --}}
 
             {{-- ส่วนลด --}}
             <div class="md:col-span-4 form-control">
@@ -125,11 +142,16 @@
 
             {{-- จำนวนสินค้าในคลัง (หลัก) --}}
             <div class="md:col-span-4 form-control">
-                <label class="label font-bold text-gray-300">จำนวนสินค้าในคลัง <span
-                        class="text-red-400">*</span></label>
-                <input type="number" name="pd_sp_stock"
-                    class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0" value="{{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? '') }}" />
+                <label class="label font-bold text-gray-300">
+                    จำนวนสินค้าในคลัง (หลัก)
+                    <template x-if="options.length > 0">
+                        <span class="text-xs text-amber-400 font-normal ml-2">(ปิดใช้งานเมื่อมีตัวเลือก)</span>
+                    </template>
+                </label>
+                <input type="number" name="pd_sp_stock" x-model="mainStock" :readonly="options.length > 0"
+                    :class="options.length > 0 ? 'bg-gray-800 text-gray-500 border-dashed cursor-not-allowed' : 'bg-gray-700 text-gray-100'"
+                    class="input input-bordered w-full text-lg h-12 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
+                    placeholder="0" />
             </div>
 
             {{-- ตำแหน่งแสดงผล --}}
@@ -157,25 +179,19 @@
                 placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้...">{{ old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? '')) }}</textarea>
         </div>
     </div>
-</div>
 
-{{-- ส่วนที่ 1.5: ตัวเลือกสินค้า (Dynamic Options) --}}
-<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6"
-    x-data="{
-        options: {{ json_encode(old('product_options', isset($productSalepage) && $productSalepage->options ? $productSalepage->options : [])) }}
-    }">
-    <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
-        <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
-            <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
-        </h3>
-        <button type="button" {{-- อัปเดตโครงสร้างเมื่อเพิ่มตัวเลือกใหม่ ให้มี option_SKU ด้วย --}}
-            @click="options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_price2: '', option_stock: '' })"
-            class="btn btn-sm btn-emerald bg-emerald-600 hover:bg-emerald-700 border-none text-white">
-            <i class="fas fa-plus mr-1"></i> เพิ่มตัวเลือก
-        </button>
-    </div>
+    {{-- ส่วนที่ 1.5: ตัวเลือกสินค้า (Dynamic Options) --}}
+    <div class="card-body p-6 border-t border-gray-700 bg-gray-800/20">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
+                <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
+            </h3>
+            <button type="button" @click="addOption()"
+                class="btn btn-sm btn-emerald bg-emerald-600 hover:bg-emerald-700 border-none text-white">
+                <i class="fas fa-plus mr-1"></i> เพิ่มตัวเลือก
+            </button>
+        </div>
 
-    <div class="card-body p-6">
         <p class="text-sm text-gray-400 mb-4 italic">เพิ่มตัวเลือกสินค้า เช่น ขวดเล็ก, ขวดใหญ่ หรือ สีขาว, สีดำ
             (หากไม่มี ให้ข้ามส่วนนี้)</p>
 
@@ -220,14 +236,14 @@
                         </div>
 
                         {{-- ราคา 2 --}}
-                        <div class="form-control w-full md:flex-1">
+                        {{-- <div class="form-control w-full md:flex-1">
                             <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 2
                                     (บาท)</span></label>
                             <input type="number" step="0.01" :name="`product_options[${index}][option_price2]`"
                                 x-model="option.option_price2"
                                 class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
                                 placeholder="ใช้ราคาหลัก">
-                        </div>
+                        </div> --}}
 
                         {{-- สต็อก --}}
                         <div class="form-control w-full md:flex-1">
@@ -239,7 +255,7 @@
                         </div>
 
                         {{-- ปุ่มลบ --}}
-                        <button type="button" @click="options = options.filter(o => o.id !== option.id)"
+                        <button type="button" @click="options = options.filter(o => (o.id || o.option_id) !== (option.id || option.option_id))"
                             class="btn btn-square btn-error btn-outline border-red-800 hover:bg-red-600 text-red-500 hover:text-white md:mt-auto">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -460,7 +476,7 @@
                     if (!data.success) {
                         alert('ตั้งเป็นภาพหลักไม่สำเร็จ: ' + (data.message || 'Error'));
                         location.reload();
-                    } else {
+                    } else {    
                         // Success -> Refresh to re-order images properly
                         location.reload();
                     }

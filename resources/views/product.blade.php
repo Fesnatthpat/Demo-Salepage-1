@@ -60,7 +60,7 @@
 
         $optionsData = $product->options->map(function ($option) {
             return [
-                'id' => $option->id,
+                'id' => $option->option_id,
                 'name' => $option->option_name,
                 'price' => (float) $option->option_price,
                 'price2' => (float) $option->option_price2, // Added price2

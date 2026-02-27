@@ -25,6 +25,6 @@ class StockProduct extends Model
 
     public function productOption()
     {
-        return $this->belongsTo(ProductOption::class, 'option_id', 'id');
+        return $this->belongsTo(ProductOption::class, 'option_id', 'option_id');
     }
 }

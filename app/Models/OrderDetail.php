@@ -17,6 +17,8 @@ class OrderDetail extends Model
     protected $fillable = [
         'ord_id',
         'pd_id',
+        'user_id',
+        'option_id',
         'option_name',
         'ordd_price',
         'ordd_original_price',
@@ -37,6 +39,11 @@ class OrderDetail extends Model
     public function productSalepage()
     {
         return $this->belongsTo(ProductSalepage::class, 'pd_id', 'pd_sp_id');
+    }
+
+    public function productOption()
+    {
+        return $this->belongsTo(ProductOption::class, 'option_id', 'option_id');
     }
 
     // Relation ไปหาบิลหลัก

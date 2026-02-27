@@ -316,7 +316,11 @@ class CartService
     {
         $items = $this->getCartContents();
         $total = $this->getTotal();
-        $productIds = $items->pluck('id')->toArray();
+        
+        $productIds = $items->map(function($item) {
+            return $item->attributes['product_id'] ?? $item->id;
+        })->unique()->toArray();
+
         $products = ProductSalepage::with(['images', 'stock'])->whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
         $applicablePromotions = $this->getApplicablePromotions($items);
         $freebieLimit = $this->calculateFreebieLimit($items, $applicablePromotions);

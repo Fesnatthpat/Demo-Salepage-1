@@ -50,19 +50,29 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
 
         // 2. ดึงข้อมูล SKU สินค้าทั้งหมดในครั้งเดียว
         $productIds = $this->order->details->pluck('pd_id')->toArray();
+        $optionIds = $this->order->details->pluck('option_id')->filter()->toArray();
+
         $products = DB::table('product_salepage')
             ->whereIn('pd_sp_id', $productIds)
             ->get()
             ->keyBy('pd_sp_id');
+
+        $options = DB::table('product_options')
+            ->whereIn('option_id', $optionIds)
+            ->get()
+            ->keyBy('option_id');
 
         $apiItems = [];
         foreach ($this->order->details as $detail) {
 
             // ดึงข้อมูลสินค้า
             $product = $products->get($detail->pd_id);
+            $option = $detail->option_id ? $options->get($detail->option_id) : null;
 
             $productSku = 'UNKNOWN';
-            if ($product) {
+            if ($option && $option->option_SKU) {
+                $productSku = $option->option_SKU;
+            } elseif ($product) {
                 $productSku = $product->pd_sp_SKU ?? $product->pd_sp_code ?? 'UNKNOWN';
             }
 

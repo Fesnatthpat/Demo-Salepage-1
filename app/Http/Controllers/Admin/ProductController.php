@@ -93,6 +93,7 @@ class ProductController extends Controller
                     if (! empty($option['option_name'])) {
                         $newOption = $salePage->options()->create([
                             'option_name' => $option['option_name'],
+                            'option_SKU' => $option['option_SKU'] ?? null,
                             'option_price' => $option['option_price'] ?? $salePage->pd_sp_price,
                             'option_price2' => $option['option_price2'] ?? null, // Add option_price2
                             'option_active' => 1,
@@ -175,6 +176,7 @@ class ProductController extends Controller
                     if (! empty($option['option_name'])) {
                         $newOption = $productSalepage->options()->create([
                             'option_name' => $option['option_name'],
+                            'option_SKU' => $option['option_SKU'] ?? null,
                             'option_price' => $option['option_price'] ?? $productSalepage->pd_sp_price,
                             'option_price2' => $option['option_price2'] ?? null, // Add option_price2
                             'option_active' => 1,
@@ -265,6 +267,7 @@ class ProductController extends Controller
             'pd_sp_display_location' => 'nullable|string',
             'product_options' => 'nullable|array',
             'product_options.*.option_name' => 'nullable|string|max:255',
+            'product_options.*.option_SKU' => 'nullable|string|max:255',
             'product_options.*.option_price' => 'nullable|numeric|min:0',
             'product_options.*.option_price2' => 'nullable|numeric|min:0',
             'product_options.*.option_stock' => 'nullable|integer|min:0',

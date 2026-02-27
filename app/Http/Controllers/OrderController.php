@@ -75,10 +75,12 @@ class OrderController extends Controller
                 }
 
                 $productId = $attributes->product_id ?? $item->id;
+                $optionId = $attributes->option_id ?? null;
 
                 OrderDetail::create([
                     'ord_id' => $order->id,
                     'pd_id' => $productId,
+                    'option_id' => $optionId,
                     'option_name' => $optionName,
                     'ordd_price' => $item->price,
                     'ordd_original_price' => $attributes->original_price ?? $item->price,

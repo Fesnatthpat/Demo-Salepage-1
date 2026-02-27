@@ -260,7 +260,8 @@
                             $totalPrice = $item->price * $item->quantity;
 
                             // --- แก้ไข: ดึงข้อมูลสินค้าจาก Collection เพื่อความแม่นยำ ---
-                            $productDb = isset($products) ? $products->where('id', $item->id)->first() : null;
+                            $realProductId = $attrs['product_id'] ?? $item->id;
+                            $productDb = isset($products) ? $products->get($realProductId) : null;
 
                             // เตรียมรูปภาพ
                             $imgUrl = $productDb ? $productDb->cover_image_url : null;

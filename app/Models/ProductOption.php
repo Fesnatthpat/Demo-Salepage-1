@@ -16,6 +16,7 @@ class ProductOption extends Model
     protected $fillable = [
         'parent_id',
         'option_name',
+        'option_SKU',
         'option_price',
         'option_price2',
         'option_active',

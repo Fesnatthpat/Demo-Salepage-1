@@ -92,10 +92,10 @@
                                                     </div>
 
                                                     {{-- ✅ เพิ่มส่วนแสดงตัวเลือกสินค้า (ถ้ามี) --}}
-                                                    @if (isset($detail->ordd_option_name) && $detail->ordd_option_name)
+                                                    @if ($detail->productOption || $detail->option_name)
                                                         <div class="text-xs text-emerald-400 mt-0.5">
                                                             <i class="fas fa-tag mr-1"></i>ตัวเลือก:
-                                                            {{ $detail->ordd_option_name }}
+                                                            {{ $detail->productOption->option_name ?? $detail->option_name }}
                                                         </div>
                                                     @endif
 

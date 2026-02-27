@@ -142,6 +142,7 @@ class OrderService
                 OrderDetail::create([
                     'ord_id' => $order->id,
                     'pd_id' => $productId,
+                    'option_id' => $optionId,
                     'option_name' => $optionName,
                     'ordd_price' => $finalItemPrice,
                     'ordd_original_price' => $originalPrice,

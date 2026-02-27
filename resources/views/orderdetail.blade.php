@@ -72,6 +72,11 @@
                                             {{ $detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า' }}
                                         </p>
                                         
+                                        @if($detail->productOption || $detail->option_name)
+                                            <p class="text-xs text-emerald-600 font-medium mt-1">
+                                                ตัวเลือก: {{ $detail->productOption->option_name ?? $detail->option_name }}
+                                            </p>
+                                        @endif
 
                                         {{-- ========== ส่วนที่แก้ไข: ราคาต่อชิ้น ========== --}}
                                         <p class="text-sm text-gray-500">ราคาต่อชิ้น:

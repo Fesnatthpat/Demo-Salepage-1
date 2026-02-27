@@ -10,7 +10,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $recommendedProducts = ProductSalepage::with('images')
+        $recommendedProducts = ProductSalepage::with(['images', 'stock'])
             ->where('pd_sp_active', 1)
             ->where('is_recommended', 1)
             ->orderBy('pd_sp_id', 'desc')

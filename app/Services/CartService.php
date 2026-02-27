@@ -45,7 +45,7 @@ class CartService
         $cart = Cart::session($userId);
 
         if ($optionId) {
-            $option = \App\Models\ProductOption::with('product')->find($optionId);
+            $option = \App\Models\ProductOption::with(['product', 'stock'])->find($optionId);
             
             if (! $option || $option->parent_id !== $productId) {
                 throw new Exception('ตัวเลือกสินค้าไม่ถูกต้อง');
@@ -282,12 +282,12 @@ class CartService
                 $optionId = $item->attributes['option_id'] ?? null;
                 
                 if ($optionId) {
-                    $option = \App\Models\ProductOption::find($optionId);
+                    $option = \App\Models\ProductOption::with('stock')->find($optionId);
                     if ($option && $item->quantity + 1 > $option->option_stock) {
                         throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$option->option_stock})");
                     }
                 } else {
-                    $product = ProductSalepage::find($productIdReal);
+                    $product = ProductSalepage::with('stock')->find($productIdReal);
                     if ($product && $item->quantity + 1 > $product->pd_sp_stock) {
                         throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$product->pd_sp_stock})");
                     }
@@ -317,7 +317,7 @@ class CartService
         $items = $this->getCartContents();
         $total = $this->getTotal();
         $productIds = $items->pluck('id')->toArray();
-        $products = ProductSalepage::with('images')->whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
+        $products = ProductSalepage::with(['images', 'stock'])->whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
         $applicablePromotions = $this->getApplicablePromotions($items);
         $freebieLimit = $this->calculateFreebieLimit($items, $applicablePromotions);
         $giftableProducts = $applicablePromotions->flatMap(function ($promo) {
@@ -400,7 +400,7 @@ class CartService
 
     private function getProductDetails(int $productId): ?object
     {
-        $product = ProductSalepage::with('images')->find($productId);
+        $product = ProductSalepage::with(['images', 'stock'])->find($productId);
         if (! $product) {
             return null;
         }
@@ -419,7 +419,7 @@ class CartService
 
     private function checkStockAndGetProduct(int $productId, int $quantity)
     {
-        $product = ProductSalepage::find($productId);
+        $product = ProductSalepage::with('stock')->find($productId);
         if (! $product) {
             throw new Exception("ไม่พบสินค้า ID: {$productId}");
         }

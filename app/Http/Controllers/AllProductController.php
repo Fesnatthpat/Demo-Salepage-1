@@ -13,7 +13,7 @@ class AllProductController extends Controller
     public function index(Request $request)
     {
         // 1. เริ่ม Query สินค้าที่ Active
-        $query = ProductSalepage::with('images')->where('pd_sp_active', 1);
+        $query = ProductSalepage::with(['images', 'stock'])->where('pd_sp_active', 1);
 
         // 2. ระบบค้นหา (Search)
         if ($request->filled('search')) {

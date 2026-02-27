@@ -22,14 +22,13 @@ class ProductSalepage extends Model
         'pd_sp_description',
         'pd_sp_price',
         'pd_sp_discount',
-        'pd_sp_stock',
         'pd_sp_active',
         'pd_sp_display_location',
         'is_recommended',
         'is_bogo_active',
     ];
 
-    protected $appends = ['cover_image_url'];
+    protected $appends = ['cover_image_url', 'pd_sp_stock'];
 
     public function getCoverImageUrlAttribute()
     {
@@ -67,6 +66,16 @@ class ProductSalepage extends Model
     public function bogoFreeOptions()
     {
         return $this->belongsToMany(ProductSalepage::class, 'product_bogo_options', 'parent_id', 'child_id');
+    }
+
+    public function stock()
+    {
+        return $this->hasOne(StockProduct::class, 'pd_sp_id', 'pd_sp_id')->whereNull('option_id');
+    }
+
+    public function getPdSpStockAttribute()
+    {
+        return $this->stock ? $this->stock->quantity : 0;
     }
 
     public function reviewImages()

@@ -66,9 +66,9 @@
             </div>
         @endif
 
-        {{-- 🔥 เพิ่มใหม่: รหัส SKU 🔥 --}}
+        {{-- รหัส SKU (สินค้าหลัก) --}}
         <div class="form-control w-full mb-6">
-            <label class="label font-bold text-gray-300">รหัส SKU</label>
+            <label class="label font-bold text-gray-300">รหัส SKU (สินค้าหลัก)</label>
             <div class="relative">
                 <span class="absolute left-4 top-3 text-gray-500"><i class="fas fa-barcode"></i></span>
                 <input type="text" name="pd_sp_SKU"
@@ -123,7 +123,7 @@
                 </div>
             </div>
 
-            {{-- จำนวนสินค้าในคลัง --}}
+            {{-- จำนวนสินค้าในคลัง (หลัก) --}}
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">จำนวนสินค้าในคลัง <span
                         class="text-red-400">*</span></label>
@@ -168,8 +168,8 @@
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
             <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
         </h3>
-        <button type="button"
-            @click="options.push({ id: Date.now(), option_name: '', option_price: '', option_price2: '', option_stock: '' })"
+        <button type="button" {{-- อัปเดตโครงสร้างเมื่อเพิ่มตัวเลือกใหม่ ให้มี option_SKU ด้วย --}}
+            @click="options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_price2: '', option_stock: '' })"
             class="btn btn-sm btn-emerald bg-emerald-600 hover:bg-emerald-700 border-none text-white">
             <i class="fas fa-plus mr-1"></i> เพิ่มตัวเลือก
         </button>
@@ -181,53 +181,70 @@
 
         <div class="space-y-3">
             <template x-for="(option, index) in options" :key="option.id || index">
-                <div
-                    class="flex flex-wrap md:flex-nowrap gap-3 p-4 bg-gray-900/30 rounded-xl border border-gray-700 items-end">
+                <div class="flex flex-col gap-3 p-4 bg-gray-900/30 rounded-xl border border-gray-700">
 
-                    {{-- ชื่อตัวเลือก --}}
-                    <div class="form-control w-full md:flex-1">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">ชื่อตัวเลือก (เช่น สีดำ,
-                                ไซส์ L)</span></label>
-                        <input type="text" :name="`product_options[${index}][option_name]`"
-                            x-model="option.option_name" required
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                            placeholder="ระบุชื่อตัวเลือก">
+                    {{-- แถวที่ 1: ชื่อตัวเลือก และ SKU --}}
+                    <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
+                        {{-- ชื่อตัวเลือก --}}
+                        <div class="form-control w-full md:flex-1">
+                            <label class="label py-1"><span class="label-text-alt text-gray-400">ชื่อตัวเลือก (เช่น
+                                    สีดำ,
+                                    ไซส์ L)</span></label>
+                            <input type="text" :name="`product_options[${index}][option_name]`"
+                                x-model="option.option_name" required
+                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
+                                placeholder="ระบุชื่อตัวเลือก">
+                        </div>
+
+                        {{-- 🔥 เพิ่มใหม่: รหัส SKU สำหรับตัวเลือก --}}
+                        <div class="form-control w-full md:w-1/3">
+                            <label class="label py-1"><span class="label-text-alt text-gray-400">รหัส SKU
+                                    (Option)</span></label>
+                            <input type="text" :name="`product_options[${index}][option_SKU]`"
+                                x-model="option.option_SKU"
+                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
+                                placeholder="เช่น T-SHIRT-BLK-L">
+                        </div>
                     </div>
 
-                    {{-- ราคา 1 --}}
-                    <div class="form-control w-full md:w-32">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1
-                                (บาท)</span></label>
-                        <input type="number" step="0.01" :name="`product_options[${index}][option_price]`"
-                            x-model="option.option_price"
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
-                            placeholder="ใช้ราคาหลัก">
+                    {{-- แถวที่ 2: ราคา 1, ราคา 2, สต็อก และปุ่มลบ --}}
+                    <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
+                        {{-- ราคา 1 --}}
+                        <div class="form-control w-full md:flex-1">
+                            <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1
+                                    (บาท)</span></label>
+                            <input type="number" step="0.01" :name="`product_options[${index}][option_price]`"
+                                x-model="option.option_price"
+                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                                placeholder="ใช้ราคาหลัก">
+                        </div>
+
+                        {{-- ราคา 2 --}}
+                        <div class="form-control w-full md:flex-1">
+                            <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 2
+                                    (บาท)</span></label>
+                            <input type="number" step="0.01" :name="`product_options[${index}][option_price2]`"
+                                x-model="option.option_price2"
+                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                                placeholder="ใช้ราคาหลัก">
+                        </div>
+
+                        {{-- สต็อก --}}
+                        <div class="form-control w-full md:flex-1">
+                            <label class="label py-1"><span class="label-text-alt text-gray-400">สต็อก</span></label>
+                            <input type="number" :name="`product_options[${index}][option_stock]`"
+                                x-model="option.option_stock"
+                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                                placeholder="0">
+                        </div>
+
+                        {{-- ปุ่มลบ --}}
+                        <button type="button" @click="options = options.filter(o => o.id !== option.id)"
+                            class="btn btn-square btn-error btn-outline border-red-800 hover:bg-red-600 text-red-500 hover:text-white md:mt-auto">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
 
-                    {{-- ราคา 2 --}}
-                    <div class="form-control w-full md:w-32">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 2
-                                (บาท)</span></label>
-                        <input type="number" step="0.01" :name="`product_options[${index}][option_price2]`"
-                            x-model="option.option_price2"
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
-                            placeholder="ใช้ราคาหลัก">
-                    </div>
-
-                    {{-- สต็อก --}}
-                    <div class="form-control w-full md:w-32">
-                        <label class="label py-1"><span class="label-text-alt text-gray-400">สต็อก</span></label>
-                        <input type="number" :name="`product_options[${index}][option_stock]`"
-                            x-model="option.option_stock"
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
-                            placeholder="0">
-                    </div>
-
-                    {{-- ปุ่มลบ --}}
-                    <button type="button" @click="options = options.filter(o => o.id !== option.id)"
-                        class="btn btn-square btn-error btn-outline border-red-800 hover:bg-red-600 text-red-500 hover:text-white">
-                        <i class="fas fa-trash"></i>
-                    </button>
                 </div>
             </template>
 

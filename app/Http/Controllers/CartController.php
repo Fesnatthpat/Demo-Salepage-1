@@ -45,7 +45,7 @@ class CartController extends Controller
                 'quantity' => 'integer|min:1',
                 'selected_gift_ids' => 'array',
                 'selected_gift_ids.*' => 'integer',
-                'selected_option_id' => 'nullable|integer|exists:product_options,id',
+                'selected_option_id' => 'nullable|integer|exists:product_options,option_id',
             ], [
                 'quantity.min' => 'ต้องสั่งซื้ออย่างน้อย 1 ชิ้น',
                 'integer' => 'ข้อมูลต้องเป็นตัวเลขจำนวนเต็ม',

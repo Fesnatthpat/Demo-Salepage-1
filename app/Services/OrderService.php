@@ -8,6 +8,7 @@ use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductSalepage;
+use App\Models\StockProduct;
 use App\Models\User;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\DB;
@@ -106,13 +107,23 @@ class OrderService
             foreach ($itemsToProcess as $item) {
                 $item = (object)$item;
                 $productId = $item->attributes['product_id'] ?? $item->id;
+                $optionId = $item->attributes['option_id'] ?? null;
                 
-                $product = ProductSalepage::lockForUpdate()->find($productId);
-                if (!$product) continue;
+                // ดึงข้อมูลสต็อกและล็อคแถวไว้เพื่อป้องกัน Race Condition
+                $stockRecord = StockProduct::where('pd_sp_id', $productId)
+                    ->where('option_id', $optionId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$stockRecord) {
+                    // ถ้าไม่พบเรคคอร์ดสต็อก ให้ลองสร้างใหม่ด้วย 0 หรือโยน Error ตามความเหมาะสม
+                    // ในที่นี้เลือกโยน Error เพราะสินค้าควรมีเรคคอร์ดสต็อกเสมอ
+                    throw new \Exception('ไม่พบข้อมูลสต็อกสำหรับสินค้า: ' . $item->name);
+                }
 
                 // ตรวจสอบสต็อก
-                if ($product->pd_sp_stock < $item->quantity) {
-                    throw new \Exception('สินค้า '.$product->pd_sp_name.' มีไม่เพียงพอ (เหลือ '.$product->pd_sp_stock.' ชิ้น)');
+                if ($stockRecord->quantity < $item->quantity) {
+                    throw new \Exception('สินค้า '.$item->name.' มีไม่เพียงพอ (เหลือ '.$stockRecord->quantity.' ชิ้น)');
                 }
 
                 $originalPrice = $item->attributes['original_price'] ?? $item->price;
@@ -137,11 +148,11 @@ class OrderService
                     'ordd_count' => $item->quantity,
                     'ordd_discount' => ($originalPrice - $finalItemPrice),
                     'ordd_create_date' => now(),
-                    'user_id' => $user->id, // บันทึก user_id ตามที่มีใน migration
+                    'user_id' => $user->id,
                 ]);
 
                 // ตัดสต็อก
-                $product->decrement('pd_sp_stock', $item->quantity);
+                $stockRecord->decrement('quantity', $item->quantity);
             }
 
             // 5. จัดการส่วนลดจากรหัสโปรโมชั่น

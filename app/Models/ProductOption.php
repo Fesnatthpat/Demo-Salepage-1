@@ -11,14 +11,17 @@ class ProductOption extends Model
 
     protected $table = 'product_options';
 
+    protected $primaryKey = 'option_id';
+
     protected $fillable = [
         'parent_id',
         'option_name',
         'option_price',
         'option_price2',
-        'option_stock',
         'option_active',
     ];
+
+    protected $appends = ['option_stock'];
 
     public $timestamps = true;
 
@@ -26,6 +29,16 @@ class ProductOption extends Model
     public function product()
     {
         return $this->belongsTo(ProductSalepage::class, 'parent_id', 'pd_sp_id');
+    }
+
+    public function stock()
+    {
+        return $this->hasOne(StockProduct::class, 'option_id', 'option_id');
+    }
+
+    public function getOptionStockAttribute()
+    {
+        return $this->stock ? $this->stock->quantity : 0;
     }
 
     public function getFinalPriceAttribute(): float

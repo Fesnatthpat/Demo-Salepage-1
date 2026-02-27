@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function show($id)
     {
         // 1. ดึงข้อมูลสินค้าหลัก
-        $salePageProduct = ProductSalepage::with(['images', 'options', 'reviewImages'])
+        $salePageProduct = ProductSalepage::with(['images', 'options.stock', 'reviewImages', 'stock'])
             ->where('pd_sp_id', $id)
             ->firstOrFail();
 

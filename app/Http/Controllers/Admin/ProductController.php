@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Traits\LogsActivity;
 use App\Http\Controllers\Controller;
 use App\Models\ProductSalepage;
+use App\Models\StockProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = ProductSalepage::with('images')->orderBy('pd_sp_id', 'desc');
+        $query = ProductSalepage::with(['images', 'stock'])->orderBy('pd_sp_id', 'desc');
 
         if ($request->filled('search')) {
             $searchTerm = '%'.$request->search.'%';
@@ -63,10 +64,16 @@ class ProductController extends Controller
                 'pd_sp_price' => $request->pd_sp_price,
                 'pd_sp_price2' => $request->pd_sp_price2,
                 'pd_sp_discount' => $request->pd_sp_discount ?? 0,
-                'pd_sp_stock' => $request->pd_sp_stock,
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
+            ]);
+
+            // บันทึกสต็อกสินค้าหลัก
+            StockProduct::create([
+                'pd_sp_id' => $salePage->pd_sp_id,
+                'option_id' => null,
+                'quantity' => $request->pd_sp_stock ?? 0,
             ]);
 
             // 3. บันทึกรูปภาพ (พร้อมกำหนด Sort Order) [แก้ตรงนี้]
@@ -84,12 +91,18 @@ class ProductController extends Controller
             if ($request->has('product_options')) {
                 foreach ($request->product_options as $option) {
                     if (! empty($option['option_name'])) {
-                        $salePage->options()->create([
+                        $newOption = $salePage->options()->create([
                             'option_name' => $option['option_name'],
                             'option_price' => $option['option_price'] ?? $salePage->pd_sp_price,
                             'option_price2' => $option['option_price2'] ?? null, // Add option_price2
-                            'option_stock' => $option['option_stock'] ?? 0,
                             'option_active' => 1,
+                        ]);
+
+                        // บันทึกสต็อกสินค้าตัวเลือก
+                        StockProduct::create([
+                            'pd_sp_id' => $salePage->pd_sp_id,
+                            'option_id' => $newOption->option_id,
+                            'quantity' => $option['option_stock'] ?? 0,
                         ]);
                     }
                 }
@@ -104,7 +117,7 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $productSalepage = ProductSalepage::with(['images', 'options'])->where('pd_sp_id', $id)->firstOrFail();
+        $productSalepage = ProductSalepage::with(['images', 'options.stock', 'stock'])->where('pd_sp_id', $id)->firstOrFail();
         $products = ProductSalepage::where('pd_sp_id', '!=', $id)->orderBy('pd_sp_name')->get();
 
         return view('admin.products.edit', [
@@ -129,11 +142,16 @@ class ProductController extends Controller
                 'pd_sp_price2' => $request->pd_sp_price2,
                 'pd_sp_discount' => $request->pd_sp_discount ?? 0,
                 'pd_sp_description' => $request->pd_sp_details,
-                'pd_sp_stock' => $request->pd_sp_stock,
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
             ]);
+
+            // อัปเดตสต็อกสินค้าหลัก
+            StockProduct::updateOrCreate(
+                ['pd_sp_id' => $productSalepage->pd_sp_id, 'option_id' => null],
+                ['quantity' => $request->pd_sp_stock ?? 0]
+            );
 
             // 2. รูปภาพ (อัปโหลดเพิ่ม)
             if ($request->hasFile('images')) {
@@ -150,17 +168,23 @@ class ProductController extends Controller
             }
 
             // 3. จัดการตัวเลือกสินค้า
-            $productSalepage->options()->delete();
+            $productSalepage->options()->delete(); // CASCADE delete will handle StockProduct
 
             if ($request->has('product_options')) {
                 foreach ($request->product_options as $option) {
                     if (! empty($option['option_name'])) {
-                        $productSalepage->options()->create([
+                        $newOption = $productSalepage->options()->create([
                             'option_name' => $option['option_name'],
                             'option_price' => $option['option_price'] ?? $productSalepage->pd_sp_price,
                             'option_price2' => $option['option_price2'] ?? null, // Add option_price2
-                            'option_stock' => $option['option_stock'] ?? 0,
                             'option_active' => 1,
+                        ]);
+
+                        // บันทึกสต็อกสินค้าตัวเลือก
+                        StockProduct::create([
+                            'pd_sp_id' => $productSalepage->pd_sp_id,
+                            'option_id' => $newOption->option_id,
+                            'quantity' => $option['option_stock'] ?? 0,
                         ]);
                     }
                 }

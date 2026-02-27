@@ -87,9 +87,19 @@ class PaymentController extends Controller
 
         foreach ($cartItems as $item) {
             if (! $item->attributes->get('is_freebie')) {
-                $product = ProductSalepage::find($item->id);
-                if (! $product || $product->pd_sp_stock < $item->quantity) {
-                    return redirect()->route('cart.index')->with('error', "สินค้า '{$item->name}' หมดสต็อก");
+                $productId = $item->attributes['product_id'] ?? $item->id;
+                $optionId = $item->attributes['option_id'] ?? null;
+
+                if ($optionId) {
+                    $option = \App\Models\ProductOption::find($optionId);
+                    if (! $option || $option->option_stock < $item->quantity) {
+                        return redirect()->route('cart.index')->with('error', "สินค้า '{$item->name}' หมดสต็อก");
+                    }
+                } else {
+                    $product = ProductSalepage::find($productId);
+                    if (! $product || $product->pd_sp_stock < $item->quantity) {
+                        return redirect()->route('cart.index')->with('error', "สินค้า '{$item->name}' หมดสต็อก");
+                    }
                 }
             }
 

@@ -152,8 +152,7 @@ class OrderService
                     'user_id' => $user->id,
                 ]);
 
-                // ตัดสต็อก
-                $stockRecord->decrement('quantity', $item->quantity);
+                // ตัดสต็อกถูกลบออกไปเพื่อไปตัดตอนแนบสลิปแทน
             }
 
             // 5. จัดการส่วนลดจากรหัสโปรโมชั่น
@@ -208,5 +207,30 @@ class OrderService
     public function getPaymentQrCodeData(Order $order): string
     {
         return 'PromptPay QR Code Data for Order #'.$order->id.' Amount: '.$order->total_amount;
+    }
+
+    /**
+     * ตัดสต็อกสำหรับออเดอร์ (เรียกใช้หลังแนบสลิป)
+     */
+    public function deductStock(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            foreach ($order->details as $detail) {
+                $stockRecord = StockProduct::where('pd_sp_id', $detail->pd_id)
+                    ->where('option_id', $detail->option_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$stockRecord) {
+                    throw new \Exception('ไม่พบข้อมูลสต็อกสำหรับสินค้า: ' . ($detail->productSalepage->pd_sp_name ?? 'ID ' . $detail->pd_id));
+                }
+
+                if ($stockRecord->quantity < $detail->ordd_count) {
+                    throw new \Exception('สินค้า ' . ($detail->productSalepage->pd_sp_name ?? 'ID ' . $detail->pd_id) . ' มีไม่เพียงพอ (เหลือ ' . $stockRecord->quantity . ' ชิ้น)');
+                }
+
+                $stockRecord->decrement('quantity', $detail->ordd_count);
+            }
+        });
     }
 }

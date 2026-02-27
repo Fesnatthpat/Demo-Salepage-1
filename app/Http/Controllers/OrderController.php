@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
+    protected \App\Services\OrderService $orderService;
+
+    public function __construct(\App\Services\OrderService $orderService)
+    {
+        $this->orderService = $orderService;
+    }
+
     /**
      * แสดงหน้ารายการคำสั่งซื้อทั้งหมด (สำหรับฝั่งลูกค้า)
      */
@@ -130,6 +137,9 @@ class OrderController extends Controller
 
         try {
             if ($request->hasFile('slip')) {
+                // เช็คก่อนว่าออเดอร์นี้เคยตัดสต็อกไปหรือยัง (สมมติว่าถ้า status_id >= 2 คือตัดแล้ว)
+                $alreadyPaid = ($order->status_id >= 2);
+
                 // 3. เซฟรูปลงโฟลเดอร์ slips ใน public
                 $path = $request->file('slip')->store('slips', 'public');
                 
@@ -138,10 +148,15 @@ class OrderController extends Controller
                 $order->status_id = 2; // (ปรับตัวเลขตามที่คุณใช้) สมมติว่า 2 คือสถานะ 'ชำระเงินแล้ว'
                 $order->save();
 
+                // 🌟 ตัดสต็อกเฉพาะเมื่อเป็นการแจ้งชำระครั้งแรกเท่านั้น
+                if (!$alreadyPaid) {
+                    $this->orderService->deductStock($order);
+                }
+
                 // 🌟 5. พระเอกอยู่ตรงนี้: สั่งยิงข้อมูลเข้า CRM ทันทีที่อัปโหลดสลิปเสร็จ!!
                 \App\Jobs\SendOrderToApiJob::dispatchSync($order);
 
-                return back()->with('success', 'อัปโหลดสลิปเรียบร้อย ข้อมูลกำลังส่งไปยังระบบหลังบ้าน!');
+                return back()->with('success', 'อัปโหลดสลิปและตัดสต็อกสินค้าเรียบร้อยแล้ว!');
             }
         } catch (\Exception $e) {
             Log::error('Slip Upload Failed: '.$e->getMessage());

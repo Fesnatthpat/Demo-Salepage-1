@@ -331,6 +331,9 @@ class PaymentController extends Controller
         }
 
         if ($request->hasFile('slip_image')) {
+            // เช็คก่อนว่าออเดอร์นี้เคยตัดสต็อกไปหรือยัง (สมมติว่าถ้า status_id >= 2 คือตัดแล้ว)
+            $alreadyPaid = ($order->status_id >= 2);
+
             // เซฟรูปลงโฟลเดอร์ slips ใน public
             $path = $request->file('slip_image')->store('slips', 'public');
 
@@ -339,12 +342,23 @@ class PaymentController extends Controller
             $order->status_id = 2; // สถานะชำระเงินแล้ว
             $order->save();
 
+            // 🌟 ตัดสต็อกสินค้าเมื่อมีการแนบสลิปครั้งแรก
+            if (!$alreadyPaid) {
+                try {
+                    $this->orderService->deductStock($order);
+                } catch (\Exception $e) {
+                    // หากตัดสต็อกไม่สำเร็จ (เช่น ของหมดกะทันหัน) ให้ Log ไว้
+                    Log::error('Stock deduction failed for order ' . $order->ord_code . ': ' . $e->getMessage());
+                    // หมายเหตุ: ในขั้นตอนนี้ออเดอร์ถูกสร้างและจ่ายเงินแล้ว อาจจะต้องแจ้ง Admin เพื่อจัดการต่อ
+                }
+            }
+
             // 🌟 พระเอกอยู่ตรงนี้: รีเฟรชข้อมูลให้ชัวร์ และเรียก Job ส่ง API
             $order->refresh();
             \App\Jobs\SendOrderToApiJob::dispatchSync($order);
 
             return redirect()->route('orders.show', ['orderCode' => $order->ord_code])
-                ->with('success', 'แนบสลิปเรียบร้อยแล้ว ข้อมูลถูกส่งไป CRM สำเร็จ!');
+                ->with('success', 'แนบสลิปและตัดสต็อกสินค้าเรียบร้อยแล้ว!');
         }
 
         return back()->with('error', 'อัปโหลดไม่สำเร็จ');

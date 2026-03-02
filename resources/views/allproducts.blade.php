@@ -282,7 +282,7 @@
                                                                 d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z"
                                                                 clip-rule="evenodd" />
                                                             <path
-                                                                d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
+                                                                d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002 2h4v-7z" />
                                                         </svg>
                                                         แถม {{ $product->gifts_per_item }}
                                                     </div>
@@ -305,25 +305,19 @@
                                             </p>
 
                                             <div class="mt-auto pt-3 border-t border-gray-50">
-                                                <div class="flex flex-col mb-3">
+                                                {{-- 🔥 จุดที่แก้ไข: แยกราคาส่วนลดไปฝั่งขวา 🔥 --}}
+                                                <div class="flex items-center justify-between w-full mb-3">
+                                                    <div class="flex items-center gap-1">
+                                                        @if ($hasOptions)
+                                                            <span class="text-[10px] text-gray-500 mr-0.5">เริ่มต้น</span>
+                                                        @endif
+                                                        <span
+                                                            class="text-lg font-bold text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
+                                                    </div>
+
                                                     @if ($isOnSale)
-                                                        <div class="flex items-center gap-2">
-                                                            @if ($hasOptions)
-                                                                <span class="text-xs text-gray-500">เริ่มต้น</span>
-                                                            @endif
-                                                            <span
-                                                                class="text-lg font-bold text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
-                                                            <span
-                                                                class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
-                                                        </div>
-                                                    @else
-                                                        <div class="flex items-center gap-2">
-                                                            @if ($hasOptions)
-                                                                <span class="text-xs text-gray-500">เริ่มต้น</span>
-                                                            @endif
-                                                            <span
-                                                                class="text-lg font-bold text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
-                                                        </div>
+                                                        <span
+                                                            class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
                                                     @endif
                                                 </div>
 
@@ -374,7 +368,7 @@
                                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <h3 class="text-lg font-bold text-gray-600">ไม่พบสินค้าที่คุณค้นหา</h3>
-                            <p class="text-gray-500">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่น</p>
+                            <p class="text-gray-500">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมูื่น</p>
                             <a href="{{ route('allproducts') }}"
                                 class="btn btn-sm btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white mt-4">ล้างคำค้นหา</a>
                         </div>

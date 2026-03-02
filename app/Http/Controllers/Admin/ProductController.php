@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Admin\Traits\LogsActivity;
 use App\Http\Controllers\Controller;
+use App\Models\ProductImage;
 use App\Models\ProductSalepage;
 use App\Models\StockProduct;
 use Illuminate\Http\Request;
@@ -50,6 +51,7 @@ class ProductController extends Controller
         $this->validateSalePage($request);
 
         return DB::transaction(function () use ($request) {
+            // 1. สร้างสินค้าหลัก
             $lastProduct = ProductSalepage::latest('pd_sp_id')->first();
             $nextId = $lastProduct ? ($lastProduct->pd_sp_id + 1) : 1;
             $generatedCode = 'P-'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
@@ -73,7 +75,7 @@ class ProductController extends Controller
                 'pd_sp_free_cod' => $request->boolean('pd_sp_free_cod'),
             ]);
 
-            // บันทึกรูปภาพ
+            // 2. บันทึกรูปภาพแกลเลอรีหลัก
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('product_images', 'public');
@@ -84,18 +86,31 @@ class ProductController extends Controller
                 }
             }
 
-            // จัดการ Options และ สต็อก
+            // 3. จัดการตัวเลือกสินค้า (Options) และ สต็อก
             $hasOptions = false;
             if ($request->has('product_options')) {
-                foreach ($request->product_options as $option) {
-                    if (! empty($option['option_name'])) {
+                foreach ($request->product_options as $index => $optionData) {
+                    if (! empty($optionData['option_name'])) {
                         $hasOptions = true;
+
+                        // ✅ ตรวจสอบและบันทึกรูปภาพสำหรับตัวเลือกนี้
+                        $optionImgId = null;
+                        if ($request->hasFile("product_options.{$index}.image")) {
+                            $path = $request->file("product_options.{$index}.image")->store('product_images', 'public');
+                            $newImage = ProductImage::create([
+                                'pd_sp_id' => $salePage->pd_sp_id,
+                                'img_path' => $path,
+                                'img_sort' => 99, // รูปตัวเลือกให้ sort ไว้ท้ายๆ
+                            ]);
+                            $optionImgId = $newImage->img_id;
+                        }
+
                         $newOption = $salePage->options()->create([
-                            'option_name' => $option['option_name'],
-                            'option_SKU' => $option['option_SKU'] ?? null,
-                            'option_price' => $option['option_price'] ?? $salePage->pd_sp_price,
-                            'option_price2' => $option['option_price2'] ?? null,
-                            'options_img_id' => $option['options_img_id'] ?? null,
+                            'option_name' => $optionData['option_name'],
+                            'option_SKU' => $optionData['option_SKU'] ?? null,
+                            'option_price' => $optionData['option_price'] ?? $salePage->pd_sp_price,
+                            'option_price2' => $optionData['option_price2'] ?? null,
+                            'options_img_id' => $optionImgId, // บันทึก ID รูปภาพที่เพิ่งสร้าง
                             'option_active' => 1,
                         ]);
 
@@ -103,7 +118,7 @@ class ProductController extends Controller
                         StockProduct::create([
                             'pd_sp_id' => $salePage->pd_sp_id,
                             'option_id' => $newOption->option_id,
-                            'quantity' => $option['option_stock'] ?? 0,
+                            'quantity' => $optionData['option_stock'] ?? 0,
                         ]);
                     }
                 }
@@ -174,34 +189,47 @@ class ProductController extends Controller
                 }
             }
 
-            // ✅ ล้างสต็อกและตัวเลือกเดิมทิ้งทั้งหมด เพื่อสร้างใหม่แบบคลีนๆ
+            // ล้างสต็อกและตัวเลือกเดิมทิ้งเพื่อสร้างใหม่ (Clean data logic)
             $productSalepage->options()->delete();
             StockProduct::where('pd_sp_id', $productSalepage->pd_sp_id)->delete();
 
             $hasOptions = false;
             if ($request->has('product_options')) {
-                foreach ($request->product_options as $option) {
-                    if (! empty($option['option_name'])) {
+                foreach ($request->product_options as $index => $optionData) {
+                    if (! empty($optionData['option_name'])) {
                         $hasOptions = true;
+
+                        // ✅ ตรวจสอบรูปภาพ: ใช้รูปเดิมที่มี ID หรืออัปโหลดใหม่
+                        $optionImgId = $optionData['options_img_id'] ?? null;
+                        if ($request->hasFile("product_options.{$index}.image")) {
+                            $path = $request->file("product_options.{$index}.image")->store('product_images', 'public');
+                            $newImage = ProductImage::create([
+                                'pd_sp_id' => $productSalepage->pd_sp_id,
+                                'img_path' => $path,
+                                'img_sort' => 99,
+                            ]);
+                            $optionImgId = $newImage->img_id;
+                        }
+
                         $newOption = $productSalepage->options()->create([
-                            'option_name' => $option['option_name'],
-                            'option_SKU' => $option['option_SKU'] ?? null,
-                            'option_price' => $option['option_price'] ?? $productSalepage->pd_sp_price,
-                            'option_price2' => $option['option_price2'] ?? null,
-                            'options_img_id' => $option['options_img_id'] ?? null,
+                            'option_name' => $optionData['option_name'],
+                            'option_SKU' => $optionData['option_SKU'] ?? null,
+                            'option_price' => $optionData['option_price'] ?? $productSalepage->pd_sp_price,
+                            'option_price2' => $optionData['option_price2'] ?? null,
+                            'options_img_id' => $optionImgId,
                             'option_active' => 1,
                         ]);
 
                         StockProduct::create([
                             'pd_sp_id' => $productSalepage->pd_sp_id,
                             'option_id' => $newOption->option_id,
-                            'quantity' => $option['option_stock'] ?? 0,
+                            'quantity' => $optionData['option_stock'] ?? 0,
                         ]);
                     }
                 }
             }
 
-            // ✅ ถ้าไม่มีตัวเลือก ถึงจะบันทึกสต็อกหลัก
+            // ถ้าไม่มีตัวเลือก ถึงจะบันทึกสต็อกหลัก
             if (! $hasOptions) {
                 StockProduct::create([
                     'pd_sp_id' => $productSalepage->pd_sp_id,
@@ -292,6 +320,7 @@ class ProductController extends Controller
             'product_options.*.option_price2' => 'nullable|numeric|min:0',
             'product_options.*.option_stock' => 'nullable|integer|min:0',
             'product_options.*.options_img_id' => 'nullable|integer',
+            'product_options.*.image' => 'nullable|image|max:2048', // ✅ ตรวจสอบไฟล์รูปภาพตัวเลือก
         ]);
     }
 

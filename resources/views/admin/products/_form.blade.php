@@ -1,6 +1,5 @@
 {{-- resources/views/admin/products/_form.blade.php --}}
 
-{{-- Display All Validation Errors --}}
 @if ($errors->any())
     <div class="alert alert-error shadow-lg mb-6 bg-red-900/50 border-red-800 text-red-200">
         <div>
@@ -21,7 +20,6 @@
     </div>
 @endif
 
-{{-- ส่วนที่ 1: ข้อมูลหลัก --}}
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden" x-data="{
     options: {{ json_encode(
         old(
@@ -33,349 +31,231 @@
                         'option_name' => $opt->option_name,
                         'option_SKU' => $opt->option_SKU,
                         'option_price' => $opt->option_price,
-                        'option_price2' => $opt->option_price2,
                         'option_stock' => $opt->stock ? $opt->stock->quantity : 0,
+                        'options_img_id' => $opt->options_img_id,
+                        // ✅ แก้ไขตรงนี้: เช็คก่อนว่ามี options_img_id จริงๆ ถึงจะดึงรูปมาโชว์
+                        'image_preview' => $opt->options_img_id ? $opt->option_image_url : null,
                     ];
                 })
                 : [],
         ),
     ) }},
-    {{-- ✅ แก้ไขตรงนี้: ดึงสต็อกเฉพาะสินค้าหลักจริงๆ เพื่อป้องกันไม่ให้ดึงผลรวมมาใส่ฟอร์ม --}}
     mainStock: {{ old('pd_sp_stock', optional($productSalepage->stock)->quantity ?? 0) }},
     addOption() {
-        this.options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_price2: '', option_stock: 0 });
+        this.options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_stock: 0, options_img_id: null, image_preview: null });
         this.mainStock = 0;
+    },
+    previewOptionImage(event, index) {
+        const file = event.target.files[0];
+        if (file) {
+            this.options[index].image_preview = URL.createObjectURL(file);
+        }
     }
 }">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
             <i class="fas fa-info-circle text-emerald-500"></i> ข้อมูลทั่วไป
         </h3>
-
         <div class="flex items-center gap-4">
-            {{-- สถานะ เปิด/ปิด สินค้า --}}
             <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
                 <span class="text-sm font-medium text-gray-300">สถานะการขาย:</span>
                 <input type="hidden" name="pd_sp_active" value="0">
                 <input type="checkbox" name="pd_sp_active" value="1" class="toggle toggle-success toggle-sm"
                     {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : '' }} />
             </div>
-
-            {{-- สินค้าแนะนำ --}}
-            <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
-                <span class="text-sm font-medium text-gray-300">สินค้าแนะนำ:</span>
-                <div class="flex items-center gap-4">
-                    <label class="label cursor-pointer gap-1 p-0">
-                        <input type="radio" name="is_recommended" value="1" class="radio radio-primary radio-xs"
-                            {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : '' }} />
-                        <span class="label-text text-xs text-gray-400">ใช่</span>
-                    </label>
-                    <label class="label cursor-pointer gap-1 p-0">
-                        <input type="radio" name="is_recommended" value="0" class="radio radio-primary radio-xs"
-                            {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 0 ? 'checked' : '' }} />
-                        <span class="label-text text-xs text-gray-400">ไม่ใช่</span>
-                    </label>
-                </div>
-            </div>
         </div>
     </div>
 
     <div class="card-body p-6">
-        {{-- รหัสสินค้า (System Code) --}}
-        @if (isset($productSalepage->pd_sp_code))
-            <div
-                class="mb-6 flex items-center gap-2 text-sm text-blue-300 bg-blue-900/30 p-3 rounded-lg border border-blue-800">
-                <i class="fas fa-tag"></i>
-                <span>รหัสสินค้า (System): <strong>{{ $productSalepage->pd_sp_code }}</strong></span>
-            </div>
-        @endif
-
-        {{-- รหัส SKU (สินค้าหลัก) --}}
-        <div class="form-control w-full mb-6">
-            <label class="label font-bold text-gray-300">รหัส SKU (สินค้าหลัก)</label>
-            <div class="relative">
-                <span class="absolute left-4 top-3 text-gray-500"><i class="fas fa-barcode"></i></span>
-                <input type="text" name="pd_sp_SKU"
-                    class="input input-bordered w-full pl-10 text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="ระบุรหัส SKU (ถ้ามี)"
-                    value="{{ old('pd_sp_SKU', $productSalepage->pd_sp_SKU ?? '') }}" />
-            </div>
-        </div>
-
         {{-- ชื่อสินค้า --}}
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">ชื่อสินค้า <span class="text-red-400">*</span></label>
             <input type="text" name="pd_sp_name"
-                class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                placeholder="ระบุชื่อสินค้า (เช่น เสื้อยืด Cotton 100%)"
-                value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}" />
+                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}" required />
         </div>
-
-
 
         {{-- รายละเอียดสินค้า --}}
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">รายละเอียดสินค้า</label>
-            <textarea name="pd_sp_details" rows="5"
-                class="textarea textarea-bordered h-62 w-full text-base leading-relaxed bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้...">{{ old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? '')) }}</textarea>
+            <textarea name="pd_sp_details" rows="4"
+                class="textarea textarea-bordered bg-gray-700 border-gray-600 text-gray-100">{{ old('pd_sp_details', $productSalepage->pd_sp_description ?? '') }}</textarea>
         </div>
 
-        {{-- ข้อมูลการจัดส่ง (น้ำหนัก, ขนาด และ ค่าขนส่ง) --}}
-        <div class="divider text-gray-500 text-sm my-6">ข้อมูลการจัดส่ง (น้ำหนัก, ขนาด และค่าขนส่ง)</div>
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {{-- น้ำหนัก --}}
-            <div class="md:col-span-3 form-control">
-                <label class="label font-bold text-gray-300">น้ำหนัก (กิโลกรัม)</label>
+        {{-- ข้อมูลจัดส่ง --}}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="form-control">
+                <label class="label text-xs text-gray-400">น้ำหนัก (kg)</label>
                 <input type="number" step="0.01" name="pd_sp_weight"
-                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_weight', $productSalepage->pd_sp_weight ?? '') }}" />
+                    class="input input-bordered bg-gray-700 border-gray-600 text-gray-100"
+                    value="{{ old('pd_sp_weight', $productSalepage->pd_sp_weight ?? '') }}">
             </div>
-
-            {{-- กว้าง --}}
-            <div class="md:col-span-3 form-control">
-                <label class="label font-bold text-gray-300">กว้าง (ซม.)</label>
-                <input type="number" step="0.01" name="pd_sp_width"
-                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_width', $productSalepage->pd_sp_width ?? '') }}" />
+            <div class="form-control">
+                <label class="label text-xs text-gray-400">กว้าง (cm)</label>
+                <input type="number" name="pd_sp_width"
+                    class="input input-bordered bg-gray-700 border-gray-600 text-gray-100"
+                    value="{{ old('pd_sp_width', $productSalepage->pd_sp_width ?? '') }}">
             </div>
-
-            {{-- ยาว --}}
-            <div class="md:col-span-3 form-control">
-                <label class="label font-bold text-gray-300">ยาว (ซม.)</label>
-                <input type="number" step="0.01" name="pd_sp_length"
-                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_length', $productSalepage->pd_sp_length ?? '') }}" />
+            <div class="form-control">
+                <label class="label text-xs text-gray-400">ยาว (cm)</label>
+                <input type="number" name="pd_sp_length"
+                    class="input input-bordered bg-gray-700 border-gray-600 text-gray-100"
+                    value="{{ old('pd_sp_length', $productSalepage->pd_sp_length ?? '') }}">
             </div>
-
-            {{-- สูง --}}
-            <div class="md:col-span-3 form-control">
-                <label class="label font-bold text-gray-300">สูง (ซม.)</label>
-                <input type="number" step="0.01" name="pd_sp_height"
-                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_height', $productSalepage->pd_sp_height ?? '') }}" />
+            <div class="form-control">
+                <label class="label text-xs text-gray-400">สูง (cm)</label>
+                <input type="number" name="pd_sp_height"
+                    class="input input-bordered bg-gray-700 border-gray-600 text-gray-100"
+                    value="{{ old('pd_sp_height', $productSalepage->pd_sp_height ?? '') }}">
             </div>
         </div>
 
-        {{-- ตั้งค่า ฟรีค่าจัดส่ง --}}
-        <div class="mt-8 mb-2">
-            <h1 class="text-xl font-bold text-gray-100">จัดการค่าจัดส่ง</h1>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            {{-- ฟรีโอน --}}
-            <div class="flex items-center gap-4 bg-gray-900/40 px-5 py-4 rounded-xl border border-gray-700 shadow-sm hover:border-emerald-500/50 transition-colors cursor-pointer"
-                onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked;">
+        {{-- ค่าขนส่งฟรี --}}
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="flex items-center gap-3 bg-gray-900/40 p-4 rounded-xl border border-gray-700">
                 <input type="hidden" name="pd_sp_free_shipping" value="0">
-                <input type="checkbox" name="pd_sp_free_shipping" value="1"
-                    class="toggle toggle-success bg-gray-600 border-gray-500 [--tglbg:theme(colors.gray.200)] checked:[--tglbg:theme(colors.white)]"
-                    {{ old('pd_sp_free_shipping', $productSalepage->pd_sp_free_shipping ?? 0) == 1 ? 'checked' : '' }}
-                    onclick="event.stopPropagation();" />
-                <div>
-                    <span class="block text-base font-bold text-gray-200">ฟรีโอน</span>
-                    <span class="block text-xs text-gray-400">ฟรีค่าจัดส่งเมื่อลูกค้าชำระเงินแบบโอนเงิน</span>
-                </div>
+                <input type="checkbox" name="pd_sp_free_shipping" value="1" class="toggle toggle-success"
+                    {{ old('pd_sp_free_shipping', $productSalepage->pd_sp_free_shipping ?? 0) ? 'checked' : '' }}>
+                <span class="text-sm text-gray-200 font-bold">ฟรีค่าจัดส่ง (โอน)</span>
             </div>
-
-            {{-- ฟรีเก็บปลายทาง --}}
-            <div class="flex items-center gap-4 bg-gray-900/40 px-5 py-4 rounded-xl border border-gray-700 shadow-sm hover:border-emerald-500/50 transition-colors cursor-pointer"
-                onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked;">
+            <div class="flex items-center gap-3 bg-gray-900/40 p-4 rounded-xl border border-gray-700">
                 <input type="hidden" name="pd_sp_free_cod" value="0">
-                <input type="checkbox" name="pd_sp_free_cod" value="1"
-                    class="toggle toggle-success bg-gray-600 border-gray-500 [--tglbg:theme(colors.gray.200)] checked:[--tglbg:theme(colors.white)]"
-                    {{ old('pd_sp_free_cod', $productSalepage->pd_sp_free_cod ?? 0) == 1 ? 'checked' : '' }}
-                    onclick="event.stopPropagation();" />
-                <div>
-                    <span class="block text-base font-bold text-gray-200">ฟรีเก็บปลายทาง</span>
-                    <span class="block text-xs text-gray-400">ฟรีค่าจัดส่งเมื่อลูกค้าเลือกชำระเงินปลายทาง (COD)</span>
-                </div>
+                <input type="checkbox" name="pd_sp_free_cod" value="1" class="toggle toggle-success"
+                    {{ old('pd_sp_free_cod', $productSalepage->pd_sp_free_cod ?? 0) ? 'checked' : '' }}>
+                <span class="text-sm text-gray-200 font-bold">ฟรีค่าจัดส่ง (COD)</span>
             </div>
         </div>
 
-    </div>
+        {{-- ส่วนของตัวเลือกสินค้า (Variants) --}}
+        <div class="divider text-gray-500 text-sm">ตัวเลือกสินค้า (Variants)</div>
 
-    {{-- ส่วนที่ 1.5: ตัวเลือกสินค้า (Dynamic Options) --}}
-    <div class="card-body p-6 border-t border-gray-700 bg-gray-800/20">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
-                <i class="fas fa-tags text-emerald-500"></i> ตัวเลือกสินค้า (Variants)
-            </h3>
-            <button type="button" @click="addOption()"
-                class="btn btn-sm btn-emerald bg-emerald-600 hover:bg-emerald-700 border-none text-white">
-                <i class="fas fa-plus mr-1"></i> เพิ่มตัวเลือก
+        <div class="flex justify-end mb-4">
+            <button type="button" @click="addOption()" class="btn btn-sm btn-success text-white">
+                <i class="fas fa-plus mr-2"></i> เพิ่มตัวเลือก
             </button>
         </div>
 
-        <p class="text-sm text-gray-400 mb-4 italic">เพิ่มตัวเลือกสินค้า เช่น ขวดเล็ก, ขวดใหญ่ หรือ สีขาว, สีดำ
-            (หากไม่มี ให้ข้ามส่วนนี้)</p>
-
-        <div class="space-y-3">
+        <div class="space-y-4">
             <template x-for="(option, index) in options" :key="option.id || index">
-                <div class="flex flex-col gap-3 p-4 bg-gray-900/30 rounded-xl border border-gray-700">
+                <div
+                    class="p-4 bg-gray-900/30 rounded-xl border border-gray-700 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
 
-                    {{-- แถวที่ 1: ชื่อตัวเลือก และ SKU --}}
-                    <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
-                        {{-- ชื่อตัวเลือก --}}
-                        <div class="form-control w-full md:flex-1">
-                            <label class="label py-1"><span class="label-text-alt text-gray-400">ชื่อตัวเลือก (เช่น
-                                    สีดำ, ไซส์ L)</span></label>
-                            <input type="text" :name="`product_options[${index}][option_name]`"
-                                x-model="option.option_name" required
-                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                                placeholder="ระบุชื่อตัวเลือก">
-                        </div>
+                    {{-- 📸 ส่วนเพิ่มรูปภาพตัวเลือก --}}
+                    <div class="md:col-span-2 flex flex-col items-center justify-center">
+                        <label class="relative cursor-pointer group">
+                            <div
+                                class="w-20 h-20 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden bg-gray-800 hover:border-emerald-500 transition-colors">
+                                <template x-if="option.image_preview">
+                                    <img :src="option.image_preview" class="w-full h-full object-cover">
+                                </template>
+                                <template x-if="!option.image_preview">
+                                    <i class="fas fa-camera text-gray-500 group-hover:text-emerald-400"></i>
+                                </template>
+                            </div>
+                            {{-- Input สำหรับอัปโหลดรูปตัวเลือก --}}
+                            <input type="file" :name="`product_options[${index}][image]`" class="hidden"
+                                accept="image/*" @change="previewOptionImage($event, index)">
+                            <input type="hidden" :name="`product_options[${index}][options_img_id]`"
+                                x-model="option.options_img_id">
+                        </label>
+                        <span class="text-[10px] text-gray-500 mt-1">รูปตัวเลือก</span>
+                    </div>
 
-                        {{-- รหัส SKU สำหรับตัวเลือก --}}
-                        <div class="form-control w-full md:w-1/3">
-                            <label class="label py-1"><span class="label-text-alt text-gray-400">รหัส SKU
-                                    (Option)</span></label>
+                    <div class="md:col-span-3 form-control">
+                        <label class="label py-1 text-xs text-gray-400">ชื่อตัวเลือก</label>
+                        <input type="text" :name="`product_options[${index}][option_name]`"
+                            x-model="option.option_name"
+                            class="input input-bordered input-sm bg-gray-700 border-gray-600 text-gray-100"
+                            placeholder="เช่น สีแดง, XL" required>
+                    </div>
+
+                    <div class="md:col-span-3 form-control">
+                        <label class="label py-1 text-xs text-gray-400">SKU / ราคา</label>
+                        <div class="flex gap-2">
                             <input type="text" :name="`product_options[${index}][option_SKU]`"
                                 x-model="option.option_SKU"
-                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                                placeholder="เช่น T-SHIRT-BLK-L">
+                                class="input input-bordered input-sm bg-gray-700 border-gray-600 text-gray-100 w-1/2"
+                                placeholder="SKU">
+                            <input type="number" :name="`product_options[${index}][option_price]`"
+                                x-model="option.option_price"
+                                class="input input-bordered input-sm bg-gray-700 border-gray-600 text-gray-100 w-1/2"
+                                placeholder="ราคา">
                         </div>
                     </div>
 
-                    {{-- แถวที่ 2: ราคา 1, สต็อก และปุ่มลบ --}}
-                    <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
-                        {{-- ราคา 1 --}}
-                        <div class="form-control w-full md:flex-1">
-                            <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1
-                                    (บาท)</span></label>
-                            <input type="number" step="0.01" :name="`product_options[${index}][option_price]`"
-                                x-model="option.option_price"
-                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
-                                placeholder="ใช้ราคาหลัก">
-                        </div>
+                    <div class="md:col-span-3 form-control">
+                        <label class="label py-1 text-xs text-gray-400">สต็อก</label>
+                        <input type="number" :name="`product_options[${index}][option_stock]`"
+                            x-model="option.option_stock"
+                            class="input input-bordered input-sm bg-gray-700 border-gray-600 text-gray-100"
+                            placeholder="จำนวน">
+                    </div>
 
-                        {{-- สต็อก --}}
-                        <div class="form-control w-full md:flex-1">
-                            <label class="label py-1"><span class="label-text-alt text-gray-400">สต็อก</span></label>
-                            <input type="number" :name="`product_options[${index}][option_stock]`"
-                                x-model="option.option_stock"
-                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
-                                placeholder="0">
-                        </div>
-
-                        {{-- ปุ่มลบ --}}
+                    <div class="md:col-span-1 flex justify-center md:pt-6">
                         <button type="button"
                             @click="options = options.filter(o => (o.id || o.option_id) !== (option.id || option.option_id))"
-                            class="btn btn-square btn-error btn-outline border-red-800 hover:bg-red-600 text-red-500 hover:text-white md:mt-auto">
-                            <i class="fas fa-trash"></i>
+                            class="btn btn-circle btn-xs btn-error btn-outline">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-
                 </div>
             </template>
-
-            <div x-show="options.length === 0"
-                class="text-center py-8 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/50">
-                <p class="text-gray-500">ยังไม่มีตัวเลือกสินค้า คลิกปุ่ม "เพิ่มตัวเลือก" ด้านบนเพื่อเริ่มสร้าง</p>
-            </div>
         </div>
 
-        {{-- Grid: ราคา และ การแสดงผล --}}
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6 mt-4">
-            {{-- ราคาขาย --}}
-            <div class="md:col-span-4 form-control">
-                <label class="label font-bold text-gray-300">ราคาขาย (บาท) <span class="text-red-400">*</span></label>
-                <div class="relative">
-                    <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
-                    <input type="number" step="0.01" name="pd_sp_price"
-                        class="input input-bordered w-full pl-10 font-mono text-xl font-bold bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                        placeholder="0.00" value="{{ old('pd_sp_price', $productSalepage->pd_sp_price ?? '') }}" />
-                </div>
+        {{-- ราคาขายหลัก และ สต็อกหลัก --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 p-4 bg-gray-900/20 rounded-xl border border-gray-700">
+            <div class="form-control">
+                <label class="label font-bold text-gray-300">ราคาขายหลัก</label>
+                <input type="number" name="pd_sp_price"
+                    class="input input-bordered bg-gray-700 border-gray-600 text-gray-100 font-bold text-emerald-400"
+                    value="{{ old('pd_sp_price', $productSalepage->pd_sp_price ?? '') }}" required />
             </div>
-
-            {{-- ส่วนลด --}}
-            <div class="md:col-span-4 form-control">
+            <div class="form-control">
                 <label class="label font-bold text-gray-300">ส่วนลด (บาท)</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
-                    <input type="number" step="0.01" name="pd_sp_discount"
-                        class="input input-bordered w-full pl-10 font-mono text-xl text-red-400 bg-gray-700 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
-                        placeholder="0.00"
-                        value="{{ old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '') }}" />
-                </div>
+                <input type="number" name="pd_sp_discount"
+                    class="input input-bordered bg-gray-700 border-gray-600 text-red-400"
+                    value="{{ old('pd_sp_discount', $productSalepage->pd_sp_discount ?? 0) }}" />
             </div>
-
-            {{-- จำนวนสินค้าในคลัง (หลัก) --}}
-            <div class="md:col-span-4 form-control">
-                <label class="label font-bold text-gray-300">
-                    จำนวนสินค้าในคลัง (หลัก)
-                    <template x-if="options.length > 0">
-                        <span class="text-xs text-amber-400 font-normal ml-2">(ปิดใช้งานเมื่อมีตัวเลือก)</span>
-                    </template>
-                </label>
+            <div class="form-control">
+                <label class="label font-bold text-gray-300">สต็อกรวม <span x-show="options.length > 0"
+                        class="text-xs text-gray-500">(คำนวณอัตโนมัติ)</span></label>
                 <input type="number" name="pd_sp_stock" x-model="mainStock" :readonly="options.length > 0"
-                    :class="options.length > 0 ? 'bg-gray-800 text-gray-500 border-dashed cursor-not-allowed' :
-                        'bg-gray-700 text-gray-100'"
-                    class="input input-bordered w-full text-lg h-12 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0" />
+                    class="input input-bordered border-gray-600"
+                    :class="options.length > 0 ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-700 text-gray-100'">
             </div>
         </div>
     </div>
 </div>
 
-{{-- ส่วนที่ 2: รูปภาพ --}}
-<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6">
+{{-- ส่วนที่ 2: รูปภาพสินค้า (Gallery หลัก) --}}
+<div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl mt-6 overflow-hidden">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
-            <i class="fas fa-images text-emerald-500"></i> รูปภาพสินค้า
+            <i class="fas fa-images text-emerald-500"></i> แกลเลอรีรูปภาพหลัก
         </h3>
     </div>
-
     <div class="card-body p-6">
-        <div class="form-control w-full mb-8">
-            <div class="relative group">
-                <div id="upload-zone"
-                    class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-600 rounded-2xl bg-gray-700 hover:bg-gray-600 hover:border-emerald-500 transition-all cursor-pointer">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <div class="bg-gray-600 p-3 rounded-full shadow-sm mb-3">
-                            <i class="fas fa-cloud-upload-alt text-2xl text-emerald-400"></i>
-                        </div>
-                        <p class="mb-1 text-base text-gray-300"><span
-                                class="font-bold text-emerald-400">คลิกเพื่อเลือกรูป</span> หรือลากไฟล์มาวาง</p>
-                        <p class="text-xs text-gray-500">รองรับ JPG, PNG, WEBP (สูงสุด 64MB/รูป)</p>
-                    </div>
-                    <input type="file" name="images[]" id="images" multiple accept="image/*"
-                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                </div>
-            </div>
+        <div id="upload-zone"
+            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-600 rounded-xl bg-gray-700 hover:bg-gray-600 transition-all cursor-pointer relative">
+            <input type="file" name="images[]" id="images" multiple accept="image/*"
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <i class="fas fa-cloud-upload-alt text-2xl text-emerald-400 mb-2"></i>
+            <p class="text-xs text-gray-400">คลิกหรือลากไฟล์รูปภาพหลักมาวางที่นี่</p>
         </div>
-
-        <div id="new-image-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4"></div>
+        <div id="new-image-preview" class="grid grid-cols-4 md:grid-cols-6 gap-4 mt-4"></div>
 
         @if (isset($productSalepage) && $productSalepage->images->count() > 0)
-            <div class="divider text-gray-500 text-sm">รูปภาพปัจจุบัน</div>
-            <div id="image-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                @php
-                    $sortedImages = $productSalepage->images->sortBy('img_sort');
-                @endphp
-                @foreach ($sortedImages as $image)
-                    @php $isMain = !is_null($image->img_sort) && (int)$image->img_sort === 0; @endphp
-
-                    <div class="relative group rounded-lg overflow-hidden border-2 shadow-sm aspect-square bg-gray-900 {{ $isMain ? 'border-emerald-500' : 'border-gray-600' }}"
-                        id="image-card-{{ $image->img_id }}" data-image-id="{{ $image->img_id }}">
-
+            <div class="grid grid-cols-4 md:grid-cols-6 gap-4 mt-6 pt-6 border-t border-gray-700">
+                @foreach ($productSalepage->images->sortBy('img_sort') as $image)
+                    <div class="relative group aspect-square rounded-lg overflow-hidden border {{ $image->img_sort == 0 ? 'border-emerald-500' : 'border-gray-700' }}"
+                        id="image-card-{{ $image->img_id }}">
                         <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
-
-                        <div class="absolute top-2 right-2 bg-emerald-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg main-badge {{ $isMain ? '' : 'hidden' }}"
-                            title="รูปภาพหลัก">
-                            <i class="fas fa-star text-xs"></i>
-                        </div>
-
                         <div
-                            class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2 hover-actions">
-
-                            <button type="button" class="btn btn-xs btn-success w-full text-white set-main-image"
-                                data-image-id="{{ $image->img_id }}">
-                                <i class="fas fa-star"></i> ตั้งเป็นหลัก
-                            </button>
-
-                            <button type="button" class="btn btn-xs btn-error w-full text-white delete-image"
-                                data-image-id="{{ $image->img_id }}">
-                                <i class="fas fa-trash"></i> ลบ
-                            </button>
+                            class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center gap-1 p-1">
+                            <button type="button" class="btn btn-xs btn-success text-white set-main-image"
+                                data-image-id="{{ $image->img_id }}">หลัก</button>
+                            <button type="button" class="btn btn-xs btn-error text-white delete-image"
+                                data-image-id="{{ $image->img_id }}">ลบ</button>
                         </div>
                     </div>
                 @endforeach
@@ -484,17 +364,11 @@
                 const allCards = document.querySelectorAll('#image-list > div');
                 allCards.forEach(c => {
                     c.classList.remove('border-emerald-500');
-                    c.classList.add('border-gray-600');
-
-                    const badge = c.querySelector('.main-badge');
-                    if (badge) badge.classList.add('hidden');
+                    c.classList.add('border-gray-700');
                 });
 
-                targetCard.classList.remove('border-gray-600');
+                targetCard.classList.remove('border-gray-700');
                 targetCard.classList.add('border-emerald-500');
-
-                const targetBadge = targetCard.querySelector('.main-badge');
-                if (targetBadge) targetBadge.classList.remove('hidden');
 
                 fetch(`/admin/products/image/${imageId}/set-main`, {
                     method: 'POST',

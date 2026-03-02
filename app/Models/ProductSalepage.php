@@ -13,7 +13,7 @@ class ProductSalepage extends Model
 
     protected $primaryKey = 'pd_sp_id';
 
-    // ✅ เพิ่มฟิลด์ใหม่ทั้งหมด (น้ำหนัก, ขนาด, จัดส่งฟรี) ป้องกัน Error
+    // ✅ เพิ่มฟิลด์ทั้งหมดที่สามารถบันทึกข้อมูลได้
     protected $fillable = [
         'pd_sp_price2',
         'pd_sp_code',
@@ -34,7 +34,8 @@ class ProductSalepage extends Model
         'pd_sp_free_cod',
     ];
 
-    protected $appends = ['cover_image_url', 'pd_sp_stock'];
+    // ✅ เพิ่ม 'display_price' เข้าไปเพื่อให้เรียกใช้งานในหน้า Blade ได้ง่ายๆ (เช่น {{ $product->display_price }})
+    protected $appends = ['cover_image_url', 'pd_sp_stock', 'display_price'];
 
     public function getCoverImageUrlAttribute()
     {
@@ -58,6 +59,28 @@ class ProductSalepage extends Model
         return max(0, (float) $this->pd_sp_price - (float) $this->pd_sp_discount);
     }
 
+    // ✅ Logic ดึงราคาสำหรับแสดงผล (อิงตามตัวเลือกสินค้า)
+    public function getDisplayPriceAttribute()
+    {
+        // ถ้าสินค้ามีตัวเลือก (Options)
+        if ($this->options()->exists()) {
+            // ดึงราคาน้อยสุด และ มากสุด
+            $minPrice = $this->options()->min('option_price');
+            $maxPrice = $this->options()->max('option_price');
+
+            // ถ้าราคาไม่เท่ากัน ให้แสดงช่วงราคา (เช่น 199-299)
+            if ($minPrice != $maxPrice) {
+                return (int)$minPrice . '-' . (int)$maxPrice;
+            }
+
+            // ถ้าราคาเท่ากันทุกตัวเลือก ให้แสดงราคาเดียว
+            return (int)$minPrice;
+        }
+
+        // ถ้าสินค้า "ไม่มี" ตัวเลือก ให้ดึงราคาจากตารางหลักมาแสดง
+        return (int)$this->pd_sp_price;
+    }
+
     public function images()
     {
         return $this->hasMany(ProductImage::class, 'pd_sp_id', 'pd_sp_id')->orderBy('img_sort', 'asc');
@@ -73,27 +96,25 @@ class ProductSalepage extends Model
         return $this->belongsToMany(ProductSalepage::class, 'product_bogo_options', 'parent_id', 'child_id');
     }
 
-    // ความสัมพันธ์เชื่อมไปหาสต็อกของสินค้าหลัก
+    // ความสัมพันธ์ดึงข้อมูลสต็อกของ "สินค้าหลัก" (กรณีที่ไม่มีตัวเลือก)
     public function stock()
     {
         return $this->hasOne(StockProduct::class, 'pd_sp_id', 'pd_sp_id')->whereNull('option_id');
     }
 
-    // ✅ แก้ไข: Logic คืนค่าจำนวนสต็อกรวมทั้งหมด (แก้ปัญหาสินค้าที่มี Option โชว์ว่า 0 ชิ้น)
+    // ✅ Logic ดึงจำนวนสต็อกที่ถูกต้อง
     public function getPdSpStockAttribute()
     {
         // เช็คว่าสินค้านี้มีตัวเลือกย่อยหรือไม่
-        $hasOptions = $this->options()->exists();
-
-        if ($hasOptions) {
-            // ถ้ามีตัวเลือก: ให้หาผลรวมของสต็อกทุกตัวเลือกในตาราง stock_product
-            return \App\Models\StockProduct::where('pd_sp_id', $this->pd_sp_id)
+        if ($this->options()->exists()) {
+            // ถ้า "มี" ตัวเลือก: ให้หาผลรวมสต็อกเฉพาะของตัวเลือกย่อยทั้งหมด (ข้ามสต็อกของสินค้าหลัก)
+            return (int) \App\Models\StockProduct::where('pd_sp_id', $this->pd_sp_id)
                 ->whereNotNull('option_id')
                 ->sum('quantity');
         }
 
-        // ถ้าไม่มีตัวเลือก: ให้คืนค่าสต็อกของสินค้าหลัก
-        return $this->stock ? $this->stock->quantity : 0;
+        // ถ้า "ไม่มี" ตัวเลือก: ให้ดึงสต็อกของสินค้าหลักมาแสดง
+        return (int) ($this->stock ? $this->stock->quantity : 0);
     }
 
     public function reviewImages()

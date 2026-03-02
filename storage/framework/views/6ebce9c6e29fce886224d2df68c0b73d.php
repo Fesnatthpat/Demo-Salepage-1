@@ -301,23 +301,22 @@
             </div>
 
             
-            
+            <div class="md:col-span-4 form-control">
+                <label class="label font-bold text-gray-300">
+                    จำนวนสินค้าในคลัง (หลัก)
+                    <template x-if="options.length > 0">
+                        <span class="text-xs text-amber-400 font-normal ml-2">(ปิดใช้งานเมื่อมีตัวเลือก)</span>
+                    </template>
+                </label>
+                <input type="number" name="pd_sp_stock" x-model="mainStock" :readonly="options.length > 0"
+                    :class="options.length > 0 ? 'bg-gray-800 text-gray-500 border-dashed cursor-not-allowed' :
+                        'bg-gray-700 text-gray-100'"
+                    class="input input-bordered w-full text-lg h-12 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
+                    placeholder="0" />
+            </div>
 
             
-            <div class="md:col-span-4 form-control">
-                <label class="label font-bold text-gray-300">ตำแหน่งแสดงผล</label>
-                <select name="pd_sp_display_location"
-                    class="select select-bordered w-full text-base bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
-                    <option value="general"
-                        <?php echo e(old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? 'general') == 'general' ? 'selected' : ''); ?>>
-                        📦 สินค้าทั่วไป
-                    </option>
-                    <option value="homepage"
-                        <?php echo e(old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage' ? 'selected' : ''); ?>>
-                        ⭐ สินค้าแนะนำ (หน้าแรก)
-                    </option>
-                </select>
-            </div>
+            
         </div>
     </div>
 

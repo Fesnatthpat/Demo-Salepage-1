@@ -133,10 +133,11 @@ class OrderService
                 $netAmount += ($finalItemPrice * $item->quantity);
                 $totalDiscount += (($originalPrice - $finalItemPrice) * $item->quantity);
 
+                // ✅ ดึงชื่อ Option จากฐานข้อมูลโดยตรงเพื่อความแม่นยำ
                 $optionName = null;
-                if (isset($item->name) && str_contains($item->name, '(') && str_contains($item->name, ')')) {
-                    preg_match('/\((.*?)\)/', $item->name, $matches);
-                    $optionName = $matches[1] ?? null;
+                if ($optionId) {
+                    $option = \App\Models\ProductOption::find($optionId);
+                    $optionName = $option ? $option->option_name : null;
                 }
 
                 OrderDetail::create([

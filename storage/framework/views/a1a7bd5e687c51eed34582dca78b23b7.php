@@ -61,7 +61,8 @@
                 'id' => $option->option_id,
                 'name' => $option->option_name,
                 'price' => (float) $option->option_price,
-                'price2' => (float) $option->option_price2, // Added price2
+                'final_price' => (float) $option->final_price, // ราคาที่หักส่วนลดของสินค้าหลักแล้ว
+                'price2' => (float) $option->option_price2,
                 'stock' => (int) $option->option_stock,
             ];
         });
@@ -86,6 +87,7 @@
         allImages: <?php echo \Illuminate\Support\Js::from($allImages)->toHtml() ?>,
         initialBasePrice: <?php echo \Illuminate\Support\Js::from($initialBasePrice)->toHtml() ?>,
         initialBasePrice2: <?php echo \Illuminate\Support\Js::from($initialBasePrice2)->toHtml() ?>,
+        initialDisplayPrice: <?php echo \Illuminate\Support\Js::from($product->display_price)->toHtml() ?>,
         initialStock: <?php echo \Illuminate\Support\Js::from($product->pd_sp_stock)->toHtml() ?>,
         discountAmount: <?php echo \Illuminate\Support\Js::from($discountAmount)->toHtml() ?>,
         options: <?php echo \Illuminate\Support\Js::from($optionsData)->toHtml() ?>,
@@ -578,6 +580,11 @@
                 },
 
                 get finalPrice() {
+                    // หากยังไม่ได้เลือก Option ให้แสดงช่วงราคาเริ่มต้นที่มาจาก Model (เช่น 199-299)
+                    if (this.options.length > 0 && !this.selectedOption) {
+                        return `฿${config.initialDisplayPrice}`;
+                    }
+
                     let priceToDisplay = this.basePrice;
                     let price2ToDisplay = this.basePrice2;
                     let actualDiscount = this.discountAmount;
@@ -585,50 +592,55 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option) {
-                            priceToDisplay = option.price;
-                            price2ToDisplay = option.price2;
-                            actualDiscount =
-                                0; // Option price is usually considered final, no further discount from main product
+                            // ใช้ราคาที่หักส่วนลดแล้ว (final_price) มาแสดงเป็นราคาหลัก
+                            return `฿${option.final_price.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                         }
                     }
 
                     let final = Math.max(0, priceToDisplay - actualDiscount);
 
                     if (price2ToDisplay && price2ToDisplay > 0) {
-                        // If price2 exists, it implies a price range, discount usually not applied to range.
-                        // Or you might need more complex logic here if price2 also gets discounted.
                         return `฿${priceToDisplay.toLocaleString(undefined, {minimumFractionDigits: 0})} - ฿${price2ToDisplay.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                     }
                     return `฿${final.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                 },
                 get originalPriceDisplay() {
-                    let priceBeforeDiscount = this.basePrice;
-                    let actualDiscount = this.discountAmount;
+                    // หากยังไม่ได้เลือก Option ไม่ต้องแสดงราคาเดิมขีดฆ่า
+                    if (this.options.length > 0 && !this.selectedOption) {
+                        return null;
+                    }
 
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
-                        if (option) {
-                            priceBeforeDiscount = option.price;
-                            actualDiscount = 0; // No discount from main product if option selected
+                        // ถ้าราคาเดิมของ Option (price) มากกว่าราคาลดแล้ว (final_price) ให้แสดงราคาเดิมขีดฆ่า
+                        if (option && option.price > option.final_price) {
+                            return `฿${option.price.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                         }
+                        return null;
                     }
 
-                    if (actualDiscount > 0) {
-                        return `฿${priceBeforeDiscount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                    if (this.discountAmount > 0) {
+                        return `฿${this.basePrice.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                     }
                     return null;
                 },
                 get discountDisplay() {
-                    let actualDiscount = this.discountAmount;
-
-                    if (this.selectedOption) {
-                        // If an option is selected, the main product discount typically doesn't apply to it.
-                        // If options can have their own discounts, that logic would go here.
-                        actualDiscount = 0;
+                    // หากยังไม่ได้เลือก Option ไม่ต้องแสดงส่วนลด
+                    if (this.options.length > 0 && !this.selectedOption) {
+                        return null;
                     }
 
-                    if (actualDiscount > 0) {
-                        return `ประหยัด ฿${actualDiscount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                    if (this.selectedOption) {
+                        const option = this.options.find(o => o.id == this.selectedOption);
+                        if (option && option.price > option.final_price) {
+                            let diff = option.price - option.final_price;
+                            return `ประหยัด ฿${diff.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
+                        }
+                        return null;
+                    }
+
+                    if (this.discountAmount > 0) {
+                        return `ประหยัด ฿${this.discountAmount.toLocaleString(undefined, {minimumFractionDigits: 0})}`;
                     }
                     return null;
                 },

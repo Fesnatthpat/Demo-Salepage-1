@@ -319,7 +319,7 @@
 
                                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
                                                         <span
-                                                            class="text-xs text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
+                                                            class="text-md text-gray-400 line-through">฿<?php echo e(number_format($originalPrice)); ?></span>
                                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                 </div>
 

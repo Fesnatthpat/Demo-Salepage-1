@@ -317,7 +317,7 @@
 
                                                     @if ($isOnSale)
                                                         <span
-                                                            class="text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
+                                                            class="text-md text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
                                                     @endif
                                                 </div>
 

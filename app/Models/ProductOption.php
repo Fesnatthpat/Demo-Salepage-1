@@ -13,14 +13,15 @@ class ProductOption extends Model
 
     protected $primaryKey = 'option_id';
 
+    // ✅ เพิ่ม options_img_id ลงในนี้แล้ว เพื่อให้ Laravel ยอมให้บันทึกข้อมูล
     protected $fillable = [
         'parent_id',
         'option_name',
         'option_SKU',
         'option_price',
         'option_price2',
-        'option_active',
         'options_img_id',
+        'option_active',
     ];
 
     protected $appends = ['option_stock', 'option_image_url'];
@@ -52,9 +53,10 @@ class ProductOption extends Model
     {
         if ($this->image && $this->image->img_path) {
             $rawPath = $this->image->img_path;
-            return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/' . ltrim($rawPath, '/'));
+
+            return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/'.ltrim($rawPath, '/'));
         }
-        
+
         // ถ้าไม่มีรูปประจำ Option ให้ใช้รูปหลักของสินค้าแทน
         return $this->product ? $this->product->cover_image_url : null;
     }
@@ -63,7 +65,7 @@ class ProductOption extends Model
     {
         // The 'product' relationship should be loaded before calling this.
         $parentDiscount = $this->product ? (float) $this->product->pd_sp_discount : 0;
-        
+
         return max(0, (float) $this->option_price - $parentDiscount);
     }
 }

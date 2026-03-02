@@ -50,12 +50,10 @@ class ProductController extends Controller
         $this->validateSalePage($request);
 
         return DB::transaction(function () use ($request) {
-            // 1. สร้างรหัสสินค้า
             $lastProduct = ProductSalepage::latest('pd_sp_id')->first();
             $nextId = $lastProduct ? ($lastProduct->pd_sp_id + 1) : 1;
             $generatedCode = 'P-'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
 
-            // 2. บันทึกข้อมูลหลัก
             $salePage = ProductSalepage::create([
                 'pd_sp_code' => $generatedCode,
                 'pd_sp_SKU' => $request->pd_sp_SKU,
@@ -67,7 +65,6 @@ class ProductController extends Controller
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
-                // --- เพิ่มฟิลด์ใหม่ ---
                 'pd_sp_weight' => $request->pd_sp_weight,
                 'pd_sp_width' => $request->pd_sp_width,
                 'pd_sp_length' => $request->pd_sp_length,
@@ -76,33 +73,29 @@ class ProductController extends Controller
                 'pd_sp_free_cod' => $request->boolean('pd_sp_free_cod'),
             ]);
 
-            // บันทึกสต็อกสินค้าหลัก
-            StockProduct::create([
-                'pd_sp_id' => $salePage->pd_sp_id,
-                'option_id' => null,
-                'quantity' => $request->pd_sp_stock ?? 0,
-            ]);
-
-            // 3. บันทึกรูปภาพ (พร้อมกำหนด Sort Order)
+            // บันทึกรูปภาพ
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('product_images', 'public');
                     $salePage->images()->create([
                         'img_path' => $path,
-                        'img_sort' => $index, // เริ่มต้นที่ 0, 1, 2...
+                        'img_sort' => $index,
                     ]);
                 }
             }
 
-            // 4. บันทึกตัวเลือกสินค้า
+            // จัดการ Options และ สต็อก
+            $hasOptions = false;
             if ($request->has('product_options')) {
                 foreach ($request->product_options as $option) {
                     if (! empty($option['option_name'])) {
+                        $hasOptions = true;
                         $newOption = $salePage->options()->create([
                             'option_name' => $option['option_name'],
                             'option_SKU' => $option['option_SKU'] ?? null,
                             'option_price' => $option['option_price'] ?? $salePage->pd_sp_price,
-                            'option_price2' => $option['option_price2'] ?? null, // Add option_price2
+                            'option_price2' => $option['option_price2'] ?? null,
+                            'options_img_id' => $option['options_img_id'] ?? null,
                             'option_active' => 1,
                         ]);
 
@@ -114,6 +107,15 @@ class ProductController extends Controller
                         ]);
                     }
                 }
+            }
+
+            // ถ้าไม่มีตัวเลือก ถึงจะบันทึกสต็อกหลัก
+            if (! $hasOptions) {
+                StockProduct::create([
+                    'pd_sp_id' => $salePage->pd_sp_id,
+                    'option_id' => null,
+                    'quantity' => $request->pd_sp_stock ?? 0,
+                ]);
             }
 
             $this->logActivity($salePage, 'created');
@@ -142,7 +144,6 @@ class ProductController extends Controller
         return DB::transaction(function () use ($request, $productSalepage) {
             $originalData = $productSalepage->toArray();
 
-            // 1. อัปเดตข้อมูลหลัก
             $productSalepage->update([
                 'pd_sp_name' => $request->pd_sp_name,
                 'pd_sp_SKU' => $request->pd_sp_SKU,
@@ -153,7 +154,6 @@ class ProductController extends Controller
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
-                // --- เพิ่มฟิลด์ใหม่ ---
                 'pd_sp_weight' => $request->pd_sp_weight,
                 'pd_sp_width' => $request->pd_sp_width,
                 'pd_sp_length' => $request->pd_sp_length,
@@ -162,41 +162,36 @@ class ProductController extends Controller
                 'pd_sp_free_cod' => $request->boolean('pd_sp_free_cod'),
             ]);
 
-            // อัปเดตสต็อกสินค้าหลัก
-            StockProduct::updateOrCreate(
-                ['pd_sp_id' => $productSalepage->pd_sp_id, 'option_id' => null],
-                ['quantity' => $request->pd_sp_stock ?? 0]
-            );
-
-            // 2. รูปภาพ (อัปโหลดเพิ่ม)
             if ($request->hasFile('images')) {
-                // หาค่า sort สูงสุดเดิมก่อน
                 $maxSort = $productSalepage->images()->max('img_sort') ?? -1;
 
                 foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('product_images', 'public');
                     $productSalepage->images()->create([
                         'img_path' => $path,
-                        'img_sort' => $maxSort + 1 + $index, // ต่อท้ายอันเดิม
+                        'img_sort' => $maxSort + 1 + $index,
                     ]);
                 }
             }
 
-            // 3. จัดการตัวเลือกสินค้า
-            $productSalepage->options()->delete(); // CASCADE delete will handle StockProduct
+            // ✅ ล้างสต็อกและตัวเลือกเดิมทิ้งทั้งหมด เพื่อสร้างใหม่แบบคลีนๆ
+            $productSalepage->options()->delete();
+            StockProduct::where('pd_sp_id', $productSalepage->pd_sp_id)->delete();
 
+            $hasOptions = false;
             if ($request->has('product_options')) {
                 foreach ($request->product_options as $option) {
                     if (! empty($option['option_name'])) {
+                        $hasOptions = true;
                         $newOption = $productSalepage->options()->create([
                             'option_name' => $option['option_name'],
                             'option_SKU' => $option['option_SKU'] ?? null,
                             'option_price' => $option['option_price'] ?? $productSalepage->pd_sp_price,
-                            'option_price2' => $option['option_price2'] ?? null, // Add option_price2
+                            'option_price2' => $option['option_price2'] ?? null,
+                            'options_img_id' => $option['options_img_id'] ?? null,
                             'option_active' => 1,
                         ]);
 
-                        // บันทึกสต็อกสินค้าตัวเลือก
                         StockProduct::create([
                             'pd_sp_id' => $productSalepage->pd_sp_id,
                             'option_id' => $newOption->option_id,
@@ -204,6 +199,15 @@ class ProductController extends Controller
                         ]);
                     }
                 }
+            }
+
+            // ✅ ถ้าไม่มีตัวเลือก ถึงจะบันทึกสต็อกหลัก
+            if (! $hasOptions) {
+                StockProduct::create([
+                    'pd_sp_id' => $productSalepage->pd_sp_id,
+                    'option_id' => null,
+                    'quantity' => $request->pd_sp_stock ?? 0,
+                ]);
             }
 
             $this->logActivity($productSalepage, 'updated', $originalData, $productSalepage->toArray());
@@ -240,7 +244,6 @@ class ProductController extends Controller
         return response()->json(['success' => false], 404);
     }
 
-    // ✅ Method สำหรับตั้งรูปหลัก (Self-Healing Logic)
     public function setMainImage($imageId)
     {
         return DB::transaction(function () use ($imageId) {
@@ -250,15 +253,12 @@ class ProductController extends Controller
                 return response()->json(['success' => false, 'message' => 'Image not found.'], 404);
             }
 
-            // 1. รีเซ็ตรูปทั้งหมดของสินค้านี้ให้เป็นค่าสูงๆ ไว้ก่อน (เช่น 99)
             \App\Models\ProductImage::where('pd_sp_id', $image->pd_sp_id)
                 ->update(['img_sort' => 99]);
 
-            // 2. ตั้งรูปที่เลือกให้เป็น 0 (หลัก)
             $image->img_sort = 0;
             $image->save();
 
-            // 3. เรียงลำดับรูปที่เหลือใหม่ (Clean Data)
             \App\Models\ProductImage::where('pd_sp_id', $image->pd_sp_id)
                 ->where('img_id', '!=', $imageId)
                 ->orderBy('img_id')
@@ -279,20 +279,19 @@ class ProductController extends Controller
             'pd_sp_price2' => 'nullable|numeric|min:0',
             'pd_sp_stock' => 'required|integer|min:0',
             'pd_sp_display_location' => 'nullable|string',
-            // --- เพิ่มกฏ Validation ใหม่ ---
             'pd_sp_weight' => 'nullable|numeric|min:0',
             'pd_sp_width' => 'nullable|numeric|min:0',
             'pd_sp_length' => 'nullable|numeric|min:0',
             'pd_sp_height' => 'nullable|numeric|min:0',
             'pd_sp_free_shipping' => 'nullable|boolean',
             'pd_sp_free_cod' => 'nullable|boolean',
-            // -------------------------
             'product_options' => 'nullable|array',
             'product_options.*.option_name' => 'nullable|string|max:255',
             'product_options.*.option_SKU' => 'nullable|string|max:255',
             'product_options.*.option_price' => 'nullable|numeric|min:0',
             'product_options.*.option_price2' => 'nullable|numeric|min:0',
             'product_options.*.option_stock' => 'nullable|integer|min:0',
+            'product_options.*.options_img_id' => 'nullable|integer',
         ]);
     }
 
@@ -311,14 +310,12 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('images')) {
-            // Find the current maximum sort order for this product's review images.
             $maxSortOrder = $product->reviewImages()->max('sort_order') ?? -1;
 
             foreach ($request->file('images') as $index => $file) {
                 $path = $file->store('review_images', 'public');
                 $product->reviewImages()->create([
                     'image_url' => $path,
-                    // Set the sort order, incrementing from the max.
                     'sort_order' => $maxSortOrder + 1 + $index,
                 ]);
             }

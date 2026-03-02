@@ -40,7 +40,8 @@
                 : [],
         ),
     ) }},
-    mainStock: {{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? 0) }},
+    {{-- ✅ แก้ไขตรงนี้: ดึงสต็อกเฉพาะสินค้าหลักจริงๆ เพื่อป้องกันไม่ให้ดึงผลรวมมาใส่ฟอร์ม --}}
+    mainStock: {{ old('pd_sp_stock', optional($productSalepage->stock)->quantity ?? 0) }},
     addOption() {
         this.options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_price2: '', option_stock: 0 });
         this.mainStock = 0;
@@ -216,8 +217,7 @@
                         {{-- ชื่อตัวเลือก --}}
                         <div class="form-control w-full md:flex-1">
                             <label class="label py-1"><span class="label-text-alt text-gray-400">ชื่อตัวเลือก (เช่น
-                                    สีดำ,
-                                    ไซส์ L)</span></label>
+                                    สีดำ, ไซส์ L)</span></label>
                             <input type="text" :name="`product_options[${index}][option_name]`"
                                 x-model="option.option_name" required
                                 class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
@@ -312,27 +312,9 @@
                     class="input input-bordered w-full text-lg h-12 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
                     placeholder="0" />
             </div>
-
-            {{-- ตำแหน่งแสดงผล --}}
-            {{-- <div class="md:col-span-4 form-control">
-                <label class="label font-bold text-gray-300">ตำแหน่งแสดงผล</label>
-                <select name="pd_sp_display_location"
-                    class="select select-bordered w-full text-base bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
-                    <option value="general"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? 'general') == 'general' ? 'selected' : '' }}>
-                        📦 สินค้าทั่วไป
-                    </option>
-                    <option value="homepage"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage' ? 'selected' : '' }}>
-                        ⭐ สินค้าแนะนำ (หน้าแรก)
-                    </option>
-                </select>
-            </div> --}}
         </div>
     </div>
-
 </div>
-
 
 {{-- ส่วนที่ 2: รูปภาพ --}}
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6">
@@ -367,11 +349,9 @@
             <div class="divider text-gray-500 text-sm">รูปภาพปัจจุบัน</div>
             <div id="image-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 @php
-                    // เรียงตาม img_sort ให้รูปหลัก (0) ขึ้นก่อนเสมอ
                     $sortedImages = $productSalepage->images->sortBy('img_sort');
                 @endphp
                 @foreach ($sortedImages as $image)
-                    {{-- เช็คว่าเป็นรูปหลักหรือไม่ --}}
                     @php $isMain = !is_null($image->img_sort) && (int)$image->img_sort === 0; @endphp
 
                     <div class="relative group rounded-lg overflow-hidden border-2 shadow-sm aspect-square bg-gray-900 {{ $isMain ? 'border-emerald-500' : 'border-gray-600' }}"
@@ -379,7 +359,6 @@
 
                         <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
 
-                        {{-- Indicator: รูปหลัก --}}
                         <div class="absolute top-2 right-2 bg-emerald-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg main-badge {{ $isMain ? '' : 'hidden' }}"
                             title="รูปภาพหลัก">
                             <i class="fas fa-star text-xs"></i>
@@ -388,7 +367,6 @@
                         <div
                             class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2 hover-actions">
 
-                            {{-- ปุ่มตั้งเป็นหลัก --}}
                             <button type="button" class="btn btn-xs btn-success w-full text-white set-main-image"
                                 data-image-id="{{ $image->img_id }}">
                                 <i class="fas fa-star"></i> ตั้งเป็นหลัก
@@ -409,7 +387,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Image Upload Preview Logic
             const uploadInput = document.getElementById('images');
             const previewContainer = document.getElementById('new-image-preview');
             const uploadZone = document.getElementById('upload-zone');
@@ -430,7 +407,7 @@
 
                 uploadZone.addEventListener('drop', (e) => {
                     const files = e.dataTransfer.files;
-                    uploadInput.files = files; // assign dropped files to input
+                    uploadInput.files = files;
                     const event = new Event('change');
                     uploadInput.dispatchEvent(event);
                 });
@@ -458,7 +435,6 @@
                 });
             }
 
-            // Unified Image Action Logic (Delete & Set Main)
             document.getElementById('image-list')?.addEventListener('click', function(e) {
                 const deleteButton = e.target.closest('.delete-image');
                 const setMainButton = e.target.closest('.set-main-image');
@@ -505,27 +481,21 @@
                 const imageId = button.dataset.imageId;
                 const targetCard = document.getElementById(`image-card-${imageId}`);
 
-                // 1. Reset all cards to non-main visual state
                 const allCards = document.querySelectorAll('#image-list > div');
                 allCards.forEach(c => {
-                    // Border
                     c.classList.remove('border-emerald-500');
                     c.classList.add('border-gray-600');
 
-                    // Hide Badge
                     const badge = c.querySelector('.main-badge');
                     if (badge) badge.classList.add('hidden');
                 });
 
-                // 2. Set target card as main (Optimistic UI Update)
                 targetCard.classList.remove('border-gray-600');
                 targetCard.classList.add('border-emerald-500');
 
-                // Show Badge
                 const targetBadge = targetCard.querySelector('.main-badge');
                 if (targetBadge) targetBadge.classList.remove('hidden');
 
-                // 3. Send Request to Backend
                 fetch(`/admin/products/image/${imageId}/set-main`, {
                     method: 'POST',
                     headers: {
@@ -538,7 +508,6 @@
                         alert('ตั้งเป็นภาพหลักไม่สำเร็จ: ' + (data.message || 'Error'));
                         location.reload();
                     } else {
-                        // Success -> Refresh to re-order images properly
                         location.reload();
                     }
                 }).catch(e => {

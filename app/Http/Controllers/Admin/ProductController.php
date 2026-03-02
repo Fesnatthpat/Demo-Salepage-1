@@ -67,6 +67,13 @@ class ProductController extends Controller
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
+                // --- เพิ่มฟิลด์ใหม่ ---
+                'pd_sp_weight' => $request->pd_sp_weight,
+                'pd_sp_width' => $request->pd_sp_width,
+                'pd_sp_length' => $request->pd_sp_length,
+                'pd_sp_height' => $request->pd_sp_height,
+                'pd_sp_free_shipping' => $request->boolean('pd_sp_free_shipping'),
+                'pd_sp_free_cod' => $request->boolean('pd_sp_free_cod'),
             ]);
 
             // บันทึกสต็อกสินค้าหลัก
@@ -76,7 +83,7 @@ class ProductController extends Controller
                 'quantity' => $request->pd_sp_stock ?? 0,
             ]);
 
-            // 3. บันทึกรูปภาพ (พร้อมกำหนด Sort Order) [แก้ตรงนี้]
+            // 3. บันทึกรูปภาพ (พร้อมกำหนด Sort Order)
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $file) {
                     $path = $file->store('product_images', 'public');
@@ -146,6 +153,13 @@ class ProductController extends Controller
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',
+                // --- เพิ่มฟิลด์ใหม่ ---
+                'pd_sp_weight' => $request->pd_sp_weight,
+                'pd_sp_width' => $request->pd_sp_width,
+                'pd_sp_length' => $request->pd_sp_length,
+                'pd_sp_height' => $request->pd_sp_height,
+                'pd_sp_free_shipping' => $request->boolean('pd_sp_free_shipping'),
+                'pd_sp_free_cod' => $request->boolean('pd_sp_free_cod'),
             ]);
 
             // อัปเดตสต็อกสินค้าหลัก
@@ -265,6 +279,14 @@ class ProductController extends Controller
             'pd_sp_price2' => 'nullable|numeric|min:0',
             'pd_sp_stock' => 'required|integer|min:0',
             'pd_sp_display_location' => 'nullable|string',
+            // --- เพิ่มกฏ Validation ใหม่ ---
+            'pd_sp_weight' => 'nullable|numeric|min:0',
+            'pd_sp_width' => 'nullable|numeric|min:0',
+            'pd_sp_length' => 'nullable|numeric|min:0',
+            'pd_sp_height' => 'nullable|numeric|min:0',
+            'pd_sp_free_shipping' => 'nullable|boolean',
+            'pd_sp_free_cod' => 'nullable|boolean',
+            // -------------------------
             'product_options' => 'nullable|array',
             'product_options.*.option_name' => 'nullable|string|max:255',
             'product_options.*.option_SKU' => 'nullable|string|max:255',
@@ -277,6 +299,7 @@ class ProductController extends Controller
     public function showReviewImages(ProductSalepage $product)
     {
         $product->load('reviewImages');
+
         return view('admin.products.review-images', compact('product'));
     }
 

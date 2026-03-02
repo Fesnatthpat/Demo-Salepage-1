@@ -1,7 +1,7 @@
-{{-- resources/views/admin/products/_form.blade.php --}}
 
-{{-- Display All Validation Errors --}}
-@if ($errors->any())
+
+
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
     <div class="alert alert-error shadow-lg mb-6 bg-red-900/50 border-red-800 text-red-200">
         <div>
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
@@ -12,18 +12,18 @@
             <div>
                 <h3 class="font-bold">พบข้อผิดพลาด!</h3>
                 <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </ul>
             </div>
         </div>
     </div>
-@endif
+<?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-{{-- ส่วนที่ 1: ข้อมูลหลัก --}}
+
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden" x-data="{
-    options: {{ json_encode(
+    options: <?php echo e(json_encode(
         old(
             'product_options',
             isset($productSalepage) && $productSalepage->options
@@ -39,8 +39,8 @@
                 })
                 : [],
         ),
-    ) }},
-    mainStock: {{ old('pd_sp_stock', $productSalepage->pd_sp_stock ?? 0) }},
+    )); ?>,
+    mainStock: <?php echo e(old('pd_sp_stock', $productSalepage->pd_sp_stock ?? 0)); ?>,
     addOption() {
         this.options.push({ id: Date.now(), option_name: '', option_SKU: '', option_price: '', option_price2: '', option_stock: 0 });
         this.mainStock = 0;
@@ -52,26 +52,26 @@
         </h3>
 
         <div class="flex items-center gap-4">
-            {{-- สถานะ เปิด/ปิด สินค้า --}}
+            
             <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
                 <span class="text-sm font-medium text-gray-300">สถานะการขาย:</span>
                 <input type="hidden" name="pd_sp_active" value="0">
                 <input type="checkbox" name="pd_sp_active" value="1" class="toggle toggle-success toggle-sm"
-                    {{ old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : '' }} />
+                    <?php echo e(old('pd_sp_active', $productSalepage->pd_sp_active ?? 0) == 1 ? 'checked' : ''); ?> />
             </div>
 
-            {{-- สินค้าแนะนำ --}}
+            
             <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
                 <span class="text-sm font-medium text-gray-300">สินค้าแนะนำ:</span>
                 <div class="flex items-center gap-4">
                     <label class="label cursor-pointer gap-1 p-0">
                         <input type="radio" name="is_recommended" value="1" class="radio radio-primary radio-xs"
-                            {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : '' }} />
+                            <?php echo e(old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : ''); ?> />
                         <span class="label-text text-xs text-gray-400">ใช่</span>
                     </label>
                     <label class="label cursor-pointer gap-1 p-0">
                         <input type="radio" name="is_recommended" value="0" class="radio radio-primary radio-xs"
-                            {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 0 ? 'checked' : '' }} />
+                            <?php echo e(old('is_recommended', $productSalepage->is_recommended ?? 0) == 0 ? 'checked' : ''); ?> />
                         <span class="label-text text-xs text-gray-400">ไม่ใช่</span>
                     </label>
                 </div>
@@ -80,16 +80,16 @@
     </div>
 
     <div class="card-body p-6">
-        {{-- รหัสสินค้า (System Code) --}}
-        @if (isset($productSalepage->pd_sp_code))
+        
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($productSalepage->pd_sp_code)): ?>
             <div
                 class="mb-6 flex items-center gap-2 text-sm text-blue-300 bg-blue-900/30 p-3 rounded-lg border border-blue-800">
                 <i class="fas fa-tag"></i>
-                <span>รหัสสินค้า (System): <strong>{{ $productSalepage->pd_sp_code }}</strong></span>
+                <span>รหัสสินค้า (System): <strong><?php echo e($productSalepage->pd_sp_code); ?></strong></span>
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        {{-- รหัส SKU (สินค้าหลัก) --}}
+        
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">รหัส SKU (สินค้าหลัก)</label>
             <div class="relative">
@@ -97,77 +97,78 @@
                 <input type="text" name="pd_sp_SKU"
                     class="input input-bordered w-full pl-10 text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                     placeholder="ระบุรหัส SKU (ถ้ามี)"
-                    value="{{ old('pd_sp_SKU', $productSalepage->pd_sp_SKU ?? '') }}" />
+                    value="<?php echo e(old('pd_sp_SKU', $productSalepage->pd_sp_SKU ?? '')); ?>" />
             </div>
         </div>
 
-        {{-- ชื่อสินค้า --}}
+        
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">ชื่อสินค้า <span class="text-red-400">*</span></label>
             <input type="text" name="pd_sp_name"
                 class="input input-bordered w-full text-lg h-12 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
                 placeholder="ระบุชื่อสินค้า (เช่น เสื้อยืด Cotton 100%)"
-                value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}" />
+                value="<?php echo e(old('pd_sp_name', $productSalepage->pd_sp_name ?? '')); ?>" />
         </div>
 
 
 
-        {{-- รายละเอียดสินค้า --}}
+        
         <div class="form-control w-full mb-6">
             <label class="label font-bold text-gray-300">รายละเอียดสินค้า</label>
             <textarea name="pd_sp_details" rows="5"
                 class="textarea textarea-bordered h-62 w-full text-base leading-relaxed bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้...">{{ old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? '')) }}</textarea>
+                placeholder="อธิบายรายละเอียด คุณสมบัติ ขนาด หรือวิธีใช้..."><?php echo e(old('pd_sp_details', $productSalepage->pd_sp_description ?? ($productSalepage->pd_sp_details ?? ''))); ?></textarea>
         </div>
 
-        {{-- ข้อมูลการจัดส่ง (น้ำหนัก, ขนาด และ ค่าขนส่ง) --}}
+        
         <div class="divider text-gray-500 text-sm my-6">ข้อมูลการจัดส่ง (น้ำหนัก, ขนาด และค่าขนส่ง)</div>
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {{-- น้ำหนัก --}}
+            
             <div class="md:col-span-3 form-control">
                 <label class="label font-bold text-gray-300">น้ำหนัก (กิโลกรัม)</label>
                 <input type="number" step="0.01" name="pd_sp_weight"
                     class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_weight', $productSalepage->pd_sp_weight ?? '') }}" />
+                    placeholder="0.00" value="<?php echo e(old('pd_sp_weight', $productSalepage->pd_sp_weight ?? '')); ?>" />
             </div>
 
-            {{-- กว้าง --}}
+            
             <div class="md:col-span-3 form-control">
                 <label class="label font-bold text-gray-300">กว้าง (ซม.)</label>
                 <input type="number" step="0.01" name="pd_sp_width"
                     class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_width', $productSalepage->pd_sp_width ?? '') }}" />
+                    placeholder="0.00" value="<?php echo e(old('pd_sp_width', $productSalepage->pd_sp_width ?? '')); ?>" />
             </div>
 
-            {{-- ยาว --}}
+            
             <div class="md:col-span-3 form-control">
                 <label class="label font-bold text-gray-300">ยาว (ซม.)</label>
                 <input type="number" step="0.01" name="pd_sp_length"
                     class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_length', $productSalepage->pd_sp_length ?? '') }}" />
+                    placeholder="0.00" value="<?php echo e(old('pd_sp_length', $productSalepage->pd_sp_length ?? '')); ?>" />
             </div>
 
-            {{-- สูง --}}
+            
             <div class="md:col-span-3 form-control">
                 <label class="label font-bold text-gray-300">สูง (ซม.)</label>
                 <input type="number" step="0.01" name="pd_sp_height"
                     class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0.00" value="{{ old('pd_sp_height', $productSalepage->pd_sp_height ?? '') }}" />
+                    placeholder="0.00" value="<?php echo e(old('pd_sp_height', $productSalepage->pd_sp_height ?? '')); ?>" />
             </div>
         </div>
 
-        {{-- ตั้งค่า ฟรีค่าจัดส่ง --}}
+        
         <div class="mt-8 mb-2">
             <h1 class="text-xl font-bold text-gray-100">จัดการค่าจัดส่ง</h1>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            {{-- ฟรีโอน --}}
+            
             <div class="flex items-center gap-4 bg-gray-900/40 px-5 py-4 rounded-xl border border-gray-700 shadow-sm hover:border-emerald-500/50 transition-colors cursor-pointer"
                 onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked;">
                 <input type="hidden" name="pd_sp_free_shipping" value="0">
                 <input type="checkbox" name="pd_sp_free_shipping" value="1"
                     class="toggle toggle-success bg-gray-600 border-gray-500 [--tglbg:theme(colors.gray.200)] checked:[--tglbg:theme(colors.white)]"
-                    {{ old('pd_sp_free_shipping', $productSalepage->pd_sp_free_shipping ?? 0) == 1 ? 'checked' : '' }}
+                    <?php echo e(old('pd_sp_free_shipping', $productSalepage->pd_sp_free_shipping ?? 0) == 1 ? 'checked' : ''); ?>
+
                     onclick="event.stopPropagation();" />
                 <div>
                     <span class="block text-base font-bold text-gray-200">ฟรีโอน</span>
@@ -175,13 +176,14 @@
                 </div>
             </div>
 
-            {{-- ฟรีเก็บปลายทาง --}}
+            
             <div class="flex items-center gap-4 bg-gray-900/40 px-5 py-4 rounded-xl border border-gray-700 shadow-sm hover:border-emerald-500/50 transition-colors cursor-pointer"
                 onclick="const cb = this.querySelector('input[type=checkbox]'); cb.checked = !cb.checked;">
                 <input type="hidden" name="pd_sp_free_cod" value="0">
                 <input type="checkbox" name="pd_sp_free_cod" value="1"
                     class="toggle toggle-success bg-gray-600 border-gray-500 [--tglbg:theme(colors.gray.200)] checked:[--tglbg:theme(colors.white)]"
-                    {{ old('pd_sp_free_cod', $productSalepage->pd_sp_free_cod ?? 0) == 1 ? 'checked' : '' }}
+                    <?php echo e(old('pd_sp_free_cod', $productSalepage->pd_sp_free_cod ?? 0) == 1 ? 'checked' : ''); ?>
+
                     onclick="event.stopPropagation();" />
                 <div>
                     <span class="block text-base font-bold text-gray-200">ฟรีเก็บปลายทาง</span>
@@ -192,7 +194,7 @@
 
     </div>
 
-    {{-- ส่วนที่ 1.5: ตัวเลือกสินค้า (Dynamic Options) --}}
+    
     <div class="card-body p-6 border-t border-gray-700 bg-gray-800/20">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
@@ -211,9 +213,9 @@
             <template x-for="(option, index) in options" :key="option.id || index">
                 <div class="flex flex-col gap-3 p-4 bg-gray-900/30 rounded-xl border border-gray-700">
 
-                    {{-- แถวที่ 1: ชื่อตัวเลือก และ SKU --}}
+                    
                     <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
-                        {{-- ชื่อตัวเลือก --}}
+                        
                         <div class="form-control w-full md:flex-1">
                             <label class="label py-1"><span class="label-text-alt text-gray-400">ชื่อตัวเลือก (เช่น
                                     สีดำ,
@@ -224,7 +226,7 @@
                                 placeholder="ระบุชื่อตัวเลือก">
                         </div>
 
-                        {{-- รหัส SKU สำหรับตัวเลือก --}}
+                        
                         <div class="form-control w-full md:w-1/3">
                             <label class="label py-1"><span class="label-text-alt text-gray-400">รหัส SKU
                                     (Option)</span></label>
@@ -235,9 +237,9 @@
                         </div>
                     </div>
 
-                    {{-- แถวที่ 2: ราคา 1, สต็อก และปุ่มลบ --}}
+                    
                     <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
-                        {{-- ราคา 1 --}}
+                        
                         <div class="form-control w-full md:flex-1">
                             <label class="label py-1"><span class="label-text-alt text-gray-400">ราคา 1
                                     (บาท)</span></label>
@@ -247,7 +249,7 @@
                                 placeholder="ใช้ราคาหลัก">
                         </div>
 
-                        {{-- สต็อก --}}
+                        
                         <div class="form-control w-full md:flex-1">
                             <label class="label py-1"><span class="label-text-alt text-gray-400">สต็อก</span></label>
                             <input type="number" :name="`product_options[${index}][option_stock]`"
@@ -256,7 +258,7 @@
                                 placeholder="0">
                         </div>
 
-                        {{-- ปุ่มลบ --}}
+                        
                         <button type="button"
                             @click="options = options.filter(o => (o.id || o.option_id) !== (option.id || option.option_id))"
                             class="btn btn-square btn-error btn-outline border-red-800 hover:bg-red-600 text-red-500 hover:text-white md:mt-auto">
@@ -273,20 +275,20 @@
             </div>
         </div>
 
-        {{-- Grid: ราคา และ การแสดงผล --}}
+        
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6 mt-4">
-            {{-- ราคาขาย --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ราคาขาย (บาท) <span class="text-red-400">*</span></label>
                 <div class="relative">
                     <span class="absolute left-4 top-3 text-gray-500 font-bold">฿</span>
                     <input type="number" step="0.01" name="pd_sp_price"
                         class="input input-bordered w-full pl-10 font-mono text-xl font-bold bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-emerald-500"
-                        placeholder="0.00" value="{{ old('pd_sp_price', $productSalepage->pd_sp_price ?? '') }}" />
+                        placeholder="0.00" value="<?php echo e(old('pd_sp_price', $productSalepage->pd_sp_price ?? '')); ?>" />
                 </div>
             </div>
 
-            {{-- ส่วนลด --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ส่วนลด (บาท)</label>
                 <div class="relative">
@@ -294,36 +296,24 @@
                     <input type="number" step="0.01" name="pd_sp_discount"
                         class="input input-bordered w-full pl-10 font-mono text-xl text-red-400 bg-gray-700 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
                         placeholder="0.00"
-                        value="{{ old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '') }}" />
+                        value="<?php echo e(old('pd_sp_discount', $productSalepage->pd_sp_discount ?? '')); ?>" />
                 </div>
             </div>
 
-            {{-- จำนวนสินค้าในคลัง (หลัก) --}}
-            {{-- <div class="md:col-span-4 form-control">
-                <label class="label font-bold text-gray-300">
-                    จำนวนสินค้าในคลัง (หลัก)
-                    <template x-if="options.length > 0">
-                        <span class="text-xs text-amber-400 font-normal ml-2">(ปิดใช้งานเมื่อมีตัวเลือก)</span>
-                    </template>
-                </label>
-                <input type="number" name="pd_sp_stock" x-model="mainStock" :readonly="options.length > 0"
-                    :class="options.length > 0 ? 'bg-gray-800 text-gray-500 border-dashed cursor-not-allowed' :
-                        'bg-gray-700 text-gray-100'"
-                    class="input input-bordered w-full text-lg h-12 border-gray-600 placeholder-gray-500 focus:border-emerald-500"
-                    placeholder="0" />
-            </div> --}}
+            
+            
 
-            {{-- ตำแหน่งแสดงผล --}}
+            
             <div class="md:col-span-4 form-control">
                 <label class="label font-bold text-gray-300">ตำแหน่งแสดงผล</label>
                 <select name="pd_sp_display_location"
                     class="select select-bordered w-full text-base bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
                     <option value="general"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? 'general') == 'general' ? 'selected' : '' }}>
+                        <?php echo e(old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? 'general') == 'general' ? 'selected' : ''); ?>>
                         📦 สินค้าทั่วไป
                     </option>
                     <option value="homepage"
-                        {{ old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage' ? 'selected' : '' }}>
+                        <?php echo e(old('pd_sp_display_location', $productSalepage->pd_sp_display_location ?? '') == 'homepage' ? 'selected' : ''); ?>>
                         ⭐ สินค้าแนะนำ (หน้าแรก)
                     </option>
                 </select>
@@ -334,7 +324,7 @@
 </div>
 
 
-{{-- ส่วนที่ 2: รูปภาพ --}}
+
 <div class="card bg-gray-800 shadow-lg border border-gray-700 rounded-xl overflow-hidden mt-6">
     <div class="bg-gray-900/50 px-6 py-4 border-b border-gray-700">
         <h3 class="text-lg font-bold text-gray-100 flex items-center gap-2">
@@ -363,24 +353,24 @@
 
         <div id="new-image-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4"></div>
 
-        @if (isset($productSalepage) && $productSalepage->images->count() > 0)
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($productSalepage) && $productSalepage->images->count() > 0): ?>
             <div class="divider text-gray-500 text-sm">รูปภาพปัจจุบัน</div>
             <div id="image-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                @php
+                <?php
                     // เรียงตาม img_sort ให้รูปหลัก (0) ขึ้นก่อนเสมอ
                     $sortedImages = $productSalepage->images->sortBy('img_sort');
-                @endphp
-                @foreach ($sortedImages as $image)
-                    {{-- เช็คว่าเป็นรูปหลักหรือไม่ --}}
-                    @php $isMain = !is_null($image->img_sort) && (int)$image->img_sort === 0; @endphp
+                ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $sortedImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                    
+                    <?php $isMain = !is_null($image->img_sort) && (int)$image->img_sort === 0; ?>
 
-                    <div class="relative group rounded-lg overflow-hidden border-2 shadow-sm aspect-square bg-gray-900 {{ $isMain ? 'border-emerald-500' : 'border-gray-600' }}"
-                        id="image-card-{{ $image->img_id }}" data-image-id="{{ $image->img_id }}">
+                    <div class="relative group rounded-lg overflow-hidden border-2 shadow-sm aspect-square bg-gray-900 <?php echo e($isMain ? 'border-emerald-500' : 'border-gray-600'); ?>"
+                        id="image-card-<?php echo e($image->img_id); ?>" data-image-id="<?php echo e($image->img_id); ?>">
 
-                        <img src="{{ asset('storage/' . $image->img_path) }}" class="w-full h-full object-cover">
+                        <img src="<?php echo e(asset('storage/' . $image->img_path)); ?>" class="w-full h-full object-cover">
 
-                        {{-- Indicator: รูปหลัก --}}
-                        <div class="absolute top-2 right-2 bg-emerald-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg main-badge {{ $isMain ? '' : 'hidden' }}"
+                        
+                        <div class="absolute top-2 right-2 bg-emerald-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg main-badge <?php echo e($isMain ? '' : 'hidden'); ?>"
                             title="รูปภาพหลัก">
                             <i class="fas fa-star text-xs"></i>
                         </div>
@@ -388,25 +378,25 @@
                         <div
                             class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center gap-2 p-2 hover-actions">
 
-                            {{-- ปุ่มตั้งเป็นหลัก --}}
+                            
                             <button type="button" class="btn btn-xs btn-success w-full text-white set-main-image"
-                                data-image-id="{{ $image->img_id }}">
+                                data-image-id="<?php echo e($image->img_id); ?>">
                                 <i class="fas fa-star"></i> ตั้งเป็นหลัก
                             </button>
 
                             <button type="button" class="btn btn-xs btn-error w-full text-white delete-image"
-                                data-image-id="{{ $image->img_id }}">
+                                data-image-id="<?php echo e($image->img_id); ?>">
                                 <i class="fas fa-trash"></i> ลบ
                             </button>
                         </div>
                     </div>
-                @endforeach
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 </div>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Image Upload Preview Logic
@@ -481,7 +471,7 @@
                     fetch(`/admin/products/image/${id}`, {
                         method: 'DELETE',
                         headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                             'Content-Type': 'application/json'
                         }
                     }).then(r => r.json()).then(data => {
@@ -529,7 +519,7 @@
                 fetch(`/admin/products/image/${imageId}/set-main`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     }
@@ -548,4 +538,5 @@
             }
         });
     </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/products/_form.blade.php ENDPATH**/ ?>

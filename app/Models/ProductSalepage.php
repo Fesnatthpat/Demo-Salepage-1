@@ -13,7 +13,7 @@ class ProductSalepage extends Model
 
     protected $primaryKey = 'pd_sp_id';
 
-    // ✅ ต้องมีบรรทัดนี้เพื่อแก้ Error 1364 (Field doesn't have default value)
+    // ✅ เพิ่มฟิลด์ใหม่ทั้งหมด (น้ำหนัก, ขนาด, จัดส่งฟรี) ป้องกัน Error
     protected $fillable = [
         'pd_sp_price2',
         'pd_sp_code',
@@ -26,6 +26,12 @@ class ProductSalepage extends Model
         'pd_sp_display_location',
         'is_recommended',
         'is_bogo_active',
+        'pd_sp_weight',
+        'pd_sp_width',
+        'pd_sp_length',
+        'pd_sp_height',
+        'pd_sp_free_shipping',
+        'pd_sp_free_cod',
     ];
 
     protected $appends = ['cover_image_url', 'pd_sp_stock'];
@@ -57,7 +63,6 @@ class ProductSalepage extends Model
         return $this->hasMany(ProductImage::class, 'pd_sp_id', 'pd_sp_id')->orderBy('img_sort', 'asc');
     }
 
-    // ✅ แก้ไข: เปลี่ยนเป็น hasMany เพื่อเชื่อมกับ ProductOption
     public function options()
     {
         return $this->hasMany(ProductOption::class, 'parent_id', 'pd_sp_id');
@@ -68,13 +73,26 @@ class ProductSalepage extends Model
         return $this->belongsToMany(ProductSalepage::class, 'product_bogo_options', 'parent_id', 'child_id');
     }
 
+    // ความสัมพันธ์เชื่อมไปหาสต็อกของสินค้าหลัก
     public function stock()
     {
         return $this->hasOne(StockProduct::class, 'pd_sp_id', 'pd_sp_id')->whereNull('option_id');
     }
 
+    // ✅ แก้ไข: Logic คืนค่าจำนวนสต็อกรวมทั้งหมด (แก้ปัญหาสินค้าที่มี Option โชว์ว่า 0 ชิ้น)
     public function getPdSpStockAttribute()
     {
+        // เช็คว่าสินค้านี้มีตัวเลือกย่อยหรือไม่
+        $hasOptions = $this->options()->exists();
+
+        if ($hasOptions) {
+            // ถ้ามีตัวเลือก: ให้หาผลรวมของสต็อกทุกตัวเลือกในตาราง stock_product
+            return \App\Models\StockProduct::where('pd_sp_id', $this->pd_sp_id)
+                ->whereNotNull('option_id')
+                ->sum('quantity');
+        }
+
+        // ถ้าไม่มีตัวเลือก: ให้คืนค่าสต็อกของสินค้าหลัก
         return $this->stock ? $this->stock->quantity : 0;
     }
 

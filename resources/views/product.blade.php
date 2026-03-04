@@ -265,7 +265,74 @@
             </div>
         </div>
 
-        {{-- Review Section & Modals... --}}
+        {{-- Review Section & Modals --}}
+        
+        {{-- Image Zoom Modal (Product Images) --}}
+        <template x-teleport="body">
+            <div x-show="isModalOpen" 
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0">
+                
+                <button @click="isModalOpen = false" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-[110]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div class="relative w-full h-full flex items-center justify-center">
+                    <button x-show="images.length > 1" @click.stop="prevImage()" 
+                        class="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-[110]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <img :src="activeImage" class="max-w-full max-h-full object-contain select-none shadow-2xl rounded-lg" 
+                        @click.away="isModalOpen = false">
+
+                    <button x-show="images.length > 1" @click.stop="nextImage()" 
+                        class="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-[110]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Image Counter --}}
+                <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/10 px-4 py-2 rounded-full text-white/90 text-sm font-medium backdrop-blur-md">
+                    <span x-text="images.indexOf(activeImage) + 1"></span> / <span x-text="images.length"></span>
+                </div>
+            </div>
+        </template>
+
+        {{-- Review Image Zoom Modal --}}
+        <template x-teleport="body">
+            <div x-show="isReviewModalOpen" 
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0">
+                
+                <button @click="isReviewModalOpen = false" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-[110]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div class="relative w-full h-full flex items-center justify-center">
+                    <img :src="activeReviewImage" class="max-w-full max-h-full object-contain select-none shadow-2xl rounded-lg" 
+                        @click.away="isReviewModalOpen = false">
+                </div>
+            </div>
+        </template>
     </div>
 @endsection
 

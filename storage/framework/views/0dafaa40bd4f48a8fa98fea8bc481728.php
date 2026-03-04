@@ -223,7 +223,13 @@
                                                         title="ลดราคา">Sale</span>
                                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </div>
-                                            <div class="text-sm text-gray-500"><?php echo e($product->pd_sp_code); ?></div>
+                                            <div class="text-sm text-gray-500">
+                                                <span><?php echo e($product->pd_sp_code); ?></span>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_SKU): ?>
+                                                    <span class="mx-1 text-gray-600">|</span>
+                                                    <span class="text-emerald-500/80">SKU: <?php echo e($product->pd_sp_SKU); ?></span>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

@@ -1,16 +1,16 @@
-@extends('layouts.admin')
 
-@section('title', 'จัดการ "เกี่ยวกับติดใจ" (Visual Editor)')
 
-@section('page-title')
+<?php $__env->startSection('title', 'จัดการ "เกี่ยวกับติดใจ" (Visual Editor)'); ?>
+
+<?php $__env->startSection('page-title'); ?>
     <div class="text-2xl font-bold text-gray-100 flex items-center">
         <i class="fas fa-desktop text-emerald-500 mr-3"></i> ระบบจำลองหน้าเว็บ (Visual Editor)
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
-    @php
+    <?php
         $aboutTitle = \App\Models\SiteSetting::get('about_title') ?? 'เกี่ยวกับติดใจ';
         $aboutSub = \App\Models\SiteSetting::get('about_subtitle') ?? 'ความตั้งใจของเรา...เพื่อส่งมอบความสุขให้คุณ';
         $email = \App\Models\SiteSetting::get('contact_email') ?? 'contact@tidjai.com';
@@ -19,10 +19,10 @@
         $mapUrl = \App\Models\SiteSetting::get('map_url');
         $siteLogoPath = \App\Models\SiteSetting::get('site_logo');
         $siteLogoUrl = $siteLogoPath ? asset('storage/' . $siteLogoPath) : asset('images/logo/logo1.png');
-    @endphp
+    ?>
 
     <div class="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-700">
-        {{-- Toolbar --}}
+        
         <div
             class="bg-gray-900 px-6 py-4 flex flex-col sm:flex-row justify-between items-center border-b border-gray-700 gap-4">
             <div class="text-emerald-400 font-medium text-sm flex items-center">
@@ -34,9 +34,9 @@
             </button>
         </div>
 
-        {{-- Browser Window Simulation --}}
+        
         <div class="bg-gray-100 h-[800px] overflow-y-auto relative font-sans">
-            {{-- 1. HERO SECTION --}}
+            
             <div class="relative bg-red-600 text-white pt-16 pb-32 overflow-hidden group">
                 <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50">
                     <button onclick="openSettingsModal('hero')"
@@ -49,25 +49,25 @@
                 <div class="container mx-auto px-4 text-center relative z-10">
                     <div class="mb-6 flex justify-center">
                         <div class="p-4 bg-white rounded-full shadow-lg w-24 h-24 flex items-center justify-center">
-                            <img src="{{ $siteLogoUrl }}" class="max-w-full max-h-full object-contain" />
+                            <img src="<?php echo e($siteLogoUrl); ?>" class="max-w-full max-h-full object-contain" />
                         </div>
                     </div>
-                    <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ $aboutTitle }}</h1>
-                    <p class="text-white/90 text-lg font-light">{{ $aboutSub }}</p>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4"><?php echo e($aboutTitle); ?></h1>
+                    <p class="text-white/90 text-lg font-light"><?php echo e($aboutSub); ?></p>
                 </div>
             </div>
 
             <div class="container mx-auto px-4 max-w-5xl -mt-20 relative z-20 pb-20 space-y-16">
-                {{-- 2. CONTENT LOOP --}}
-                @forelse($favorites as $index => $fav)
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $favorites; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $fav): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                     <div
                         class="bg-white rounded-3xl shadow-xl overflow-hidden relative group transition-all duration-300 hover:shadow-2xl">
 
-                        {{-- Hover Edit Controls --}}
+                        
                         <div
                             class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 flex gap-2">
-                            {{-- ดึงข้อมูลรูปภาพหลายรูป (ถ้ามี) --}}
-                            @php
+                            
+                            <?php
                                 // เช็คว่ามี Relation 'images' หรือไม่ ถ้าไม่มีให้ใช้ array ว่าง
                                 $imageList =
                                     isset($fav->images) && count($fav->images) > 0
@@ -77,18 +77,18 @@
                                         : ($fav->image_path
                                             ? [asset('storage/' . $fav->image_path)]
                                             : []);
-                            @endphp
+                            ?>
 
-                            <button onclick='openEditModal(this, @json($imageList))'
-                                data-id="{{ $fav->id }}" data-title="{{ $fav->title }}"
-                                data-content="{{ $fav->content }}" data-sort="{{ $fav->sort_order }}"
-                                data-active="{{ $fav->is_active }}"
+                            <button onclick='openEditModal(this, <?php echo json_encode($imageList, 15, 512) ?>)'
+                                data-id="<?php echo e($fav->id); ?>" data-title="<?php echo e($fav->title); ?>"
+                                data-content="<?php echo e($fav->content); ?>" data-sort="<?php echo e($fav->sort_order); ?>"
+                                data-active="<?php echo e($fav->is_active); ?>"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded shadow text-xs font-bold">
                                 <i class="fas fa-edit"></i> แก้ไข
                             </button>
-                            <form action="{{ route('admin.favorites.destroy', $fav->id) }}" method="POST"
+                            <form action="<?php echo e(route('admin.favorites.destroy', $fav->id)); ?>" method="POST"
                                 onsubmit="return confirm('ลบ?');">
-                                @csrf @method('DELETE')
+                                <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                                 <button
                                     class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded shadow text-xs font-bold"><i
                                         class="fas fa-trash"></i></button>
@@ -98,60 +98,60 @@
                             class="absolute inset-0 border-2 border-transparent group-hover:border-blue-500 border-dashed rounded-3xl pointer-events-none z-40">
                         </div>
 
-                        {{-- Layout Content & Images --}}
+                        
                         <div class="flex flex-col md:flex-row">
-                            {{-- Text Column --}}
+                            
                             <div
-                                class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center {{ $index % 2 != 0 ? 'md:order-2' : '' }}">
+                                class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center <?php echo e($index % 2 != 0 ? 'md:order-2' : ''); ?>">
                                 <div class="flex items-start gap-4 mb-6">
                                     <div class="w-1.5 h-10 bg-red-600 rounded-full mt-1 flex-shrink-0"></div>
-                                    <h2 class="text-3xl font-bold text-gray-800 leading-tight">{{ $fav->title }}</h2>
+                                    <h2 class="text-3xl font-bold text-gray-800 leading-tight"><?php echo e($fav->title); ?></h2>
                                 </div>
                                 <div class="text-gray-600 text-lg leading-relaxed space-y-4 font-light">
-                                    {!! nl2br($fav->content) !!}</div>
+                                    <?php echo nl2br($fav->content); ?></div>
                             </div>
 
-                            {{-- Image Column (รองรับหลายรูป) --}}
-                            @php
+                            
+                            <?php
                                 $images = isset($fav->images) && count($fav->images) > 0 ? $fav->images : null;
                                 $singleImage = $fav->image_path;
-                            @endphp
+                            ?>
 
                             <div
-                                class="w-full md:w-1/2 min-h-[400px] bg-gray-50 relative {{ $index % 2 != 0 ? 'md:order-1' : '' }}">
-                                @if ($images && count($images) > 1)
-                                    {{-- กรณีมีหลายรูป: แสดงแบบ Grid --}}
+                                class="w-full md:w-1/2 min-h-[400px] bg-gray-50 relative <?php echo e($index % 2 != 0 ? 'md:order-1' : ''); ?>">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($images && count($images) > 1): ?>
+                                    
                                     <div class="absolute inset-0 grid grid-cols-2 gap-1 p-1">
-                                        @foreach ($images->take(4) as $img)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $images->take(4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                             <div class="relative w-full h-full overflow-hidden">
-                                                <img src="{{ asset('storage/' . $img->image_path) }}"
+                                                <img src="<?php echo e(asset('storage/' . $img->image_path)); ?>"
                                                     class="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-500">
                                             </div>
-                                        @endforeach
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                     </div>
-                                @elseif($images && count($images) == 1)
-                                    {{-- รูปเดียวจาก Table ใหม่ --}}
-                                    <img src="{{ asset('storage/' . $images[0]->image_path) }}"
+                                <?php elseif($images && count($images) == 1): ?>
+                                    
+                                    <img src="<?php echo e(asset('storage/' . $images[0]->image_path)); ?>"
                                         class="absolute inset-0 w-full h-full object-cover">
-                                @elseif($singleImage)
-                                    {{-- รูปเดียวจาก Table เก่า (Fallback) --}}
-                                    <img src="{{ asset('storage/' . $singleImage) }}"
+                                <?php elseif($singleImage): ?>
+                                    
+                                    <img src="<?php echo e(asset('storage/' . $singleImage)); ?>"
                                         class="absolute inset-0 w-full h-full object-cover">
-                                @else
+                                <?php else: ?>
                                     <div class="flex items-center justify-center h-full text-gray-300">
                                         <i class="fas fa-image text-4xl"></i>
                                     </div>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                         </div>
                     </div>
-                @empty
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     <div class="text-center py-20 bg-white rounded-3xl border-dashed border-2 border-gray-300">
                         <p class="text-gray-400">ยังไม่มีเนื้อหา</p>
                     </div>
-                @endforelse
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                {{-- 3. CONTACT CARD --}}
+                
                 <div class="bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden relative group">
                     <div
                         class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50">
@@ -162,35 +162,13 @@
                     <div
                         class="absolute inset-0 border-2 border-transparent group-hover:border-yellow-400 border-dashed rounded-xl pointer-events-none z-40">
                     </div>
-                    {{-- <div class="p-8 md:p-10">
-                        <div class="text-center mb-10">
-                            <h2 class="text-3xl font-bold text-[#1e3a5f] mb-3">ติดต่อติดใจ</h2>
-                            <p class="text-gray-500">เรายินดีให้บริการและพร้อมตอบทุกคำถามของคุณ</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-10">
-                            <div>
-                                <h3 class="text-lg font-bold text-[#1e3a5f] mb-4">ข้อมูลการติดต่อ</h3>
-                                <div class="space-y-4">
-                                    <div class="flex items-center gap-3"><i class="fas fa-phone-alt text-red-500 w-5"></i>
-                                        <p class="text-gray-600">{{ $phone }}</p>
-                                    </div>
-                                    <div class="flex items-center gap-3"><i class="fas fa-envelope text-red-500 w-5"></i>
-                                        <p class="text-gray-600">{{ $email }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-[#1e3a5f] mb-4">เวลาทำการ</h3>
-                                <p class="text-gray-600">จันทร์ - ศุกร์: 9:00 - 18:00 น.</p>
-                            </div>
-                        </div>
-                    </div> --}}
+                    
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Frontend Edit Modal --}}
+    
     <div id="frontendEditModal"
         class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
         <div
@@ -203,7 +181,7 @@
 
             <form id="frontendEditForm" method="POST" enctype="multipart/form-data"
                 class="flex-1 overflow-y-auto p-6 md:p-8">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="_method" id="formMethod" value="PUT">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
                     <div class="md:col-span-3 space-y-5">
@@ -222,7 +200,7 @@
                         <div class="bg-gray-900/50 p-5 rounded-xl border border-gray-700">
                             <label class="block text-sm font-semibold text-gray-300 mb-2">รูปภาพประกอบ (หลายรูปได้)</label>
 
-                            {{-- Preview Area ใน Modal --}}
+                            
                             <div id="m_img_container"
                                 class="mb-4 min-h-[10rem] bg-gray-800 rounded-lg flex flex-wrap gap-2 p-2 justify-center items-start border-2 border-dashed border-gray-600 relative overflow-y-auto max-h-48">
                                 <div id="m_img_placeholder"
@@ -259,28 +237,28 @@
         </div>
     </div>
 
-    {{-- Settings Modal (ตัดย่อเพราะเหมือนเดิม) --}}
+    
     <div id="settingsEditModal"
         class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-        {{-- ... (เหมือนโค้ดเดิม) ... --}}
+        
         <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-600">
             <div class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center border-b border-gray-700">
                 <h3 class="text-xl font-bold text-yellow-400">แก้ไขข้อมูลระบบ</h3>
                 <button onclick="closeModal('settingsEditModal')" class="text-gray-400 hover:text-white"><i
                         class="fas fa-times text-2xl"></i></button>
             </div>
-            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6">
-                @csrf
+            <form action="<?php echo e(route('admin.settings.update')); ?>" method="POST" class="p-6">
+                <?php echo csrf_field(); ?>
                 <div id="setting_hero_fields" class="space-y-4 hidden">
-                    <input type="text" name="settings[about_title]" value="{{ $aboutTitle }}"
+                    <input type="text" name="settings[about_title]" value="<?php echo e($aboutTitle); ?>"
                         class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
-                    <input type="text" name="settings[about_subtitle]" value="{{ $aboutSub }}"
+                    <input type="text" name="settings[about_subtitle]" value="<?php echo e($aboutSub); ?>"
                         class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
                 </div>
                 <div id="setting_contact_fields" class="space-y-4 hidden">
-                    <input type="text" name="settings[contact_phone]" value="{{ $phone }}"
+                    <input type="text" name="settings[contact_phone]" value="<?php echo e($phone); ?>"
                         class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
-                    <input type="text" name="settings[contact_email]" value="{{ $email }}"
+                    <input type="text" name="settings[contact_email]" value="<?php echo e($email); ?>"
                         class="w-full bg-gray-900 text-white p-2 rounded border border-gray-600">
                 </div>
                 <div class="mt-4 flex justify-end gap-2">
@@ -357,7 +335,7 @@
         function openCreateModal() {
             document.getElementById('frontendEditModal').classList.remove('hidden');
             document.getElementById('frontendEditModal').classList.add('flex');
-            document.getElementById('frontendEditForm').action = `{{ route('admin.favorites.store') }}`;
+            document.getElementById('frontendEditForm').action = `<?php echo e(route('admin.favorites.store')); ?>`;
             document.getElementById('formMethod').value = 'POST';
             document.getElementById('modalTitle').innerHTML =
                 '<i class="fas fa-plus-circle mr-2 text-emerald-400"></i>เพิ่มเนื้อหาใหม่';
@@ -422,4 +400,6 @@
             document.getElementById(modalId).classList.remove('flex');
         }
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/favorites/index.blade.php ENDPATH**/ ?>

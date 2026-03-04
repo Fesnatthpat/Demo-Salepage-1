@@ -67,12 +67,23 @@
     </div>
 
     <div class="card-body p-6">
-        
-        <div class="form-control w-full mb-6">
-            <label class="label font-bold text-gray-300">ชื่อสินค้า <span class="text-red-400">*</span></label>
-            <input type="text" name="pd_sp_name"
-                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
-                value="<?php echo e(old('pd_sp_name', $productSalepage->pd_sp_name ?? '')); ?>" required />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
+            <div class="form-control w-full">
+                <label class="label font-bold text-gray-300">ชื่อสินค้า <span class="text-red-400">*</span></label>
+                <input type="text" name="pd_sp_name"
+                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                    value="<?php echo e(old('pd_sp_name', $productSalepage->pd_sp_name ?? '')); ?>" required />
+            </div>
+
+            
+            <div class="form-control w-full">
+                <label class="label font-bold text-gray-300">รหัส SKU (สินค้าหลัก)</label>
+                <input type="text" name="pd_sp_SKU"
+                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100"
+                    placeholder="ระบุรหัส SKU"
+                    value="<?php echo e(old('pd_sp_SKU', $productSalepage->pd_sp_SKU ?? '')); ?>" />
+            </div>
         </div>
 
         

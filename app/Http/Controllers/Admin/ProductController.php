@@ -23,7 +23,8 @@ class ProductController extends Controller
             $searchTerm = '%'.$request->search.'%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('pd_sp_name', 'like', $searchTerm)
-                    ->orWhere('pd_sp_code', 'like', $searchTerm);
+                    ->orWhere('pd_sp_code', 'like', $searchTerm)
+                    ->orWhere('pd_sp_SKU', 'like', $searchTerm);
             });
         }
 

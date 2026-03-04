@@ -224,7 +224,13 @@
                                                         title="ลดราคา">Sale</span>
                                                 @endif
                                             </div>
-                                            <div class="text-sm text-gray-500">{{ $product->pd_sp_code }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                <span>{{ $product->pd_sp_code }}</span>
+                                                @if ($product->pd_sp_SKU)
+                                                    <span class="mx-1 text-gray-600">|</span>
+                                                    <span class="text-emerald-500/80">SKU: {{ $product->pd_sp_SKU }}</span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

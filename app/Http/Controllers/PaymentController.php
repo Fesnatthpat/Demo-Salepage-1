@@ -123,10 +123,39 @@ class PaymentController extends Controller
         $request->validate([
             'delivery_address_id' => 'required|exists:delivery_addresses,id',
             'selected_items' => 'required|array|min:1',
+            'selected_items.*' => 'string',
             'selected_freebies' => 'nullable|array',
+            'discount_code' => 'nullable|string|max:255',
         ]);
 
         $user = Auth::user();
+
+        // [New] ถ้ามีการส่งโค้ดส่วนลดมา ให้เก็บเข้า session ก่อนสร้างออเดอร์
+        if ($request->filled('discount_code')) {
+            $discountCode = trim($request->input('discount_code'));
+            $promotion = \App\Models\Promotion::where('code', $discountCode)
+                ->where('is_discount_code', true)
+                ->where('is_active', true)
+                ->where(function ($q) {
+                    $now = now();
+                    $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
+                })
+                ->where(function ($q) {
+                    $now = now();
+                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
+                })
+                ->first();
+
+            if ($promotion) {
+                $fixed = 0; $percentage = 0;
+                if ($promotion->discount_type === 'fixed') {
+                    $fixed = $promotion->discount_value;
+                } elseif ($promotion->discount_type === 'percentage') {
+                    $percentage = $promotion->discount_value / 100;
+                }
+                session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixed, 'percentage' => $percentage]]);
+            }
+        }
 
         try {
             $order = $this->orderService->createOrder(
@@ -185,8 +214,7 @@ class PaymentController extends Controller
             $request->validate([
                 'code' => 'required|string|max:255',
                 'selected_items' => 'required|array',
-                'selected_items.*' => 'numeric',
-                'selected_freebies' => 'nullable|array',
+                'selected_items.*' => 'string',                'selected_freebies' => 'nullable|array',
                 'selected_freebies.*' => 'numeric',
             ]);
 
@@ -290,6 +318,9 @@ class PaymentController extends Controller
                 } elseif ($percentageDiscountRate > 0) {
                     $additionalDiscountFromCode = $totalAmount * $percentageDiscountRate;
                 }
+                
+                // เก็บเข้า session เผื่อเรียกใช้ตอน process จริง
+                session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixedDiscountValue, 'percentage' => $percentageDiscountRate]]);
             }
 
             $grandTotal = max(0, $totalAmount - $additionalDiscountFromCode);

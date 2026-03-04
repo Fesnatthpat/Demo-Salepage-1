@@ -127,8 +127,8 @@ class OrderService
                     throw new \Exception('สินค้า '.$item->name.' มีไม่เพียงพอ (เหลือพร้อมขาย '.$availableStock.' ชิ้น)');
                 }
 
-                // 🌟 [แก้ไขใหม่] ตัดสต็อกและเพิ่มยอดจอง (ทำครั้งเดียวต่อรายการ)
-                $stockRecord->decrement('quantity', $item->quantity);
+                // 🌟 [แก้ไขใหม่] ทำการ "จองสต๊อก" ทันที เพื่อไม่ให้คนอื่นแย่ง
+                // เพิ่มยอดจอง (reserved_qty) เท่านั้น สต็อกหลัก (quantity) ยังไม่ลดจนกว่าจะจ่ายเงิน
                 $stockRecord->increment('reserved_qty', $item->quantity);
 
                 $originalPrice = $item->attributes['original_price'] ?? $item->price;

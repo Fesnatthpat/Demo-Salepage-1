@@ -50,9 +50,7 @@ class CancelExpiredOrders extends Command
                         ->first();
 
                     if ($stockRecord) {
-                        // คืนยอดสินค้ากลับไปในสต็อก (quantity) และลดยอดจอง (reserved_qty)
-                        $stockRecord->increment('quantity', $detail->ordd_count);
-                        
+                        // ลดยอดจอง (reserved_qty) คืนระบบ
                         // เช็คไม่ให้ยอดจองติดลบ (ป้องกันข้อผิดพลาด)
                         $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
                         $stockRecord->decrement('reserved_qty', $reserveToSubtract);

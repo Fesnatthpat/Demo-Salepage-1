@@ -214,7 +214,6 @@ class PaymentController extends Controller
                         ->lockForUpdate()
                         ->first();
                     if ($stockRecord) {
-                        $stockRecord->increment('quantity', $detail->ordd_count);
                         $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
                         $stockRecord->decrement('reserved_qty', $reserveToSubtract);
                     }
@@ -253,7 +252,6 @@ class PaymentController extends Controller
                         ->lockForUpdate()
                         ->first();
                     if ($stockRecord) {
-                        $stockRecord->increment('quantity', $detail->ordd_count);
                         $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
                         $stockRecord->decrement('reserved_qty', $reserveToSubtract);
                     }
@@ -429,7 +427,25 @@ class PaymentController extends Controller
             // อัปเดตข้อมูลสลิปและสถานะ
             $order->slip_path = $path = $request->file('slip_image')->store('slips', 'public');
             $order->status_id = 2; // สถานะชำระเงินแล้ว
-            $order->save();
+            
+            // 🌟 [แก้ไขใหม่] เมื่อลูกค้าจ่ายเงินแล้ว ให้หักออกจากสต๊อกจริง (quantity)
+            // และต้องหักออกจากยอดจอง (reserved_qty) คืนด้วย เพราะสินค้าออกไปแล้ว ไม่ได้อยู่ในสถานะจองแล้ว
+            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                foreach ($order->details as $detail) {
+                    $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
+                        ->where('option_id', $detail->option_id)
+                        ->lockForUpdate()
+                        ->first();
+                    if ($stockRecord) {
+                        // หักออกจากคลังจริง
+                        $stockRecord->decrement('quantity', $detail->ordd_count);
+                        // ลบออกจากยอดจอง
+                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
+                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
+                    }
+                }
+                $order->save();
+            });
 
             // 🌟 พระเอกอยู่ตรงนี้: รีเฟรชข้อมูลให้ชัวร์ และเรียก Job ส่ง API
             $order->refresh();

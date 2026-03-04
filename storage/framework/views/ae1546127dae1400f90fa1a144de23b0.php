@@ -175,6 +175,28 @@
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
+                        
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((int)$order->status_id === 1): ?>
+                            <div class="mt-6 flex flex-col gap-2">
+                                <a href="<?php echo e(route('payment.qr', ['orderId' => $order->ord_code])); ?>" 
+                                   class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-qrcode"></i>
+                                    ชำระเงินต่อ
+                                </a>
+
+                                <form action="<?php echo e(route('payment.cancel', ['orderCode' => $order->ord_code])); ?>" method="POST" onsubmit="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
+                                    <?php echo csrf_field(); ?>
+                                    <button type="submit" class="btn btn-outline btn-error w-full">
+                                        ยกเลิกคำสั่งซื้อ
+                                    </button>
+                                </form>
+
+                                <p class="text-[10px] text-gray-400 text-center mt-2 italic">
+                                    *กรุณาชำระเงินและแนบสลิปเพื่อยืนยันคำสั่งซื้อ
+                                </p>
+                            </div>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
                     </div>
                 </div>
             </div>

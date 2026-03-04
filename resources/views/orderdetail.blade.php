@@ -171,6 +171,28 @@
                             @endif
                         </div>
 
+                        {{-- [New] ปุ่มชำระเงินต่อ และ ปุ่มยกเลิก --}}
+                        @if((int)$order->status_id === 1)
+                            <div class="mt-6 flex flex-col gap-2">
+                                <a href="{{ route('payment.qr', ['orderId' => $order->ord_code]) }}" 
+                                   class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full shadow-md flex items-center justify-center gap-2">
+                                    <i class="fas fa-qrcode"></i>
+                                    ชำระเงินต่อ
+                                </a>
+
+                                <form action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}" method="POST" onsubmit="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline btn-error w-full">
+                                        ยกเลิกคำสั่งซื้อ
+                                    </button>
+                                </form>
+
+                                <p class="text-[10px] text-gray-400 text-center mt-2 italic">
+                                    *กรุณาชำระเงินและแนบสลิปเพื่อยืนยันคำสั่งซื้อ
+                                </p>
+                            </div>
+                        @endif
+
                     </div>
                 </div>
             </div>

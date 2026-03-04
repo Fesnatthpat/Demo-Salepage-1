@@ -82,6 +82,7 @@ Route::middleware(['auth'])->group(function () {
     // หน้าแสดง QR Code และ Upload Slip
     Route::get('/payment/qr/{orderId}', [PaymentController::class, 'showQr'])->name('payment.qr');
     Route::post('/payment/refresh/{orderCode}', [PaymentController::class, 'refreshQr'])->name('payment.refresh');
+    Route::post('/payment/cancel/{orderCode}', [PaymentController::class, 'cancelOrder'])->name('payment.cancel');
     Route::post('/payment/slip/upload/{orderCode}', [PaymentController::class, 'uploadSlip'])->name('payment.slip.upload');
 
     // -- กลุ่มที่ต้องกรอกข้อมูลส่วนตัวครบแล้ว --

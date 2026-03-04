@@ -180,7 +180,7 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
-        $expireTime = $order->updated_at->addMinutes(15);
+        $expireTime = $order->updated_at->addMinutes(1);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
         if ($secondsRemaining < 0) {
             $secondsRemaining = 0;
@@ -198,6 +198,31 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
+        if ($order->status_id == 5) {
+            return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถสร้าง QR Code ใหม่ได้');
+        }
+
+        // ตรวจสอบว่าหมดเวลาหรือยัง (1 นาทีจากเวลาสร้าง)
+        if (now()->greaterThan($order->created_at->addMinutes(1))) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                $order->status_id = 5;
+                $order->save();
+
+                foreach ($order->details as $detail) {
+                    $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
+                        ->where('option_id', $detail->option_id)
+                        ->lockForUpdate()
+                        ->first();
+                    if ($stockRecord) {
+                        $stockRecord->increment('quantity', $detail->ordd_count);
+                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
+                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
+                    }
+                }
+            });
+            return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
+        }
+
         if ($order->status_id == 1) {
             $order->touch();
 
@@ -205,6 +230,40 @@ class PaymentController extends Controller
         }
 
         return back()->with('error', 'ไม่สามารถรีเฟรชได้');
+    }
+
+    /**
+     * [New Step 3.2] Manual Cancel Order
+     */
+    public function cancelOrder($orderCode)
+    {
+        $order = Order::where('ord_code', $orderCode)
+            ->where('user_id', Auth::id())
+            ->where('status_id', 1)
+            ->firstOrFail();
+
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                $order->status_id = 5;
+                $order->save();
+
+                foreach ($order->details as $detail) {
+                    $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
+                        ->where('option_id', $detail->option_id)
+                        ->lockForUpdate()
+                        ->first();
+                    if ($stockRecord) {
+                        $stockRecord->increment('quantity', $detail->ordd_count);
+                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
+                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
+                    }
+                }
+            });
+
+            return redirect()->route('orders.index')->with('success', 'ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            return back()->with('error', 'เกิดข้อผิดพลาดในการยกเลิก: ' . $e->getMessage());
+        }
     }
 
     // [Apply Discount Logic - Fixed Time Check]
@@ -357,39 +416,27 @@ class PaymentController extends Controller
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
+        // 🌟 ตรวจสอบว่าออเดอร์ถูกยกเลิกไปแล้วหรือยัง (เช็คสถานะ 5 หรือเช็คเวลา)
+        if ($order->status_id == 5) {
+            return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกเนื่องจากชำระเงินเกินเวลาที่กำหนด');
+        }
+
         if (now()->greaterThan($order->updated_at->addMinutes(15))) {
             return back()->with('error', 'หมดเวลาชำระเงิน กรุณากดปุ่มรีเฟรช');
         }
 
         if ($request->hasFile('slip_image')) {
-            // เช็คก่อนว่าออเดอร์นี้เคยตัดสต็อกไปหรือยัง (สมมติว่าถ้า status_id >= 2 คือตัดแล้ว)
-            $alreadyPaid = ($order->status_id >= 2);
-
-            // เซฟรูปลงโฟลเดอร์ slips ใน public
-            $path = $request->file('slip_image')->store('slips', 'public');
-
             // อัปเดตข้อมูลสลิปและสถานะ
-            $order->slip_path = $path;
+            $order->slip_path = $path = $request->file('slip_image')->store('slips', 'public');
             $order->status_id = 2; // สถานะชำระเงินแล้ว
             $order->save();
-
-            // 🌟 ตัดสต็อกสินค้าเมื่อมีการแนบสลิปครั้งแรก
-            if (!$alreadyPaid) {
-                try {
-                    $this->orderService->deductStock($order);
-                } catch (\Exception $e) {
-                    // หากตัดสต็อกไม่สำเร็จ (เช่น ของหมดกะทันหัน) ให้ Log ไว้
-                    Log::error('Stock deduction failed for order ' . $order->ord_code . ': ' . $e->getMessage());
-                    // หมายเหตุ: ในขั้นตอนนี้ออเดอร์ถูกสร้างและจ่ายเงินแล้ว อาจจะต้องแจ้ง Admin เพื่อจัดการต่อ
-                }
-            }
 
             // 🌟 พระเอกอยู่ตรงนี้: รีเฟรชข้อมูลให้ชัวร์ และเรียก Job ส่ง API
             $order->refresh();
             \App\Jobs\SendOrderToApiJob::dispatchSync($order);
 
             return redirect()->route('orders.show', ['orderCode' => $order->ord_code])
-                ->with('success', 'แนบสลิปและตัดสต็อกสินค้าเรียบร้อยแล้ว!');
+                ->with('success', 'แนบสลิปเรียบร้อยแล้ว!');
         }
 
         return back()->with('error', 'อัปโหลดไม่สำเร็จ');

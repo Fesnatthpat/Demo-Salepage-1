@@ -127,22 +127,6 @@
                             บันทึกรูป
                         </button>
                     </div>
-
-                    
-                    <div id="refresh-btn-container" class="hidden mb-6">
-                        <form action="<?php echo e(route('payment.refresh', $order->ord_code)); ?>" method="POST">
-                            <?php echo csrf_field(); ?>
-                            <button type="submit" class="btn btn-outline btn-primary gap-2 w-full max-w-[200px]">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                ขอ QR Code ใหม่
-                            </button>
-                        </form>
-                        <p class="text-xs text-gray-400 mt-2">กดเพื่อเริ่มนับเวลาใหม่อีกครั้ง</p>
-                    </div>
                 </div>
 
                 
@@ -150,6 +134,16 @@
                     class="btn w-full bg-gradient-to-r from-[#fc0303] to-[#c70606] text-white border-none text-lg h-12 shadow-md shadow-emerald-200 mb-3 transition-all duration-300">
                     แจ้งชำระเงิน / แนบสลิป
                 </button>
+
+                
+                <div id="cancel-order-container" class="mb-3 transition-all duration-300">
+                    <form action="<?php echo e(route('payment.cancel', ['orderCode' => $order->ord_code])); ?>" method="POST" onsubmit="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
+                        <?php echo csrf_field(); ?>
+                        <button type="submit" class="btn btn-outline btn-error w-full font-normal">
+                            ยกเลิกคำสั่งซื้อ
+                        </button>
+                    </form>
+                </div>
 
                 <a href="<?php echo e(route('orders.index')); ?>"
                     class="btn btn-ghost btn-sm w-full text-gray-400 font-normal hover:bg-transparent hover:text-gray-600">
@@ -246,12 +240,17 @@
                 expiredMessage.classList.remove('hidden');
                 qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
                 saveBtnContainer.classList.add('hidden');
-                refreshBtnContainer.classList.remove('hidden');
+                
+                // ซ่อนปุ่มแจ้งชำระเงินเมื่อหมดเวลา
+                if (uploadBtn) {
+                    uploadBtn.classList.add('hidden');
+                }
 
-                uploadBtn.disabled = true;
-                uploadBtn.classList.add('btn-disabled', 'bg-gray-300', 'text-gray-500');
-                uploadBtn.classList.remove('bg-[#00B900]', 'hover:bg-[#009900]', 'shadow-md');
-                uploadBtn.innerHTML = 'หมดเวลาดำเนินการ';
+                // ซ่อนปุ่มยกเลิกคำสั่งซื้อเมื่อหมดเวลา (เพราะระบบจะยกเลิกให้อยู่แล้ว)
+                const cancelBtnContainer = document.getElementById('cancel-order-container');
+                if (cancelBtnContainer) {
+                    cancelBtnContainer.classList.add('hidden');
+                }
             }
 
             updateTimerDisplay();

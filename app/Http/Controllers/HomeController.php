@@ -21,7 +21,22 @@ class HomeController extends Controller
             return [$setting->key => SiteSetting::get($setting->key)];
         })->toArray();
 
-        return view('index', compact('recommendedProducts', 'settings'));
+        // ดึงข้อมูล CMS จากตารางใหม่
+        $heroSlides = \App\Models\Banner::hero()->active()->get();
+        $infoBanner = \App\Models\Banner::info()->active()->first();
+        $secSlides = \App\Models\Banner::secondary()->active()->get();
+        $services = \App\Models\Service::where('is_active', true)->orderBy('sort_order')->get();
+        $reasons = \App\Models\Feature::where('is_active', true)->orderBy('sort_order')->get();
+
+        return view('index', compact(
+            'recommendedProducts', 
+            'settings', 
+            'heroSlides', 
+            'infoBanner', 
+            'secSlides', 
+            'services', 
+            'reasons'
+        ));
     }
 
     public function about()

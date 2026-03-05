@@ -43,12 +43,10 @@ class AdminController extends Controller
         $request->validate([
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'site_cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            // Other validations can be added here
         ]);
 
-        // 1. จัดการอัปโหลดโลโก้เว็บ (site_logo)
+        // --- 1 & 2. Logo & Cover Image (SiteSetting) ---
         if ($request->hasFile('site_logo')) {
-            // Delete old logo if it exists
             $oldLogoPath = SiteSetting::get('site_logo');
             if ($oldLogoPath && Storage::disk('public')->exists($oldLogoPath)) {
                 Storage::disk('public')->delete($oldLogoPath);
@@ -57,9 +55,7 @@ class AdminController extends Controller
             SiteSetting::set('site_logo', $logoPath);
         }
 
-        // 2. จัดการอัปโหลดรูปภาพปก (site_cover_image)
         if ($request->hasFile('site_cover_image')) {
-            // Delete old cover image if it exists
             $oldCoverImagePath = SiteSetting::get('site_cover_image');
             if ($oldCoverImagePath && Storage::disk('public')->exists($oldCoverImagePath)) {
                 Storage::disk('public')->delete($oldCoverImagePath);
@@ -68,57 +64,128 @@ class AdminController extends Controller
             SiteSetting::set('site_cover_image', $coverImagePath);
         }
 
-        // 🟢 3. ส่วนที่เพิ่มใหม่: จัดการข้อมูล Array จากหน้า Visual Editor (เช่น settings[about_title])
+        // --- 3. Hero Sliders (Dynamic) ---
+        if ($request->has('hero_banners')) {
+            $heroKeepIds = [];
+            foreach ($request->hero_banners as $index => $bannerData) {
+                $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
+                $updateData = [
+                    'type' => 'hero',
+                    'sort_order' => $index,
+                    'link_url' => $bannerData['link_url'] ?? null,
+                    'is_active' => true,
+                ];
+
+                if ($request->hasFile("hero_banners.$index.image")) {
+                    $updateData['image_path'] = $request->file("hero_banners.$index.image")->store('uploads/banners', 'public');
+                } elseif (!empty($bannerData['existing_path'])) {
+                    $updateData['image_path'] = $bannerData['existing_path'];
+                }
+
+                if (isset($updateData['image_path'])) {
+                    // บันทึกและเก็บ ID ที่ใช้งานจริง
+                    $banner = \App\Models\Banner::updateOrCreate(['id' => $id], $updateData);
+                    $heroKeepIds[] = $banner->id;
+                    
+                    // อัปเดตตารางเก่าเพื่อความเข้ากันได้ (Optional)
+                    SiteSetting::set("hero_slide_" . ($index + 1), $updateData['image_path']);
+                }
+            }
+            // ลบเฉพาะตัวที่ไม่ได้อยู่ในรายการที่บันทึกหรืออัปเดตล่าสุด
+            \App\Models\Banner::hero()->whereNotIn('id', $heroKeepIds)->delete();
+        }
+
+        // --- 4. Allergy/Info Banner ---
+        if ($request->remove_allergy_image == '1') {
+            $oldPath = SiteSetting::get('allergy_image');
+            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+            SiteSetting::set('allergy_image', null);
+            \App\Models\Banner::where('type', 'info')->update(['is_active' => false, 'image_path' => '']);
+        } elseif ($request->hasFile('allergy_image')) {
+            $path = $request->file('allergy_image')->store('uploads/banners', 'public');
+            SiteSetting::set('allergy_image', $path);
+            
+            \App\Models\Banner::updateOrCreate(
+                ['type' => 'info'],
+                ['image_path' => $path, 'is_active' => true]
+            );
+        }
+
+        // --- 5. Secondary Sliders (Dynamic) ---
+        if ($request->has('secondary_banners')) {
+            $secKeepIds = [];
+            foreach ($request->secondary_banners as $index => $bannerData) {
+                $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
+                $updateData = [
+                    'type' => 'secondary',
+                    'sort_order' => $index,
+                    'link_url' => $bannerData['link_url'] ?? null,
+                    'is_active' => true,
+                ];
+
+                if ($request->hasFile("secondary_banners.$index.image")) {
+                    $updateData['image_path'] = $request->file("secondary_banners.$index.image")->store('uploads/banners', 'public');
+                } elseif (!empty($bannerData['existing_path'])) {
+                    $updateData['image_path'] = $bannerData['existing_path'];
+                }
+
+                if (isset($updateData['image_path'])) {
+                    $banner = \App\Models\Banner::updateOrCreate(['id' => $id], $updateData);
+                    $secKeepIds[] = $banner->id;
+                    
+                    SiteSetting::set("sec_slide_" . ($index + 1), $updateData['image_path']);
+                }
+            }
+            \App\Models\Banner::secondary()->whereNotIn('id', $secKeepIds)->delete();
+        }
+
+        // --- 6. Service Bar ---
+        foreach (range(1, 4) as $i) {
+            $iconKey = "service_{$i}_icon";
+            $textKey = "service_{$i}_text";
+            
+            if ($request->has($iconKey)) {
+                SiteSetting::set($iconKey, $request->input($iconKey));
+                SiteSetting::set($textKey, $request->input($textKey));
+
+                \App\Models\Service::updateOrCreate(
+                    ['sort_order' => $i],
+                    [
+                        'icon' => $request->input($iconKey),
+                        'title' => $request->input($textKey),
+                        'is_active' => true
+                    ]
+                );
+            }
+        }
+
+        // --- 7. 6 Reasons (Features) ---
+        foreach (range(1, 6) as $i) {
+            $titleKey = "reason_{$i}_title";
+            $descKey = "reason_{$i}_desc";
+            
+            if ($request->has($titleKey)) {
+                SiteSetting::set($titleKey, $request->input($titleKey));
+                SiteSetting::set($descKey, $request->input($descKey));
+
+                \App\Models\Feature::updateOrCreate(
+                    ['sort_order' => $i],
+                    [
+                        'icon' => 'fas fa-check', // Default icon
+                        'title' => $request->input($titleKey),
+                        'description' => $request->input($descKey),
+                        'is_active' => true
+                    ]
+                );
+            }
+        }
+
+        // Handle generic settings array if exists
         if ($request->has('settings') && is_array($request->settings)) {
             foreach ($request->settings as $key => $value) {
-                // เซฟค่าลงฐานข้อมูลผ่านฟังก์ชันของระบบคุณ
                 SiteSetting::set($key, $value);
-            }
-        }
-
-        // 4. JSON array inputs (โค้ดเดิมของคุณ)
-        $jsonKeys = [
-            'hero_slider_items',
-            'reasons_section_items',
-            'second_slider_items',
-            'category_menu_items',
-            'small_slider_allproducts_items',
-            'service_bar_items',
-        ];
-
-        foreach ($jsonKeys as $key) {
-            if ($request->has($key)) {
-                $jsonString = $request->input($key);
-                $items = json_decode($jsonString, true);
-
-                if (is_array($items)) {
-                    foreach ($items as &$item) { // Use & for reference to modify original array
-                        if (isset($item['image']) && is_string($item['image'])) {
-                            $imagePath = trim($item['image'], '"'); // Remove surrounding quotes
-
-                            // Attempt to make path relative to public directory if it's an absolute path
-                            $publicPath = str_replace('/', DIRECTORY_SEPARATOR, public_path()); // Ensure correct directory separator
-                            if (str_starts_with($imagePath, $publicPath)) {
-                                $imagePath = substr($imagePath, strlen($publicPath) + 1); // +1 for the directory separator
-                            }
-                            $item['image'] = str_replace(DIRECTORY_SEPARATOR, '/', $imagePath); // Convert backslashes to forward slashes
-                        }
-                    }
-                    $jsonString = json_encode($items);
-                }
-                SiteSetting::set($key, $jsonString);
-            }
-        }
-
-        // 5. Text inputs (โค้ดเดิมของคุณ)
-        $textKeys = [
-            'site_description',
-            'allergy_info_content',
-        ];
-
-        foreach ($textKeys as $key) {
-            if ($request->has($key)) {
-                SiteSetting::set($key, $request->input($key));
             }
         }
 
@@ -127,10 +194,25 @@ class AdminController extends Controller
 
     public function index()
     {
+        // ดึง Settings ทั้งหมด
         $settings = SiteSetting::all()->mapWithKeys(function ($setting) {
             return [$setting->key => $setting->value];
         })->toArray();
 
-        return view('admin.settings.index', compact('settings'));
+        // ดึงข้อมูล CMS จากตารางใหม่ (Source of Truth)
+        $heroBanners = \App\Models\Banner::hero()->get();
+        $secondaryBanners = \App\Models\Banner::secondary()->get();
+        $infoBanner = \App\Models\Banner::info()->first();
+        $services = \App\Models\Service::orderBy('sort_order')->get();
+        $features = \App\Models\Feature::orderBy('sort_order')->get();
+
+        return view('admin.settings.index', compact(
+            'settings', 
+            'heroBanners', 
+            'secondaryBanners', 
+            'infoBanner', 
+            'services', 
+            'features'
+        ));
     }
 }

@@ -9,6 +9,15 @@ class SiteSetting extends Model
     // ระบุชื่อตารางให้ชัดเจน
     protected $table = 'site_settings';
 
+    // กำหนด Primary Key เป็น 'key' เนื่องจากไม่มีคอลัมน์ 'id'
+    protected $primaryKey = 'key';
+
+    // ระบุว่า Primary Key ไม่ได้เป็นตัวเลขที่เพิ่มขึ้นเอง (auto-increment)
+    public $incrementing = false;
+
+    // ระบุว่า Primary Key เป็น String
+    protected $keyType = 'string';
+
     // อนุญาตให้บันทึกค่าได้ใน 2 คอลัมน์นี้
     protected $fillable = ['key', 'value'];
 
@@ -32,8 +41,10 @@ class SiteSetting extends Model
             $value = json_encode($value, JSON_UNESCAPED_UNICODE);
         }
 
-        $setting = self::firstOrNew(['key' => $key]);
-        $setting->value = $value;
-        return $setting->save();
+        // ใช้ updateOrCreate เพื่อป้องกัน Error เรื่อง missing ID
+        return self::updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
     }
 }

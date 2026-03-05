@@ -10,8 +10,6 @@
             {{-- Header --}}
             <div class="bg-gradient-to-r from-[#fc0303] to-[#c70606] p-6 text-center text-white relative overflow-hidden">
                 <h1 class="font-bold text-2xl relative z-10">ชำระเงิน</h1>
-
-                {{-- ชื่อบริษัทใน Header --}}
                 <p class="text-white font-medium text-lg mt-1 relative z-10">บริษัท กวินบราเทอร์</p>
                 <p class="text-white/80 text-xs mt-0.5 relative z-10">ออเดอร์ {{ $order->ord_code }}</p>
 
@@ -53,8 +51,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                         </svg>
-                        <span
-                            class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">คัดลอก</span>
+                        <span class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">คัดลอก</span>
                     </div>
                 </div>
                 <div class="text-center mt-2">
@@ -76,70 +73,54 @@
                     <span>นาที</span>
                 </div>
 
-                {{-- Expired Message --}}
                 <div id="expired-message"
                     class="hidden text-center mb-6 bg-gray-100 py-3 rounded-full text-gray-500 text-sm">
                     <span class="flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
-                                clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
                         </svg>
                         หมดเวลาชำระเงินแล้ว
                     </span>
                 </div>
 
                 <div class="text-center animate-fade-in relative">
-                    {{-- QR Code Container --}}
-                    <div class="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 inline-block mb-4 relative group transition-all duration-500"
-                        id="qr-container">
-
-                        {{-- รูป QR Code --}}
+                    <div class="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 inline-block mb-4 relative group transition-all duration-500" id="qr-container">
                         <img id="qr-code-image" src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}" alt="PromptPay QR Code"
                             class="w-48 h-48 object-cover rounded-lg mx-auto transition-all duration-500">
-
                         <div class="mt-3 text-center">
                             <p class="font-bold text-gray-800 text-lg">บริษัท กวินบราเทอร์</p>
                             <p class="text-xs text-gray-400 mt-1">สแกนเพื่อชำระเงิน</p>
                         </div>
-
-                        {{-- Overlay เมื่อหมดเวลา --}}
                         <div id="qr-overlay"
                             class="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
                             <p class="text-gray-500 font-bold mb-2">QR Code หมดอายุ</p>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                         </div>
                     </div>
 
-                    {{-- ปุ่มบันทึกรูป --}}
                     <div id="save-btn-container" class="flex justify-center gap-3 mb-6 transition-all duration-300">
                         <button onclick="saveQRCode()"
                             class="btn btn-sm btn-outline gap-2 text-gray-600 border-gray-300 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                             บันทึกรูป
                         </button>
                     </div>
                 </div>
 
-                {{-- ปุ่มแจ้งชำระเงิน --}}
                 <button id="upload-slip-btn"
                     class="btn w-full bg-gradient-to-r from-[#fc0303] to-[#c70606] text-white border-none text-lg h-12 shadow-md shadow-emerald-200 mb-3 transition-all duration-300">
                     แจ้งชำระเงิน / แนบสลิป
                 </button>
 
-                {{-- [New] ปุ่มยกเลิกคำสั่งซื้อ --}}
+                {{-- [ส่วนที่ปรับปรุง] ปุ่มยกเลิกคำสั่งซื้อ --}}
                 <div id="cancel-order-container" class="mb-3 transition-all duration-300">
-                    <form action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}" method="POST" onsubmit="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
+                    <form id="cancel-form" action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-outline btn-error w-full font-normal">
+                        <button type="button" onclick="confirmCancel()" class="btn btn-outline btn-error w-full font-normal">
                             ยกเลิกคำสั่งซื้อ
                         </button>
                     </form>
@@ -161,10 +142,29 @@
     </form>
 @endsection
 
-{{-- ★★★ แก้ไขตรงนี้: เปลี่ยนจาก @push เป็น @section เพื่อให้ Script ทำงาน ★★★ --}}
 @section('scripts')
     <script>
-        // ทำให้ฟังก์ชันเป็น Global เพื่อให้ HTML string ของ Swal เรียกใช้ได้
+        // --- ฟังก์ชัน Popup ยกเลิกคำสั่งซื้อ (ปรับปรุงใหม่) ---
+        window.confirmCancel = function() {
+            Swal.fire({
+                title: 'ยืนยันการยกเลิก?',
+                text: "คุณต้องการยกเลิกคำสั่งซื้อ {{ $order->ord_code }} ใช่หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#fc0303', // สีแดงตามที่คุณต้องการ
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'ใช่, ยกเลิกออเดอร์',
+                cancelButtonText: 'ไม่ยกเลิก',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // ถ้ากดยืนยัน ให้ Submit ฟอร์ม
+                    document.getElementById('cancel-form').submit();
+                }
+            });
+        }
+
+        // --- ส่วนการทำงานอื่นๆ คงเดิม ---
         window.triggerFileInput = function() {
             document.getElementById('slip_image_input').click();
         }
@@ -184,18 +184,8 @@
 
         window.copyToClipboard = function(text) {
             navigator.clipboard.writeText(text).then(() => {
-                const Toast = Swal.mixin({
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: false,
-                });
-
-                Toast.fire({
-                    icon: 'success',
-                    title: 'คัดลอกเลขบัญชีแล้ว'
-                });
-            }).catch(err => {
-                console.error('ไม่สามารถคัดลอกได้: ', err);
+                const Toast = Swal.mixin({ showConfirmButton: false, timer: 2000 });
+                Toast.fire({ icon: 'success', title: 'คัดลอกเลขบัญชีแล้ว' });
             });
         }
 
@@ -210,103 +200,59 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // รับค่าเวลาที่เหลือมาจาก Controller (วินาที)
             let timeLeft = {{ $secondsRemaining }};
-
             const timerElement = document.getElementById('countdown-timer');
             const timerContainer = document.getElementById('timer-container');
             const expiredMessage = document.getElementById('expired-message');
             const qrOverlay = document.getElementById('qr-overlay');
-            const saveBtnContainer = document.getElementById('save-btn-container');
-            const refreshBtnContainer = document.getElementById('refresh-btn-container');
             const uploadBtn = document.getElementById('upload-slip-btn');
+            const cancelBtnContainer = document.getElementById('cancel-order-container');
 
             function updateTimerDisplay() {
                 if (timeLeft <= 0) {
-                    handleExpired();
+                    timerContainer.classList.add('hidden');
+                    expiredMessage.classList.remove('hidden');
+                    qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                    if (uploadBtn) uploadBtn.classList.add('hidden');
+                    if (cancelBtnContainer) cancelBtnContainer.classList.add('hidden');
                     return;
                 }
-
                 const minutes = Math.floor(timeLeft / 60);
                 let seconds = Math.floor(timeLeft % 60);
                 seconds = seconds < 10 ? '0' + seconds : seconds;
-
                 timerElement.innerHTML = `${minutes}:${seconds}`;
                 timeLeft--;
             }
 
-            function handleExpired() {
-                timerContainer.classList.add('hidden');
-                expiredMessage.classList.remove('hidden');
-                qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
-                saveBtnContainer.classList.add('hidden');
-                
-                // ซ่อนปุ่มแจ้งชำระเงินเมื่อหมดเวลา
-                if (uploadBtn) {
-                    uploadBtn.classList.add('hidden');
-                }
+            setInterval(updateTimerDisplay, 1000);
 
-                // ซ่อนปุ่มยกเลิกคำสั่งซื้อเมื่อหมดเวลา (เพราะระบบจะยกเลิกให้อยู่แล้ว)
-                const cancelBtnContainer = document.getElementById('cancel-order-container');
-                if (cancelBtnContainer) {
-                    cancelBtnContainer.classList.add('hidden');
-                }
-            }
-
-            updateTimerDisplay();
-            const countdown = setInterval(updateTimerDisplay, 1000);
-
-            // ปุ่มกดแนบสลิป
             if (uploadBtn) {
                 uploadBtn.addEventListener('click', function() {
-                    if (!this.disabled) {
-                        Swal.fire({
-                            title: 'แนบสลิปชำระเงิน',
-                            html: `
-                            <div class="p-2">
-                                <p class="text-sm text-gray-500 mb-4">กรุณาอัปโหลดหลักฐานการโอนเงินสำหรับออเดอร์ <br><strong class="text-gray-700">{{ $order->ord_code }}</strong></p>
+                    Swal.fire({
+                        title: 'แนบสลิปชำระเงิน',
+                        html: `<div class="p-2">
+                                <p class="text-sm text-gray-500 mb-4">กรุณาอัปโหลดหลักฐานสำหรับ <br><strong>{{ $order->ord_code }}</strong></p>
                                 <div id="slip-preview-container" class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed cursor-pointer" onclick="window.triggerFileInput()">
                                      <div id="slip-preview-placeholder" class="text-center text-gray-400">
-                                        <svg class="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        <svg class="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                                         <p class="mt-1 text-sm">คลิกเพื่อเลือกไฟล์</p>
                                     </div>
                                     <img id="slip-preview" class="hidden h-full w-full object-contain rounded-lg" />
                                 </div>
                             </div>`,
-                            showCancelButton: true,
-                            confirmButtonText: 'ยืนยันการแจ้งชำระ',
-                            confirmButtonColor: '#fc0303',
-                            cancelButtonText: 'ยกเลิก',
-                            allowOutsideClick: false,
-                            preConfirm: () => {
-                                const slipInput = document.getElementById('slip_image_input');
-                                if (slipInput.files.length === 0) {
-                                    Swal.showValidationMessage('กรุณาเลือกไฟล์สลิป');
-                                    return false;
-                                }
-                                document.getElementById('slip-upload-form').submit();
+                        showCancelButton: true,
+                        confirmButtonText: 'ยืนยันการแจ้งชำระ',
+                        confirmButtonColor: '#fc0303',
+                        preConfirm: () => {
+                            if (document.getElementById('slip_image_input').files.length === 0) {
+                                Swal.showValidationMessage('กรุณาเลือกไฟล์สลิป');
+                                return false;
                             }
-                        });
-                    }
+                            document.getElementById('slip-upload-form').submit();
+                        }
+                    });
                 });
             }
         });
     </script>
-    <style>
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
 @endsection

@@ -5,9 +5,9 @@
 
 @section('content')
 
-    {{-- ★★★ รวม CSS ปรับแต่งสไลเดอร์ไว้ที่นี่ (Banner & Category) ★★★ --}}
+    {{-- ★★★ รวม CSS ปรับแต่งสไลเดอร์และ Product Card ★★★ --}}
     <style>
-        /* --- 1. ปรับแต่งจุด (Pagination) --- */
+        /* --- 1. Swiper Styles --- */
         .mySwiper .swiper-pagination-bullet {
             background-color: #ffffff !important;
             opacity: 0.5 !important;
@@ -23,20 +23,16 @@
             transform: scale(1.3);
         }
 
-        /* --- 2. ปรับแต่งลูกศร Hero Slider (Banner) ให้ดูพรีเมียม --- */
         .mySwiper .swiper-button-next,
         .mySwiper .swiper-button-prev {
             width: 32px !important;
             height: 32px !important;
             background-color: rgba(255, 255, 255, 0.9) !important;
-            /* พื้นหลังสีขาว */
             border-radius: 50% !important;
             color: #dc2626 !important;
-            /* สีลูกศรแดง */
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.3s ease !important;
             margin-top: -16px !important;
-            /* จัดกึ่งกลางเป๊ะๆ */
         }
 
         .mySwiper .swiper-button-next:hover,
@@ -52,37 +48,27 @@
             font-weight: 900 !important;
         }
 
-        /* --- 3. ปรับแต่งลูกศร Category Slider (แถบแดง) ให้เล็กลงและมินิมอล --- */
+        /* Category Slider Arrows */
         .categorySwiper .swiper-button-next,
         .categorySwiper .swiper-button-prev {
-            width: 42px !important;
-            /* เล็กลงพอดี ไม่เบียดเมนู */
-            height: 42px !important;
+            width: 32px !important;
+            height: 32px !important;
             background-color: #ffffff !important;
             border-radius: 50% !important;
             color: #dc2626 !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
             transition: all 0.3s ease !important;
-            top: 45% !important;
-            /* จัดให้อยู่กลางไอคอน (ชดเชยที่มี pb-4 ด้านล่าง) */
-            margin-top: -14px !important;
+            top: 50% !important;
+            margin-top: -16px !important;
             z-index: 10 !important;
-        }
-
-        .categorySwiper .swiper-button-next:hover,
-        .categorySwiper .swiper-button-prev:hover {
-            transform: scale(1.15) !important;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
         }
 
         .categorySwiper .swiper-button-next::after,
         .categorySwiper .swiper-button-prev::after {
             font-size: 12px !important;
-            /* ขนาดไอคอนลูกศรด้านใน */
             font-weight: 900 !important;
         }
 
-        /* ขยับให้อยู่ขอบซ้ายขวาพอดี */
         .categorySwiper .swiper-button-prev {
             left: 4px !important;
         }
@@ -91,29 +77,42 @@
             right: 4px !important;
         }
 
-        /* สไตล์ปุ่มที่กดไม่ได้ (ถึงปลายทางแล้ว) */
         .categorySwiper .swiper-button-disabled {
             opacity: 0.3 !important;
             cursor: not-allowed !important;
-            transform: scale(1) !important;
+        }
+
+        /* --- 2. Custom Product Card Styles (Mobile Optimization) --- */
+        .product-title-fixed {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 2.5rem;
+            line-height: 1.25;
+        }
+
+        @media (min-width: 768px) {
+            .product-title-fixed {
+                min-height: 3rem;
+            }
         }
     </style>
 
-    {{-- พื้นหลังรูป f1.png --}}
-    <div class="min-h-screen py-8 bg-cover bg-center bg-no-repeat bg-fixed"
+    {{-- พื้นหลัง --}}
+    <div class="min-h-screen py-4 md:py-8 bg-cover bg-center bg-no-repeat bg-fixed"
         style="background-image: url('{{ asset('') }}');">
 
-        <div class="container mx-auto px-4">
+        <div class="container mx-auto px-2 md:px-4">
 
-            {{-- Layout: ปรับเป็น Column เดียว --}}
-            <div class="flex flex-col gap-8">
+            <div class="flex flex-col gap-6 md:gap-8">
 
-                {{-- MAIN CONTENT --}}
                 <main class="w-full">
 
                     {{-- ★★★ BANNER SLIDER ★★★ --}}
-                    <div class="w-full mb-6 shadow-sm group relative rounded-[5px] overflow-hidden">
-                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[ 5/1] w-full relative">
+                    <div class="w-full mb-4 md:mb-6 shadow-sm group relative rounded-xl overflow-hidden">
+                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[5/1] w-full relative">
                             <div class="swiper mySwiper w-full h-full absolute inset-0">
                                 <div class="swiper-wrapper">
                                     @foreach (['th-1.png', 'th-2.png', 'th-3.png'] as $index => $image)
@@ -127,18 +126,18 @@
                                         </div>
                                     @endforeach
                                 </div>
-                                <div class="swiper-button-next"></div>
-                                <div class="swiper-button-prev"></div>
+                                <div class="swiper-button-next hidden md:flex"></div>
+                                <div class="swiper-button-prev hidden md:flex"></div>
                                 <div class="swiper-pagination"></div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- ★★★ CATEGORY MENU SECTION (Slider สีแดง) ★★★ --}}
+                    {{-- ★★★ CATEGORY MENU SECTION ★★★ --}}
                     <div
-                        class="w-full py-4 rounded-2xl mt-6 mb-8 shadow-md shadow-gray-300 bg-red-600 overflow-hidden relative group select-none">
-                        <div class="container mx-auto px-4 relative">
-                            <div class="swiper categorySwiper w-full pb-4">
+                        class="w-full py-4 rounded-xl mt-4 mb-6 shadow-md shadow-gray-300 bg-red-600 overflow-hidden relative group select-none">
+                        <div class="container mx-auto px-2 relative">
+                            <div class="swiper categorySwiper w-full pb-2">
                                 <div class="swiper-wrapper items-start">
                                     @php
                                         $menuItems = [
@@ -157,9 +156,9 @@
                                     @foreach ($menuItems as $menu)
                                         <div class="swiper-slide !h-auto">
                                             <a href="/allproducts?category={{ strip_tags($menu['name']) }}"
-                                                class="flex flex-col items-center group w-full transition-transform duration-300 hover:scale-105">
+                                                class="flex flex-col items-center group w-full transition-transform duration-300 active:scale-95">
                                                 <div
-                                                    class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-2 shadow-sm transition-colors">
+                                                    class="w-12 h-12 md:w-16 md:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-2 shadow-sm transition-colors">
                                                     <img src="{{ asset('images/' . $menu['image']) }}"
                                                         alt="{{ strip_tags($menu['name']) }}"
                                                         class="w-full h-full object-contain"
@@ -173,20 +172,17 @@
                                         </div>
                                     @endforeach
                                 </div>
-
-                                {{-- ★★★ แก้ไข: ย้ายปุ่มลูกศรเข้ามาอยู่ใน <div class="swiper"> แล้ว! ★★★ --}}
                                 <div class="swiper-button-next"></div>
                                 <div class="swiper-button-prev"></div>
-
                             </div>
                         </div>
                     </div>
 
                     {{-- ★★★ SORTING BAR ★★★ --}}
                     <div
-                        class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
-                        <div class="mb-3 sm:mb-0">
-                            <h2 class="text-gray-800 font-bold text-lg flex items-center gap-2">
+                        class="flex flex-col sm:flex-row justify-between items-center bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 mb-6 gap-3">
+                        <div class="w-full sm:w-auto">
+                            <h2 class="text-gray-800 font-bold text-base md:text-lg flex items-center gap-2">
                                 สินค้าทั้งหมด
                                 <span class="badge badge-outline text-xs font-normal text-gray-500">
                                     {{ $products->total() }} รายการ
@@ -205,44 +201,38 @@
 
                             <label class="text-sm text-gray-600 whitespace-nowrap hidden sm:block">เรียงตาม:</label>
                             <select name="sort" onchange="document.getElementById('sortForm').submit();"
-                                class="select select-bordered select-sm w-full sm:w-48 bg-gray-50 focus:border-red-500 focus:ring-red-500 text-gray-700">
-                                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>ล่าสุด
-                                    (Newest)
-                                </option>
+                                class="select select-bordered select-sm w-full sm:w-48 bg-gray-50 focus:border-red-500 focus:ring-red-500 text-gray-700 text-xs md:text-sm">
+                                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>ล่าสุด</option>
                                 <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>ยอดนิยม
-                                    (Popular)</option>
+                                </option>
                                 <option value="bestseller" {{ request('sort') == 'bestseller' ? 'selected' : '' }}>ขายดี
-                                    (Best Seller)</option>
-                                <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>
-                                    ราคา: ต่ำ - สูง</option>
-                                <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>
-                                    ราคา: สูง - ต่ำ</option>
+                                </option>
+                                <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>ราคา: ต่ำ
+                                    - สูง</option>
+                                <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>ราคา:
+                                    สูง - ต่ำ</option>
                             </select>
                         </form>
                     </div>
 
-                    {{-- Grid สินค้า --}}
+                    {{-- ★★★ PRODUCT GRID (Optimized for Mobile) ★★★ --}}
                     @if ($products->count() > 0)
-                        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
                             @foreach ($products as $product)
                                 @if ($product)
                                     @php
-                                        // 1. เช็คว่ามี Options หรือไม่
+                                        // 1. Logic ราคาและ Options
                                         $hasOptions = isset($product->options) && $product->options->count() > 0;
-
-                                        // 2. ดึงราคาเริ่มต้นตามเงื่อนไข (ดึงจากตัวเลือกที่ถูกที่สุด หรือ ราคาหลัก)
                                         if ($hasOptions) {
                                             $originalPrice = (float) $product->options->min('option_price');
                                         } else {
                                             $originalPrice = (float) ($product->pd_sp_price ?? 0);
                                         }
-
-                                        // 3. จัดการส่วนลดและราคาขายจริง
                                         $discountAmount = (float) ($product->pd_sp_discount ?? 0);
                                         $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                                         $isOnSale = $discountAmount > 0;
 
-                                        // 4. จัดการรูปภาพหน้าปก
+                                        // 2. รูปภาพ
                                         $primaryImage = $product->images->sortBy('img_sort')->first();
                                         $imagePath = $primaryImage
                                             ? $primaryImage->img_path
@@ -250,74 +240,71 @@
                                     @endphp
 
                                     <div
-                                        class="card relative bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-xl overflow-hidden duration-300 group flex flex-col h-full">
+                                        class="card relative bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col h-full group">
                                         <a href="{{ route('product.show', $product->pd_sp_id) }}">
-                                            <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                                @if ($product->pd_sp_stock <= 0)
-                                                    <div class="absolute inset-0 flex items-center justify-center z-10">
-                                                        <div
-                                                            class="w-28 h-28 rounded-full bg-black bg-opacity-60 flex items-center justify-center shadow-lg">
-                                                            <span
-                                                                class="text-white font-bold text-md text-center">สินค้าหมด</span>
-                                                        </div>
+                                            <figure class="relative aspect-square overflow-hidden bg-gray-50">
+                                                @if (($product->pd_sp_stock ?? 0) <= 0)
+                                                    <div
+                                                        class="absolute inset-0 flex items-center justify-center z-10 bg-black/40">
+                                                        <span
+                                                            class="bg-black/70 text-white text-xs px-3 py-1 rounded-full font-bold">สินค้าหมด</span>
                                                     </div>
                                                 @endif
                                                 <img src="{{ Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath) }}"
                                                     alt="{{ $product->pd_sp_name }}"
-                                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500 {{ $product->pd_sp_stock <= 0 ? 'opacity-50' : '' }}"
+                                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500 {{ ($product->pd_sp_stock ?? 0) <= 0 ? 'opacity-50' : '' }}"
                                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500.png?text=No+Image';" />
 
                                                 @if ($isOnSale)
                                                     <div
-                                                        class="absolute top-2 left-2 bg-red-600 px-2 py-1 rounded-lg text-white text-xs font-bold shadow-sm">
+                                                        class="absolute top-2 left-2 bg-red-600 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-white text-[10px] md:text-xs font-bold shadow-sm">
                                                         ลด ฿{{ number_format($discountAmount) }}
                                                     </div>
                                                 @endif
                                                 @if ($product->gifts_per_item)
                                                     <div
-                                                        class="absolute top-2 right-2 bg-red-500 px-2 py-1 rounded-lg text-white text-xs font-bold shadow-sm flex items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
-                                                            viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z"
-                                                                clip-rule="evenodd" />
-                                                            <path
-                                                                d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002 2h4v-7z" />
-                                                        </svg>
+                                                        class="absolute top-2 right-2 bg-red-500 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-white text-[10px] md:text-xs font-bold shadow-sm flex items-center gap-1">
                                                         แถม {{ $product->gifts_per_item }}
                                                     </div>
                                                 @endif
                                             </figure>
                                         </a>
 
-                                        <div class="card-body p-4 flex flex-col flex-1">
+                                        <div class="card-body p-2 md:p-4 flex flex-col flex-1">
                                             <h2
-                                                class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
+                                                class="card-title text-xs md:text-sm font-bold text-gray-800 leading-tight product-title-fixed mb-1">
                                                 <a href="{{ route('product.show', $product->pd_sp_id) }}"
                                                     class="hover:text-red-600 transition">
-                                                    {{ $product->pd_sp_name ?? 'Missing Product Name' }}
+                                                    {{ $product->pd_sp_name ?? 'Product Name' }}
                                                 </a>
                                             </h2>
 
-                                            <p
-                                                class="text-xs font-medium mt-1 {{ $product->pd_sp_stock > 0 ? 'text-green-600' : 'text-red-500' }}">
-                                                {{ $product->pd_sp_stock > 0 ? '● มีสินค้า' : '● สินค้าหมด' }}
-                                            </p>
+                                            {{-- ★★★ [ส่วนที่เพิ่ม] แสดงยอดขายคู่กับสถานะสต็อก ★★★ --}}
+                                            <div class="flex items-center justify-between mb-1">
+                                                <p
+                                                    class="text-[10px] md:text-xs font-medium {{ ($product->pd_sp_stock ?? 0) > 0 ? 'text-green-600' : 'text-red-500' }}">
+                                                    {{ ($product->pd_sp_stock ?? 0) > 0 ? '● มีสินค้า' : '● หมด' }}
+                                                </p>
+                                                <p class="text-[10px] text-gray-400">
+                                                    ขายแล้ว {{ number_format($product->pd_sp_sold ?? 0) }} ชิ้น
+                                                </p>
+                                            </div>
 
-                                            <div class="mt-auto pt-3 border-t border-gray-50">
-                                                {{-- 🔥 จุดที่แก้ไข: แยกราคาส่วนลดไปฝั่งขวา 🔥 --}}
-                                                <div class="flex items-center justify-between w-full mb-3">
-                                                    <div class="flex items-center gap-1">
+                                            <div class="mt-auto pt-2 border-t border-gray-50">
+                                                {{-- ราคาขาย (ซ้าย) | ราคาขีดฆ่า (ขวา) --}}
+                                                <div class="flex flex-row items-center justify-between w-full mb-2 gap-1">
+                                                    <div class="flex items-baseline gap-1">
                                                         @if ($hasOptions)
-                                                            <span class="text-[10px] text-gray-500 mr-0.5">เริ่มต้น</span>
+                                                            <span
+                                                                class="text-[9px] md:text-[10px] text-gray-400">เริ่ม</span>
                                                         @endif
                                                         <span
-                                                            class="text-lg font-bold text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
+                                                            class="text-sm md:text-lg font-bold text-red-600">฿{{ number_format($finalSellingPrice) }}</span>
                                                     </div>
 
                                                     @if ($isOnSale)
                                                         <span
-                                                            class="text-md text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
+                                                            class="text-[10px] md:text-xs text-gray-400 line-through">฿{{ number_format($originalPrice) }}</span>
                                                     @endif
                                                 </div>
 
@@ -325,32 +312,22 @@
                                                     data-action="{{ route('cart.add', ['id' => $product->pd_sp_id]) }}">
                                                     <input type="hidden" name="quantity" value="1">
                                                     <button type="submit"
-                                                        class="btn btn-sm w-full {{ $product->pd_sp_stock > 0 ? 'bg-red-600 hover:bg-red-700 text-white' : 'btn-disabled bg-gray-200 text-gray-400' }} border-none shadow-sm flex items-center justify-center gap-2"
-                                                        {{ $product->pd_sp_stock <= 0 ? 'disabled' : '' }}>
-                                                        @if ($product->pd_sp_stock > 0)
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                            </svg>
-                                                            @if ($hasOptions)
+                                                        class="btn btn-sm w-full {{ ($product->pd_sp_stock ?? 0) > 0 ? 'bg-red-600 hover:bg-red-700 text-white' : 'btn-disabled bg-gray-100 text-gray-400' }} border-none shadow-sm flex items-center justify-center gap-1 h-[32px] min-h-[32px]"
+                                                        {{ ($product->pd_sp_stock ?? 0) <= 0 ? 'disabled' : '' }}>
+
+                                                        <span class="text-xs font-normal">
+                                                            @if (($product->pd_sp_stock ?? 0) <= 0)
+                                                                สินค้าหมด
+                                                            @elseif ($hasOptions)
                                                                 เลือกตัวเลือก
                                                             @else
                                                                 เพิ่มลงตะกร้า
                                                             @endif
-                                                        @else
-                                                            สินค้าหมด
-                                                        @endif
+                                                        </span>
                                                     </button>
                                                 </form>
                                             </div>
                                         </div>
-                                    </div>
-                                @else
-                                    <div
-                                        class="card bg-gray-50 border border-gray-200 shadow-sm rounded-xl overflow-hidden flex flex-col h-full p-4 items-center justify-center text-center">
-                                        <p class="text-sm text-gray-400">ข้อมูลสินค้าไม่สมบูรณ์</p>
                                     </div>
                                 @endif
                             @endforeach
@@ -361,14 +338,13 @@
                         </div>
                     @else
                         <div
-                            class="flex flex-col items-center justify-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-200 text-center">
+                            class="flex flex-col items-center justify-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-200 text-center mx-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mb-4" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <h3 class="text-lg font-bold text-gray-600">ไม่พบสินค้าที่คุณค้นหา</h3>
-                            <p class="text-gray-500">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมูื่น</p>
                             <a href="{{ route('allproducts') }}"
                                 class="btn btn-sm btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white mt-4">ล้างคำค้นหา</a>
                         </div>
@@ -378,52 +354,43 @@
         </div>
     </div>
 
-    {{-- Script สำหรับจัดการ Swiper และ Add to Cart --}}
+    {{-- Script --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Banner Swiper
-            var swiper1 = new Swiper(".mySwiper", {
+            // Banner
+            new Swiper(".mySwiper", {
                 slidesPerView: 1,
-                spaceBetween: 0,
                 loop: true,
-                speed: 800,
-                effect: 'slide',
                 autoplay: {
-                    delay: 5000,
-                    disableOnInteraction: false,
+                    delay: 5000
                 },
                 pagination: {
                     el: ".swiper-pagination",
-                    clickable: true,
-                    dynamicBullets: true,
+                    clickable: true
                 },
                 navigation: {
                     nextEl: ".mySwiper .swiper-button-next",
-                    prevEl: ".mySwiper .swiper-button-prev",
+                    prevEl: ".mySwiper .swiper-button-prev"
                 },
             });
 
-            // ★★★ Category Menu Swiper ★★★
-            var swiperCategory = new Swiper(".categorySwiper", {
+            // Category
+            new Swiper(".categorySwiper", {
                 slidesPerView: 4.5,
                 spaceBetween: 10,
                 loop: true,
-                autoplay: {
-                    delay: 3000,
-                    disableOnInteraction: false,
-                },
                 navigation: {
                     nextEl: ".categorySwiper .swiper-button-next",
-                    prevEl: ".categorySwiper .swiper-button-prev",
+                    prevEl: ".categorySwiper .swiper-button-prev"
                 },
                 breakpoints: {
-                    640: { // แท็บเล็ต
+                    640: {
                         slidesPerView: 6,
-                        spaceBetween: 10,
+                        spaceBetween: 10
                     },
-                    1024: { // Desktop
+                    1024: {
                         slidesPerView: 8,
-                        spaceBetween: 15,
+                        spaceBetween: 15
                     },
                 },
             });
@@ -432,8 +399,6 @@
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
-
-                    // ป้องกันการยิง API ถ้านี่เป็นสินค้าที่มี Options (ต้องไปเลือกในหน้ารายละเอียดก่อน)
                     const btn = this.querySelector('button[type="submit"]');
                     if (btn && btn.textContent.includes('เลือกตัวเลือก')) {
                         e.preventDefault();
@@ -441,7 +406,6 @@
                             .replace('/cart/add/', '/product/');
                         return;
                     }
-
                     e.preventDefault();
                     const currentForm = this;
                     const submitBtn = currentForm.querySelector('button[type="submit"]');
@@ -451,7 +415,7 @@
 
                     submitBtn.disabled = true;
                     submitBtn.innerHTML =
-                        '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
+                    '<span class="loading loading-spinner loading-xs"></span>';
 
                     const formData = new FormData();
                     formData.append('quantity', quantity);
@@ -469,37 +433,23 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                if (typeof window.flyToCart === 'function') {
-                                    window.flyToCart(submitBtn);
-                                }
+                                if (typeof window.flyToCart === 'function') window.flyToCart(
+                                    submitBtn);
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'เพิ่มลงตะกร้าแล้ว',
-                                    text: 'สินค้าถูกเพิ่มเรียบร้อย',
                                     showConfirmButton: false,
-                                    timer: 1500
+                                    timer: 1000
                                 });
-                                setTimeout(() => { // Add setTimeout
-                                    console.log(
-                                        'Dispatching cartUpdated from allproducts.blade.php'
-                                    ); // Log
+                                setTimeout(() => {
                                     Livewire.dispatch('cartUpdated');
-                                }, 50); // Small delay
+                                }, 50);
                             } else {
-                                throw new Error(data.message || 'Unknown error');
+                                throw new Error(data.message);
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: 'ไม่สามารถเพิ่มสินค้าได้',
-                                position: 'center',
-                                showConfirmButton: false,
-                                timer: 1500,
-                                confirmButtonColor: '#DC2626'
-                            });
                         })
                         .finally(() => {
                             submitBtn.disabled = false;

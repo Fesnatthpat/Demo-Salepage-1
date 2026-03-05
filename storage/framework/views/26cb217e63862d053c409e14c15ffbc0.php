@@ -51,7 +51,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                         </svg>
-                        <span class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">คัดลอก</span>
+                        <span
+                            class="text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">คัดลอก</span>
                     </div>
                 </div>
                 <div class="text-center mt-2">
@@ -77,14 +78,17 @@
                     class="hidden text-center mb-6 bg-gray-100 py-3 rounded-full text-gray-500 text-sm">
                     <span class="flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
+                                clip-rule="evenodd" />
                         </svg>
                         หมดเวลาชำระเงินแล้ว
                     </span>
                 </div>
 
                 <div class="text-center animate-fade-in relative">
-                    <div class="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 inline-block mb-4 relative group transition-all duration-500" id="qr-container">
+                    <div class="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 inline-block mb-4 relative group transition-all duration-500"
+                        id="qr-container">
                         <img id="qr-code-image" src="data:image/svg+xml;base64,<?php echo e($qrCodeBase64); ?>" alt="PromptPay QR Code"
                             class="w-48 h-48 object-cover rounded-lg mx-auto transition-all duration-500">
                         <div class="mt-3 text-center">
@@ -94,8 +98,10 @@
                         <div id="qr-overlay"
                             class="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
                             <p class="text-gray-500 font-bold mb-2">QR Code หมดอายุ</p>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                         </div>
                     </div>
@@ -103,8 +109,10 @@
                     <div id="save-btn-container" class="flex justify-center gap-3 mb-6 transition-all duration-300">
                         <button onclick="saveQRCode()"
                             class="btn btn-sm btn-outline gap-2 text-gray-600 border-gray-300 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                             บันทึกรูป
                         </button>
@@ -118,9 +126,11 @@
 
                 
                 <div id="cancel-order-container" class="mb-3 transition-all duration-300">
-                    <form id="cancel-form" action="<?php echo e(route('payment.cancel', ['orderCode' => $order->ord_code])); ?>" method="POST">
+                    <form id="cancel-form" action="<?php echo e(route('payment.cancel', ['orderCode' => $order->ord_code])); ?>"
+                        method="POST">
                         <?php echo csrf_field(); ?>
-                        <button type="button" onclick="confirmCancel()" class="btn btn-outline btn-error w-full font-normal">
+                        <button type="button" onclick="confirmCancel()"
+                            class="btn btn-outline btn-error w-full font-normal">
                             ยกเลิกคำสั่งซื้อ
                         </button>
                     </form>
@@ -184,8 +194,14 @@
 
         window.copyToClipboard = function(text) {
             navigator.clipboard.writeText(text).then(() => {
-                const Toast = Swal.mixin({ showConfirmButton: false, timer: 2000 });
-                Toast.fire({ icon: 'success', title: 'คัดลอกเลขบัญชีแล้ว' });
+                const Toast = Swal.mixin({
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: 'คัดลอกเลขบัญชีแล้ว'
+                });
             });
         }
 
@@ -244,7 +260,8 @@
                         confirmButtonText: 'ยืนยันการแจ้งชำระ',
                         confirmButtonColor: '#fc0303',
                         preConfirm: () => {
-                            if (document.getElementById('slip_image_input').files.length === 0) {
+                            if (document.getElementById('slip_image_input').files.length ===
+                                0) {
                                 Swal.showValidationMessage('กรุณาเลือกไฟล์สลิป');
                                 return false;
                             }
@@ -256,4 +273,5 @@
         });
     </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/qr.blade.php ENDPATH**/ ?>

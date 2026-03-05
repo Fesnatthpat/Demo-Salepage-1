@@ -158,6 +158,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // ✅ Route สำหรับตั้งค่ารูปหลัก (ใหม่)
     Route::post('/products/image/{image}/set-main', [AdminProductController::class, 'setMainImage'])->name('products.setMainImage');
 
+    // ✅ Route สำหรับ Toggle สินค้าแนะนำ (ใหม่)
+    Route::post('/products/{product}/toggle-recommended', [AdminProductController::class, 'toggleRecommended'])->name('products.toggleRecommended');
+
     // Promotion Management (จัดการโปรโมชั่น)
     Route::resource('promotions', PromotionController::class);
 

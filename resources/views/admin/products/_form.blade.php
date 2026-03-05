@@ -58,6 +58,12 @@
         </h3>
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
+                <span class="text-sm font-medium text-gray-300">สินค้าแนะนำ:</span>
+                <input type="hidden" name="is_recommended" value="0">
+                <input type="checkbox" name="is_recommended" value="1" class="toggle toggle-warning toggle-sm"
+                    {{ old('is_recommended', $productSalepage->is_recommended ?? 0) == 1 ? 'checked' : '' }} />
+            </div>
+            <div class="flex items-center gap-3 bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-600 shadow-sm">
                 <span class="text-sm font-medium text-gray-300">สถานะการขาย:</span>
                 <input type="hidden" name="pd_sp_active" value="0">
                 <input type="checkbox" name="pd_sp_active" value="1" class="toggle toggle-success toggle-sm"

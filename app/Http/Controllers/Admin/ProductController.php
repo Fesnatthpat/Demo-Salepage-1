@@ -32,6 +32,27 @@ class ProductController extends Controller
             $query->where('pd_sp_active', $request->status);
         }
 
+        if ($request->filled('type')) {
+            switch ($request->type) {
+                case 'recommended':
+                    $query->where('is_recommended', 1);
+                    break;
+                case 'promotion':
+                    $query->where('pd_sp_discount', '>', 0);
+                    break;
+                case 'general':
+                    $query->where('is_recommended', 0)->where('pd_sp_discount', 0);
+                    break;
+                case 'out_of_stock':
+                    $query->where(function ($q) {
+                        $q->whereHas('stock', function ($sq) {
+                            $sq->where('quantity', '<=', 0);
+                        })->orWhereDoesntHave('stock');
+                    });
+                    break;
+            }
+        }
+
         $products = $query->paginate(10);
 
         return view('admin.products.index', compact('products'));
@@ -299,6 +320,17 @@ class ProductController extends Controller
         });
     }
 
+    public function toggleRecommended(ProductSalepage $product)
+    {
+        $product->is_recommended = !$product->is_recommended;
+        $product->save();
+
+        return response()->json([
+            'success' => true,
+            'is_recommended' => $product->is_recommended
+        ]);
+    }
+
     private function validateSalePage(Request $request, ?ProductSalepage $salePage = null): array
     {
         return $request->validate([
@@ -312,6 +344,8 @@ class ProductController extends Controller
             'pd_sp_width' => 'nullable|numeric|min:0',
             'pd_sp_length' => 'nullable|numeric|min:0',
             'pd_sp_height' => 'nullable|numeric|min:0',
+            'pd_sp_active' => 'nullable|boolean',
+            'is_recommended' => 'nullable|boolean',
             'pd_sp_free_shipping' => 'nullable|boolean',
             'pd_sp_free_cod' => 'nullable|boolean',
             'product_options' => 'nullable|array',

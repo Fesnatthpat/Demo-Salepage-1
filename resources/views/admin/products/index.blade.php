@@ -215,10 +215,17 @@
                                                 {{ $product->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}
 
                                                 {{-- Badge สถานะพิเศษ --}}
-                                                @if ($product->is_recommended)
-                                                    <span class="badge badge-warning badge-xs text-yellow-900"
-                                                        title="สินค้าแนะนำ">แนะนำ</span>
-                                                @endif
+                                                <button type="button" class="toggle-recommended-btn cursor-pointer outline-none" 
+                                                    data-id="{{ $product->pd_sp_id }}"
+                                                    data-url="{{ route('admin.products.toggleRecommended', $product->pd_sp_id) }}">
+                                                    @if ($product->is_recommended)
+                                                        <span class="badge badge-warning badge-xs text-yellow-900"
+                                                            title="คลิกเพื่อยกเลิกการแนะนำ">แนะนำ</span>
+                                                    @else
+                                                        <span class="badge badge-ghost badge-xs text-gray-500 hover:text-white"
+                                                            title="คลิกเพื่อตั้งเป็นสินค้าแนะนำ">แนะนำ</span>
+                                                    @endif
+                                                </button>
                                                 @if ($product->pd_sp_discount > 0)
                                                     <span class="badge badge-secondary badge-xs text-white"
                                                         title="ลดราคา">Sale</span>
@@ -373,6 +380,53 @@
                         modal.style.opacity = 0;
                         setTimeout(() => modal.style.display = 'none', 200);
                     }, 100);
+                });
+            });
+
+            // Toggle Recommended AJAX
+            document.querySelectorAll('.toggle-recommended-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = this.dataset.url;
+                    const button = this;
+                    const badge = button.querySelector('.badge');
+                    
+                    // Add loading state
+                    badge.classList.add('opacity-50');
+                    button.disabled = true;
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.is_recommended) {
+                                badge.className = 'badge badge-warning badge-xs text-yellow-900';
+                                badge.title = 'คลิกเพื่อยกเลิกการแนะนำ';
+                                badge.textContent = 'แนะนำ';
+                            } else {
+                                badge.className = 'badge badge-ghost badge-xs text-gray-500 hover:text-white';
+                                badge.title = 'คลิกเพื่อตั้งเป็นสินค้าแนะนำ';
+                                badge.textContent = 'แนะนำ';
+                            }
+                        } else {
+                            alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    })
+                    .finally(() => {
+                        badge.classList.remove('opacity-50');
+                        button.disabled = false;
+                    });
                 });
             });
         });

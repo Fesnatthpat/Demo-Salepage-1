@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\ProductSalepage; // ★ ต้องมีบรรทัดนี้เพื่อเรียกใช้ Model สินค้า
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,7 @@ class OrderController extends Controller
     public function show($ord_code)
     {
         $order = Order::where('ord_code', $ord_code)->firstOrFail();
+
         return view('orderdetail', compact('order'));
     }
 
@@ -68,7 +70,7 @@ class OrderController extends Controller
                 'shipping_address' => $request->address,
                 'total_price' => $request->total_price ?? 0,
                 'net_amount' => $request->total_price ?? 0,
-                'status_id' => 1, // สถานะรอดำเนินการ/รอชำระเงิน
+                'status_id' => 1, // 1 = รอชำระเงิน
             ]);
 
             foreach ($request->cart_items as $item) {
@@ -99,6 +101,7 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // ข้อมูลสำหรับส่ง CRM
             $addressData = [
                 'province' => $request->province ?? '',
                 'amphure' => $request->amphure ?? '',
@@ -109,8 +112,9 @@ class OrderController extends Controller
                 'shipping_method' => $request->shipping_method ?? 'Shopee SPX Express',
             ];
 
-            // 💡 เรียก Job ส่ง CRM ไว้ตรงนี้ได้เลย (เพราะเราเขียนด่านตรวจสลิปดักไว้ใน Job แล้ว มันจะเบรกตัวเองถ้ายังไม่มีสลิป)
-            \App\Jobs\SendOrderToApiJob::dispatchSync($order, $addressData);
+            if (class_exists(\App\Jobs\SendOrderToApiJob::class)) {
+                \App\Jobs\SendOrderToApiJob::dispatchSync($order, $addressData);
+            }
 
             return redirect()->route('orders.show', $order->ord_code)
                 ->with('success', 'สร้างคำสั่งซื้อเรียบร้อยแล้ว กรุณาแนบสลิปเพื่อยืนยัน');
@@ -118,51 +122,69 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Order Creation Failed: '.$e->getMessage());
+
             return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }
     }
 
     /**
-     * 🌟 [เพิ่มใหม่] ฟังก์ชันสำหรับอัปโหลดสลิป และส่งข้อมูลเข้า CRM!
+     * อัปโหลดสลิป และ อัปเดตยอดขาย (Sold Count)
      */
     public function uploadSlip(Request $request, $ord_code)
     {
-        // 1. ตรวจสอบว่าแนบไฟล์รูปมาจริงๆ
+        // 1. Validate ไฟล์
         $request->validate([
-            'slip' => 'required|image|mimes:jpeg,png,jpg|max:5120', // รับรูปขนาดไม่เกิน 5MB
+            'slip_image' => 'required|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
-        // 2. หาออเดอร์ที่ต้องการแนบสลิป
         $order = Order::where('ord_code', $ord_code)->firstOrFail();
 
         try {
-            if ($request->hasFile('slip')) {
-                // เช็คก่อนว่าออเดอร์นี้เคยตัดสต็อกไปหรือยัง (สมมติว่าถ้า status_id >= 2 คือตัดแล้ว)
+            if ($request->hasFile('slip_image')) {
+
                 $alreadyPaid = ($order->status_id >= 2);
 
-                // 3. เซฟรูปลงโฟลเดอร์ slips ใน public
-                $path = $request->file('slip')->store('slips', 'public');
-                
-                // 4. อัปเดตฐานข้อมูล
+                // 2. บันทึกไฟล์
+                $path = $request->file('slip_image')->store('slips', 'public');
+
+                // 3. อัปเดตออเดอร์
                 $order->slip_path = $path;
-                $order->status_id = 2; // (ปรับตัวเลขตามที่คุณใช้) สมมติว่า 2 คือสถานะ 'ชำระเงินแล้ว'
+                $order->status_id = 2; // 2 = ชำระเงินแล้ว/รอตรวจสอบ
                 $order->save();
 
-                // 🌟 ตัดสต็อกเฉพาะเมื่อเป็นการแจ้งชำระครั้งแรกเท่านั้น
-                if (!$alreadyPaid) {
-                    $this->orderService->deductStock($order);
+                // ★★★ 4. ถ้าเป็นการจ่ายครั้งแรก ให้ตัดสต็อกและเพิ่มยอดขาย ★★★
+                if (! $alreadyPaid) {
+
+                    // A. ตัดสต็อก
+                    if (method_exists($this->orderService, 'deductStock')) {
+                        $this->orderService->deductStock($order);
+                    }
+
+                    // B. เพิ่มยอดขาย (Sold Count)
+                    $orderDetails = OrderDetail::where('ord_id', $order->id)->get();
+
+                    foreach ($orderDetails as $detail) {
+                        $product = ProductSalepage::find($detail->pd_id);
+
+                        if ($product) {
+                            $product->increment('pd_sp_sold', $detail->ordd_count);
+                        }
+                    }
                 }
 
-                // 🌟 5. พระเอกอยู่ตรงนี้: สั่งยิงข้อมูลเข้า CRM ทันทีที่อัปโหลดสลิปเสร็จ!!
-                \App\Jobs\SendOrderToApiJob::dispatchSync($order);
+                // 5. ส่งข้อมูลเข้า CRM
+                if (class_exists(\App\Jobs\SendOrderToApiJob::class)) {
+                    \App\Jobs\SendOrderToApiJob::dispatchSync($order);
+                }
 
-                return back()->with('success', 'อัปโหลดสลิปและตัดสต็อกสินค้าเรียบร้อยแล้ว!');
+                return back()->with('success', 'อัปโหลดสลิปและบันทึกยอดขายเรียบร้อยแล้ว!');
             }
         } catch (\Exception $e) {
             Log::error('Slip Upload Failed: '.$e->getMessage());
-            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดสลิป: '.$e->getMessage());
+
+            return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
         }
 
-        return back()->with('error', 'กรุณาอัปโหลดไฟล์สลิป');
+        return back()->with('error', 'กรุณาเลือกไฟล์รูปภาพ');
     }
 }

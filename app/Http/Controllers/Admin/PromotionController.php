@@ -38,42 +38,50 @@ class PromotionController extends Controller
         $this->validatePromotion($request);
 
         $promotion = DB::transaction(function () use ($request) {
-            $promotion = Promotion::create($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'code', 'discount_type', 'discount_value', 'is_discount_code'));
+            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit');
+            
+            $promoType = $request->input('promo_type_selector');
+            $data['is_discount_code'] = ($promoType === 'code');
+            $data['code'] = ($promoType === 'code') ? $request->input('code') : null;
+
+            if ($promoType === 'bxgy') {
+                $data['discount_type'] = null;
+                $data['discount_value'] = null;
+            }
+
+            $promotion = Promotion::create($data);
             $this->logActivity($promotion, 'created');
 
-            // Conditional processing for buy_items and get_items
-            if (!$request->input('is_discount_code')) {
-                foreach ($request->buy_items as $item) {
-                    PromotionRule::create([
-                        'promotion_id' => $promotion->id,
-                        'type' => 'buy_x_get_y',
-                        'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
-                    ]);
+            if ($promoType === 'bxgy') {
+                if ($request->has('buy_items')) {
+                    foreach ($request->buy_items as $item) {
+                        PromotionRule::create([
+                            'promotion_id' => $promotion->id,
+                            'type' => 'buy_x_get_y',
+                            'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
+                        ]);
+                    }
                 }
 
                 $createdActions = [];
-                foreach ($request->get_items as $item) {
-                    $createdActions[] = PromotionAction::create([
-                        'promotion_id' => $promotion->id,
-                        'type' => 'buy_x_get_y',
-                        'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
-                    ]);
+                if ($request->has('get_items')) {
+                    foreach ($request->get_items as $item) {
+                        $createdActions[] = PromotionAction::create([
+                            'promotion_id' => $promotion->id,
+                            'type' => 'buy_x_get_y',
+                            'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
+                        ]);
+                    }
                 }
 
-                // Sync giftable products if they exist in the request
                 if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
                     $selectableGiftAction = collect($createdActions)->first(function ($action) {
                         return empty($action->actions['product_id_to_get']);
                     });
-
                     if ($selectableGiftAction) {
                         $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
                     }
                 }
-            } else {
-                // If it's a discount code promotion, ensure no rules/actions are saved
-                $promotion->rules()->delete();
-                $promotion->actions()->delete();
             }
 
             return $promotion;
@@ -97,8 +105,6 @@ class PromotionController extends Controller
 
         $get_items = $promotion->actions->map(function ($action) {
             return [
-                // Note: This only handles specific gifts, not selectable ones for the row quantity.
-                // The selectable gifts are handled separately by the TomSelect input.
                 'product_id' => $action->actions['product_id_to_get'] ?? '',
                 'quantity' => $action->actions['quantity_to_get'] ?? 1,
             ];
@@ -113,48 +119,54 @@ class PromotionController extends Controller
 
         DB::transaction(function () use ($request, $id) {
             $promotion = Promotion::findOrFail($id);
-
-            // 1. Get original state
             $originalData = $promotion->toArray();
 
-            $promotion->fill($request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'code', 'discount_type', 'discount_value', 'is_discount_code'));
+            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit');
+            
+            $promoType = $request->input('promo_type_selector');
+            $data['is_discount_code'] = ($promoType === 'code');
+            $data['code'] = ($promoType === 'code') ? $request->input('code') : null;
 
-            if ($promotion->isDirty()) {
-                // 2. Log the full original and new states
-                $this->logActivity($promotion, 'updated', $originalData, $promotion->toArray());
+            if ($promoType === 'bxgy') {
+                $data['discount_type'] = null;
+                $data['discount_value'] = null;
             }
 
+            $promotion->fill($data);
+            if ($promotion->isDirty()) {
+                $this->logActivity($promotion, 'updated', $originalData, $promotion->toArray());
+            }
             $promotion->save();
 
-            // Always delete existing rules/actions first for simplicity in update
             $promotion->rules()->delete();
             $promotion->actions()->delete();
 
-            // Conditional processing for buy_items and get_items
-            if (!$request->input('is_discount_code')) {
-                foreach ($request->buy_items as $item) {
-                    PromotionRule::create([
-                        'promotion_id' => $promotion->id,
-                        'type' => 'buy_x_get_y',
-                        'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
-                    ]);
+            if ($promoType === 'bxgy') {
+                if ($request->has('buy_items')) {
+                    foreach ($request->buy_items as $item) {
+                        PromotionRule::create([
+                            'promotion_id' => $promotion->id,
+                            'type' => 'buy_x_get_y',
+                            'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
+                        ]);
+                    }
                 }
 
                 $createdActions = [];
-                foreach ($request->get_items as $item) {
-                    $createdActions[] = PromotionAction::create([
-                        'promotion_id' => $promotion->id,
-                        'type' => 'buy_x_get_y',
-                        'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
-                    ]);
+                if ($request->has('get_items')) {
+                    foreach ($request->get_items as $item) {
+                        $createdActions[] = PromotionAction::create([
+                            'promotion_id' => $promotion->id,
+                            'type' => 'buy_x_get_y',
+                            'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
+                        ]);
+                    }
                 }
 
-                // Sync giftable products if they exist in the request
                 if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
                     $selectableGiftAction = collect($createdActions)->first(function ($action) {
                         return empty($action->actions['product_id_to_get']);
                     });
-
                     if ($selectableGiftAction) {
                         $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
                     }
@@ -168,7 +180,6 @@ class PromotionController extends Controller
     public function destroy($id)
     {
         $promotion = Promotion::findOrFail($id);
-        // Log activity BEFORE deleting the model within the transaction
         $this->logActivity($promotion, 'deleted');
 
         DB::transaction(function () use ($promotion) {
@@ -188,36 +199,35 @@ class PromotionController extends Controller
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'is_active' => 'boolean',
-            'condition_type' => 'required|in:any,all', // condition_type is still relevant for some BxGy
+            'condition_type' => 'required|in:any,all',
             'is_discount_code' => 'boolean',
             'code' => ['nullable', 'string', 'max:50', 'alpha_dash', 'unique:promotions,code'.($id ? ','.$id : '')],
             'discount_type' => ['nullable', 'string', 'in:fixed,percentage'],
             'discount_value' => ['nullable', 'numeric', 'min:0'],
+            'min_order_value' => ['nullable', 'numeric', 'min:0'],
+            'usage_limit' => ['nullable', 'integer', 'min:1'],
         ];
 
-        // Conditional validation for 'buy X get Y' specific fields
-        if (!$request->input('is_discount_code')) {
+        $promoType = $request->input('promo_type_selector');
+
+        if ($promoType === 'bxgy') {
             $rules['buy_items'] = 'required|array|min:1';
-            $rules['buy_items.*.product_id'] = 'required|exists:product_salepages,pd_sp_id';
+            $rules['buy_items.*.product_id'] = 'required|exists:product_salepage,pd_sp_id';
             $rules['buy_items.*.quantity'] = 'required|integer|min:1';
             
-            // Only require get_items if condition_type is 'all'. If 'any', it might not need get_items on its own
-            // Re-evaluating based on original: get_items was always required if condition_type is 'all'
-            // Let's make it simpler: if not discount code, then buy/get items are required.
             $rules['get_items'] = 'required|array|min:1';
-            $rules['get_items.*.product_id'] = 'nullable|exists:product_salepages,pd_sp_id';
+            $rules['get_items.*.product_id'] = 'nullable|exists:product_salepage,pd_sp_id';
             $rules['get_items.*.quantity'] = 'required|integer|min:1';
             $rules['giftable_product_ids'] = 'nullable|array';
-            $rules['giftable_product_ids.*'] = 'exists:product_salepages,pd_sp_id';
+            $rules['giftable_product_ids.*'] = 'exists:product_salepage,pd_sp_id';
         } else {
-            // If it's a discount code promotion, these should not be present or validated
-            // Ensure they are not in the request before validation if still present
             $request->offsetUnset('buy_items');
             $request->offsetUnset('get_items');
             $request->offsetUnset('giftable_product_ids');
 
-            // If it's a discount code, then 'code', 'discount_type', 'discount_value' are required
-            $rules['code'][] = 'required';
+            if ($promoType === 'code') {
+                $rules['code'][] = 'required';
+            }
             $rules['discount_type'][] = 'required';
             $rules['discount_value'][] = 'required';
         }

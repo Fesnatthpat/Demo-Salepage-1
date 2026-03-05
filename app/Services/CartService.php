@@ -162,7 +162,7 @@ class CartService
                 'id' => $mainDetails->id,
                 'name' => $mainDetails->name,
                 'price' => $mainDetails->price,
-                'quantity' => ['relative' => false, 'value' => $qty],
+                'quantity' => $qty,
                 'attributes' => [
                     'image' => $mainDetails->image,
                     'pd_code' => $mainDetails->pd_code,
@@ -182,7 +182,7 @@ class CartService
                     'id' => $secDetails->id,
                     'name' => $secDetails->name,
                     'price' => $secDetails->price,
-                    'quantity' => ['relative' => false, 'value' => 1],
+                    'quantity' => 1,
                     'attributes' => [
                         'image' => $secDetails->image,
                         'pd_code' => $secDetails->pd_code,
@@ -211,7 +211,7 @@ class CartService
                 'id' => $giftProduct->pd_sp_id,
                 'name' => $giftProduct->pd_sp_name.' (ของแถม)',
                 'price' => 0,
-                'quantity' => ['relative' => false, 'value' => 1],
+                'quantity' => 1,
                 'attributes' => [
                     'image' => $imgPath,
                     'pd_code' => $giftProduct->pd_sp_code,
@@ -345,7 +345,9 @@ class CartService
     {
         $now = now();
         $promotionIds = PromotionRule::where(function ($q) use ($productId) {
-            $q->whereJsonContains('rules->product_id', (string) $productId)
+            $q->where('rules->product_id', (string) $productId)
+                ->orWhere('rules->product_id', (int) $productId)
+                ->orWhereJsonContains('rules->product_id', (string) $productId)
                 ->orWhereJsonContains('rules->product_id', (int) $productId);
         })->pluck('promotion_id')->unique();
         if ($promotionIds->isEmpty()) {

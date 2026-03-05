@@ -86,11 +86,33 @@
 
                                 
                                 <td class="text-right align-middle py-4">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($promo->discount_value)): ?>
-                                        <span class="font-bold text-gray-200"><?php echo e(number_format($promo->discount_value, 0)); ?><?php echo e($promo->discount_type === 'percentage' ? '%' : '฿'); ?></span>
-                                    <?php else: ?>
-                                        -
-                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                    <div class="flex flex-col items-end gap-1">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($promo->discount_value)): ?>
+                                            <span class="font-bold text-gray-200 text-lg"><?php echo e(number_format($promo->discount_value, 0)); ?><?php echo e($promo->discount_type === 'percentage' ? '%' : '฿'); ?></span>
+                                        <?php else: ?>
+                                            <span class="text-gray-500">-</span>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        
+                                        <div class="flex flex-col items-end gap-1 mt-1">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-20 bg-gray-700 rounded-full h-1">
+                                                    <div class="bg-emerald-500 h-1 rounded-full" 
+                                                        style="width: <?php echo e($promo->usage_limit ? min(100, ($promo->used_count / $promo->usage_limit) * 100) : 0); ?>%">
+                                                    </div>
+                                                </div>
+                                                <span class="text-[10px] text-gray-400">
+                                                    <?php echo e(number_format($promo->used_count)); ?>/<?php echo e($promo->usage_limit ? number_format($promo->usage_limit) : '∞'); ?>
+
+                                                </span>
+                                            </div>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promo->min_order_value > 0): ?>
+                                                <span class="text-[10px] text-emerald-400 font-medium bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-800/50">
+                                                    <i class="fas fa-shopping-bag mr-1"></i> ขั้นต่ำ ฿<?php echo e(number_format($promo->min_order_value)); ?>
+
+                                                </span>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        </div>
+                                    </div>
                                 </td>
 
                                 

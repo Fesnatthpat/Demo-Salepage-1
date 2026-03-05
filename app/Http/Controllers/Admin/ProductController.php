@@ -146,14 +146,11 @@ class ProductController extends Controller
                 }
             }
 
-            // ถ้าไม่มีตัวเลือก ถึงจะบันทึกสต็อกหลัก
-            if (! $hasOptions) {
-                StockProduct::create([
-                    'pd_sp_id' => $salePage->pd_sp_id,
-                    'option_id' => null,
-                    'quantity' => $request->pd_sp_stock ?? 0,
-                ]);
-            }
+            // บันทึกสต็อกหลักเสมอ (เพื่อให้ OrderService ทำงานได้ราบรื่น)
+            StockProduct::updateOrCreate(
+                ['pd_sp_id' => $salePage->pd_sp_id, 'option_id' => null],
+                ['quantity' => $request->pd_sp_stock ?? 0]
+            );
 
             $this->logActivity($salePage, 'created');
 
@@ -251,14 +248,11 @@ class ProductController extends Controller
                 }
             }
 
-            // ถ้าไม่มีตัวเลือก ถึงจะบันทึกสต็อกหลัก
-            if (! $hasOptions) {
-                StockProduct::create([
-                    'pd_sp_id' => $productSalepage->pd_sp_id,
-                    'option_id' => null,
-                    'quantity' => $request->pd_sp_stock ?? 0,
-                ]);
-            }
+            // บันทึกสต็อกหลักเสมอ (เพื่อให้ OrderService ทำงานได้ราบรื่น)
+            StockProduct::updateOrCreate(
+                ['pd_sp_id' => $productSalepage->pd_sp_id, 'option_id' => null],
+                ['quantity' => $request->pd_sp_stock ?? 0]
+            );
 
             $this->logActivity($productSalepage, 'updated', $originalData, $productSalepage->toArray());
 

@@ -115,8 +115,30 @@ class OrderService
                     ->lockForUpdate()
                     ->first();
 
+                // 🌟 [แก้ไข] หากไม่พบสต็อกหลัก (NULL) แต่เป็นสินค้าที่มีตัวเลือก (Options) 
+                // ให้พยายามดึงสต็อกของตัวเลือกแรกมาใช้ (กรณีของแถมที่ไม่ได้ระบุตัวเลือก)
+                if (! $stockRecord && is_null($optionId)) {
+                    $stockRecord = StockProduct::where('pd_sp_id', $productId)
+                        ->whereNotNull('option_id')
+                        ->orderBy('stock_id', 'asc')
+                        ->lockForUpdate()
+                        ->first();
+                }
+
                 if (! $stockRecord) {
-                    throw new \Exception('ไม่พบข้อมูลสต็อกสำหรับสินค้า: '.$item->name);
+                    // หากยังไม่พบอีก ให้สร้างสต็อกหลอกขึ้นมา (เพื่อไม่ให้ระบบพัง) หรือโยน Exception
+                    // ในที่นี้เลือกที่จะสร้าง record ใหม่ด้วยจำนวน 0 หากเป็นสินค้าที่มีอยู่ในระบบจริง
+                    $productExists = \App\Models\ProductSalepage::find($productId);
+                    if ($productExists) {
+                        $stockRecord = StockProduct::create([
+                            'pd_sp_id' => $productId,
+                            'option_id' => $optionId,
+                            'quantity' => 0,
+                            'reserved_qty' => 0
+                        ]);
+                    } else {
+                        throw new \Exception('ไม่พบข้อมูลสินค้าและสต็อกสำหรับ: '.$item->name);
+                    }
                 }
 
                 // [แก้ไข] สต๊อกที่พร้อมขาย (Available Stock)

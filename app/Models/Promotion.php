@@ -19,6 +19,9 @@ class Promotion extends Model
         'code',
         'discount_type',
         'discount_value',
+        'min_order_value',
+        'usage_limit',
+        'used_count',
         'is_discount_code',
     ];
 
@@ -27,6 +30,9 @@ class Promotion extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
         'discount_value' => 'float',
+        'min_order_value' => 'float',
+        'usage_limit' => 'integer',
+        'used_count' => 'integer',
         'is_discount_code' => 'boolean',
     ];
 

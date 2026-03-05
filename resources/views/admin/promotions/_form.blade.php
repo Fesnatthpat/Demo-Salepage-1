@@ -157,6 +157,24 @@
                         </div>
                     </div>
 
+                    <div class="divider border-gray-700">เงื่อนไขเพิ่มเติม</div>
+
+                    <div class="form-control w-full">
+                        <label class="label pt-0"><span class="label-text font-semibold text-gray-300">ยอดสั่งซื้อขั้นต่ำ (บาท)</span></label>
+                        <input type="number" name="min_order_value"
+                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
+                            value="{{ old('min_order_value', $promotion->min_order_value ?? '') }}" step="0.01" min="0" placeholder="0.00" />
+                        <p class="text-xs text-gray-400 mt-1">เว้นว่างไว้หากไม่มีขั้นต่ำ</p>
+                    </div>
+
+                    <div class="form-control w-full">
+                        <label class="label pt-0"><span class="label-text font-semibold text-gray-300">จำนวนสิทธิ์การใช้งานทั้งหมด</span></label>
+                        <input type="number" name="usage_limit"
+                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
+                            value="{{ old('usage_limit', $promotion->usage_limit ?? '') }}" min="1" placeholder="ไม่จำกัด" />
+                        <p class="text-xs text-gray-400 mt-1">ระบุจำนวนครั้งที่สามารถใช้โปรโมชั่นนี้ได้ทั้งหมด</p>
+                    </div>
+
                     <div class="form-control mt-2">
                         <label class="label cursor-pointer justify-between">
                             <span class="label-text font-semibold text-gray-300">เปิดใช้งานโปรโมชั่น</span>
@@ -166,47 +184,74 @@
                         </label>
                     </div>
                     
-                    {{-- Promotion Type Toggle --}}
+                    {{-- Promotion Type Selection --}}
                     <div class="form-control mt-4">
-                        <label class="label cursor-pointer justify-between">
-                            <span class="label-text font-semibold text-gray-300">ใช้เป็นรหัสส่วนลด</span>
-                            <input type="hidden" name="is_discount_code" value="0"> {{-- Hidden field for when checkbox is unchecked --}}
-                            <input type="checkbox" name="is_discount_code" x-model="isDiscountCode" class="toggle toggle-info" value="1"
-                                {{ old('is_discount_code', isset($promotion) && $promotion->code ? '1' : '0') == '1' ? 'checked' : '' }} />
-                        </label>
-                        <p class="text-xs text-gray-400 mt-1">หากเปิดใช้งาน, โปรโมชั่นนี้จะใช้เป็นรหัสส่วนลดแทนเงื่อนไขซื้อ X แถม Y</p>
+                        <label class="label"><span class="label-text font-semibold text-gray-300">ประเภทโปรโมชั่น</span></label>
+                        <div class="flex flex-col gap-2">
+                            <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
+                                :class="!isBxGy && !isDiscountCode ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700'">
+                                <input type="radio" name="promo_type_selector" value="auto" x-model="promoType"
+                                    class="radio radio-success radio-sm" />
+                                <div>
+                                    <span class="font-bold text-sm text-gray-200">ส่วนลดอัตโนมัติ (Automated)</span>
+                                    <p class="text-xs text-gray-400">ลดราคาทันทีเมื่อยอดสั่งซื้อถึงเกณฑ์ (ไม่ต้องใส่โค้ด)</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
+                                :class="isDiscountCode ? 'border-info bg-info/10' : 'bg-gray-700'">
+                                <input type="radio" name="promo_type_selector" value="code" x-model="promoType"
+                                    class="radio radio-info radio-sm" />
+                                <div>
+                                    <span class="font-bold text-sm text-gray-200">รหัสส่วนลด (Coupon Code)</span>
+                                    <p class="text-xs text-gray-400">ลูกค้าต้องกรอกรหัสเพื่อรับส่วนลด</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
+                                :class="isBxGy ? 'border-pink-500 bg-pink-900/20' : 'bg-gray-700'">
+                                <input type="radio" name="promo_type_selector" value="bxgy" x-model="promoType"
+                                    class="radio radio-secondary radio-sm" />
+                                <div>
+                                    <span class="font-bold text-sm text-gray-200">ซื้อ X แถม Y (BxGy)</span>
+                                    <p class="text-xs text-gray-400">แถมสินค้าฟรีอัตโนมัติเมื่อซื้อครบตามเงื่อนไข</p>
+                                </div>
+                            </label>
+                        </div>
+                        <input type="hidden" name="is_discount_code" :value="isDiscountCode ? 1 : 0">
                     </div>
 
-                    {{-- Discount Code Fields (Conditional) --}}
-                    <template x-if="isDiscountCode">
-                        <div class="space-y-4 bg-gray-900/50 p-4 rounded-lg border border-gray-700 animate-fade-in-down">
-                            <h3 class="font-bold text-lg text-gray-100">ตั้งค่ารหัสส่วนลด</h3>
+                    {{-- Discount Settings (For Auto & Code) --}}
+                    <div class="space-y-4 bg-gray-900/50 p-4 rounded-lg border border-gray-700 animate-fade-in-down mt-4" 
+                        x-show="promoType === 'auto' || promoType === 'code'">
+                        <h3 class="font-bold text-sm text-emerald-400 uppercase tracking-wider">ตั้งค่าส่วนลด</h3>
+                        
+                        <div class="form-control w-full" x-show="promoType === 'code'">
+                            <label class="label pt-0"><span class="label-text font-semibold text-gray-300">รหัสส่วนลด <span class="text-red-400">*</span></span></label>
+                            <input type="text" name="code"
+                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
+                                value="{{ old('code', $promotion->code ?? '') }}" :required="promoType === 'code'" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
                             <div class="form-control w-full">
-                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">รหัสส่วนลด <span class="text-red-400">*</span></span></label>
-                                <input type="text" name="code"
-                                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                                    value="{{ old('code', $promotion->code ?? '') }}" x-bind:required="isDiscountCode" />
-                                <p class="text-xs text-gray-400 mt-1">เช่น NEWUSER, SAVE100 (ใช้ตัวอักษรและตัวเลขเท่านั้น)</p>
-                            </div>
-                            <div class="form-control w-full">
-                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">ประเภทส่วนลด <span class="text-red-400">*</span></span></label>
-                                <select name="discount_type" x-model="discountType" x-bind:required="isDiscountCode"
+                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">ประเภท <span class="text-red-400">*</span></span></label>
+                                <select name="discount_type" x-model="discountType" :required="promoType === 'auto' || promoType === 'code'"
                                     class="select select-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
-                                    <option value="">-- เลือกประเภท --</option>
+                                    <option value="">-- เลือก --</option>
                                     @foreach ($discountTypes as $key => $value)
-                                        <option value="{{ $key }}" {{ old('discount_type', $promotion->discount_type ?? '') == $key ? 'selected' : '' }}>{{ $value }}</option>
+                                        <option value="{{ $key }}" {{ old('discount_type', $promotion->discount_type ?? '') == $key ? 'selected' : '' }}>{{ $key === 'fixed' ? 'บาท' : '%' }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-control w-full">
-                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">มูลค่าส่วนลด <span class="text-red-400">*</span></span></label>
+                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">มูลค่า <span class="text-red-400">*</span></span></label>
                                 <input type="number" name="discount_value"
                                     class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                                    value="{{ old('discount_value', $promotion->discount_value ?? '') }}" x-bind:required="isDiscountCode" step="0.01" min="0" />
-                                <p class="text-xs text-gray-400 mt-1" x-text="discountType === 'fixed' ? 'เช่น 100 สำหรับลด 100 บาท' : 'เช่น 10 สำหรับลด 10%'"></p>
+                                    value="{{ old('discount_value', $promotion->discount_value ?? '') }}" :required="promoType === 'auto' || promoType === 'code'" step="0.01" min="0" />
                             </div>
                         </div>
-                    </template>
+                    </div>
                 </div>
             </div>
 
@@ -389,8 +434,15 @@
         Alpine.data('promotionForm', (initialIsDiscountCode, initialDiscountType) => ({
             buys: @json($buyData),
             gets: @json($getData),
-            isDiscountCode: initialIsDiscountCode,
             discountType: initialDiscountType,
+            promoType: '{{ old('promo_type_selector', (isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto')) }}',
+            
+            get isDiscountCode() {
+                return this.promoType === 'code';
+            },
+            get isBxGy() {
+                return this.promoType === 'bxgy';
+            },
             init() {
                 if (typeof TomSelect !== 'undefined') {
                     new TomSelect('#giftable-products-select', {

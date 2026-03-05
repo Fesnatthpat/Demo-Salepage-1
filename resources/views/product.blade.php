@@ -228,7 +228,90 @@
                             </div>
                         </template>
 
-                        {{-- Promotion Section... --}}
+                        {{-- Promotion Section --}}
+                        <template x-if="promotions.length > 0">
+                            <div class="space-y-6 mb-8">
+                                <template x-for="promo in promotions" :key="promo.id">
+                                    <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-600 text-white shadow-md">
+                                                <i class="fas fa-gift text-sm"></i>
+                                            </span>
+                                            <h3 class="text-lg font-black text-gray-900">โปรโมชั่นสุดพิเศษ!</h3>
+                                        </div>
+
+                                        <p class="text-gray-700 font-bold mb-4">
+                                            ซื้อครบ <span class="text-red-600" x-text="promo.logic.required_qty"></span> ชิ้น 
+                                            รับของแถมฟรีทันที <span class="text-red-600" x-text="promo.gifts_per_item * Math.floor(quantity / promo.logic.required_qty)"></span> ชิ้น
+                                        </p>
+
+                                        {{-- Progress Bar --}}
+                                        <div class="mb-6">
+                                            <div class="flex justify-between text-xs font-bold mb-2">
+                                                <span class="text-gray-500 uppercase tracking-wider">ความคืบหน้า</span>
+                                                <span class="text-red-600" x-text="Math.min(100, Math.round((quantity / promo.logic.required_qty) * 100)) + '%'"></span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                                <div class="bg-red-600 h-2.5 rounded-full transition-all duration-500" 
+                                                    :style="`width: ${Math.min(100, (quantity / promo.logic.required_qty) * 100)}%`"
+                                                    :class="quantity >= promo.logic.required_qty ? 'bg-emerald-500 animate-pulse' : 'bg-red-600'">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Gift Selector --}}
+                                        <div x-show="quantity >= promo.logic.required_qty" x-transition class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-red-100/50">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <h4 class="font-bold text-gray-800">เลือกของแถมของคุณ:</h4>
+                                                <span class="badge badge-error text-white font-bold" x-text="`เลือกได้อีก ${giftLimit - selectedGifts.length} ชิ้น`"></span>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                                <template x-for="gift in promo.gifts" :key="gift.id">
+                                                    <button @click="toggleGift(gift.id)"
+                                                        class="group relative flex flex-col items-center p-2 rounded-xl border-2 transition-all duration-300"
+                                                        :class="selectedGifts.includes(gift.id) ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-white hover:border-red-200'">
+                                                        <div class="aspect-square w-full rounded-lg overflow-hidden mb-2 bg-gray-50">
+                                                            <img :src="gift.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                                        </div>
+                                                        <span class="text-[10px] font-bold text-center text-gray-700 line-clamp-1" x-text="gift.name"></span>
+                                                        <div x-show="selectedGifts.includes(gift.id)" class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce">
+                                                            <i class="fas fa-check text-[8px]"></i>
+                                                        </div>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <div x-show="quantity < promo.logic.required_qty" class="text-center p-4 bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
+                                            <p class="text-sm text-gray-500 font-medium italic">
+                                                เพิ่มอีก <span class="text-red-600 font-bold" x-text="promo.logic.required_qty - quantity"></span> ชิ้น เพื่อรับของแถมฟรี!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        {{-- Partner Products (Upsell) --}}
+                        <template x-if="promotions.some(p => p.partner_products && p.partner_products.length > 0)">
+                            <div class="mb-8">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">แนะนำทานคู่กับ:</h3>
+                                <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                                    <template x-for="promo in promotions" :key="'partner-'+promo.id">
+                                        <template x-for="partner in promo.partner_products" :key="partner.id">
+                                            <a :href="partner.url" class="flex-shrink-0 w-32 group">
+                                                <div class="aspect-square rounded-xl overflow-hidden mb-2 shadow-sm border border-gray-100 group-hover:shadow-md transition-all">
+                                                    <img :src="partner.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                                </div>
+                                                <p class="text-xs font-bold text-gray-800 truncate" x-text="partner.name"></p>
+                                                <p class="text-xs text-red-600 font-black" x-text="'฿' + partner.price"></p>
+                                            </a>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     {{-- Main Actions --}}
@@ -358,6 +441,34 @@
                 promotions: config.promotions || [],
                 selectedGifts: [],
 
+                get giftLimit() {
+                    if (this.promotions.length === 0) return 0;
+                    // หาโปรโมชั่นแรกที่เงื่อนไขครบ (รองรับ 1 โปรโมชั่นหลักต่อหน้าสินค้า)
+                    const activePromo = this.promotions.find(p => this.quantity >= p.logic.required_qty);
+                    if (!activePromo) return 0;
+                    return activePromo.gifts_per_item * Math.floor(this.quantity / activePromo.logic.required_qty);
+                },
+
+                get isConditionMet() {
+                    return this.giftLimit > 0;
+                },
+
+                toggleGift(giftId) {
+                    const index = this.selectedGifts.indexOf(giftId);
+                    if (index > -1) {
+                        this.selectedGifts.splice(index, 1);
+                    } else {
+                        if (this.selectedGifts.length < this.giftLimit) {
+                            this.selectedGifts.push(giftId);
+                        } else {
+                            // ถ้าเลือกเกิน ให้เอาตัวแรกออกแล้วเพิ่มตัวใหม่ (FIFO) หรือแจ้งเตือน
+                            // ในที่นี้เลือกเปลี่ยนตัวล่าสุดที่เลือก
+                            this.selectedGifts.shift();
+                            this.selectedGifts.push(giftId);
+                        }
+                    }
+                },
+
                 init() {
                     this.imagesLoaded = true;
                     this.$watch('quantity', () => this.validateSelection());
@@ -437,6 +548,34 @@
                         Swal.fire('กรุณาเลือกตัวเลือก', 'เลือกสินค้าก่อนหยิบใส่ตะกร้า', 'warning');
                         return;
                     }
+
+                    // ตรวจสอบการเลือกของแถม
+                    if (this.isConditionMet && this.selectedGifts.length < this.giftLimit) {
+                        const remaining = this.giftLimit - this.selectedGifts.length;
+                        Swal.fire({
+                            title: 'รับของแถมฟรี!',
+                            text: `คุณยังเลือกของแถมไม่ครบ (ขาดอีก ${remaining} ชิ้น) ต้องการเลือกให้ครบก่อนไหม?`,
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'เลือกของแถม',
+                            cancelButtonText: 'ไม่เป็นไร (สละสิทธิ์)',
+                            confirmButtonColor: '#d33',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Scroll to gift section
+                                document.querySelector('.bg-gradient-to-br').scrollIntoView({ behavior: 'smooth' });
+                            } else {
+                                // สละสิทธิ์ของแถม
+                                this.proceedAddToCart(isBuyNow);
+                            }
+                        });
+                        return;
+                    }
+
+                    this.proceedAddToCart(isBuyNow);
+                },
+
+                async proceedAddToCart(isBuyNow) {
                     if (this.isLoading) return;
                     this.isLoading = true;
                     try {

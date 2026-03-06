@@ -11,7 +11,7 @@
 @endphp
 
 <style>
-    /* --- TomSelect Custom Dark Theme --- */
+    /* Custom TomSelect Dark Theme Overrides */
     .ts-control {
         background-color: #111827 !important;
         /* gray-900 */
@@ -21,44 +21,19 @@
         /* gray-200 */
         border-radius: 0.5rem;
         padding: 0.625rem 0.75rem !important;
-        min-height: 46px;
     }
 
     .ts-control input {
         color: #e5e7eb !important;
     }
 
-    /* Dropdown Styling */
     .ts-dropdown {
         background-color: #1f2937 !important;
         /* gray-800 */
-        border: 1px solid #4b5563 !important;
-        /* gray-600 */
+        border-color: #374151 !important;
         color: #e5e7eb !important;
         border-radius: 0.5rem;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-        z-index: 99999 !important;
-        /* Layer สูงสุด */
-
-        /* ตัดคำสั่ง width auto ออก เพื่อให้กว้างเท่ากับ Input */
-        overflow: hidden;
-    }
-
-    /* จัดการข้อความยาวๆ ให้ขึ้นบรรทัดใหม่ ไม่ล้นจอ */
-    .ts-dropdown .option {
-        padding: 12px 14px;
-        white-space: normal !important;
-        /* หัวใจสำคัญ: ให้ตัดคำลงบรรทัดใหม่ */
-        word-wrap: break-word;
-        /* ตัดคำถ้ายาวเกิน */
-        border-bottom: 1px solid #374151;
-        line-height: 1.5;
-        font-size: 0.875rem;
-        /* text-sm */
-    }
-
-    .ts-dropdown .option:last-child {
-        border-bottom: none;
     }
 
     .ts-dropdown .option:hover,
@@ -68,15 +43,11 @@
         /* emerald-400 */
     }
 
-    /* Selected Items Badge */
     .ts-wrapper.multi .ts-control>div {
-        background: rgba(52, 211, 153, 0.15) !important;
-        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        background: rgba(52, 211, 153, 0.1) !important;
+        border: 1px solid rgba(52, 211, 153, 0.2) !important;
         color: #34d399 !important;
-        border-radius: 0.375rem;
-        padding: 2px 8px;
-        margin-right: 4px;
-        margin-bottom: 4px;
+        border-radius: 0.25rem;
     }
 </style>
 
@@ -97,7 +68,8 @@
                     <i class="fas fa-bolt text-2xl"></i>
                 </div>
                 <h4 class="font-bold text-white text-lg peer-checked:text-emerald-400">ส่วนลดอัตโนมัติ</h4>
-                <p class="text-xs text-gray-400 mt-2 leading-relaxed">ลดทันทีเมื่อยอดถึง (ไม่ต้องใช้โค้ด)</p>
+                <p class="text-xs text-gray-400 mt-2 leading-relaxed">ลดราคาให้ลูกค้าทันทีเมื่อเข้าเงื่อนไข
+                    (ไม่ต้องใช้โค้ด)</p>
             </div>
             <div class="absolute top-3 right-3 text-emerald-500 opacity-0 peer-checked:opacity-100 transition-opacity">
                 <i class="fas fa-check-circle text-xl"></i></div>
@@ -112,8 +84,8 @@
                     class="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 mb-4 peer-checked:bg-blue-500 peer-checked:text-white transition-colors shadow-lg">
                     <i class="fas fa-ticket-alt text-2xl"></i>
                 </div>
-                <h4 class="font-bold text-white text-lg peer-checked:text-blue-400">ใช้รหัสส่วนลด</h4>
-                <p class="text-xs text-gray-400 mt-2 leading-relaxed">ลูกค้าต้องกรอกโค้ดเพื่อรับสิทธิ์</p>
+                <h4 class="font-bold text-white text-lg peer-checked:text-blue-400">ใช้รหัสส่วนลด (Code)</h4>
+                <p class="text-xs text-gray-400 mt-2 leading-relaxed">ลูกค้าต้องกรอกรหัสคูปองเพื่อรับสิทธิ์ส่วนลด</p>
             </div>
             <div class="absolute top-3 right-3 text-blue-500 opacity-0 peer-checked:opacity-100 transition-opacity"><i
                     class="fas fa-check-circle text-xl"></i></div>
@@ -129,7 +101,7 @@
                     <i class="fas fa-gifts text-2xl"></i>
                 </div>
                 <h4 class="font-bold text-white text-lg peer-checked:text-pink-400">ซื้อ X แถม Y</h4>
-                <p class="text-xs text-gray-400 mt-2 leading-relaxed">ซื้อสินค้าครบตามเงื่อนไข แถมฟรี</p>
+                <p class="text-xs text-gray-400 mt-2 leading-relaxed">จัดโปรโมชั่นแถมสินค้า เมื่อซื้อครบตามกำหนด</p>
             </div>
             <div class="absolute top-3 right-3 text-pink-500 opacity-0 peer-checked:opacity-100 transition-opacity"><i
                     class="fas fa-check-circle text-xl"></i></div>
@@ -161,7 +133,9 @@
             {{-- A. Discount Configuration (Auto/Code) --}}
             <div x-show="promoType === 'auto' || promoType === 'code'"
                 x-transition:enter="transition ease-out duration-300"
-                class="bg-gray-800 rounded-xl border border-gray-700 shadow-xl overflow-visible">
+                x-transition:enter-start="opacity-0 transform -translate-y-2"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                class="bg-gray-800 rounded-xl border border-gray-700 shadow-xl overflow-hidden">
 
                 <div class="p-4 border-b border-gray-700 bg-gray-800/50 flex items-center gap-2">
                     <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
@@ -171,7 +145,7 @@
                 </div>
 
                 <div class="p-6 space-y-6">
-                    {{-- Coupon Code --}}
+                    {{-- Coupon Code Field --}}
                     <div x-show="promoType === 'code'" class="bg-blue-900/10 border border-blue-500/20 rounded-xl p-5">
                         <label class="block text-sm font-medium text-blue-300 mb-2">รหัสส่วนลด (Coupon Code) <span
                                 class="text-red-400">*</span></label>
@@ -221,7 +195,9 @@
 
             {{-- B. Buy X Get Y Builder --}}
             <div x-show="isBxGy" x-transition:enter="transition ease-out duration-300"
-                class="bg-gray-800 rounded-xl border border-gray-700 shadow-xl overflow-visible">
+                x-transition:enter-start="opacity-0 transform -translate-y-2"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                class="bg-gray-800 rounded-xl border border-gray-700 shadow-xl overflow-hidden">
 
                 <div class="p-4 border-b border-gray-700 bg-gray-800/50 flex justify-between items-center">
                     <div class="flex items-center gap-2">
@@ -261,24 +237,22 @@
                             </div>
 
                             <div class="space-y-4 pt-2">
-                                <template x-for="(item, index) in buys" :key="item.id">
-                                    {{-- เพิ่ม min-w-0 เพื่อป้องกัน flex child ขยายจนล้น --}}
+                                <template x-for="(item, index) in buys" :key="index">
                                     <div
                                         class="flex flex-col md:flex-row gap-3 items-start md:items-center bg-gray-800 p-3 rounded-lg border border-gray-700 relative group">
                                         {{-- Remove Button --}}
                                         <button type="button" x-show="buys.length > 1"
-                                            @click="removeBuyItem(index, item.id)"
-                                            class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10 cursor-pointer">
+                                            @click="removeItem('buy', index)"
+                                            class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10">
                                             <i class="fas fa-times"></i>
                                         </button>
 
-                                        {{-- ส่วน Select สินค้า (ใช้ min-w-0 และ flex-grow) --}}
-                                        <div class="flex-grow w-full min-w-0">
+                                        <div class="flex-grow w-full">
                                             <label
                                                 class="text-[10px] uppercase text-gray-500 font-bold mb-1 block">เลือกสินค้า</label>
-                                            <select :id="'buy-products-select-' + item.id"
+                                            <select :id="'buy-products-select-' + index"
                                                 :name="`buy_items[${index}][product_id][]`" multiple
-                                                class="buy-products-select w-full" x-bind:disabled="isDiscountCode">
+                                                class="buy-products-select" x-bind:disabled="isDiscountCode">
                                                 @foreach ($products as $p)
                                                     <option value="{{ $p->pd_sp_id }}"
                                                         :selected="Array.isArray(item.product_id) ? item.product_id.map(String)
@@ -307,14 +281,14 @@
                                     </div>
                                 </template>
 
-                                <button type="button" @click="addBuyItem()"
+                                <button type="button" @click="addItem('buy')"
                                     class="w-full py-2 border border-dashed border-gray-600 rounded-lg text-sm text-gray-400 hover:text-emerald-400 hover:border-emerald-500 hover:bg-emerald-500/5 transition-all">
                                     <i class="fas fa-plus mr-1"></i> เพิ่มเงื่อนไขสินค้า
                                 </button>
                             </div>
                         </div>
 
-                        {{-- Connector --}}
+                        {{-- Connector Arrow --}}
                         <div class="flex justify-center -my-3 z-10">
                             <div
                                 class="bg-gray-700 text-gray-300 rounded-full w-8 h-8 flex items-center justify-center border border-gray-600 shadow-lg">
@@ -334,34 +308,32 @@
                                     <label
                                         class="text-xs uppercase text-gray-500 font-bold mb-2 block">รายการของแถมที่เลือกได้
                                         (Pool)</label>
-                                    <div class="w-full min-w-0">
-                                        <select id="giftable-products-select" name="giftable_product_ids[]" multiple
-                                            x-bind:disabled="isDiscountCode">
-                                            @php
-                                                $selectedGiftIds = collect(
-                                                    old(
-                                                        'giftable_product_ids',
-                                                        isset($promotion)
-                                                            ? $promotion->actions->flatMap->giftableProducts->pluck(
-                                                                'pd_sp_id',
-                                                            )
-                                                            : [],
-                                                    ),
-                                                )->map(fn($id) => (string) $id);
-                                            @endphp
-                                            @foreach ($products as $p)
-                                                <option value="{{ $p->pd_sp_id }}"
-                                                    {{ $selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : '' }}>
-                                                    {{ $p->pd_sp_name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                    <select id="giftable-products-select" name="giftable_product_ids[]" multiple
+                                        x-bind:disabled="isDiscountCode">
+                                        @php
+                                            $selectedGiftIds = collect(
+                                                old(
+                                                    'giftable_product_ids',
+                                                    isset($promotion)
+                                                        ? $promotion->actions->flatMap->giftableProducts->pluck(
+                                                            'pd_sp_id',
+                                                        )
+                                                        : [],
+                                                ),
+                                            )->map(fn($id) => (string) $id);
+                                        @endphp
+                                        @foreach ($products as $p)
+                                            <option value="{{ $p->pd_sp_id }}"
+                                                {{ $selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : '' }}>
+                                                {{ $p->pd_sp_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <p class="text-[10px] text-gray-500 mt-2">*
                                         ลูกค้าจะสามารถเลือกของแถมได้จากรายการเหล่านี้</p>
                                 </div>
 
-                                <template x-for="(item, index) in gets" :key="item.id">
+                                <template x-for="(item, index) in gets" :key="index">
                                     <div
                                         class="flex items-center justify-between bg-gray-800 p-3 rounded-lg border border-gray-700">
                                         <span class="text-sm text-gray-300 font-medium">จำนวนชิ้นที่แถมฟรี</span>
@@ -382,9 +354,11 @@
                                 </template>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
+
         </div>
 
         {{-- RIGHT COLUMN: BASIC INFO --}}
@@ -484,16 +458,8 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('promotionForm', (initialIsDiscountCode, initialDiscountType) => ({
-            // สร้าง Unique ID ให้แต่ละแถวตอนโหลดครั้งแรก
-            buys: @json($buyData).map((item, index) => ({
-                ...item,
-                id: Date.now() + Math.random() + index
-            })),
-            gets: @json($getData).map((item, index) => ({
-                ...item,
-                id: Date.now() + Math.random() + index
-            })),
-
+            buys: @json($buyData),
+            gets: @json($getData),
             discountType: initialDiscountType,
             conditionType: '{{ old('condition_type', $promotion->condition_type ?? 'any') }}',
             promoType: '{{ old('promo_type_selector', isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto') }}',
@@ -520,7 +486,7 @@
             initAllSelects() {
                 if (typeof TomSelect === 'undefined') return;
 
-                // Gift Pool (Static)
+                // Gift Pool
                 const giftEl = document.getElementById('giftable-products-select');
                 if (giftEl && !this.tomSelects['gift-pool']) {
                     this.tomSelects['gift-pool'] = new TomSelect(giftEl, {
@@ -530,11 +496,6 @@
                         valueField: 'value',
                         labelField: 'text',
                         searchField: 'text',
-                        dropdownParent: document.body,
-                        closeAfterSelect: true,
-                        onItemAdd: function() {
-                            this.close();
-                        }, // บังคับปิดทันทีที่เลือก
                         render: {
                             item: (data, escape) =>
                                 `<div class="bg-pink-900/30 text-pink-300 border border-pink-500/30 px-2 py-0.5 rounded mr-1 mb-1 text-xs">${escape(data.text)}</div>`
@@ -542,18 +503,13 @@
                     });
                 }
 
-                // Buy Items (Dynamic)
+                // Buy Items
                 document.querySelectorAll('.buy-products-select').forEach((el) => {
                     if (!el.tomselect && !this.tomSelects[el.id]) {
                         this.tomSelects[el.id] = new TomSelect(el, {
                             plugins: ['remove_button'],
                             create: false,
                             placeholder: 'เลือกสินค้า...',
-                            dropdownParent: document.body,
-                            closeAfterSelect: true,
-                            onItemAdd: function() {
-                                this.close();
-                            }, // บังคับปิดทันทีที่เลือก
                             render: {
                                 item: (data, escape) =>
                                     `<div class="bg-gray-700 text-emerald-400 border border-gray-600 px-2 py-0.5 rounded mr-1 mb-1 text-xs">${escape(data.text)}</div>`
@@ -563,24 +519,21 @@
                 });
             },
 
-            addBuyItem() {
-                this.buys.push({
-                    id: Date.now() + Math.random(),
+            addItem(type) {
+                if (type === 'buy') this.buys.push({
                     product_id: [],
                     quantity: 1
                 });
             },
 
-            removeBuyItem(index, id) {
-                if (this.buys.length > 1) {
-                    const domId = 'buy-products-select-' + id;
-                    if (this.tomSelects[domId]) {
-                        this.tomSelects[domId].destroy();
-                        delete this.tomSelects[domId];
-                    } else {
-                        const el = document.getElementById(domId);
-                        if (el && el.tomselect) el.tomselect.destroy();
+            removeItem(type, index) {
+                if (type === 'buy' && this.buys.length > 1) {
+                    const id = 'buy-products-select-' + index;
+                    if (this.tomSelects[id]) {
+                        this.tomSelects[id].destroy();
+                        delete this.tomSelects[id];
                     }
+                    delete this.tomSelects[id]; // Ensure key deletion
                     this.buys.splice(index, 1);
                 }
             },

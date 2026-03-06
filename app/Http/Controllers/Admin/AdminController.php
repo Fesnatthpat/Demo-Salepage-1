@@ -64,13 +64,14 @@ class AdminController extends Controller
             SiteSetting::set('site_cover_image', $coverImagePath);
         }
 
-        // --- 3. Hero Sliders (Dynamic) ---
+        // --- 3. Hero Sliders (Homepage) ---
         if ($request->has('hero_banners')) {
             $heroKeepIds = [];
             foreach ($request->hero_banners as $index => $bannerData) {
                 $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
                 $updateData = [
                     'type' => 'hero',
+                    'location' => 'homepage',
                     'sort_order' => $index,
                     'link_url' => $bannerData['link_url'] ?? null,
                     'is_active' => true,
@@ -83,43 +84,35 @@ class AdminController extends Controller
                 }
 
                 if (isset($updateData['image_path'])) {
-                    // บันทึกและเก็บ ID ที่ใช้งานจริง
                     $banner = \App\Models\Banner::updateOrCreate(['id' => $id], $updateData);
                     $heroKeepIds[] = $banner->id;
-                    
-                    // อัปเดตตารางเก่าเพื่อความเข้ากันได้ (Optional)
-                    SiteSetting::set("hero_slide_" . ($index + 1), $updateData['image_path']);
                 }
             }
-            // ลบเฉพาะตัวที่ไม่ได้อยู่ในรายการที่บันทึกหรืออัปเดตล่าสุด
-            \App\Models\Banner::hero()->whereNotIn('id', $heroKeepIds)->delete();
+            \App\Models\Banner::location('homepage')->hero()->whereNotIn('id', $heroKeepIds)->delete();
         }
 
         // --- 4. Allergy/Info Banner ---
         if ($request->remove_allergy_image == '1') {
-            $oldPath = SiteSetting::get('allergy_image');
-            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
-                Storage::disk('public')->delete($oldPath);
-            }
             SiteSetting::set('allergy_image', null);
-            \App\Models\Banner::where('type', 'info')->update(['is_active' => false, 'image_path' => '']);
+            \App\Models\Banner::location('homepage')->where('type', 'info')->update(['is_active' => false, 'image_path' => '']);
         } elseif ($request->hasFile('allergy_image')) {
             $path = $request->file('allergy_image')->store('uploads/banners', 'public');
             SiteSetting::set('allergy_image', $path);
             
             \App\Models\Banner::updateOrCreate(
-                ['type' => 'info'],
+                ['type' => 'info', 'location' => 'homepage'],
                 ['image_path' => $path, 'is_active' => true]
             );
         }
 
-        // --- 5. Secondary Sliders (Dynamic) ---
+        // --- 5. Secondary Sliders (Homepage) ---
         if ($request->has('secondary_banners')) {
             $secKeepIds = [];
             foreach ($request->secondary_banners as $index => $bannerData) {
                 $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
                 $updateData = [
                     'type' => 'secondary',
+                    'location' => 'homepage',
                     'sort_order' => $index,
                     'link_url' => $bannerData['link_url'] ?? null,
                     'is_active' => true,
@@ -134,11 +127,60 @@ class AdminController extends Controller
                 if (isset($updateData['image_path'])) {
                     $banner = \App\Models\Banner::updateOrCreate(['id' => $id], $updateData);
                     $secKeepIds[] = $banner->id;
-                    
-                    SiteSetting::set("sec_slide_" . ($index + 1), $updateData['image_path']);
                 }
             }
-            \App\Models\Banner::secondary()->whereNotIn('id', $secKeepIds)->delete();
+            \App\Models\Banner::location('homepage')->secondary()->whereNotIn('id', $secKeepIds)->delete();
+        }
+
+        // --- 5.1. All Products Hero Sliders ---
+        if ($request->has('all_products_hero_banners')) {
+            $allProdKeepIds = [];
+            foreach ($request->all_products_hero_banners as $index => $bannerData) {
+                $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
+                $updateData = [
+                    'type' => 'hero',
+                    'location' => 'all_products',
+                    'sort_order' => $index,
+                    'link_url' => $bannerData['link_url'] ?? null,
+                    'is_active' => true,
+                ];
+
+                if ($request->hasFile("all_products_hero_banners.$index.image")) {
+                    $updateData['image_path'] = $request->file("all_products_hero_banners.$index.image")->store('uploads/banners', 'public');
+                } elseif (!empty($bannerData['existing_path'])) {
+                    $updateData['image_path'] = $bannerData['existing_path'];
+                }
+
+                if (isset($updateData['image_path'])) {
+                    $banner = \App\Models\Banner::updateOrCreate(['id' => $id], $updateData);
+                    $allProdKeepIds[] = $banner->id;
+                }
+            }
+            \App\Models\Banner::location('all_products')->hero()->whereNotIn('id', $allProdKeepIds)->delete();
+        }
+
+        // --- 5.2. Category Management ---
+        if ($request->has('categories')) {
+            $catKeepIds = [];
+            foreach ($request->categories as $index => $catData) {
+                $id = !empty($catData['id']) ? $catData['id'] : null;
+                $updateData = [
+                    'name' => $catData['name'] ?? 'Untitled Category',
+                    'icon' => $catData['icon'] ?? 'fas fa-th',
+                    'sort_order' => $index,
+                    'is_active' => true,
+                ];
+
+                if ($request->hasFile("categories.$index.image")) {
+                    $updateData['image_path'] = $request->file("categories.$index.image")->store('uploads/categories', 'public');
+                } elseif (!empty($catData['existing_path'])) {
+                    $updateData['image_path'] = $catData['existing_path'];
+                }
+
+                $category = \App\Models\Category::updateOrCreate(['id' => $id], $updateData);
+                $catKeepIds[] = $category->id;
+            }
+            \App\Models\Category::whereNotIn('id', $catKeepIds)->delete();
         }
 
         // --- 6. Service Bar (Dynamic Array) ---
@@ -193,9 +235,14 @@ class AdminController extends Controller
         })->toArray();
 
         // ดึงข้อมูล CMS จากตารางใหม่ (Source of Truth)
-        $heroBanners = \App\Models\Banner::hero()->get();
-        $secondaryBanners = \App\Models\Banner::secondary()->get();
-        $infoBanner = \App\Models\Banner::info()->first();
+        $heroBanners = \App\Models\Banner::location('homepage')->hero()->get();
+        $secondaryBanners = \App\Models\Banner::location('homepage')->secondary()->get();
+        $infoBanner = \App\Models\Banner::location('homepage')->info()->first();
+        
+        // All Products Page Content
+        $allProductsHeroBanners = \App\Models\Banner::location('all_products')->hero()->get();
+        $categories = \App\Models\Category::orderBy('sort_order')->get();
+
         $services = \App\Models\Service::orderBy('sort_order')->get();
         $features = \App\Models\Feature::orderBy('sort_order')->get();
 
@@ -204,6 +251,8 @@ class AdminController extends Controller
             'heroBanners', 
             'secondaryBanners', 
             'infoBanner', 
+            'allProductsHeroBanners',
+            'categories',
             'services', 
             'features'
         ));

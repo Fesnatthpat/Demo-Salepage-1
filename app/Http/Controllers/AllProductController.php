@@ -73,21 +73,10 @@ class AllProductController extends Controller
             return $product;
         });
 
-        // 7. รายชื่อหมวดหมู่ (อัปเดตให้ตรงกับหน้าเว็บ)
-        // หรือถ้าอยากดึงจาก DB โดยตรงให้ใช้: ProductSalepage::distinct()->pluck('pd_sp_category');
-        $categories = [
-            'กิมจิ',
-            'ซอสเกาหลี',
-            'Combo Set',
-            'น้ำดอง ผักดอง',
-            'เครื่องปรุงเกาหลี',
-            'แป้ง/ข้าว/เส้น',
-            'สาหร่าย',
-            'เครื่องครัว',
-            'ซอสญี่ปุ่น',
-            'เครื่องปรุงญี่ปุ่น',
-        ];
+        // 7. ดึง Banner และ Categories จากฐานข้อมูล
+        $heroSlides = \App\Models\Banner::location('all_products')->hero()->active()->get();
+        $dbCategories = \App\Models\Category::active()->get();
 
-        return view('allproducts', compact('products', 'categories'));
+        return view('allproducts', compact('products', 'dbCategories', 'heroSlides'));
     }
 }

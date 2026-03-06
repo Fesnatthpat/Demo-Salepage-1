@@ -1,7 +1,6 @@
 <?php $__env->startSection('title', 'ตั้งค่าหน้าเว็บไซต์ & Live Preview'); ?>
 
 <?php $__env->startSection('content'); ?>
-    
     <div class="container mx-auto pb-24 max-w-5xl" x-data="siteSettings()">
 
         
@@ -13,175 +12,80 @@
                 ตกแต่งหน้าเว็บไซต์
             </h1>
 
-            
             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
-                <div
-                    class="px-6 py-2 bg-emerald-500/20 border border-emerald-500 text-emerald-300 rounded-full flex items-center gap-2 animate-fade-in shadow-lg shadow-emerald-500/10">
+                <div class="px-6 py-2 bg-emerald-500/20 border border-emerald-500 text-emerald-300 rounded-full flex items-center gap-2 animate-fade-in shadow-lg shadow-emerald-500/10">
                     <i class="fas fa-check-circle"></i> <?php echo e(session('success')); ?>
 
                 </div>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
+        
+        <div class="flex items-center gap-2 mb-8 bg-gray-800/50 p-1.5 rounded-2xl border border-gray-700 w-fit mx-auto md:mx-0 shadow-lg backdrop-blur-md">
+            <button type="button" 
+                @click="activeTab = 'homepage'"
+                class="px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm md:text-base"
+                :class="activeTab === 'homepage' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50' : 'text-gray-400 hover:text-emerald-400 hover:bg-emerald-500/10'">
+                <i class="fas fa-home"></i>
+                หน้าหลัก (Homepage)
+            </button>
+            <button type="button" 
+                @click="activeTab = 'all_products'"
+                class="px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm md:text-base"
+                :class="activeTab === 'all_products' ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50' : 'text-gray-400 hover:text-purple-400 hover:bg-purple-500/10'">
+                <i class="fas fa-store"></i>
+                หน้าสินค้าทั้งหมด (All Products)
+            </button>
+        </div>
+
         <form action="<?php echo e(route('admin.settings.update')); ?>" method="POST" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
 
-            <div class="space-y-8">
-
+            
+            <div class="space-y-8" x-show="activeTab === 'homepage'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                
                 
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
-                    <div
-                        class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center backdrop-blur-sm">
+                    <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                         <div class="flex items-center gap-3">
-                            <div class="p-2 bg-red-500/10 rounded-lg">
-                                <i class="fas fa-images text-red-400 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-lg text-gray-100">Hero Slides (สไลด์หลัก)</h3>
-                                <p class="text-xs text-gray-400">ภาพสไลด์ขนาดใหญ่ด้านบนสุดของเว็บ</p>
-                            </div>
+                            <div class="p-2 bg-red-500/10 rounded-lg"><i class="fas fa-images text-red-400 text-xl"></i></div>
+                            <h3 class="font-bold text-lg text-gray-100">Hero Slides (หน้าหลัก)</h3>
                         </div>
-                        <button type="button" @click="addHeroSlide()"
-                            class="btn btn-sm bg-red-600 hover:bg-red-700 text-white border-none shadow-lg shadow-red-600/20 rounded-lg px-4 transition-transform hover:scale-105">
+                        <button type="button" @click="addHeroSlide()" class="btn btn-sm bg-red-600 hover:bg-red-700 text-white border-none rounded-lg px-4">
                             <i class="fas fa-plus mr-2"></i> เพิ่มสไลด์
                         </button>
                     </div>
-
                     <div class="p-6 space-y-6">
                         <template x-for="(slide, index) in hero_slides" :key="index">
-                            <div
-                                class="bg-gray-700/30 rounded-xl border border-gray-600 overflow-hidden group relative hover:border-gray-500 transition-colors">
-
-                                
-                                <button type="button" @click="removeHeroSlide(index)"
-                                    class="absolute top-4 right-4 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-20 hover:bg-red-700 hover:scale-110">
-                                    <i class="fas fa-times"></i>
-                                </button>
-
+                            <div class="bg-gray-700/30 rounded-xl border border-gray-600 overflow-hidden group relative">
+                                <button type="button" @click="removeHeroSlide(index)" class="absolute top-4 right-4 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20"><i class="fas fa-times"></i></button>
                                 <input type="hidden" :name="`hero_banners[${index}][id]`" :value="slide.id">
-                                <input type="hidden" :name="`hero_banners[${index}][existing_path]`"
-                                    :value="slide.existing_path">
-
+                                <input type="hidden" :name="`hero_banners[${index}][existing_path]`" :value="slide.existing_path">
                                 <div class="p-4">
-                                    
-                                    <div
-                                        class="w-full aspect-[3/1] bg-gray-800 rounded-lg border border-gray-600 overflow-hidden relative mb-4 shadow-inner group-hover:shadow-md transition-shadow">
+                                    <div class="w-full aspect-[3/1] bg-gray-800 rounded-lg border border-gray-600 overflow-hidden relative mb-4">
                                         <img :src="slide.image" class="w-full h-full object-cover">
-                                        <div
-                                            class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                                            <span
-                                                class="text-white text-sm font-semibold border border-white/50 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
-                                                <i class="fas fa-camera mr-2"></i> เปลี่ยนรูปภาพ
-                                            </span>
-                                        </div>
-                                        <input type="file" :name="`hero_banners[${index}][image]`" accept="image/*"
-                                            @change="previewImage($event, 'hero_slides', index)"
-                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                        <input type="file" :name="`hero_banners[${index}][image]`" accept="image/*" @change="previewImage($event, 'hero_slides', index)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                     </div>
-
-                                    
-                                    <div
-                                        class="flex items-center gap-3 bg-gray-900/50 p-2 rounded-lg border border-gray-700 focus-within:border-red-500 transition-colors">
-                                        <span class="text-gray-400 pl-2"><i class="fas fa-link"></i></span>
-                                        <input type="text" :name="`hero_banners[${index}][link_url]`"
-                                            x-model="slide.link_url" placeholder="ลิงก์ปลายทาง (เช่น /promotion-1)"
-                                            class="w-full bg-transparent border-none text-sm text-gray-200 focus:ring-0 placeholder-gray-500">
-                                    </div>
+                                    <input type="text" :name="`hero_banners[${index}][link_url]`" x-model="slide.link_url" placeholder="ลิงก์ปลายทาง..." class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200 px-4 py-2">
                                 </div>
                             </div>
                         </template>
-
-                        <div x-show="hero_slides.length === 0"
-                            class="text-center py-12 bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-700">
-                            <div class="text-gray-600 text-5xl mb-3"><i class="fas fa-images"></i></div>
-                            <p class="text-gray-400">ยังไม่มีสไลด์หลัก</p>
-                            <button type="button" @click="addHeroSlide()"
-                                class="text-red-400 hover:text-red-300 text-sm mt-2 underline">
-                                กดเพื่อเพิ่มสไลด์แรก
-                            </button>
-                        </div>
                     </div>
                 </div>
 
-                
-                <div x-show="showIconPicker" 
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95"
-                    x-transition:enter-end="opacity-100 scale-100"
-                    class="fixed inset-0 bg-gray-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4"
-                    style="display: none;"
-                    @click.self="showIconPicker = false">
-
-                    <div class="bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
-                        <div class="flex justify-between items-center px-6 py-4 bg-gray-900/80 border-b border-gray-700">
-                            <h4 class="text-gray-200 font-bold capitalize flex items-center gap-2">
-                                <i class="fas fa-icons text-purple-400"></i>
-                                เลือกไอคอน (<span x-text="activeIconType"></span> <span x-text="activeIconIndex"></span>)
-                            </h4>
-                            <button type="button" @click="showIconPicker = false"
-                                class="text-gray-400 hover:text-white transition-colors">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-
-                        <div class="p-6">
-                            <div class="grid grid-cols-6 gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                                <template x-for="icon in iconList" :key="icon">
-                                    <button type="button" @click="selectIcon(icon)"
-                                        class="aspect-square rounded-xl flex items-center justify-center transition-all border-2"
-                                        :class="(activeIconType === 'service' ? services[activeIconIndex]?.icon : reasons[activeIconIndex]?.icon) === icon ?
-                                            'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-900/50' : 
-                                            'text-gray-400 bg-gray-900/50 border-gray-700 hover:border-purple-500/50 hover:bg-gray-700/50'">
-                                        <i :class="icon" class="text-2xl"></i>
-                                    </button>
-                                </template>
-                            </div>
-
-                            <div class="mt-6 flex justify-end">
-                                <button type="button" @click="showIconPicker = false"
-                                    class="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-xl transition-colors font-medium">
-                                    ยกเลิก
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-
-                    
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-8">
                         
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
-                            <div
-                                class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
-                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2">
-                                    <i class="fas fa-exclamation-triangle text-yellow-400"></i> ข้อมูลแพ้อาหาร
-                                </h3>
-                                <button type="button" x-show="allergy_img && !allergy_img.includes('placeholder')"
-                                    @click="allergy_img = ''; document.getElementById('remove_allergy_image').value = '1'"
-                                    class="text-xs text-red-400 hover:text-red-300 underline">
-                                    ลบรูปภาพ
-                                </button>
+                            <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
+                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-exclamation-triangle text-yellow-400"></i> ข้อมูลแพ้อาหาร</h3>
+                                <button type="button" x-show="allergy_img" @click="allergy_img = ''; document.getElementById('remove_allergy_image').value = '1'" class="text-xs text-red-400 underline">ลบรูป</button>
                             </div>
                             <div class="p-6">
-                                <div class="flex flex-col items-center gap-4">
-                                    <input type="hidden" name="remove_allergy_image" id="remove_allergy_image"
-                                        value="0">
-                                    <div class="relative w-full group cursor-pointer">
-                                        <div x-show="allergy_img"
-                                            class="w-full h-40 bg-red-50/5 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden relative">
-                                            <img :src="allergy_img" class="w-full h-full object-contain p-2">
-                                        </div>
-                                        <div x-show="!allergy_img"
-                                            class="w-full h-40 bg-gray-900/50 rounded-xl border-2 border-dashed border-gray-700 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-900/80 transition-colors">
-                                            <i class="fas fa-image text-3xl mb-2"></i>
-                                            <span class="text-xs">คลิกเพื่ออัปโหลดรูปภาพ</span>
-                                        </div>
-                                        <input type="file" name="allergy_image" accept="image/*"
-                                            @change="previewImage($event, 'allergy_img'); document.getElementById('remove_allergy_image').value = '0'"
-                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                    </div>
+                                <div class="relative w-full aspect-[4/1] bg-gray-900 rounded-xl border border-gray-700 overflow-hidden group">
+                                    <img :src="allergy_img || 'https://via.placeholder.com/800x200?text=No+Image'" class="w-full h-full object-cover">
+                                    <input type="file" name="allergy_image" accept="image/*" @change="previewImage($event, 'allergy_img'); document.getElementById('remove_allergy_image').value = '0'" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <input type="hidden" name="remove_allergy_image" id="remove_allergy_image" value="0">
                                 </div>
                             </div>
                         </div>
@@ -189,290 +93,258 @@
                         
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
-                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2">
-                                    <i class="fas fa-concierge-bell text-purple-400"></i> Service Bar
-                                </h3>
-                                <button type="button" @click="addService()"
-                                    class="text-xs bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white px-2 py-1 rounded transition-colors">
-                                    <i class="fas fa-plus mr-1"></i> เพิ่ม
-                                </button>
+                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-concierge-bell text-purple-400"></i> Service Bar</h3>
+                                <button type="button" @click="addService()" class="text-xs bg-purple-600/20 text-purple-400 px-2 py-1 rounded">เพิ่ม</button>
                             </div>
                             <div class="p-6 grid grid-cols-1 gap-4">
                                 <template x-for="(svc, index) in services" :key="index">
                                     <div class="p-3 bg-gray-700/30 rounded-lg border border-gray-600 flex gap-3 items-center relative group">
-                                        <button type="button" @click="removeService(index)"
-                                            class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 text-xs">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-
-                                        
-                                        <div class="flex-shrink-0 w-10 h-10 bg-gray-800 rounded flex items-center justify-center text-gray-400 border border-gray-600 cursor-pointer hover:border-purple-500 hover:text-purple-400 transition-colors"
-                                            @click="openIconPicker('service', index)">
+                                        <button type="button" @click="removeService(index)" class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-xs"><i class="fas fa-times"></i></button>
+                                        <div class="flex-shrink-0 w-10 h-10 bg-gray-800 rounded flex items-center justify-center text-gray-400 border border-gray-600 cursor-pointer" @click="openIconPicker('service', index)">
                                             <i :class="svc.icon"></i>
                                         </div>
-
-                                        <div class="flex-grow space-y-1">
-                                            
-                                            <input type="text" :name="`services[${index}][title]`"
-                                                x-model="svc.title" placeholder="ข้อความบริการ"
-                                                class="w-full bg-transparent border-b border-gray-600 text-sm text-gray-200 px-0 py-1 focus:ring-0 focus:border-purple-500 placeholder-gray-600">
-
-                                            
-                                            <input type="hidden" :name="`services[${index}][icon]`" x-model="svc.icon">
-                                            
-                                            <button type="button" @click="openIconPicker('service', index)"
-                                                class="text-[10px] text-purple-400 hover:underline">
-                                                เลือกไอคอน
-                                            </button>
-                                        </div>
+                                        <input type="text" :name="`services[${index}][title]`" x-model="svc.title" placeholder="ข้อความ..." class="flex-grow bg-transparent border-b border-gray-600 text-sm text-gray-200 focus:ring-0">
+                                        <input type="hidden" :name="`services[${index}][icon]`" x-model="svc.icon">
                                     </div>
                                 </template>
-                                <div x-show="services.length === 0" class="text-center py-4 text-gray-500 text-xs">
-                                    ยังไม่มีรายการบริการ
-                                </div>
                             </div>
                         </div>
                     </div>
 
-                    
                     <div class="space-y-8">
                         
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
-                            <div
-                                class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
-                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2">
-                                    <i class="fas fa-photo-video text-blue-400"></i> สไลด์รอง
-                                </h3>
-                                <button type="button" @click="addSecSlide()"
-                                    class="text-xs bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-2 py-1 rounded transition-colors">
-                                    <i class="fas fa-plus mr-1"></i> เพิ่ม
-                                </button>
+                            <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
+                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-tags text-blue-400"></i> สไลด์รอง</h3>
+                                <button type="button" @click="addSecSlide()" class="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded">เพิ่ม</button>
                             </div>
                             <div class="p-6 space-y-4">
                                 <template x-for="(slide, index) in sec_slides" :key="index">
                                     <div class="p-3 bg-gray-700/30 rounded-lg border border-gray-600 relative group">
-                                        <button type="button" @click="removeSecSlide(index)"
-                                            class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 text-xs">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-
-                                        <input type="hidden" :name="`secondary_banners[${index}][id]`"
-                                            :value="slide.id">
-                                        <input type="hidden" :name="`secondary_banners[${index}][existing_path]`"
-                                            :value="slide.existing_path">
-
-                                        <div class="space-y-3">
-                                            <div
-                                                class="w-full aspect-[2.5/1] bg-gray-800 rounded border border-gray-600 overflow-hidden relative">
-                                                <img :src="slide.image" class="w-full h-full object-cover">
-                                                <input type="file" :name="`secondary_banners[${index}][image]`"
-                                                    accept="image/*" @change="previewImage($event, 'sec_slides', index)"
-                                                    class="absolute inset-0 opacity-0 cursor-pointer">
-                                            </div>
-                                            <input type="text" :name="`secondary_banners[${index}][link_url]`"
-                                                x-model="slide.link_url" placeholder="Link URL"
-                                                class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-200 px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
+                                        <button type="button" @click="removeSecSlide(index)" class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-xs"><i class="fas fa-times"></i></button>
+                                        <input type="hidden" :name="`secondary_banners[${index}][id]`" :value="slide.id">
+                                        <input type="hidden" :name="`secondary_banners[${index}][existing_path]`" :value="slide.existing_path">
+                                        <div class="w-full aspect-[2.5/1] bg-gray-800 rounded overflow-hidden relative mb-2">
+                                            <img :src="slide.image" class="w-full h-full object-cover">
+                                            <input type="file" :name="`secondary_banners[${index}][image]`" accept="image/*" @change="previewImage($event, 'sec_slides', index)" class="absolute inset-0 opacity-0 cursor-pointer">
                                         </div>
+                                        <input type="text" :name="`secondary_banners[${index}][link_url]`" x-model="slide.link_url" placeholder="ลิงก์..." class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-200 px-3 py-1">
                                     </div>
                                 </template>
-                                <div x-show="sec_slides.length === 0" class="text-center py-4 text-gray-500 text-xs">
-                                    ยังไม่มีแบนเนอร์
-                                </div>
                             </div>
                         </div>
 
                         
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
-                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2">
-                                    <i class="fas fa-th text-emerald-400"></i> 6 Reasons
-                                </h3>
-                                <button type="button" @click="addReason()"
-                                    class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded transition-colors">
-                                    <i class="fas fa-plus mr-1"></i> เพิ่ม
-                                </button>
+                                <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-th text-emerald-400"></i> 6 Reasons</h3>
+                                <button type="button" @click="addReason()" class="text-xs bg-emerald-600/20 text-emerald-400 px-2 py-1 rounded">เพิ่ม</button>
                             </div>
                             <div class="p-6 grid grid-cols-1 gap-3">
                                 <template x-for="(reason, index) in reasons" :key="index">
                                     <div class="p-3 bg-gray-700/30 rounded border border-gray-600 flex gap-3 items-center relative group">
-                                        <button type="button" @click="removeReason(index)"
-                                            class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 text-xs">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-
-                                        
-                                        <div class="flex-shrink-0 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-emerald-400 border border-gray-600 cursor-pointer hover:border-emerald-500 hover:bg-emerald-500/10 transition-all shadow-inner group-btn"
-                                            @click="openIconPicker('reason', index)">
-                                            <i :class="reason.icon" class="text-xl group-btn-hover:scale-110 transition-transform"></i>
+                                        <button type="button" @click="removeReason(index)" class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-xs"><i class="fas fa-times"></i></button>
+                                        <div class="flex-shrink-0 w-10 h-10 bg-gray-800 rounded flex items-center justify-center text-emerald-400 border border-gray-600 cursor-pointer" @click="openIconPicker('reason', index)">
+                                            <i :class="reason.icon"></i>
                                         </div>
-
-                                        <div class="flex-grow space-y-2">
-                                            <div class="flex gap-2 items-center">
-                                                <input type="text" :name="`reasons[${index}][title]`"
-                                                    x-model="reason.title" placeholder="หัวข้อ"
-                                                    class="flex-grow bg-transparent border-b border-gray-600 text-sm font-bold text-emerald-400 px-0 py-1 focus:ring-0 focus:border-emerald-500">
-                                                
-                                                
-                                                <input type="hidden" :name="`reasons[${index}][icon]`" x-model="reason.icon">
-                                            </div>
-                                            <textarea :name="`reasons[${index}][description]`" x-model="reason.description" rows="1"
-                                                placeholder="คำอธิบาย..." class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-300 px-2 py-1 focus:ring-emerald-500/30 focus:border-emerald-500"></textarea>
+                                        <div class="flex-grow space-y-1">
+                                            <input type="text" :name="`reasons[${index}][title]`" x-model="reason.title" placeholder="หัวข้อ" class="w-full bg-transparent border-b border-gray-600 text-sm font-bold text-emerald-400 px-0 py-1 focus:ring-0">
+                                            <input type="hidden" :name="`reasons[${index}][icon]`" x-model="reason.icon">
+                                            <textarea :name="`reasons[${index}][description]`" x-model="reason.description" rows="1" placeholder="คำอธิบาย..." class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-300 px-2 py-1"></textarea>
                                         </div>
                                     </div>
                                 </template>
-                                <div x-show="reasons.length === 0" class="text-center py-4 text-gray-500 text-xs">
-                                    ยังไม่มีรายการเหตุผล
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
+            
+            <div class="space-y-8" x-show="activeTab === 'all_products'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 
-                <div class="sticky bottom-6 z-30 pt-4 flex justify-center">
-                    <button type="submit"
-                        class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-10 rounded-full shadow-xl shadow-emerald-900/50 transform transition-all hover:-translate-y-1 hover:scale-105 flex items-center gap-3 border-2 border-emerald-400/30">
-                        <i class="fas fa-save text-xl"></i>
-                        <span class="text-lg">บันทึกการตั้งค่าทั้งหมด</span>
-                    </button>
+                
+                <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
+                    <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-purple-500/10 rounded-lg"><i class="fas fa-layer-group text-purple-400 text-xl"></i></div>
+                            <h3 class="font-bold text-lg text-gray-100">All Products Banners (หน้าสินค้าทั้งหมด)</h3>
+                        </div>
+                        <button type="button" @click="addAllProdHeroSlide()" class="btn btn-sm bg-purple-600 hover:bg-purple-700 text-white border-none rounded-lg px-4">
+                            <i class="fas fa-plus mr-2"></i> เพิ่มสไลด์
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <template x-for="(slide, index) in all_products_hero_slides" :key="index">
+                            <div class="bg-gray-700/30 rounded-xl border border-gray-600 overflow-hidden group relative">
+                                <button type="button" @click="removeAllProdHeroSlide(index)" class="absolute top-4 right-4 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20"><i class="fas fa-times"></i></button>
+                                <input type="hidden" :name="`all_products_hero_banners[${index}][id]`" :value="slide.id">
+                                <input type="hidden" :name="`all_products_hero_banners[${index}][existing_path]`" :value="slide.existing_path">
+                                <div class="p-4">
+                                    <div class="w-full aspect-[3/1] bg-gray-800 rounded-lg border border-gray-600 overflow-hidden relative mb-4">
+                                        <img :src="slide.image" class="w-full h-full object-cover">
+                                        <input type="file" :name="`all_products_hero_banners[${index}][image]`" accept="image/*" @change="previewImage($event, 'all_products_hero_slides', index)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    </div>
+                                    <input type="text" :name="`all_products_hero_banners[${index}][link_url]`" x-model="slide.link_url" placeholder="ลิงก์ปลายทาง..." class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200 px-4 py-2">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
+                
+                <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
+                    <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-emerald-500/10 rounded-lg"><i class="fas fa-th-large text-emerald-400 text-xl"></i></div>
+                            <h3 class="font-bold text-lg text-gray-100">Category Menu (หมวดหมู่สินค้า)</h3>
+                        </div>
+                        <button type="button" @click="addCategory()" class="btn btn-sm bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-lg px-4">
+                            <i class="fas fa-plus mr-2"></i> เพิ่มหมวดหมู่
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <template x-for="(cat, index) in categories" :key="index">
+                                <div class="bg-gray-700/30 rounded-2xl border border-gray-600 p-4 relative group">
+                                    <button type="button" @click="removeCategory(index)" class="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-[10px]"><i class="fas fa-times"></i></button>
+                                    <input type="hidden" :name="`categories[${index}][id]`" :value="cat.id">
+                                    <input type="hidden" :name="`categories[${index}][existing_path]`" :value="cat.existing_path">
+                                    <div class="flex gap-4">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-20 h-20 bg-gray-800 rounded-xl border border-gray-600 overflow-hidden relative group/img">
+                                                <img :src="cat.image" class="w-full h-full object-cover">
+                                                <input type="file" :name="`categories[${index}][image]`" accept="image/*" @change="previewImage($event, 'categories', index)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                            </div>
+                                            <div class="mt-2 flex justify-center">
+                                                <button type="button" @click="openIconPicker('category', index)" class="w-8 h-8 rounded-lg bg-gray-800 border border-gray-600 flex items-center justify-center text-gray-400 hover:text-emerald-400">
+                                                    <i :class="cat.icon"></i>
+                                                </button>
+                                                <input type="hidden" :name="`categories[${index}][icon]`" x-model="cat.icon">
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow space-y-3">
+                                            <input type="text" :name="`categories[${index}][name]`" x-model="cat.name" placeholder="ชื่อหมวดหมู่..." class="w-full bg-gray-900 border-gray-600 rounded-xl text-sm text-gray-200 px-4 py-2">
+                                            <div class="text-[10px] text-gray-500"><i class="fas fa-sort mr-1"></i> ลำดับ: <span x-text="index+1"></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="sticky bottom-6 z-30 pt-8 flex justify-center">
+                <button type="submit" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-10 rounded-full shadow-xl shadow-emerald-900/50 transform transition-all hover:-translate-y-1 hover:scale-105 flex items-center gap-3 border-2 border-emerald-400/30">
+                    <i class="fas fa-save text-xl"></i>
+                    <span class="text-lg">บันทึกการตั้งค่าทั้งหมด</span>
+                </button>
             </div>
         </form>
+
+        
+        <div x-show="showIconPicker" class="fixed inset-0 bg-gray-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4" style="display: none;" @click.self="showIconPicker = false">
+            <div class="bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div class="flex justify-between items-center px-6 py-4 bg-gray-900/80 border-b border-gray-700">
+                    <h4 class="text-gray-200 font-bold capitalize flex items-center gap-2"><i class="fas fa-icons text-purple-400"></i> เลือกไอคอน (<span x-text="activeIconType"></span>)</h4>
+                    <button type="button" @click="showIconPicker = false" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-6 gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                        <template x-for="icon in iconList" :key="icon">
+                            <button type="button" @click="selectIcon(icon)" class="aspect-square rounded-xl flex items-center justify-center transition-all border-2" :class="(activeIconType === 'service' ? services[activeIconIndex]?.icon : (activeIconType === 'category' ? categories[activeIconIndex]?.icon : reasons[activeIconIndex]?.icon)) === icon ? 'bg-purple-600 text-white border-purple-400 shadow-lg' : 'text-gray-400 bg-gray-900/50 border-gray-700 hover:border-purple-500/50'">
+                                <i :class="icon" class="text-2xl"></i>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         function siteSettings() {
             return {
-                // --- Config for Icon Picker ---
+                activeTab: 'homepage',
                 showIconPicker: false,
-                activeIconIndex: 1,
-                activeIconType: 'service', // 'service' or 'reason'
-                iconList: [
-                    'fas fa-star', 'fas fa-heart', 'fas fa-check', 'fas fa-truck',
-                    'fas fa-box', 'fas fa-tag', 'fas fa-percent', 'fas fa-gift',
-                    'fas fa-utensils', 'fas fa-coffee', 'fas fa-glass-cheers', 'fas fa-fire',
-                    'fas fa-leaf', 'fas fa-seedling', 'fas fa-apple-alt', 'fas fa-carrot',
-                    'fas fa-clock', 'fas fa-history', 'fas fa-calendar-alt', 'fas fa-hourglass-half',
-                    'fas fa-credit-card', 'fas fa-wallet', 'fas fa-money-bill-wave', 'fas fa-qrcode',
-                    'fas fa-shield-alt', 'fas fa-lock', 'fas fa-user-shield', 'fas fa-certificate',
-                    'fas fa-thumbs-up', 'fas fa-smile', 'fas fa-award', 'fas fa-medal',
-                    'fas fa-phone', 'fas fa-envelope', 'fas fa-comment-dots', 'fas fa-headset'
-                ],
+                activeIconIndex: 0,
+                activeIconType: 'service',
+                iconList: ['fas fa-star', 'fas fa-heart', 'fas fa-check', 'fas fa-truck', 'fas fa-box', 'fas fa-tag', 'fas fa-percent', 'fas fa-gift', 'fas fa-utensils', 'fas fa-coffee', 'fas fa-glass-cheers', 'fas fa-fire', 'fas fa-leaf', 'fas fa-seedling', 'fas fa-apple-alt', 'fas fa-carrot', 'fas fa-clock', 'fas fa-history', 'fas fa-calendar-alt', 'fas fa-hourglass-half', 'fas fa-credit-card', 'fas fa-wallet', 'fas fa-money-bill-wave', 'fas fa-qrcode', 'fas fa-shield-alt', 'fas fa-lock', 'fas fa-user-shield', 'fas fa-certificate', 'fas fa-thumbs-up', 'fas fa-smile', 'fas fa-award', 'fas fa-medal', 'fas fa-phone', 'fas fa-envelope', 'fas fa-comment-dots', 'fas fa-headset'],
+                
                 openIconPicker(type, index) {
                     this.activeIconType = type;
                     this.activeIconIndex = index;
                     this.showIconPicker = true;
                 },
                 selectIcon(iconClass) {
-                    if (this.activeIconType === 'service') {
-                        this.services[this.activeIconIndex].icon = iconClass;
-                    } else if (this.activeIconType === 'reason') {
-                        this.reasons[this.activeIconIndex].icon = iconClass;
-                    }
+                    if (this.activeIconType === 'service') this.services[this.activeIconIndex].icon = iconClass;
+                    else if (this.activeIconType === 'reason') this.reasons[this.activeIconIndex].icon = iconClass;
+                    else if (this.activeIconType === 'category') this.categories[this.activeIconIndex].icon = iconClass;
                     this.showIconPicker = false;
                 },
-                // ------------------------------
 
-                // State for Hero Slides
-                currentSlide: 1,
+                // Homepage Data
                 hero_slides: [
                     <?php $__currentLoopData = $heroBanners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        {
-                            id: "<?php echo e($banner->id); ?>",
-                            image: "<?php echo e(Storage::url($banner->image_path)); ?>",
-                            existing_path: "<?php echo e($banner->image_path); ?>",
-                            link_url: "<?php echo e($banner->link_url); ?>"
-                        },
+                        { id: "<?php echo e($banner->id); ?>", image: "<?php echo e(Storage::url($banner->image_path)); ?>", existing_path: "<?php echo e($banner->image_path); ?>", link_url: "<?php echo e($banner->link_url); ?>" },
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
-                addHeroSlide() {
-                    this.hero_slides.push({
-                        id: null,
-                        image: 'https://via.placeholder.com/1200x400?text=New+Slide+Image',
-                        existing_path: '',
-                        link_url: ''
-                    });
-                },
-                removeHeroSlide(index) {
-                    this.hero_slides.splice(index, 1);
-                },
+                addHeroSlide() { this.hero_slides.push({ id: null, image: 'https://via.placeholder.com/1200x400', existing_path: '', link_url: '' }); },
+                removeHeroSlide(index) { this.hero_slides.splice(index, 1); },
 
-                // State for Allergy Image
-                <?php
-                    $infoPath = isset($infoBanner) ? $infoBanner->image_path : $settings['allergy_image'] ?? null;
-                ?>
-                allergy_img: "<?php echo e($infoPath ? Storage::url($infoPath) : asset('images/image_27e610.png')); ?>",
-
-                // State for Secondary Slides
                 sec_slides: [
                     <?php $__currentLoopData = $secondaryBanners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        {
-                            id: "<?php echo e($banner->id); ?>",
-                            image: "<?php echo e(Storage::url($banner->image_path)); ?>",
-                            existing_path: "<?php echo e($banner->image_path); ?>",
-                            link_url: "<?php echo e($banner->link_url); ?>"
-                        },
+                        { id: "<?php echo e($banner->id); ?>", image: "<?php echo e(Storage::url($banner->image_path)); ?>", existing_path: "<?php echo e($banner->image_path); ?>", link_url: "<?php echo e($banner->link_url); ?>" },
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
-                addSecSlide() {
-                    this.sec_slides.push({
-                        id: null,
-                        image: 'https://via.placeholder.com/800x320?text=New+Promo',
-                        existing_path: '',
-                        link_url: ''
-                    });
-                },
-                removeSecSlide(index) {
-                    this.sec_slides.splice(index, 1);
-                },
+                addSecSlide() { this.sec_slides.push({ id: null, image: 'https://via.placeholder.com/800x320', existing_path: '', link_url: '' }); },
+                removeSecSlide(index) { this.sec_slides.splice(index, 1); },
 
-                // State for Services (Dynamic Array)
+                allergy_img: "<?php echo e((isset($infoBanner) && $infoBanner->image_path) ? Storage::url($infoBanner->image_path) : ''); ?>",
+
                 services: [
                     <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $svc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        {
-                            icon: "<?php echo e($svc->icon); ?>",
-                            title: "<?php echo e($svc->title); ?>"
-                        },
+                        { icon: "<?php echo e($svc->icon); ?>", title: "<?php echo e($svc->title); ?>" },
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
-                addService() {
-                    this.services.push({ icon: 'fas fa-star', title: '' });
-                },
-                removeService(index) {
-                    this.services.splice(index, 1);
-                },
+                addService() { this.services.push({ icon: 'fas fa-star', title: '' }); },
+                removeService(index) { this.services.splice(index, 1); },
 
-                // State for Reasons (Dynamic Array)
                 reasons: [
                     <?php $__currentLoopData = $features; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        {
-                            icon: "<?php echo e($feature->icon); ?>",
-                            title: "<?php echo e($feature->title); ?>",
-                            description: "<?php echo e($feature->description); ?>"
-                        },
+                        { icon: "<?php echo e($feature->icon); ?>", title: "<?php echo e($feature->title); ?>", description: "<?php echo e($feature->description); ?>" },
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
-                addReason() {
-                    this.reasons.push({ icon: 'fas fa-check', title: '', description: '' });
-                },
-                removeReason(index) {
-                    this.reasons.splice(index, 1);
-                },
+                addReason() { this.reasons.push({ icon: 'fas fa-check', title: '', description: '' }); },
+                removeReason(index) { this.reasons.splice(index, 1); },
 
-                // Helper to preview uploaded image
+                // All Products Data
+                all_products_hero_slides: [
+                    <?php $__currentLoopData = $allProductsHeroBanners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($banner->id); ?>", image: "<?php echo e(Storage::url($banner->image_path)); ?>", existing_path: "<?php echo e($banner->image_path); ?>", link_url: "<?php echo e($banner->link_url); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                ],
+                addAllProdHeroSlide() { this.all_products_hero_slides.push({ id: null, image: 'https://via.placeholder.com/1200x400', existing_path: '', link_url: '' }); },
+                removeAllProdHeroSlide(index) { this.all_products_hero_slides.splice(index, 1); },
+
+                categories: [
+                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($cat->id); ?>", name: "<?php echo e($cat->name); ?>", icon: "<?php echo e($cat->icon); ?>", image: "<?php echo e($cat->image_path ? Storage::url($cat->image_path) : 'https://via.placeholder.com/150'); ?>", existing_path: "<?php echo e($cat->image_path); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                ],
+                addCategory() { this.categories.push({ id: null, name: '', icon: 'fas fa-th', image: 'https://via.placeholder.com/150', existing_path: '' }); },
+                removeCategory(index) { this.categories.splice(index, 1); },
+
                 previewImage(event, targetObj, index = null) {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            if (index !== null && Array.isArray(this[targetObj])) {
-                                this[targetObj][index].image = e.target.result;
-                            } else if (index !== null) {
-                                this[targetObj][index] = e.target.result;
-                            } else {
-                                this[targetObj] = e.target.result;
-                            }
+                            if (index !== null && Array.isArray(this[targetObj])) this[targetObj][index].image = e.target.result;
+                            else if (index !== null) this[targetObj][index] = e.target.result;
+                            else this[targetObj] = e.target.result;
                         };
                         reader.readAsDataURL(file);
                     }
@@ -482,34 +354,11 @@
     </script>
 
     <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 <?php $__env->stopSection(); ?>
 

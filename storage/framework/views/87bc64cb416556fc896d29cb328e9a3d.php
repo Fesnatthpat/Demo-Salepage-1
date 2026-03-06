@@ -112,16 +112,29 @@
                         <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[5/1] w-full relative">
                             <div class="swiper mySwiper w-full h-full absolute inset-0">
                                 <div class="swiper-wrapper">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                        <div class="swiper-slide">
-                                            <a href="#" class="block w-full h-full">
-                                                <img src="<?php echo e(asset('images/' . $image)); ?>"
-                                                    class="w-full h-full object-cover object-center"
-                                                    alt="Banner <?php echo e($index + 1); ?>"
-                                                    onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner+<?php echo e($index + 1); ?>';" />
-                                            </a>
-                                        </div>
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($heroSlides) && $heroSlides->count() > 0): ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $heroSlides; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slide): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                            <div class="swiper-slide">
+                                                <a href="<?php echo e($slide->link_url ?? '#'); ?>" class="block w-full h-full">
+                                                    <img src="<?php echo e(Storage::url($slide->image_path)); ?>"
+                                                        class="w-full h-full object-cover object-center"
+                                                        alt="<?php echo e($slide->title ?? 'Banner'); ?>"
+                                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner';" />
+                                                </a>
+                                            </div>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    <?php else: ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                            <div class="swiper-slide">
+                                                <a href="#" class="block w-full h-full">
+                                                    <img src="<?php echo e(asset('images/' . $image)); ?>"
+                                                        class="w-full h-full object-cover object-center"
+                                                        alt="Banner <?php echo e($index + 1); ?>"
+                                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner+<?php echo e($index + 1); ?>';" />
+                                                </a>
+                                            </div>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </div>
                                 <div class="swiper-button-next hidden md:flex"></div>
                                 <div class="swiper-button-prev hidden md:flex"></div>
@@ -136,39 +149,33 @@
                         <div class="container mx-auto px-2 relative">
                             <div class="swiper categorySwiper w-full pb-2">
                                 <div class="swiper-wrapper items-start">
-                                    <?php
-                                        $menuItems = [
-                                            ['name' => 'กิมจิ', 'image' => 'menu-kimchi.png'],
-                                            ['name' => 'ซอส<br>เกาหลี', 'image' => 'menu-korean-sauce.png'],
-                                            ['name' => 'combo<br>set', 'image' => 'menu-combo.png'],
-                                            ['name' => 'น้ำดอง<br>ผักดอง', 'image' => 'menu-pickle.png'],
-                                            ['name' => 'เครื่องปรุง<br>เกาหลี', 'image' => 'menu-korean-seasoning.png'],
-                                            ['name' => 'แป้ง/ข้าว/<br>เส้น', 'image' => 'menu-flour.png'],
-                                            ['name' => 'สาหร่าย', 'image' => 'menu-seaweed.png'],
-                                            ['name' => 'เครื่อง<br>ครัว', 'image' => 'menu-kitchenware.png'],
-                                            ['name' => 'ซอส<br>ญี่ปุ่น', 'image' => 'menu-japan-sauce.png'],
-                                            ['name' => 'เครื่องปรุง<br>ญี่ปุ่น', 'image' => 'menu-japan-seasoning.png'],
-                                        ];
-                                    ?>
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                        <div class="swiper-slide !h-auto">
-                                            <a href="/allproducts?category=<?php echo e(strip_tags($menu['name'])); ?>"
-                                                class="flex flex-col items-center group w-full transition-transform duration-300 active:scale-95">
-                                                <div
-                                                    class="w-12 h-12 md:w-16 md:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-2 shadow-sm transition-colors">
-                                                    <img src="<?php echo e(asset('images/' . $menu['image'])); ?>"
-                                                        alt="<?php echo e(strip_tags($menu['name'])); ?>"
-                                                        class="w-full h-full object-contain"
-                                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
-                                                </div>
-                                                <span
-                                                    class="text-[10px] md:text-xs font-bold text-white text-center leading-tight select-none">
-                                                    <?php echo $menu['name']; ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($dbCategories) && $dbCategories->count() > 0): ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $dbCategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $menu): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                            <div class="swiper-slide !h-auto">
+                                                <a href="/allproducts?category=<?php echo e($menu->name); ?>"
+                                                    class="flex flex-col items-center group w-full transition-transform duration-300 active:scale-95 px-2 md:px-4">
+                                                    <div
+                                                        class="w-12 h-12 md:w-16 md:h-16 bg-gray-50 rounded-full flex items-center justify-center p-2 mb-2 shadow-sm transition-colors overflow-hidden">
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($menu->image_path): ?>
+                                                            <img src="<?php echo e(Storage::url($menu->image_path)); ?>"
+                                                                alt="<?php echo e($menu->name); ?>"
+                                                                class="w-full h-full object-contain"
+                                                                onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
+                                                        <?php else: ?>
+                                                            <i class="<?php echo e($menu->icon ?? 'fas fa-th-large'); ?> text-red-600 text-xl md:text-2xl"></i>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                    </div>
+                                                    <span
+                                                        class="text-[10px] md:text-xs font-bold text-white text-center leading-tight select-none">
+                                                        <?php echo nl2br(e($menu->name)); ?>
 
-                                                </span>
-                                            </a>
-                                        </div>
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    <?php else: ?>
+                                        <div class="text-white text-xs w-full text-center py-4">ยังไม่มีหมวดหมู่</div>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </div>
                                 <div class="swiper-button-next"></div>
                                 <div class="swiper-button-prev"></div>
@@ -418,7 +425,7 @@
 
                     submitBtn.disabled = true;
                     submitBtn.innerHTML =
-                    '<span class="loading loading-spinner loading-xs"></span>';
+                        '<span class="loading loading-spinner loading-xs"></span>';
 
                     const formData = new FormData();
                     formData.append('quantity', quantity);

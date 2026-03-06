@@ -30,9 +30,9 @@ class HomeController extends Controller
         })->toArray();
 
         // ดึงข้อมูล CMS จากตารางใหม่
-        $heroSlides = \App\Models\Banner::hero()->active()->get();
-        $infoBanner = \App\Models\Banner::info()->active()->first();
-        $secSlides = \App\Models\Banner::secondary()->active()->get();
+        $heroSlides = \App\Models\Banner::location('homepage')->hero()->active()->get();
+        $infoBanner = \App\Models\Banner::location('homepage')->info()->active()->first();
+        $secSlides = \App\Models\Banner::location('homepage')->secondary()->active()->get();
         $services = \App\Models\Service::where('is_active', true)->orderBy('sort_order')->get();
         $reasons = \App\Models\Feature::where('is_active', true)->orderBy('sort_order')->get();
 

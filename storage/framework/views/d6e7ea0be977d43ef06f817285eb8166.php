@@ -198,10 +198,39 @@
                             $finalSellingPrice = max(0, $originalPrice - $discountAmount);
                             $isOnSale = $discountAmount > 0;
                             $displayImage = $product->cover_image_url;
+
+                            // เช็คโปรโมชั่นสำหรับสินค้านี้
+                            $productPromo = null;
+                            if (isset($promotions)) {
+                                $productPromo = $promotions->first(function ($promo) use ($product) {
+                                    return $promo->rules->contains(function ($rule) use ($product) {
+                                        $pids = (array) ($rule->rules['product_id'] ?? []);
+                                        return in_array($product->pd_sp_id, array_map('intval', $pids));
+                                    });
+                                });
+                            }
                         ?>
 
                         <div
-                            class="card bg-white border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden">
+                            class="card bg-white border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full rounded-2xl overflow-hidden relative">
+                            
+                            
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($productPromo): ?>
+                                <div class="absolute top-0 right-0 z-20">
+                                    <div class="bg-gradient-to-l from-pink-600 to-red-500 text-white px-3 py-1 rounded-bl-xl shadow-lg flex flex-col items-end">
+                                        <span class="text-[10px] font-black uppercase tracking-tighter">Free Gift</span>
+                                        <span class="text-[9px] font-bold opacity-90 leading-none"><?php echo e($productPromo->name); ?></span>
+                                    </div>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($productPromo->end_date): ?>
+                                        <div class="mt-1 flex justify-end pr-1">
+                                            <span class="text-[8px] px-1.5 py-0.5 rounded-full <?php echo e($productPromo->is_expiring_soon ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-gray-100 text-gray-500'); ?> font-bold shadow-sm">
+                                                <i class="fas fa-clock mr-0.5"></i> <?php echo e($productPromo->time_remaining); ?>
+
+                                            </span>
+                                        </div>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                </div>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                             
                             <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"

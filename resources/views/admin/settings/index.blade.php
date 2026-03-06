@@ -29,7 +29,7 @@
 
             <div class="space-y-8">
 
-                {{-- 1. HERO SLIDER (Dynamic) - ปรับรูปให้ยาวและใหญ่ขึ้น --}}
+                {{-- 1. HERO SLIDER (Dynamic) --}}
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div
                         class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center backdrop-blur-sm">
@@ -64,12 +64,10 @@
                                     :value="slide.existing_path">
 
                                 <div class="p-4">
-                                    {{-- ส่วนแสดงรูปภาพแบบยาว (Wide Aspect Ratio) --}}
+                                    {{-- ส่วนแสดงรูปภาพ --}}
                                     <div
                                         class="w-full aspect-[3/1] bg-gray-800 rounded-lg border border-gray-600 overflow-hidden relative mb-4 shadow-inner group-hover:shadow-md transition-shadow">
                                         <img :src="slide.image" class="w-full h-full object-cover">
-
-                                        {{-- Overlay เมื่อ Hover เพื่อให้รู้ว่ากดเปลี่ยนรูปได้ --}}
                                         <div
                                             class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                                             <span
@@ -77,8 +75,6 @@
                                                 <i class="fas fa-camera mr-2"></i> เปลี่ยนรูปภาพ
                                             </span>
                                         </div>
-
-                                        {{-- Input File ซ่อนอยู่ด้านบน --}}
                                         <input type="file" :name="`hero_banners[${index}][image]`" accept="image/*"
                                             @change="previewImage($event, 'hero_slides', index)"
                                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
@@ -108,8 +104,51 @@
                     </div>
                 </div>
 
-                {{-- Grid 2 คอลัมน์สำหรับส่วนเนื้อหารอง --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                {{-- ★★★ Modal เลือกไอคอน (Icon Picker) ★★★ --}}
+                <div x-show="showIconPicker" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    class="fixed inset-0 bg-gray-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4"
+                    style="display: none;"
+                    @click.self="showIconPicker = false">
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
+                        <div class="flex justify-between items-center px-6 py-4 bg-gray-900/80 border-b border-gray-700">
+                            <h4 class="text-gray-200 font-bold capitalize flex items-center gap-2">
+                                <i class="fas fa-icons text-purple-400"></i>
+                                เลือกไอคอน (<span x-text="activeIconType"></span> <span x-text="activeIconIndex"></span>)
+                            </h4>
+                            <button type="button" @click="showIconPicker = false"
+                                class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-6">
+                            <div class="grid grid-cols-6 gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                                <template x-for="icon in iconList" :key="icon">
+                                    <button type="button" @click="selectIcon(icon)"
+                                        class="aspect-square rounded-xl flex items-center justify-center transition-all border-2"
+                                        :class="(activeIconType === 'service' ? services[activeIconIndex]?.icon : reasons[activeIconIndex]?.icon) === icon ?
+                                            'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-900/50' : 
+                                            'text-gray-400 bg-gray-900/50 border-gray-700 hover:border-purple-500/50 hover:bg-gray-700/50'">
+                                        <i :class="icon" class="text-2xl"></i>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <div class="mt-6 flex justify-end">
+                                <button type="button" @click="showIconPicker = false"
+                                    class="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-xl transition-colors font-medium">
+                                    ยกเลิก
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Grid 2 คอลัมน์สำหรับส่วนเนื้อหารอง --}}                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 
                     {{-- Left Column --}}
                     <div class="space-y-8">
@@ -130,7 +169,6 @@
                                 <div class="flex flex-col items-center gap-4">
                                     <input type="hidden" name="remove_allergy_image" id="remove_allergy_image"
                                         value="0">
-
                                     <div class="relative w-full group cursor-pointer">
                                         <div x-show="allergy_img"
                                             class="w-full h-40 bg-red-50/5 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden relative">
@@ -149,31 +187,50 @@
                             </div>
                         </div>
 
-                        {{-- 4. SERVICE BAR (4 Items) --}}
-                        <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
-                            <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700">
+                        {{-- 4. SERVICE BAR (Dynamic) + Icon Picker --}}
+                        <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
+                            <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2">
                                     <i class="fas fa-concierge-bell text-purple-400"></i> Service Bar
                                 </h3>
+                                <button type="button" @click="addService()"
+                                    class="text-xs bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white px-2 py-1 rounded transition-colors">
+                                    <i class="fas fa-plus mr-1"></i> เพิ่ม
+                                </button>
                             </div>
                             <div class="p-6 grid grid-cols-1 gap-4">
-                                @foreach (range(1, 4) as $i)
-                                    <div
-                                        class="p-3 bg-gray-700/30 rounded-lg border border-gray-600 flex gap-3 items-center">
-                                        <div
-                                            class="flex-shrink-0 w-10 h-10 bg-gray-800 rounded flex items-center justify-center text-gray-400">
-                                            <i :class="services[{{ $i }}].icon"></i>
+                                <template x-for="(svc, index) in services" :key="index">
+                                    <div class="p-3 bg-gray-700/30 rounded-lg border border-gray-600 flex gap-3 items-center relative group">
+                                        <button type="button" @click="removeService(index)"
+                                            class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 text-xs">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+
+                                        {{-- ส่วนแสดงไอคอนปัจจุบัน --}}
+                                        <div class="flex-shrink-0 w-10 h-10 bg-gray-800 rounded flex items-center justify-center text-gray-400 border border-gray-600 cursor-pointer hover:border-purple-500 hover:text-purple-400 transition-colors"
+                                            @click="openIconPicker('service', index)">
+                                            <i :class="svc.icon"></i>
                                         </div>
+
                                         <div class="flex-grow space-y-1">
-                                            <input type="text" name="service_{{ $i }}_text"
-                                                x-model="services[{{ $i }}].text" placeholder="ข้อความบริการ"
+                                            {{-- Input ข้อความ --}}
+                                            <input type="text" :name="`services[${index}][title]`"
+                                                x-model="svc.title" placeholder="ข้อความบริการ"
                                                 class="w-full bg-transparent border-b border-gray-600 text-sm text-gray-200 px-0 py-1 focus:ring-0 focus:border-purple-500 placeholder-gray-600">
-                                            <input type="text" name="service_{{ $i }}_icon"
-                                                x-model="services[{{ $i }}].icon" placeholder="Icon class"
-                                                class="w-full bg-transparent border-none text-[10px] text-gray-500 px-0 py-0 focus:ring-0">
+
+                                            {{-- Input ไอคอน (Hidden) --}}
+                                            <input type="hidden" :name="`services[${index}][icon]`" x-model="svc.icon">
+                                            
+                                            <button type="button" @click="openIconPicker('service', index)"
+                                                class="text-[10px] text-purple-400 hover:underline">
+                                                เลือกไอคอน
+                                            </button>
                                         </div>
                                     </div>
-                                @endforeach
+                                </template>
+                                <div x-show="services.length === 0" class="text-center py-4 text-gray-500 text-xs">
+                                    ยังไม่มีรายการบริการ
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -225,28 +282,48 @@
                             </div>
                         </div>
 
-                        {{-- 5. 6 REASONS SECTION --}}
-                        <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
-                            <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700">
+                        {{-- 5. 6 REASONS SECTION (Dynamic) --}}
+                        <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
+                            <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2">
                                     <i class="fas fa-th text-emerald-400"></i> 6 Reasons
                                 </h3>
+                                <button type="button" @click="addReason()"
+                                    class="text-xs bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded transition-colors">
+                                    <i class="fas fa-plus mr-1"></i> เพิ่ม
+                                </button>
                             </div>
                             <div class="p-6 grid grid-cols-1 gap-3">
-                                @foreach (range(1, 6) as $i)
-                                    <div class="p-3 bg-gray-700/30 rounded border border-gray-600 flex gap-3">
-                                        <div class="flex-shrink-0 flex flex-col items-center justify-center w-8 pt-1">
-                                            <span class="text-sm font-bold text-emerald-500/50">{{ $i }}</span>
+                                <template x-for="(reason, index) in reasons" :key="index">
+                                    <div class="p-3 bg-gray-700/30 rounded border border-gray-600 flex gap-3 items-center relative group">
+                                        <button type="button" @click="removeReason(index)"
+                                            class="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 text-xs">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+
+                                        {{-- Icon Picker for Reason --}}
+                                        <div class="flex-shrink-0 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-emerald-400 border border-gray-600 cursor-pointer hover:border-emerald-500 hover:bg-emerald-500/10 transition-all shadow-inner group-btn"
+                                            @click="openIconPicker('reason', index)">
+                                            <i :class="reason.icon" class="text-xl group-btn-hover:scale-110 transition-transform"></i>
                                         </div>
+
                                         <div class="flex-grow space-y-2">
-                                            <input type="text" name="reason_{{ $i }}_title"
-                                                x-model="reasons[{{ $i }}].title" placeholder="หัวข้อ"
-                                                class="w-full bg-transparent border-b border-gray-600 text-sm font-bold text-emerald-400 px-0 py-1 focus:ring-0 focus:border-emerald-500">
-                                            <textarea name="reason_{{ $i }}_desc" x-model="reasons[{{ $i }}].desc" rows="2"
-                                                placeholder="คำอธิบาย..." class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-300 px-2 py-1"></textarea>
+                                            <div class="flex gap-2 items-center">
+                                                <input type="text" :name="`reasons[${index}][title]`"
+                                                    x-model="reason.title" placeholder="หัวข้อ"
+                                                    class="flex-grow bg-transparent border-b border-gray-600 text-sm font-bold text-emerald-400 px-0 py-1 focus:ring-0 focus:border-emerald-500">
+                                                
+                                                {{-- Hidden Icon Input --}}
+                                                <input type="hidden" :name="`reasons[${index}][icon]`" x-model="reason.icon">
+                                            </div>
+                                            <textarea :name="`reasons[${index}][description]`" x-model="reason.description" rows="1"
+                                                placeholder="คำอธิบาย..." class="w-full bg-gray-900 border-gray-700 rounded text-xs text-gray-300 px-2 py-1 focus:ring-emerald-500/30 focus:border-emerald-500"></textarea>
                                         </div>
                                     </div>
-                                @endforeach
+                                </template>
+                                <div x-show="reasons.length === 0" class="text-center py-4 text-gray-500 text-xs">
+                                    ยังไม่มีรายการเหตุผล
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -268,7 +345,37 @@
     <script>
         function siteSettings() {
             return {
-                // State for Hero Slides (Dynamic)
+                // --- Config for Icon Picker ---
+                showIconPicker: false,
+                activeIconIndex: 1,
+                activeIconType: 'service', // 'service' or 'reason'
+                iconList: [
+                    'fas fa-star', 'fas fa-heart', 'fas fa-check', 'fas fa-truck',
+                    'fas fa-box', 'fas fa-tag', 'fas fa-percent', 'fas fa-gift',
+                    'fas fa-utensils', 'fas fa-coffee', 'fas fa-glass-cheers', 'fas fa-fire',
+                    'fas fa-leaf', 'fas fa-seedling', 'fas fa-apple-alt', 'fas fa-carrot',
+                    'fas fa-clock', 'fas fa-history', 'fas fa-calendar-alt', 'fas fa-hourglass-half',
+                    'fas fa-credit-card', 'fas fa-wallet', 'fas fa-money-bill-wave', 'fas fa-qrcode',
+                    'fas fa-shield-alt', 'fas fa-lock', 'fas fa-user-shield', 'fas fa-certificate',
+                    'fas fa-thumbs-up', 'fas fa-smile', 'fas fa-award', 'fas fa-medal',
+                    'fas fa-phone', 'fas fa-envelope', 'fas fa-comment-dots', 'fas fa-headset'
+                ],
+                openIconPicker(type, index) {
+                    this.activeIconType = type;
+                    this.activeIconIndex = index;
+                    this.showIconPicker = true;
+                },
+                selectIcon(iconClass) {
+                    if (this.activeIconType === 'service') {
+                        this.services[this.activeIconIndex].icon = iconClass;
+                    } else if (this.activeIconType === 'reason') {
+                        this.reasons[this.activeIconIndex].icon = iconClass;
+                    }
+                    this.showIconPicker = false;
+                },
+                // ------------------------------
+
+                // State for Hero Slides
                 currentSlide: 1,
                 hero_slides: [
                     @foreach ($heroBanners as $banner)
@@ -298,7 +405,7 @@
                 @endphp
                 allergy_img: "{{ $infoPath ? Storage::url($infoPath) : asset('images/image_27e610.png') }}",
 
-                // State for Secondary Slides (Dynamic)
+                // State for Secondary Slides
                 sec_slides: [
                     @foreach ($secondaryBanners as $banner)
                         {
@@ -321,31 +428,40 @@
                     this.sec_slides.splice(index, 1);
                 },
 
-                // State for Services (Fixed 4 slots)
-                services: {
-                    @php $serviceList = $services->keyBy('sort_order'); @endphp
-                    @foreach (range(1, 4) as $i)
-                        @php $svc = $serviceList[$i] ?? null; @endphp
-                        {{ $i }}: {
-                                icon: "{{ $svc ? $svc->icon : $settings['service_' . $i . '_icon'] ?? 'fas fa-star' }}",
-                                text: "{{ $svc ? $svc->title : $settings['service_' . $i . '_text'] ?? 'บริการที่ ' . $i }}"
-                            },
+                // State for Services (Dynamic Array)
+                services: [
+                    @foreach ($services as $svc)
+                        {
+                            icon: "{{ $svc->icon }}",
+                            title: "{{ $svc->title }}"
+                        },
                     @endforeach
+                ],
+                addService() {
+                    this.services.push({ icon: 'fas fa-star', title: '' });
+                },
+                removeService(index) {
+                    this.services.splice(index, 1);
                 },
 
-                // State for Reasons (Fixed 6 slots)
-                reasons: {
-                    @php $featureList = $features->keyBy('sort_order'); @endphp
-                    @foreach (range(1, 6) as $i)
-                        @php $feature = $featureList[$i] ?? null; @endphp
-                        {{ $i }}: {
-                                title: "{{ $feature ? $feature->title : $settings['reason_' . $i . '_title'] ?? 'เหตุผลที่ ' . $i }}",
-                                desc: "{{ $feature ? $feature->description : $settings['reason_' . $i . '_desc'] ?? 'รายละเอียดสั้นๆ...' }}"
-                            },
+                // State for Reasons (Dynamic Array)
+                reasons: [
+                    @foreach ($features as $feature)
+                        {
+                            icon: "{{ $feature->icon }}",
+                            title: "{{ $feature->title }}",
+                            description: "{{ $feature->description }}"
+                        },
                     @endforeach
+                ],
+                addReason() {
+                    this.reasons.push({ icon: 'fas fa-check', title: '', description: '' });
+                },
+                removeReason(index) {
+                    this.reasons.splice(index, 1);
                 },
 
-                // Helper to preview uploaded image immediately
+                // Helper to preview uploaded image
                 previewImage(event, targetObj, index = null) {
                     const file = event.target.files[0];
                     if (file) {

@@ -19,6 +19,9 @@
     {{-- ★★★ CSS ของ Swiper (จำเป็นสำหรับสไลด์) ★★★ --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
+    {{-- ★★★ [เพิ่มใหม่] Font Awesome (จำเป็นสำหรับ Icons) ★★★ --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
     <title>@yield('title', 'Salepage Demo')</title>
 
@@ -61,8 +64,6 @@
     </style>
 </head>
 
-{{-- ★★★ แก้ไขพื้นหลัง BODY เป็นรูป f2.png ★★★ --}}
-
 <body class="font-['Noto_Sans_Thai'] bg-gray-100">
 
     {{-- Logic คำนวณจำนวนสินค้า --}}
@@ -83,13 +84,13 @@
             ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts', 'auth_required' => false],
             ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq', 'auth_required' => false],
             ['name' => 'ประวัติการสั่งซื้อ', 'url' => '/orderhistory', 'auth_required' => true],
-            ['name' => 'เกี่ยวกับติดใจ', 'url' => '/about', 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
-            ['name' => 'ติดต่อติดใจ', 'url' => '/contact', 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
-            ['name' => 'เช็คพัสดุ', 'url' => route('order.tracking.form'), 'auth_required' => false], // Changed to false as per user request to show all except orderhistory
+            ['name' => 'เกี่ยวกับติดใจ', 'url' => '/about', 'auth_required' => false],
+            ['name' => 'ติดต่อติดใจ', 'url' => '/contact', 'auth_required' => false],
+            ['name' => 'เช็คพัสดุ', 'url' => route('order.tracking.form'), 'auth_required' => false],
         ];
     @endphp
 
-    {{-- ★★★ NAVBAR (แก้ไข: เอา Background Image ออก และใส่ bg-red-600 กลับคืนมา) ★★★ --}}
+    {{-- ★★★ NAVBAR ★★★ --}}
     @unless (isset($hideNavbar) && $hideNavbar)
         <div class="sticky top-0 z-50 shadow-sm bg-red-600 border-b border-red-500">
 
@@ -110,8 +111,8 @@
                                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg text-gray-800">
                                 @foreach ($menuItems as $item)
                                     @if (!$item['auth_required'] || auth()->check())
-                                    <li><a href="{{ $item['url'] }}"
-                                            class="py-3 font-bold hover:text-red-600">{{ $item['name'] }}</a></li>
+                                        <li><a href="{{ $item['url'] }}"
+                                                class="py-3 font-bold hover:text-red-600">{{ $item['name'] }}</a></li>
                                     @endif
                                 @endforeach
                                 @auth
@@ -132,7 +133,6 @@
                     </div>
                     <div class="navbar-center">
                         <a href="/" class="btn btn-ghost text-xl p-0 hover:bg-transparent">
-                            {{-- ▼▼▼ แก้ไข: ลบ brightness-0 invert ออก เพื่อแสดงสีโลโก้จริง ▼▼▼ --}}
                             <img src="{{ $siteLogo }}" alt="Logo" class="h-10 w-auto object-contain">
                         </a>
                     </div>
@@ -183,7 +183,6 @@
                     <div class="flex items-center gap-6 flex-shrink-0">
                         {{-- Logo --}}
                         <a href="/" class="hover:opacity-80 transition-opacity">
-                            {{-- ▼▼▼ แก้ไข: ลบ brightness-0 invert ออก เพื่อแสดงสีโลโก้จริง ▼▼▼ --}}
                             <img src="{{ $siteLogo }}" alt="Logo" class="h-14 w-auto object-contain">
                         </a>
 

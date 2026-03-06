@@ -10,11 +10,19 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $recommendedProducts = ProductSalepage::with(['images', 'stock'])
+        $recommendedProducts = ProductSalepage::with(['images', 'stock', 'options', 'options.stock'])
             ->where('pd_sp_active', 1)
             ->where('is_recommended', 1)
             ->orderBy('pd_sp_id', 'desc')
             ->limit(8)
+            ->get();
+
+        // ดึงโปรโมชั่นที่กำลังเปิดใช้งานอยู่ (สำหรับแสดงผลที่หน้าบ้าน)
+        $now = now();
+        $promotions = \App\Models\Promotion::with(['rules', 'actions.giftableProducts'])
+            ->where('is_active', true)
+            ->where(fn($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
+            ->where(fn($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->get();
 
         $settings = SiteSetting::all()->mapWithKeys(function ($setting) {
@@ -30,6 +38,7 @@ class HomeController extends Controller
 
         return view('index', compact(
             'recommendedProducts', 
+            'promotions',
             'settings', 
             'heroSlides', 
             'infoBanner', 

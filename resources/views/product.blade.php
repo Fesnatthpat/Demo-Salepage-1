@@ -29,6 +29,8 @@
                 }
                 $promotionsData[] = [
                     'id' => $promo->id,
+                    'name' => $promo->name,
+                    'end_date' => $promo->end_date ? $promo->end_date->toIso8601String() : null,
                     'logic' => $promo->frontend_logic,
                     'gifts_per_item' => $promo->actions->sum(fn($a) => (int) ($a->actions['quantity_to_get'] ?? 0)),
                     'gifts' => $gifts
@@ -232,8 +234,17 @@
                         <template x-if="promotions.length > 0">
                             <div class="space-y-6 mb-8">
                                 <template x-for="promo in promotions" :key="promo.id">
-                                    <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm">
-                                        <div class="flex items-center gap-3 mb-4">
+                                        <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm relative overflow-hidden">
+                                            {{-- Countdown Badge --}}
+                                            <div class="absolute top-0 right-0" x-show="promo.remainingTime">
+                                                <div class="flex items-center gap-1.5 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-bl-2xl border-b border-l border-red-100 shadow-sm"
+                                                    :class="promo.isExpiringSoon ? 'text-red-600 animate-pulse' : 'text-gray-600'">
+                                                    <i class="fas fa-stopwatch text-sm"></i>
+                                                    <span class="text-xs font-black tracking-tighter" x-text="promo.remainingTime"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center gap-3 mb-4">
                                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-600 text-white shadow-md">
                                                 <i class="fas fa-gift text-sm"></i>
                                             </span>
@@ -438,7 +449,11 @@
                 discountAmount: config.discountAmount || 0,
                 options: config.options || [],
                 selectedOption: null,
-                promotions: config.promotions || [],
+                promotions: (config.promotions || []).map(p => ({
+                    ...p,
+                    remainingTime: '',
+                    isExpiringSoon: false
+                })),
                 selectedGifts: [],
 
                 get giftLimit() {
@@ -451,6 +466,41 @@
 
                 get isConditionMet() {
                     return this.giftLimit > 0;
+                },
+
+                updateCountdowns() {
+                    const now = new Date();
+                    this.promotions.forEach(promo => {
+                        if (!promo.end_date) {
+                            promo.remainingTime = 'ใช้งานได้เรื่อยๆ';
+                            promo.isExpiringSoon = false;
+                            return;
+                        }
+                        
+                        const end = new Date(promo.end_date);
+                        const diff = end - now;
+                        
+                        if (diff <= 0) {
+                            promo.remainingTime = 'สิ้นสุดแล้ว';
+                            promo.isExpiringSoon = false;
+                            return;
+                        }
+                        
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        
+                        promo.isExpiringSoon = diff < (1000 * 60 * 60 * 24); // Less than 24h
+                        
+                        if (days > 0) {
+                            promo.remainingTime = `${days} วัน ${hours} ชม. ${minutes} นาที`;
+                        } else if (hours > 0) {
+                            promo.remainingTime = `${hours} ชม. ${minutes} นาที ${seconds} วิ`;
+                        } else {
+                            promo.remainingTime = `${minutes} นาที ${seconds} วิ`;
+                        }
+                    });
                 },
 
                 toggleGift(giftId) {
@@ -471,6 +521,8 @@
 
                 init() {
                     this.imagesLoaded = true;
+                    this.updateCountdowns();
+                    setInterval(() => this.updateCountdowns(), 1000);
                     this.$watch('quantity', () => this.validateSelection());
 
                     // ✅ ส่วนที่แก้ไข: เปลี่ยนรูปภาพหลักตามตัวเลือกที่ลูกค้าคลิกเลือก

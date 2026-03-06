@@ -141,44 +141,37 @@ class AdminController extends Controller
             \App\Models\Banner::secondary()->whereNotIn('id', $secKeepIds)->delete();
         }
 
-        // --- 6. Service Bar ---
-        foreach (range(1, 4) as $i) {
-            $iconKey = "service_{$i}_icon";
-            $textKey = "service_{$i}_text";
+        // --- 6. Service Bar (Dynamic Array) ---
+        if ($request->has('services') && is_array($request->services)) {
+            // ลบข้อมูลเก่าที่ไม่ได้อยู่ในรายการใหม่
+            \App\Models\Service::query()->delete();
             
-            if ($request->has($iconKey)) {
-                SiteSetting::set($iconKey, $request->input($iconKey));
-                SiteSetting::set($textKey, $request->input($textKey));
-
-                \App\Models\Service::updateOrCreate(
-                    ['sort_order' => $i],
-                    [
-                        'icon' => $request->input($iconKey),
-                        'title' => $request->input($textKey),
+            foreach ($request->services as $index => $item) {
+                if (!empty($item['title'])) {
+                    \App\Models\Service::create([
+                        'icon' => $item['icon'] ?? 'fas fa-star',
+                        'title' => $item['title'],
+                        'sort_order' => $index + 1,
                         'is_active' => true
-                    ]
-                );
+                    ]);
+                }
             }
         }
 
-        // --- 7. 6 Reasons (Features) ---
-        foreach (range(1, 6) as $i) {
-            $titleKey = "reason_{$i}_title";
-            $descKey = "reason_{$i}_desc";
+        // --- 7. 6 Reasons (Features) (Dynamic Array) ---
+        if ($request->has('reasons') && is_array($request->reasons)) {
+            \App\Models\Feature::query()->delete();
             
-            if ($request->has($titleKey)) {
-                SiteSetting::set($titleKey, $request->input($titleKey));
-                SiteSetting::set($descKey, $request->input($descKey));
-
-                \App\Models\Feature::updateOrCreate(
-                    ['sort_order' => $i],
-                    [
-                        'icon' => 'fas fa-check', // Default icon
-                        'title' => $request->input($titleKey),
-                        'description' => $request->input($descKey),
+            foreach ($request->reasons as $index => $item) {
+                if (!empty($item['title'])) {
+                    \App\Models\Feature::create([
+                        'icon' => $item['icon'] ?? 'fas fa-check',
+                        'title' => $item['title'],
+                        'description' => $item['description'] ?? '',
+                        'sort_order' => $index + 1,
                         'is_active' => true
-                    ]
-                );
+                    ]);
+                }
             }
         }
 

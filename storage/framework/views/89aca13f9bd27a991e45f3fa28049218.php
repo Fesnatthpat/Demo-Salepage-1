@@ -1,7 +1,7 @@
 <?php
-    $buyData = old('buy_items', $buy_items ?? [['product_id' => '', 'quantity' => 1]]);
+    $buyData = old('buy_items', $buy_items ?? [['product_id' => [], 'quantity' => 1]]);
     if (empty($buyData)) {
-        $buyData = [['product_id' => '', 'quantity' => 1]];
+        $buyData = [['product_id' => [], 'quantity' => 1]];
     }
 
     $getData = old('get_items', $get_items ?? [['product_id' => '', 'quantity' => 1]]);
@@ -12,14 +12,21 @@
 
 
 <style>
+    .ts-wrapper.multi .ts-control>div {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        color: #6ee7b7 !important;
+        border-radius: 4px;
+    }
+
     .ts-control {
-        background-color: #374151 !important;
+        background-color: #1f2937 !important;
+        /* gray-800 */
+        border-color: #374151 !important;
         /* gray-700 */
-        border-color: #4b5563 !important;
-        /* gray-600 */
         color: #f3f4f6 !important;
-        /* gray-100 */
         border-radius: 0.5rem;
+        padding: 10px 12px !important;
     }
 
     .ts-control input {
@@ -27,53 +34,43 @@
     }
 
     .ts-dropdown {
-        background-color: #374151 !important;
-        border-color: #4b5563 !important;
+        background-color: #1f2937 !important;
+        border-color: #374151 !important;
         color: #f3f4f6 !important;
+        z-index: 50 !important;
     }
 
     .ts-dropdown .option:hover,
     .ts-dropdown .active {
-        background-color: #4b5563 !important;
-        /* gray-600 */
-        color: #fff !important;
+        background-color: #374151 !important;
+        color: #10b981 !important;
     }
 
-    .ts-control .item {
-        background-color: #1f2937 !important;
-        /* gray-800 */
-        color: #fff !important;
-        border: 1px solid #4b5563 !important;
+    /* Smooth Toggle Transition */
+    .slide-enter-active,
+    .slide-leave-active {
+        transition: all 0.3s ease;
     }
 
-    .animate-fade-in-down {
-        animation: fadeInDown 0.3s ease-out;
-    }
-
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .slide-enter-from,
+    .slide-leave-to {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 </style>
 
 <div x-data="promotionForm(
     <?php echo e(old('is_discount_code', isset($promotion) && $promotion->code ? 'true' : 'false')); ?>,
     '<?php echo e(old('discount_type', $promotion->discount_type ?? '')); ?>'
-)">
+)" class="space-y-6">
 
+    
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
-        <div class="alert alert-error bg-red-900/50 border border-red-800 text-red-200 shadow-sm mb-8">
-            <i class="fas fa-exclamation-triangle"></i>
+        <div class="alert alert-error bg-red-900/20 border border-red-500/50 text-red-200 shadow-lg rounded-xl">
+            <i class="fas fa-exclamation-circle text-xl"></i>
             <div>
-                <h3 class="font-bold">ข้อมูลไม่ถูกต้อง</h3>
-                <ul class="text-xs mt-1 list-disc list-inside opacity-80">
+                <h3 class="font-bold">พบข้อผิดพลาด</h3>
+                <ul class="text-sm mt-1 list-disc list-inside opacity-90">
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <li><?php echo e($error); ?></li>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
@@ -82,313 +79,370 @@
         </div>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
 
         
-        <div class="lg:col-span-4 space-y-6">
-            <div class="card bg-gray-800 shadow-lg border border-gray-700">
-                <div class="card-body p-6 gap-5">
-                    <div class="flex items-center gap-2 text-gray-100 pb-2 border-b border-gray-700">
-                        <i class="fas fa-info-circle text-emerald-500"></i>
-                        <h2 class="font-bold text-lg">ข้อมูลพื้นฐาน</h2>
-                    </div>
+        <div class="xl:col-span-4 space-y-6">
 
-                    <div class="form-control w-full">
-                        <label class="label pt-0"><span class="label-text font-semibold text-gray-300">ชื่อแคมเปญ <span
-                                    class="text-red-400">*</span></span></label>
-                        <input type="text" name="name"
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                            value="<?php echo e(old('name', $promotion->name ?? '')); ?>" required />
-                    </div>
+            
+            <div class="card bg-gray-800 shadow-xl border border-gray-700/50">
+                <div class="card-body p-6">
+                    <h3 class="card-title text-gray-100 text-lg mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-emerald-500 rounded-full"></span> ข้อมูลแคมเปญ
+                    </h3>
 
                     
-                    <div class="form-control w-full">
-                        <label class="label"><span
-                                class="label-text font-semibold text-gray-300">รูปแบบเงื่อนไขการซื้อ</span></label>
-                        <div class="flex flex-col gap-2">
-                            <label
-                                class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'any' ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700'); ?>">
-                                <input type="radio" name="condition_type" value="any"
-                                    class="radio radio-success radio-sm"
-                                    <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'any' ? 'checked' : ''); ?> />
-                                <div>
-                                    <span class="font-bold text-sm text-gray-200">อย่างใดอย่างหนึ่ง (OR)</span>
-                                    <p class="text-xs text-gray-400">ซื้อสินค้า A ครบ หรือ สินค้า B ครบ ก็ได้รับสิทธิ์
-                                    </p>
-                                </div>
-                            </label>
-
-                            <label
-                                class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'all' ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700'); ?>">
-                                <input type="radio" name="condition_type" value="all"
-                                    class="radio radio-success radio-sm"
-                                    <?php echo e(old('condition_type', $promotion->condition_type ?? 'any') == 'all' ? 'checked' : ''); ?> />
-                                <div>
-                                    <span class="font-bold text-sm text-gray-200">ต้องครบทุกข้อ (AND)</span>
-                                    <p class="text-xs text-gray-400">ต้องซื้อทั้งสินค้า A และ สินค้า B ให้ครบตามจำนวน
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-control w-full">
-                        <label class="label"><span
-                                class="label-text font-semibold text-gray-300">รายละเอียด</span></label>
-                        <textarea name="description"
-                            class="textarea textarea-bordered h-24 resize-none bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"><?php echo e(old('description', $promotion->description ?? '')); ?></textarea>
-                    </div>
-
-                    <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700 space-y-3">
-                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">ระยะเวลา</span>
-                        <div class="form-control w-full">
-                            <label class="label py-0"><span
-                                    class="label-text text-xs text-gray-400">วันเริ่มต้น</span></label>
-                            <input type="datetime-local" name="start_date"
-                                class="input input-bordered input-sm w-full bg-gray-700 border-gray-600 text-gray-100"
-                                value="<?php echo e(old('start_date', isset($promotion->start_date) ? \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i') : '')); ?>" />
-                        </div>
-                        <div class="form-control w-full">
-                            <label class="label py-0"><span
-                                    class="label-text text-xs text-gray-400">วันสิ้นสุด</span></label>
-                            <input type="datetime-local" name="end_date"
-                                class="input input-bordered input-sm w-full bg-gray-700 border-gray-600 text-gray-100"
-                                value="<?php echo e(old('end_date', isset($promotion->end_date) ? \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i') : '')); ?>" />
-                        </div>
-                    </div>
-
-                    <div class="divider border-gray-700">เงื่อนไขเพิ่มเติม</div>
-
-                    <div class="form-control w-full">
-                        <label class="label pt-0"><span class="label-text font-semibold text-gray-300">ยอดสั่งซื้อขั้นต่ำ (บาท)</span></label>
-                        <input type="number" name="min_order_value"
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                            value="<?php echo e(old('min_order_value', $promotion->min_order_value ?? '')); ?>" step="0.01" min="0" placeholder="0.00" />
-                        <p class="text-xs text-gray-400 mt-1">เว้นว่างไว้หากไม่มีขั้นต่ำ</p>
-                    </div>
-
-                    <div class="form-control w-full">
-                        <label class="label pt-0"><span class="label-text font-semibold text-gray-300">จำนวนสิทธิ์การใช้งานทั้งหมด</span></label>
-                        <input type="number" name="usage_limit"
-                            class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                            value="<?php echo e(old('usage_limit', $promotion->usage_limit ?? '')); ?>" min="1" placeholder="ไม่จำกัด" />
-                        <p class="text-xs text-gray-400 mt-1">ระบุจำนวนครั้งที่สามารถใช้โปรโมชั่นนี้ได้ทั้งหมด</p>
-                    </div>
-
-                    <div class="form-control mt-2">
-                        <label class="label cursor-pointer justify-between">
-                            <span class="label-text font-semibold text-gray-300">เปิดใช้งานโปรโมชั่น</span>
+                    <div class="form-control mb-2">
+                        <label
+                            class="label cursor-pointer justify-between p-3 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-gray-600 transition">
+                            <span class="label-text font-medium text-gray-300">สถานะเปิดใช้งาน</span>
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" class="toggle toggle-success"
                                 <?php echo e(old('is_active', $promotion->is_active ?? true) ? 'checked' : ''); ?> />
                         </label>
                     </div>
-                    
-                    
-                    <div class="form-control mt-4">
-                        <label class="label"><span class="label-text font-semibold text-gray-300">ประเภทโปรโมชั่น</span></label>
-                        <div class="flex flex-col gap-2">
-                            <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
-                                :class="!isBxGy && !isDiscountCode ? 'border-emerald-500 bg-emerald-900/20' : 'bg-gray-700'">
-                                <input type="radio" name="promo_type_selector" value="auto" x-model="promoType"
-                                    class="radio radio-success radio-sm" />
-                                <div>
-                                    <span class="font-bold text-sm text-gray-200">ส่วนลดอัตโนมัติ (Automated)</span>
-                                    <p class="text-xs text-gray-400">ลดราคาทันทีเมื่อยอดสั่งซื้อถึงเกณฑ์ (ไม่ต้องใส่โค้ด)</p>
-                                </div>
-                            </label>
 
-                            <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
-                                :class="isDiscountCode ? 'border-info bg-info/10' : 'bg-gray-700'">
-                                <input type="radio" name="promo_type_selector" value="code" x-model="promoType"
-                                    class="radio radio-info radio-sm" />
-                                <div>
-                                    <span class="font-bold text-sm text-gray-200">รหัสส่วนลด (Coupon Code)</span>
-                                    <p class="text-xs text-gray-400">ลูกค้าต้องกรอกรหัสเพื่อรับส่วนลด</p>
-                                </div>
-                            </label>
-
-                            <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors"
-                                :class="isBxGy ? 'border-pink-500 bg-pink-900/20' : 'bg-gray-700'">
-                                <input type="radio" name="promo_type_selector" value="bxgy" x-model="promoType"
-                                    class="radio radio-secondary radio-sm" />
-                                <div>
-                                    <span class="font-bold text-sm text-gray-200">ซื้อ X แถม Y (BxGy)</span>
-                                    <p class="text-xs text-gray-400">แถมสินค้าฟรีอัตโนมัติเมื่อซื้อครบตามเงื่อนไข</p>
-                                </div>
-                            </label>
-                        </div>
-                        <input type="hidden" name="is_discount_code" :value="isDiscountCode ? 1 : 0">
+                    
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text font-medium text-gray-400">ชื่อแคมเปญ <span
+                                    class="text-red-400">*</span></span></label>
+                        <input type="text" name="name" placeholder="เช่น โปรโมชั่นปีใหม่, ซื้อ 1 แถม 1"
+                            class="input input-bordered bg-gray-900/50 border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 w-full"
+                            value="<?php echo e(old('name', $promotion->name ?? '')); ?>" required />
                     </div>
 
                     
-                    <div class="space-y-4 bg-gray-900/50 p-4 rounded-lg border border-gray-700 animate-fade-in-down mt-4" 
-                        x-show="promoType === 'auto' || promoType === 'code'">
-                        <h3 class="font-bold text-sm text-emerald-400 uppercase tracking-wider">ตั้งค่าส่วนลด</h3>
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text font-medium text-gray-400">รายละเอียด
+                                (Optional)</span></label>
+                        <textarea name="description" placeholder="รายละเอียดโปรโมชั่นสำหรับแสดงให้ลูกค้าเห็น..."
+                            class="textarea textarea-bordered h-24 bg-gray-900/50 border-gray-700 focus:border-emerald-500 w-full resize-none"><?php echo e(old('description', $promotion->description ?? '')); ?></textarea>
+                    </div>
+
+                    
+                    <div class="grid grid-cols-2 gap-3 mt-2">
+                        <div class="form-control w-full">
+                            <label class="label"><span
+                                    class="label-text text-xs text-gray-500 uppercase font-bold">เริ่มวันที่</span></label>
+                            <input type="datetime-local" name="start_date"
+                                class="input input-sm input-bordered bg-gray-900/50 border-gray-700 text-gray-300 w-full"
+                                value="<?php echo e(old('start_date', isset($promotion->start_date) ? \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i') : '')); ?>" />
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span
+                                    class="label-text text-xs text-gray-500 uppercase font-bold">สิ้นสุดวันที่</span></label>
+                            <input type="datetime-local" name="end_date"
+                                class="input input-sm input-bordered bg-gray-900/50 border-gray-700 text-gray-300 w-full"
+                                value="<?php echo e(old('end_date', isset($promotion->end_date) ? \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i') : '')); ?>" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="card bg-gray-800 shadow-xl border border-gray-700/50">
+                <div class="card-body p-6">
+                    <h3 class="card-title text-gray-100 text-lg mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-blue-500 rounded-full"></span> ข้อกำหนด
+                    </h3>
+
+                    <div class="form-control w-full">
+                        <label class="label"><span class="label-text font-medium text-gray-400">จำกัดสิทธิ์ทั้งหมด
+                                (ครั้ง)</span></label>
+                        <div class="relative">
+                            <input type="number" name="usage_limit"
+                                class="input input-bordered bg-gray-900/50 border-gray-700 pl-10 w-full"
+                                value="<?php echo e(old('usage_limit', $promotion->usage_limit ?? '')); ?>" min="1"
+                                placeholder="ไม่จำกัด" />
+                            <i class="fas fa-users absolute left-4 top-3.5 text-gray-500"></i>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 pl-1">ปล่อยว่างหากไม่ต้องการจำกัดจำนวน</p>
+                    </div>
+
+                    <div class="form-control w-full mt-2">
+                        <label class="label"><span class="label-text font-medium text-gray-400">ยอดซื้อขั้นต่ำ
+                                (บาท)</span></label>
+                        <div class="relative">
+                            <input type="number" name="min_order_value"
+                                class="input input-bordered bg-gray-900/50 border-gray-700 pl-10 w-full"
+                                value="<?php echo e(old('min_order_value', $promotion->min_order_value ?? '')); ?>" step="0.01"
+                                min="0" placeholder="0.00" />
+                            <i class="fas fa-coins absolute left-4 top-3.5 text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="hidden xl:flex flex-col gap-3 sticky top-4">
+                <button type="submit"
+                    class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none w-full text-lg shadow-lg shadow-emerald-900/20">
+                    <i class="fas fa-save mr-2"></i> บันทึกโปรโมชั่น
+                </button>
+                <a href="<?php echo e(route('admin.promotions.index')); ?>"
+                    class="btn btn-ghost w-full text-gray-400 hover:bg-gray-800">ยกเลิก</a>
+            </div>
+        </div>
+
+        
+        <div class="xl:col-span-8 space-y-6">
+
+            
+            <div class="card bg-gray-800 shadow-xl border border-gray-700/50">
+                <div class="card-body p-6">
+                    <h3 class="card-title text-gray-100 text-lg mb-6 flex items-center gap-2">
+                        <i class="fas fa-chess-queen text-purple-400"></i> เลือกประเภทโปรโมชั่น
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         
+                        <label class="cursor-pointer group relative">
+                            <input type="radio" name="promo_type_selector" value="auto" x-model="promoType"
+                                class="peer sr-only" />
+                            <div
+                                class="p-4 rounded-xl border-2 border-gray-700 bg-gray-900/30 hover:bg-gray-700/50 transition-all duration-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-900/10 h-full flex flex-col items-center text-center">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-emerald-900/30 flex items-center justify-center text-emerald-400 mb-3 peer-checked:bg-emerald-500 peer-checked:text-white transition-colors">
+                                    <i class="fas fa-bolt text-xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-200 peer-checked:text-emerald-400">ส่วนลดอัตโนมัติ</h4>
+                                <p class="text-xs text-gray-500 mt-2">ลดทันทีเมื่อถึงยอด (ไม่ต้องใช้โค้ด)</p>
+                            </div>
+                            <div
+                                class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-emerald-500 transition-opacity">
+                                <i class="fas fa-check-circle"></i></div>
+                        </label>
+
+                        
+                        <label class="cursor-pointer group relative">
+                            <input type="radio" name="promo_type_selector" value="code" x-model="promoType"
+                                class="peer sr-only" />
+                            <div
+                                class="p-4 rounded-xl border-2 border-gray-700 bg-gray-900/30 hover:bg-gray-700/50 transition-all duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-900/10 h-full flex flex-col items-center text-center">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400 mb-3 peer-checked:bg-blue-500 peer-checked:text-white transition-colors">
+                                    <i class="fas fa-ticket-alt text-xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-200 peer-checked:text-blue-400">ใช้รหัสส่วนลด</h4>
+                                <p class="text-xs text-gray-500 mt-2">ลูกค้าต้องกรอกรหัสเพื่อรับส่วนลด</p>
+                            </div>
+                            <div
+                                class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-blue-500 transition-opacity">
+                                <i class="fas fa-check-circle"></i></div>
+                        </label>
+
+                        
+                        <label class="cursor-pointer group relative">
+                            <input type="radio" name="promo_type_selector" value="bxgy" x-model="promoType"
+                                class="peer sr-only" />
+                            <div
+                                class="p-4 rounded-xl border-2 border-gray-700 bg-gray-900/30 hover:bg-gray-700/50 transition-all duration-200 peer-checked:border-pink-500 peer-checked:bg-pink-900/10 h-full flex flex-col items-center text-center">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-pink-900/30 flex items-center justify-center text-pink-400 mb-3 peer-checked:bg-pink-500 peer-checked:text-white transition-colors">
+                                    <i class="fas fa-gifts text-xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-200 peer-checked:text-pink-400">ซื้อ X แถม Y</h4>
+                                <p class="text-xs text-gray-500 mt-2">ซื้อสินค้าครบตามเงื่อนไข แถมฟรี</p>
+                            </div>
+                            <div
+                                class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-pink-500 transition-opacity">
+                                <i class="fas fa-check-circle"></i></div>
+                        </label>
+                    </div>
+                    <input type="hidden" name="is_discount_code" :value="isDiscountCode ? 1 : 0">
+                </div>
+            </div>
+
+            
+            <div x-show="promoType === 'auto' || promoType === 'code'"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                class="card bg-gray-800 shadow-xl border border-gray-700/50">
+                <div class="card-body p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="fas fa-calculator text-blue-400"></i>
+                        <h3 class="font-bold text-gray-200">ตั้งค่าส่วนลด</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="form-control w-full" x-show="promoType === 'code'">
-                            <label class="label pt-0"><span class="label-text font-semibold text-gray-300">รหัสส่วนลด <span class="text-red-400">*</span></span></label>
-                            <input type="text" name="code"
-                                class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                                value="<?php echo e(old('code', $promotion->code ?? '')); ?>" :required="promoType === 'code'" />
+                            <label class="label"><span class="label-text font-medium text-gray-400">รหัสส่วนลด
+                                    (Coupon Code) <span class="text-red-400">*</span></span></label>
+                            <input type="text" name="code" placeholder="เช่น NEWYEAR2024"
+                                class="input input-bordered bg-gray-900 border-gray-600 focus:border-blue-500 text-lg font-mono uppercase tracking-wider text-white"
+                                value="<?php echo e(old('code', $promotion->code ?? '')); ?>"
+                                :required="promoType === 'code'" />
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="md:col-span-2 grid grid-cols-2 gap-4">
                             <div class="form-control w-full">
-                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">ประเภท <span class="text-red-400">*</span></span></label>
-                                <select name="discount_type" x-model="discountType" :required="promoType === 'auto' || promoType === 'code'"
-                                    class="select select-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500">
-                                    <option value="">-- เลือก --</option>
+                                <label class="label"><span class="label-text font-medium text-gray-400">ประเภทส่วนลด
+                                        <span class="text-red-400">*</span></span></label>
+                                <select name="discount_type" x-model="discountType"
+                                    :required="promoType === 'auto' || promoType === 'code'"
+                                    class="select select-bordered w-full bg-gray-900 border-gray-600 focus:border-blue-500 text-gray-200">
+                                    <option value="">-- กรุณาเลือก --</option>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $discountTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                        <option value="<?php echo e($key); ?>" <?php echo e(old('discount_type', $promotion->discount_type ?? '') == $key ? 'selected' : ''); ?>><?php echo e($key === 'fixed' ? 'บาท' : '%'); ?></option>
+                                        <option value="<?php echo e($key); ?>"
+                                            <?php echo e(old('discount_type', $promotion->discount_type ?? '') == $key ? 'selected' : ''); ?>>
+                                            <?php echo e($key === 'fixed' ? 'ลดเป็นบาท (THB)' : 'ลดเป็นเปอร์เซ็นต์ (%)'); ?>
+
+                                        </option>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </select>
                             </div>
                             <div class="form-control w-full">
-                                <label class="label pt-0"><span class="label-text font-semibold text-gray-300">มูลค่า <span class="text-red-400">*</span></span></label>
-                                <input type="number" name="discount_value"
-                                    class="input input-bordered w-full bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500"
-                                    value="<?php echo e(old('discount_value', $promotion->discount_value ?? '')); ?>" :required="promoType === 'auto' || promoType === 'code'" step="0.01" min="0" />
+                                <label class="label"><span class="label-text font-medium text-gray-400">มูลค่าส่วนลด
+                                        <span class="text-red-400">*</span></span></label>
+                                <div class="relative">
+                                    <input type="number" name="discount_value" placeholder="0"
+                                        class="input input-bordered w-full bg-gray-900 border-gray-600 focus:border-blue-500 pr-10 text-right text-xl font-bold text-white"
+                                        value="<?php echo e(old('discount_value', $promotion->discount_value ?? '')); ?>"
+                                        :required="promoType === 'auto' || promoType === 'code'"
+                                        step="0.01" min="0" />
+                                    <span class="absolute right-4 top-3 text-gray-500 font-bold"
+                                        x-text="discountType === 'percentage' ? '%' : '฿'"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="hidden lg:flex flex-col gap-3">
-                <button type="submit"
-                    class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none w-full shadow-lg font-bold text-lg text-white">
-                    <i class="fas fa-save"></i> บันทึกข้อมูล
-                </button>
-                <a href="<?php echo e(route('admin.promotions.index')); ?>"
-                    class="btn btn-ghost w-full text-gray-400 hover:text-white hover:bg-gray-700">ยกเลิก</a>
-            </div>
-        </div>
+            
+            <div x-show="isBxGy" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                class="card bg-gray-800 shadow-xl border border-gray-700/50">
+                <div class="card-body p-0 overflow-hidden">
+                    
+                    <div class="p-4 bg-gray-900/50 border-b border-gray-700 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-layer-group text-pink-400"></i>
+                            <h3 class="font-bold text-gray-200">สร้างเงื่อนไขแถมสินค้า</h3>
+                        </div>
 
-        
-        <div class="lg:col-span-8 space-y-6" x-show="!isDiscountCode">
-            <div class="card bg-gray-800 shadow-lg border border-gray-700 overflow-visible">
-                <div class="card-body p-0">
-                    <div class="p-6 border-b border-gray-700 flex items-center gap-2">
-                        <i class="fas fa-cogs text-pink-500"></i>
-                        <h2 class="font-bold text-lg text-gray-100">เครื่องมือสร้างเงื่อนไข</h2>
+                        
+                        <div class="flex bg-gray-800 rounded-lg p-1 border border-gray-600">
+                            <label class="cursor-pointer px-3 py-1 rounded-md text-xs font-bold transition-colors"
+                                :class="conditionType === 'any' ? 'bg-gray-600 text-white' :
+                                    'text-gray-400 hover:text-gray-200'">
+                                <input type="radio" name="condition_type" value="any" x-model="conditionType"
+                                    class="hidden"> OR (อย่างใดอย่างหนึ่ง)
+                            </label>
+                            <label class="cursor-pointer px-3 py-1 rounded-md text-xs font-bold transition-colors"
+                                :class="conditionType === 'all' ? 'bg-emerald-600 text-white' :
+                                    'text-gray-400 hover:text-gray-200'">
+                                <input type="radio" name="condition_type" value="all" x-model="conditionType"
+                                    class="hidden"> AND (ครบทุกข้อ)
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="p-6 bg-gray-900/50">
-                        <div class="flex flex-col xl:flex-row gap-4 items-stretch relative">
+                    <div class="p-6">
+                        <div class="flex flex-col xl:flex-row gap-6 items-stretch">
 
                             
-                            <div
-                                class="flex-1 w-full card bg-gray-800 border border-emerald-500/30 shadow-sm relative overflow-visible group hover:shadow-md transition-shadow">
-                                <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500 rounded-t-lg"></div>
-                                <div class="card-body p-4">
-                                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
+                            <div class="flex-1 border border-emerald-500/30 rounded-xl bg-gray-900/30 relative">
+                                <div
+                                    class="absolute -top-3 left-4 bg-gray-800 px-2 text-emerald-400 text-xs font-bold border border-emerald-500/30 rounded">
+                                    <i class="fas fa-shopping-cart mr-1"></i> เงื่อนไข (ซื้อ)
+                                </div>
+                                <div class="p-4 pt-6 space-y-4">
+                                    <template x-for="(item, index) in buys" :key="index">
                                         <div
-                                            class="badge badge-outline border-emerald-500 text-emerald-400 font-bold gap-1">
-                                            <i class="fas fa-shopping-cart text-[10px]"></i> เงื่อนไข (ซื้อ)
-                                        </div>
-                                        <button type="button" @click="addItem('buy')"
-                                            class="btn btn-xs btn-circle bg-emerald-600 border-none text-white shadow-md hover:scale-110 transition"
-                                            title="เพิ่มเงื่อนไข">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
+                                            class="bg-gray-800 rounded-lg p-3 border border-gray-700 relative group transition-all hover:border-emerald-500/50">
+                                            <button type="button" x-show="buys.length > 1"
+                                                @click="removeItem('buy', index)"
+                                                class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-600">
+                                                <i class="fas fa-times"></i>
+                                            </button>
 
-                                    <div class="space-y-3">
-                                        <template x-for="(item, index) in buys" :key="index">
-                                            <div
-                                                class="p-3 bg-gray-700 rounded-lg border border-gray-600 relative group animate-fade-in-down">
-                                                <button type="button" x-show="buys.length > 1"
-                                                    @click="removeItem('buy', index)"
-                                                    class="absolute -top-2 -right-2 btn btn-xs btn-circle btn-error bg-red-500 border-none text-white shadow-sm z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                                <div class="grid grid-cols-12 gap-2 items-end">
-                                                    <div class="col-span-8">
-                                                        <label class="label p-0 mb-1" x-show="index === 0"><span
-                                                                class="label-text text-[10px] uppercase font-bold text-gray-400">สินค้า</span></label>
-                                                        <select :name="`buy_items[${index}][product_id]`"
-                                                            x-model="item.product_id"
-                                                            class="select select-bordered select-sm w-full bg-gray-800 border-gray-500 text-gray-200"
-                                                            required
-                                                            x-bind:disabled="isDiscountCode">
-                                                            <option value="" disabled>-- เลือกสินค้า --</option>
-                                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                                                <option value="<?php echo e($p->pd_sp_id); ?>">
-                                                                    <?php echo e($p->pd_sp_name); ?></option>
-                                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-span-4">
-                                                        <label class="label p-0 mb-1" x-show="index === 0"><span
-                                                                class="label-text text-[10px] uppercase font-bold text-gray-400">จำนวน</span></label>
-                                                        <input type="number" :name="`buy_items[${index}][quantity]`"
-                                                            x-model="item.quantity" min="1"
-                                                            class="input input-bordered input-sm w-full text-center font-bold px-0 bg-gray-800 border-gray-500 text-emerald-400"
-                                                            required
-                                                            x-bind:disabled="isDiscountCode" />
-                                                    </div>
+                                            <div class="mb-2">
+                                                <label
+                                                    class="text-[10px] text-gray-500 uppercase font-bold">สินค้า</label>
+                                                <select :id="'buy-products-select-' + index"
+                                                    :name="`buy_items[${index}][product_id][]`" multiple
+                                                    class="buy-products-select w-full"
+                                                    x-bind:disabled="isDiscountCode">
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                                        <option value="<?php echo e($p->pd_sp_id); ?>"
+                                                            :selected="Array.isArray(item.product_id) ? item.product_id.map(String)
+                                                                .includes('<?php echo e($p->pd_sp_id); ?>') : String(item
+                                                                    .product_id) === '<?php echo e($p->pd_sp_id); ?>'">
+                                                            <?php echo e($p->pd_sp_name); ?></option>
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                                </select>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-400">จำนวนที่ต้องซื้อ</span>
+                                                <div
+                                                    class="flex items-center bg-gray-900 rounded border border-gray-600">
+                                                    <button type="button"
+                                                        class="px-2 py-1 text-gray-400 hover:text-white"
+                                                        @click="item.quantity = Math.max(1, parseInt(item.quantity)-1)">-</button>
+                                                    <input type="number" :name="`buy_items[${index}][quantity]`"
+                                                        x-model="item.quantity" min="1"
+                                                        class="w-12 bg-transparent text-center text-sm font-bold text-emerald-400 border-none p-0 focus:ring-0">
+                                                    <button type="button"
+                                                        class="px-2 py-1 text-gray-400 hover:text-white"
+                                                        @click="item.quantity = parseInt(item.quantity)+1">+</button>
                                                 </div>
                                             </div>
-                                        </template>
-                                    </div>
+                                        </div>
+                                    </template>
+
+                                    <button type="button" @click="addItem('buy')"
+                                        class="btn btn-xs btn-outline border-dashed w-full border-gray-600 text-gray-400 hover:bg-emerald-900/20 hover:text-emerald-400 hover:border-emerald-500">
+                                        <i class="fas fa-plus mr-1"></i> เพิ่มเงื่อนไข
+                                    </button>
                                 </div>
                             </div>
 
                             
-                            <div class="flex items-center justify-center py-2 xl:py-0">
-                                <div class="bg-gray-700 p-2 rounded-full shadow border border-gray-600 z-10">
-                                    <i class="fas fa-arrow-down xl:fa-arrow-right text-2xl text-gray-400"></i>
+                            <div class="flex items-center justify-center">
+                                <div class="bg-gray-700 text-gray-400 p-2 rounded-full shadow-lg">
+                                    <i class="fas fa-arrow-down xl:fa-arrow-right text-xl"></i>
                                 </div>
                             </div>
 
                             
-                            <div
-                                class="flex-1 w-full card bg-gray-800 border border-pink-500/30 shadow-sm relative overflow-visible group hover:shadow-md transition-shadow">
-                                <div class="absolute top-0 left-0 w-full h-1 bg-pink-500 rounded-t-lg"></div>
-                                <div class="card-body p-4">
-                                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
-                                        <div class="badge badge-outline border-pink-500 text-pink-400 font-bold gap-1">
-                                            <i class="fas fa-gift text-[10px]"></i> ผลลัพธ์ (แถมฟรี)
-                                        </div>
-                                    </div>
-
-                                    <div class="space-y-3">
-                                        <template x-for="(item, index) in gets" :key="index">
-                                            <div class="p-3 bg-gray-700 rounded-lg border border-gray-600">
-                                                <input type="hidden" :name="`get_items[${index}][product_id]`"
-                                                    :value="item.product_id">
-                                                <div class="form-control w-full text-center">
-                                                    <label class="label p-0 mb-1 justify-center"><span
-                                                            class="label-text text-[10px] uppercase font-bold text-gray-400">จำนวนที่ได้รับ</span></label>
-                                                    <div class="join w-full justify-center">
-                                                        <button type="button"
-                                                            class="btn btn-sm join-item bg-gray-600 border-gray-500 text-gray-200 hover:bg-gray-500"
-                                                            @click="item.quantity = Math.max(1, parseInt(item.quantity)-1)">-</button>
-                                                        <input type="number" :name="`get_items[${index}][quantity]`"
-                                                            x-model="item.quantity" min="1"
-                                                            class="input input-bordered input-sm w-20 join-item text-center font-bold text-lg text-pink-400 bg-gray-800 border-gray-500"
-                                                            required
-                                                            x-bind:disabled="isDiscountCode" />
-                                                        <button type="button"
-                                                            class="btn btn-sm join-item bg-gray-600 border-gray-500 text-gray-200 hover:bg-gray-500"
-                                                            @click="item.quantity = parseInt(item.quantity)+1"
-                                                            x-bind:disabled="isDiscountCode">+</button>
-                                                    </div>
+                            <div class="flex-1 border border-pink-500/30 rounded-xl bg-gray-900/30 relative">
+                                <div
+                                    class="absolute -top-3 left-4 bg-gray-800 px-2 text-pink-400 text-xs font-bold border border-pink-500/30 rounded">
+                                    <i class="fas fa-gift mr-1"></i> ผลลัพธ์ (แถมฟรี)
+                                </div>
+                                <div class="p-4 pt-6 space-y-4">
+                                    <template x-for="(item, index) in gets" :key="index">
+                                        <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+                                            <input type="hidden" :name="`get_items[${index}][product_id]`"
+                                                :value="item.product_id">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs text-gray-300">จำนวนของแถมที่ได้รับ</span>
+                                                <div
+                                                    class="flex items-center bg-gray-900 rounded border border-gray-600">
+                                                    <button type="button"
+                                                        class="px-3 py-1 text-gray-400 hover:text-white"
+                                                        @click="item.quantity = Math.max(1, parseInt(item.quantity)-1)">-</button>
+                                                    <input type="number" :name="`get_items[${index}][quantity]`"
+                                                        x-model="item.quantity" min="1"
+                                                        class="w-16 bg-transparent text-center text-lg font-bold text-pink-400 border-none p-0 focus:ring-0">
+                                                    <button type="button"
+                                                        class="px-3 py-1 text-gray-400 hover:text-white"
+                                                        @click="item.quantity = parseInt(item.quantity)+1">+</button>
                                                 </div>
                                             </div>
-                                        </template>
-                                    </div>
+                                            <p class="text-[10px] text-gray-500 mt-2 text-center">
+                                                (ลูกค้าเลือกจากรายการด้านล่าง)</p>
+                                        </div>
+                                    </template>
 
-                                    <div class="divider text-xs text-gray-500 my-3">เลือกจาก</div>
-
-                                    
-                                    <div class="form-control w-full">
-                                        <label class="label pt-0 pb-1"><span
-                                                class="label-text text-[10px] font-bold text-gray-400 uppercase">สินค้าของแถม
-                                                (Pool)</span></label>
+                                    <div class="border-t border-gray-700 pt-3">
+                                        <label
+                                            class="text-[10px] text-gray-500 uppercase font-bold mb-1 block">รายการของแถม
+                                            (Pool)</label>
                                         <select id="giftable-products-select" name="giftable_product_ids[]" multiple
-                                            placeholder="ค้นหาของแถม..." autocomplete="off"
                                             x-bind:disabled="isDiscountCode">
                                             <?php
                                                 $selectedGiftIds = collect(
@@ -405,9 +459,7 @@
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                                 <option value="<?php echo e($p->pd_sp_id); ?>"
                                                     <?php echo e($selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : ''); ?>>
-                                                    <?php echo e($p->pd_sp_name); ?>
-
-                                                </option>
+                                                    <?php echo e($p->pd_sp_name); ?></option>
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                         </select>
                                     </div>
@@ -420,15 +472,15 @@
             </div>
 
             
-            <div class="lg:hidden flex justify-end items-center gap-3 pt-4 border-t border-gray-700 mt-4">
+            <div class="xl:hidden grid grid-cols-2 gap-3 mt-6">
                 <a href="<?php echo e(route('admin.promotions.index')); ?>"
-                    class="btn btn-ghost text-gray-400 hover:text-white">ยกเลิก</a>
-                <button type="submit"
-                    class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 text-white px-8 shadow-lg border-none">บันทึกข้อมูล</button>
+                    class="btn btn-ghost bg-gray-800 text-gray-400">ยกเลิก</a>
+                <button type="submit" class="btn btn-primary bg-emerald-600 border-none text-white">บันทึก</button>
             </div>
         </div>
     </div>
 </div>
+
 
 <script>
     document.addEventListener('alpine:init', () => {
@@ -436,42 +488,80 @@
             buys: <?php echo json_encode($buyData, 15, 512) ?>,
             gets: <?php echo json_encode($getData, 15, 512) ?>,
             discountType: initialDiscountType,
-            promoType: '<?php echo e(old('promo_type_selector', (isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto'))); ?>',
-            
+            conditionType: '<?php echo e(old('condition_type', $promotion->condition_type ?? 'any')); ?>',
+            promoType: '<?php echo e(old('promo_type_selector', isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto')); ?>',
+            tomSelects: {},
+
             get isDiscountCode() {
                 return this.promoType === 'code';
             },
             get isBxGy() {
                 return this.promoType === 'bxgy';
             },
+
             init() {
-                if (typeof TomSelect !== 'undefined') {
-                    new TomSelect('#giftable-products-select', {
-                        plugins: ['remove_button', 'clear_button'],
-                        create: false,
-                        maxOptions: null,
-                        render: {
-                            item: function(data, escape) {
-                                return '<div class="item badge badge-secondary badge-outline m-1 pl-2 pr-1 py-3 font-medium bg-gray-700 text-gray-200 border-gray-500">' +
-                                    escape(data.text) + '</div>';
-                            }
-                        }
+                this.$nextTick(() => {
+                    this.initAllSelects();
+                });
+                this.$watch('buys', () => {
+                    this.$nextTick(() => {
+                        this.initAllSelects();
                     });
-                }
+                });
             },
+
+            initAllSelects() {
+                if (typeof TomSelect === 'undefined') return;
+
+                // Gift Pool
+                if (!this.tomSelects['gift-pool']) {
+                    const giftEl = document.getElementById('giftable-products-select');
+                    if (giftEl) {
+                        this.tomSelects['gift-pool'] = new TomSelect(giftEl, {
+                            plugins: ['remove_button', 'clear_button'],
+                            create: false,
+                            placeholder: 'เลือกสินค้าของแถม...',
+                            render: {
+                                item: (data, escape) =>
+                                    `<div class="bg-pink-900/30 text-pink-300 border border-pink-500/30 px-2 py-1 rounded mr-1 mb-1 text-xs">${escape(data.text)}</div>`
+                            }
+                        });
+                    }
+                }
+
+                // Buy Items
+                document.querySelectorAll('.buy-products-select').forEach((el) => {
+                    if (!el.tomselect) {
+                        this.tomSelects[el.id] = new TomSelect(el, {
+                            plugins: ['remove_button'],
+                            create: false,
+                            placeholder: 'เลือกสินค้า...',
+                            render: {
+                                item: (data, escape) =>
+                                    `<div class="bg-emerald-900/30 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded mr-1 mb-1 text-xs">${escape(data.text)}</div>`
+                            }
+                        });
+                    }
+                });
+            },
+
             addItem(type) {
                 if (type === 'buy') this.buys.push({
-                    product_id: '',
+                    product_id: [],
                     quantity: 1
                 });
-                if (type === 'get') this.gets.push({
-                    product_id: '',
-                    quantity: 1
-                });
+                // Note: Get items logic handles single pool usually, but keeping struct for compatibility
             },
+
             removeItem(type, index) {
-                if (type === 'buy' && this.buys.length > 1) this.buys.splice(index, 1);
-                if (type === 'get' && this.gets.length > 1) this.gets.splice(index, 1);
+                if (type === 'buy' && this.buys.length > 1) {
+                    const id = 'buy-products-select-' + index;
+                    if (this.tomSelects[id]) {
+                        this.tomSelects[id].destroy();
+                        delete this.tomSelects[id];
+                    }
+                    this.buys.splice(index, 1);
+                }
             },
         }))
     });

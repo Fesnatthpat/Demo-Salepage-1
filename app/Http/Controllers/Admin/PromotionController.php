@@ -138,6 +138,7 @@ class PromotionController extends Controller
             }
             $promotion->save();
 
+            // Clear old data
             $promotion->rules()->delete();
             $promotion->actions()->delete();
 
@@ -147,7 +148,11 @@ class PromotionController extends Controller
                         PromotionRule::create([
                             'promotion_id' => $promotion->id,
                             'type' => 'buy_x_get_y',
-                            'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
+                            // รองรับทั้ง product_id เดียว หรือหลายตัว (Array)
+                            'rules' => [
+                                'product_id' => is_array($item['product_id']) ? $item['product_id'] : [$item['product_id']], 
+                                'quantity_to_buy' => $item['quantity']
+                            ],
                         ]);
                     }
                 }
@@ -158,7 +163,10 @@ class PromotionController extends Controller
                         $createdActions[] = PromotionAction::create([
                             'promotion_id' => $promotion->id,
                             'type' => 'buy_x_get_y',
-                            'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
+                            'actions' => [
+                                'product_id_to_get' => $item['product_id'] ?? null, 
+                                'quantity_to_get' => $item['quantity']
+                            ],
                         ]);
                     }
                 }

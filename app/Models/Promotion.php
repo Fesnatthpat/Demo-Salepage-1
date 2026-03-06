@@ -51,4 +51,61 @@ class Promotion extends Model
     {
         return $this->hasMany(PromotionAction::class);
     }
+
+    /**
+     * ตรวจสอบว่าโปรโมชั่นอยู่ในช่วงเวลาที่กำหนดหรือไม่
+     */
+    public function isWithinDateRange(): bool
+    {
+        $now = now();
+        $startMatch = is_null($this->start_date) || $this->start_date <= $now;
+        $endMatch = is_null($this->end_date) || $this->end_date >= $now;
+
+        return $startMatch && $endMatch;
+    }
+
+    /**
+     * ดึงข้อความสถานะเวลา (เช่น "เหลืออีก 2 วัน", "สิ้นสุดแล้ว")
+     */
+    public function getTimeRemainingAttribute(): string
+    {
+        $now = now();
+
+        if ($this->start_date && $this->start_date > $now) {
+            return 'เริ่มในอีก ' . $now->diffForHumans($this->start_date, true);
+        }
+
+        if ($this->end_date) {
+            if ($this->end_date < $now) {
+                return 'สิ้นสุดแล้ว';
+            }
+            return 'เหลืออีก ' . $now->diffForHumans($this->end_date, true);
+        }
+
+        return 'ใช้งานได้เรื่อยๆ';
+    }
+
+    /**
+     * ตรวจสอบว่าใกล้หมดเวลาหรือยัง (น้อยกว่า 24 ชม.)
+     */
+    /**
+     * ดึงข้อความสถานะเวลาแบบละเอียด (เช่น "เหลืออีก 2 ชม. 15 นาที")
+     */
+    public function getTimeRemainingDetailedAttribute(): string
+    {
+        $now = now();
+        if (!$this->end_date || $this->end_date < $now) return 'สิ้นสุดแล้ว';
+
+        $diff = $this->end_date->diff($now);
+        
+        if ($diff->days > 0) {
+            return 'เหลืออีก ' . $diff->days . ' วัน ' . $diff->h . ' ชม.';
+        }
+        
+        if ($diff->h > 0) {
+            return 'เหลืออีก ' . $diff->h . ' ชม. ' . $diff->i . ' นาที';
+        }
+
+        return 'เหลือเพียง ' . $diff->i . ' นาที ' . $diff->s . ' วินาที';
+    }
 }

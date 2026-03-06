@@ -4,213 +4,163 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {{-- Header --}}
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        {{-- Header Section --}}
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-100 tracking-tight">รายการโปรโมชั่น</h1>
-                <p class="text-gray-400 mt-1">จัดการแคมเปญและเงื่อนไขการส่งเสริมการขายทั้งหมด</p>
+                <h1 class="text-3xl font-bold text-gray-100 tracking-tight">แคมเปญโปรโมชั่น</h1>
+                <p class="text-gray-400 mt-1">จัดการส่วนลดและเงื่อนไขการส่งเสริมการขาย</p>
             </div>
             <a href="{{ route('admin.promotions.create') }}"
-                class="btn btn-primary btn-md bg-emerald-600 hover:bg-emerald-700 border-none text-white shadow-lg shadow-emerald-900/20 gap-2 font-medium transition-transform hover:scale-105">
-                <i class="fas fa-plus"></i> เพิ่มโปรโมชั่นใหม่
+                class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white shadow-lg shadow-emerald-900/20 gap-2 font-medium transition-all hover:scale-105">
+                <i class="fas fa-plus"></i> สร้างโปรโมชั่น
             </a>
         </div>
 
-        {{-- Alerts --}}
+        {{-- Success Alert --}}
         @if (session('success'))
-            <div role="alert"
-                class="alert alert-success bg-green-900/50 border border-green-800 text-green-200 shadow-sm mb-6 flex items-center">
+            <div
+                class="alert alert-success bg-emerald-900/20 border border-emerald-500/30 text-emerald-200 shadow-lg mb-6 flex items-center rounded-xl backdrop-blur-sm">
                 <i class="fas fa-check-circle text-xl text-emerald-500"></i>
                 <span class="font-medium">{{ session('success') }}</span>
             </div>
         @endif
 
-        {{-- Table Card --}}
-        <div class="bg-gray-800 rounded-2xl shadow-lg border border-gray-700 overflow-hidden">
+        {{-- Promotions Table --}}
+        <div class="bg-gray-800/60 backdrop-blur rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="table w-full text-gray-300">
                     <thead
-                        class="bg-gray-900/50 text-gray-400 text-xs uppercase font-bold tracking-wider border-b border-gray-700">
+                        class="bg-gray-900/80 text-gray-400 text-xs uppercase font-bold tracking-wider border-b border-gray-700">
                         <tr>
-                            <th class="py-4 pl-6 w-[15%]">รายละเอียดแคมเปญ</th>
-                            <th class="py-4 text-center w-[10%]">รหัสส่วนลด</th>
-                            <th class="py-4 text-center w-[10%]">ประเภทส่วนลด</th>
-                            <th class="py-4 text-right w-[10%]">มูลค่าส่วนลด</th>
-                            <th class="py-4 text-center w-[40%]">เงื่อนไข (ซื้อ <i
-                                    class="fas fa-arrow-right text-xs mx-1"></i> แถม)</th>
-                            <th class="py-4 text-center">ระยะเวลา</th>
-                            <th class="py-4 text-center">สถานะ</th>
-                            <th class="py-4 text-center">จัดการ</th>
+                            <th class="py-5 pl-6">ชื่อแคมเปญ</th>
+                            <th class="py-5 text-center">ประเภท</th>
+                            <th class="py-5 text-center">เงื่อนไข/ส่วนลด</th>
+                            <th class="py-5 text-center">การใช้งาน</th>
+                            <th class="py-5 text-center">สถานะ</th>
+                            <th class="py-5 text-center">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-700">
+                    <tbody class="divide-y divide-gray-700/50">
                         @forelse ($promotions as $promo)
-                            <tr
-                                class="hover:bg-gray-700/50 transition-colors duration-200 group border-b border-gray-700 last:border-0">
-                                {{-- Name & Desc --}}
-                                <td class="pl-6 align-top py-4">
+                            <tr class="hover:bg-gray-700/30 transition-colors duration-200 group">
+                                {{-- Campaign Info --}}
+                                <td class="pl-6 py-4">
                                     <div class="flex flex-col">
                                         <span
-                                            class="font-bold text-gray-200 text-base group-hover:text-emerald-400 transition-colors">
+                                            class="font-bold text-gray-100 text-base group-hover:text-emerald-400 transition-colors">
                                             {{ $promo->name }}
                                         </span>
                                         @if ($promo->description)
-                                            <span class="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
-                                                {{ $promo->description }}
-                                            </span>
-                                        @else
-                                            <span class="text-xs text-gray-600 italic mt-1">- ไม่มีรายละเอียด -</span>
+                                            <span
+                                                class="text-xs text-gray-500 mt-1 line-clamp-1 max-w-xs">{{ $promo->description }}</span>
                                         @endif
+                                        <div class="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
+                                            <i class="far fa-calendar-alt"></i>
+                                            <span>
+                                                {{ $promo->start_date ? \Carbon\Carbon::parse($promo->start_date)->format('d/m/y') : 'Now' }}
+                                                -
+                                                {{ $promo->end_date ? \Carbon\Carbon::parse($promo->end_date)->format('d/m/y') : '∞' }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </td>
 
-                                {{-- Code --}}
-                                <td class="text-center align-middle py-4">
-                                    @if($promo->code)
-                                        <span class="font-mono text-xs text-gray-200 bg-gray-700 px-2 py-1 rounded">{{ $promo->code }}</span>
+                                {{-- Type --}}
+                                <td class="text-center py-4">
+                                    @if ($promo->code)
+                                        <div
+                                            class="badge badge-lg bg-blue-900/30 text-blue-400 border border-blue-500/30 gap-1 font-mono">
+                                            <i class="fas fa-ticket-alt text-xs"></i> {{ $promo->code }}
+                                        </div>
+                                    @elseif($promo->rules->count() > 0)
+                                        <div
+                                            class="badge badge-lg bg-pink-900/30 text-pink-400 border border-pink-500/30 gap-1">
+                                            <i class="fas fa-gifts text-xs"></i> Buy X Get Y
+                                        </div>
                                     @else
-                                        -
+                                        <div
+                                            class="badge badge-lg bg-emerald-900/30 text-emerald-400 border border-emerald-500/30 gap-1">
+                                            <i class="fas fa-bolt text-xs"></i> Auto
+                                        </div>
                                     @endif
                                 </td>
 
-                                {{-- Discount Type --}}
-                                <td class="text-center align-middle py-4">
-                                    @if($promo->discount_type)
-                                        <span class="badge badge-outline border-emerald-500 text-emerald-400 font-bold">{{ $promo->discount_type === 'fixed' ? 'ลดคงที่' : ($promo->discount_type === 'percentage' ? 'ลด %' : '-') }}</span>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-
-                                {{-- Discount Value --}}
-                                <td class="text-right align-middle py-4">
-                                    <div class="flex flex-col items-end gap-1">
-                                        @if(isset($promo->discount_value))
-                                            <span class="font-bold text-gray-200 text-lg">{{ number_format($promo->discount_value, 0) }}{{ $promo->discount_type === 'percentage' ? '%' : '฿' }}</span>
-                                        @else
-                                            <span class="text-gray-500">-</span>
-                                        @endif
-                                        
-                                        <div class="flex flex-col items-end gap-1 mt-1">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-20 bg-gray-700 rounded-full h-1">
-                                                    <div class="bg-emerald-500 h-1 rounded-full" 
-                                                        style="width: {{ $promo->usage_limit ? min(100, ($promo->used_count / $promo->usage_limit) * 100) : 0 }}%">
-                                                    </div>
-                                                </div>
-                                                <span class="text-[10px] text-gray-400">
-                                                    {{ number_format($promo->used_count) }}/{{ $promo->usage_limit ? number_format($promo->usage_limit) : '∞' }}
-                                                </span>
-                                            </div>
-                                            @if($promo->min_order_value > 0)
-                                                <span class="text-[10px] text-emerald-400 font-medium bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-800/50">
-                                                    <i class="fas fa-shopping-bag mr-1"></i> ขั้นต่ำ ฿{{ number_format($promo->min_order_value) }}
+                                {{-- Value / Logic --}}
+                                <td class="text-center py-4">
+                                    @if (isset($promo->discount_value))
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-xl font-bold text-white">
+                                                {{ number_format($promo->discount_value, 0) }}{{ $promo->discount_type === 'percentage' ? '%' : '฿' }}
+                                            </span>
+                                            @if ($promo->min_order_value > 0)
+                                                <span
+                                                    class="text-[10px] text-gray-400 bg-gray-700 px-1.5 py-0.5 rounded mt-1">
+                                                    ขั้นต่ำ ฿{{ number_format($promo->min_order_value) }}
                                                 </span>
                                             @endif
                                         </div>
-                                    </div>
-                                </td>
-
-                                {{-- Logic Visualizer --}}
-                                <td class="align-middle py-4">
-                                    <div
-                                        class="flex items-center justify-center gap-3 bg-gray-900/50 rounded-xl p-3 border border-dashed border-gray-600">
-                                        <div class="flex flex-col gap-1 items-end min-w-[40%] text-right">
-                                            @foreach ($promo->rules as $rule)
-                                                <div class="text-xs text-gray-400 flex items-center justify-end gap-2">
-                                                    <span class="truncate max-w-[120px]"
-                                                        title="{{ $products[$rule->product_id]->pd_sp_name ?? 'Unknown' }}">
-                                                        {{ $products[$rule->product_id]->pd_sp_name ?? 'สินค้าถูกลบ' }}
-                                                    </span>
-                                                    <span
-                                                        class="badge badge-sm badge-outline border-emerald-500 text-emerald-400 font-mono">x{{ $rule->quantity }}</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-
-                                        <div class="text-gray-500">
-                                            <i class="fas fa-arrow-circle-right text-lg"></i>
-                                        </div>
-
-                                        <div class="flex flex-col gap-1 items-start min-w-[40%] text-left">
-                                            @foreach ($promo->actions as $action)
-                                                @php
-                                                    if ($action->product_id) {
-                                                        $getName =
-                                                            $products[$action->product_id]->pd_sp_name ?? 'สินค้าถูกลบ';
-                                                    } else {
-                                                        $count = $action->giftableProducts->count();
-                                                        $getName = "เลือกได้ ($count รายการ)";
-                                                    }
-                                                @endphp
-                                                <div class="text-xs text-gray-400 flex items-center gap-2">
-                                                    <span
-                                                        class="badge badge-sm border-none bg-pink-600 text-white font-mono">ฟรี
-                                                        {{ $action->quantity }}</span>
-                                                    <span class="truncate max-w-[120px]" title="{{ $getName }}">
-                                                        {{ $getName }}
-                                                    </span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </td>
-
-                                {{-- Date --}}
-                                <td class="text-center align-middle py-4">
-                                    @if ($promo->start_date)
-                                        <div
-                                            class="flex flex-col text-xs font-medium text-gray-400 bg-gray-900 border border-gray-600 rounded-lg px-2 py-1 inline-block text-left w-fit mx-auto shadow-sm">
-                                            <div class="flex items-center gap-2 border-b border-gray-700 pb-1 mb-1">
-                                                <span class="text-emerald-500 w-4 text-center"><i
-                                                        class="fas fa-play text-[10px]"></i></span>
-                                                <span
-                                                    class="font-mono">{{ \Carbon\Carbon::parse($promo->start_date)->format('d/m/y H:i') }}</span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-red-400 w-4 text-center"><i
-                                                        class="fas fa-stop text-[10px]"></i></span>
-                                                <span
-                                                    class="font-mono">{{ \Carbon\Carbon::parse($promo->end_date)->format('d/m/y H:i') }}</span>
-                                            </div>
+                                    @elseif($promo->rules->count() > 0)
+                                        <div class="flex items-center justify-center text-xs gap-2">
+                                            <span class="bg-gray-700 px-2 py-1 rounded text-gray-300">ซื้อ
+                                                {{ $promo->rules->sum('quantity') }}</span>
+                                            <i class="fas fa-arrow-right text-gray-500"></i>
+                                            <span
+                                                class="bg-pink-900/50 text-pink-300 border border-pink-500/30 px-2 py-1 rounded">
+                                                แถม {{ $promo->actions->sum('quantity') }}
+                                            </span>
                                         </div>
                                     @else
-                                        <div class="badge badge-ghost text-xs text-gray-400 bg-gray-700 border-gray-600">
-                                            ตลอดไป</div>
+                                        <span class="text-gray-500">-</span>
+                                    @endif
+                                </td>
+
+                                {{-- Usage --}}
+                                <td class="text-center py-4">
+                                    @if ($promo->usage_limit)
+                                        <div class="flex flex-col items-center gap-1 w-24 mx-auto">
+                                            <div class="w-full bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-emerald-500 h-full rounded-full"
+                                                    style="width: {{ min(100, ($promo->used_count / $promo->usage_limit) * 100) }}%">
+                                                </div>
+                                            </div>
+                                            <span class="text-[10px] text-gray-400">
+                                                {{ number_format($promo->used_count) }} /
+                                                {{ number_format($promo->usage_limit) }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-500">ไม่จำกัด</span>
                                     @endif
                                 </td>
 
                                 {{-- Status --}}
-                                <td class="text-center align-middle py-4">
+                                <td class="text-center py-4">
                                     @if ($promo->is_active)
-                                        <span
-                                            class="badge badge-success gap-1 text-white shadow-sm px-3 py-2 border-none bg-emerald-600">
-                                            <i class="fas fa-check"></i> ใช้งาน
-                                        </span>
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                            <span class="text-xs text-emerald-400 font-medium">Active</span>
+                                        </div>
                                     @else
-                                        <span
-                                            class="badge badge-ghost gap-1 text-gray-400 bg-gray-700 px-3 py-2 border-gray-600">
-                                            <i class="fas fa-times"></i> ปิด
-                                        </span>
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <span class="w-2 h-2 bg-gray-500 rounded-full"></span>
+                                            <span class="text-xs text-gray-500">Inactive</span>
+                                        </div>
                                     @endif
                                 </td>
 
                                 {{-- Actions --}}
-                                <td class="text-center align-middle py-4">
-                                    <div class="join shadow-sm border border-gray-600 rounded-lg bg-gray-700">
+                                <td class="text-center py-4">
+                                    <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('admin.promotions.edit', $promo->id) }}"
-                                            class="btn btn-sm btn-ghost join-item text-yellow-500 hover:bg-yellow-900/30 hover:text-yellow-400 tooltip tooltip-bottom"
-                                            data-tip="แก้ไข">
-                                            <i class="fas fa-edit"></i>
+                                            class="btn btn-sm btn-square btn-ghost text-gray-400 hover:text-white hover:bg-gray-700">
+                                            <i class="fas fa-pencil-alt"></i>
                                         </a>
                                         <form action="{{ route('admin.promotions.destroy', $promo->id) }}" method="POST"
-                                            class="join-item"
-                                            onsubmit="return confirm('ยืนยันลบโปรโมชั่นนี้? ข้อมูลจะไม่สามารถกู้คืนได้');">
+                                            onsubmit="return confirm('ยืนยันลบโปรโมชั่นนี้?');">
                                             @csrf @method('DELETE')
                                             <button type="submit"
-                                                class="btn btn-sm btn-ghost text-red-400 hover:bg-red-900/30 hover:text-red-300 tooltip tooltip-bottom"
-                                                data-tip="ลบ">
-                                                <i class="fas fa-trash-alt"></i>
+                                                class="btn btn-sm btn-square btn-ghost text-gray-400 hover:text-red-400 hover:bg-red-900/20">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -218,15 +168,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-20 text-center">
-                                    <div class="flex flex-col items-center justify-center opacity-60">
-                                        <div class="bg-gray-700 rounded-full p-4 mb-4">
-                                            <i class="fas fa-tag text-4xl text-gray-500"></i>
+                                <td colspan="6" class="py-16 text-center">
+                                    <div class="flex flex-col items-center justify-center opacity-50">
+                                        <div
+                                            class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                                            <i class="fas fa-tag text-3xl text-gray-400"></i>
                                         </div>
-                                        <h3 class="font-bold text-lg text-gray-400">ยังไม่มีโปรโมชั่น</h3>
-                                        <p class="text-sm text-gray-500 mb-4">เริ่มต้นสร้างแคมเปญแรกของคุณได้เลย</p>
-                                        <a href="{{ route('admin.promotions.create') }}"
-                                            class="btn btn-sm btn-primary bg-emerald-600 border-none text-white">สร้างโปรโมชั่น</a>
+                                        <h3 class="font-bold text-gray-300">ไม่พบข้อมูลโปรโมชั่น</h3>
+                                        <p class="text-sm text-gray-500 mt-1">กดปุ่ม "สร้างโปรโมชั่น"
+                                            เพื่อเริ่มต้นแคมเปญใหม่</p>
                                     </div>
                                 </td>
                             </tr>

@@ -396,7 +396,76 @@ class CartService
 
     public function getTotal(): float
     {
-        return Cart::session($this->getUserId())->getTotal();
+        $userId = $this->getUserId();
+        $cart = Cart::session($userId);
+        $subTotal = (float) $cart->getTotal();
+        
+        // คำนวณส่วนลดจากโปรโมชั่น
+        $discount = $this->calculateTotalDiscount($subTotal);
+        
+        return max(0, $subTotal - $discount);
+    }
+
+    /**
+     * คำนวณส่วนลดรวมจากโปรโมชั่น (ทั้งอัตโนมัติและรหัส)
+     */
+    public function calculateTotalDiscount(float $subTotal): float
+    {
+        $items = $this->getCartContents();
+        if ($items->isEmpty()) return 0;
+
+        $promos = $this->getApplicablePromotions($items);
+        $totalDiscount = 0;
+
+        foreach ($promos as $promo) {
+            // เฉพาะโปรโมชั่นประเภทลดราคา (ไม่ใช่แถมฟรี)
+            if ($promo->discount_value > 0) {
+                if ($promo->discount_type === 'fixed') {
+                    $totalDiscount += (float) $promo->discount_value;
+                } elseif ($promo->discount_type === 'percentage') {
+                    $totalDiscount += ($subTotal * ((float) $promo->discount_value / 100));
+                }
+            }
+        }
+
+        return $totalDiscount;
+    }
+
+    /**
+     * ใช้รหัสส่วนลด
+     */
+    public function applyPromoCode(string $code): void
+    {
+        $promo = Promotion::where('code', $code)
+            ->where('is_active', true)
+            ->where('is_discount_code', true)
+            ->where(fn($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
+            ->where(fn($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+            ->first();
+
+        if (!$promo) {
+            throw new Exception("รหัสส่วนลดไม่ถูกต้อง หรือหมดอายุแล้ว");
+        }
+
+        if ($promo->usage_limit && $promo->used_count >= $promo->usage_limit) {
+            throw new Exception("รหัสส่วนลดนี้ถูกใช้ครบจำนวนสิทธิ์แล้ว");
+        }
+
+        // บันทึกรหัสลงใน Session ของตะกร้า
+        $userId = $this->getUserId();
+        session(["cart_{$userId}_promo_code" => $code]);
+    }
+
+    public function removePromoCode(): void
+    {
+        $userId = $this->getUserId();
+        session()->forget("cart_{$userId}_promo_code");
+    }
+
+    public function getAppliedPromoCode(): ?string
+    {
+        $userId = $this->getUserId();
+        return session("cart_{$userId}_promo_code");
     }
 
     public function getTotalQuantity(): int
@@ -525,33 +594,66 @@ class CartService
         }
 
         $now = now();
-
+        $subTotal = (float) Cart::session($this->getUserId())->getTotal();
         $cartProductIds = $cartItems->pluck('id')->toArray();
         $cartQuantities = $cartItems->pluck('quantity', 'id');
+
+        // 1. ค้นหาโปรโมชั่นที่อาจจะใช้งานได้
         $potentialPromotionIds = PromotionRule::where(function ($q) use ($cartProductIds) {
             foreach ($cartProductIds as $id) {
-                $q->orWhereJsonContains('rules->product_id', (int) $id)->orWhereJsonContains('rules->product_id', (string) $id);
+                // ค้นหาทั้งแบบ product_id ตรงๆ หรืออยู่ใน Array ของ JSON
+                $q->orWhereJsonContains('rules->product_id', (int) $id)
+                    ->orWhereJsonContains('rules->product_id', (string) $id);
             }
         })->pluck('promotion_id')->unique();
 
-        return Promotion::with(['rules', 'actions'])->whereIn('id', $potentialPromotionIds)->where('is_active', true)
+        // 2. ดึงโปรโมชั่นประเภท Auto-Discount หรือรหัสที่กรอกไว้
+        $appliedCode = $this->getAppliedPromoCode();
+        $promoCodeIds = Promotion::where('is_active', true)
+            ->where(function ($q) use ($appliedCode) {
+                $q->where('is_discount_code', false) // Auto-Discount
+                  ->orWhere('code', $appliedCode);   // รหัสที่ลูกค้ากรอก
+            })
+            ->pluck('id');
+
+        $allPromoIds = $potentialPromotionIds->merge($promoCodeIds)->unique();
+
+        return Promotion::with(['rules', 'actions'])->whereIn('id', $allPromoIds)
+            ->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
-            ->get()->filter(function ($promo) use ($cartQuantities) {
+            ->get()->filter(function ($promo) use ($cartQuantities, $subTotal) {
+                
+                // ตรวจสอบยอดซื้อขั้นต่ำ
+                if ($promo->min_order_value > 0 && $subTotal < (float) $promo->min_order_value) {
+                    return false;
+                }
+
+                // ถ้าเป็นโปรโมชั่นลดราคาเฉยๆ (ไม่มีกฎการซื้อสินค้าเฉพาะชิ้น) ให้ผ่านเลย
+                if ($promo->rules->isEmpty()) {
+                    return true;
+                }
+
                 $promoMultipliers = [];
                 foreach ($promo->rules as $rule) {
+                    // product_id ใน rules ตอนนี้เป็น Array ของ IDs (จากที่ผมแก้ไปเมื่อครู่)
                     $pids = (array) ($rule->rules['product_id'] ?? []);
                     $reqQty = (int) ($rule->rules['quantity_to_buy'] ?? 1);
+                    
                     $totalMatched = 0;
                     foreach ($pids as $pid) {
                         $totalMatched += $cartQuantities->get((int) $pid, 0);
                     }
+                    
                     $promoMultipliers[] = $reqQty > 0 ? floor($totalMatched / $reqQty) : 0;
                 }
-                $finalMultiplier = ($promo->condition_type === 'all') ? (empty($promoMultipliers) ? 0 : min($promoMultipliers)) : array_sum($promoMultipliers);
+                
+                $finalMultiplier = ($promo->condition_type === 'all') 
+                    ? (empty($promoMultipliers) ? 0 : min($promoMultipliers)) 
+                    : array_sum($promoMultipliers);
+
                 if ($finalMultiplier > 0) {
                     $promo->multiplier = $finalMultiplier;
-
                     return true;
                 }
 

@@ -18,7 +18,7 @@ class CancelExpiredOrders extends Command
 
     public function handle()
     {
-        // 1. หาเวลาที่ผ่านมาแล้ว 15 นาที
+        // 1. หาเวลาที่ผ่านมาแล้ว 1 นาที
         $expireTime = now()->subMinutes(1);
 
         // 2. ดึงออเดอร์ที่สถานะ 1 (รอชำระเงิน) และเวลา created_at เก่ากว่า 1 นาที

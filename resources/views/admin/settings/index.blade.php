@@ -79,7 +79,7 @@
                         <div class="space-y-3">
                             <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">คำอธิบายเว็บไซต์ (Site Description)</label>
                             <textarea name="settings[site_description]" rows="3" 
-                                class="w-full bg-gray-900 border-gray-700 rounded-xl text-sm text-gray-200 px-4 py-2 focus:ring-emerald-500">{{ \App\Models\SiteSetting::get('site_description') }}</textarea>
+                                class="w-full h-24 bg-gray-900 border-gray-700 rounded-xl text-sm text-gray-200 px-4 py-2 focus:ring-emerald-500">{{ \App\Models\SiteSetting::get('site_description') }}</textarea>
                         </div>
                     </div>
                 </div>

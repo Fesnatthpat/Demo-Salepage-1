@@ -78,7 +78,14 @@
         if (class_exists('Cart')) {
             $cartCount = \Cart::session($cartSessionId)->getTotalQuantity();
         }
-        $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo1.png';
+        
+        // จัดการ URL ของ Logo
+        $logoPath = $settings['site_logo'] ?? null;
+        if ($logoPath) {
+            $siteLogo = str_starts_with($logoPath, 'http') ? $logoPath : asset('storage/' . $logoPath);
+        } else {
+            $siteLogo = asset('images/logo/logo1.png');
+        }
 
         $menuItems = [
             ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false],
@@ -423,6 +430,28 @@ unset($__split);
 
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if(session('success')): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: "<?php echo e(session('success')); ?>",
+                    confirmButtonColor: '#dc2626',
+                });
+            <?php endif; ?>
+
+            <?php if(session('error')): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ขออภัย!',
+                    text: "<?php echo e(session('error')); ?>",
+                    confirmButtonColor: '#dc2626',
+                });
+            <?php endif; ?>
+        });
+    </script>
 
     <?php echo $__env->yieldContent('scripts'); ?>
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>

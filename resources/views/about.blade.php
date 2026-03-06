@@ -20,15 +20,19 @@
                 <div class="mb-8 flex justify-center">
                     <div
                         class="p-6 bg-white/10 backdrop-blur-md rounded-full shadow-2xl ring-4 ring-white/20 transform hover:scale-105 transition-transform duration-500">
-                        <img src="{{ isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : asset('images/logo/logo1.png') }}"
+                        @php
+                            $siteLogo = $settings['site_logo'] ?? null;
+                            $logoUrl = $siteLogo ? asset('storage/' . $siteLogo) : asset('images/logo/logo1.png');
+                        @endphp
+                        <img src="{{ $logoUrl }}"
                             alt="Logo" class="h-24 w-auto drop-shadow-lg object-contain"
-                            onerror="this.src='https://via.placeholder.com/150x150?text=LOGO';" />
+                            onerror="this.src='{{ asset('images/logo/logo1.png') }}';" />
                     </div>
                 </div>
                 <h1 class="text-4xl md:text-6xl font-extrabold mb-4 tracking-wide text-shadow-lg">
                     {{ $settings['about_title'] ?? 'เกี่ยวกับติดใจ' }}
                 </h1>
-                <p class="text-red-100 text-lg md:text-xl font-light max-w-2xl mx-auto">
+                <p class="text-red-100 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
                     {{ $settings['about_subtitle'] ?? 'ความตั้งใจของเรา...เพื่อส่งมอบความสุขให้คุณ' }}
                 </p>
             </div>

@@ -325,16 +325,16 @@
                         {{-- Condition Logic Switch --}}
                         <div class="flex bg-gray-800 rounded-lg p-1 border border-gray-600">
                             <label class="cursor-pointer px-3 py-1 rounded-md text-xs font-bold transition-colors"
-                                :class="conditionType === 'any' ? 'bg-gray-600 text-white' :
+                                :class="conditionType === 'any' ? 'bg-gray-600 text-white shadow-sm' :
                                     'text-gray-400 hover:text-gray-200'">
                                 <input type="radio" name="condition_type" value="any" x-model="conditionType"
-                                    class="hidden"> OR (อย่างใดอย่างหนึ่ง)
+                                    class="hidden" :checked="conditionType === 'any'"> OR (อย่างใดอย่างหนึ่ง)
                             </label>
                             <label class="cursor-pointer px-3 py-1 rounded-md text-xs font-bold transition-colors"
-                                :class="conditionType === 'all' ? 'bg-emerald-600 text-white' :
+                                :class="conditionType === 'all' ? 'bg-emerald-600 text-white shadow-sm' :
                                     'text-gray-400 hover:text-gray-200'">
                                 <input type="radio" name="condition_type" value="all" x-model="conditionType"
-                                    class="hidden"> AND (ครบทุกข้อ)
+                                    class="hidden" :checked="conditionType === 'all'"> AND (ครบทุกข้อ)
                             </label>
                         </div>
                     </div>

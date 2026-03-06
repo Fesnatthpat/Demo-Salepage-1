@@ -171,7 +171,14 @@ class PaymentController extends Controller
             return redirect()->route('payment.qr', ['orderId' => $order->ord_code]);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
+            $message = $e->getMessage();
+            
+            // ตรวจสอบว่าเกี่ยวข้องกับสต็อกสินค้าหรือไม่
+            if (str_contains($message, 'ไม่เพียงพอ') || str_contains($message, 'หมดสต็อก') || str_contains($message, 'มีไม่เพียงพอ')) {
+                return redirect()->route('cart.index')->with('error', 'ขออภัย: ' . $message . ' กรุณาตรวจสอบจำนวนสินค้าในตะกร้าอีกครั้ง');
+            }
+
+            return back()->with('error', 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ: ' . $message);
         }
     }
 

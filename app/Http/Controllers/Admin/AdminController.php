@@ -220,8 +220,16 @@ class AdminController extends Controller
         // Handle generic settings array if exists
         if ($request->has('settings') && is_array($request->settings)) {
             foreach ($request->settings as $key => $value) {
-                SiteSetting::set($key, $value);
+                SiteSetting::set(trim($key), $value);
             }
+        }
+
+        // ล้าง Cache เพื่อให้หน้าแรกและหน้าอื่นๆ อัปเดตทันที
+        try {
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        } catch (\Exception $e) {
+            // ข้ามหากไม่มีสิทธิ์รันคำสั่ง
         }
 
         return Redirect::back()->with('success', 'Settings updated successfully!');

@@ -46,6 +46,45 @@
                 
                 
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
+                    <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
+                        <div class="p-2 bg-emerald-500/10 rounded-lg"><i class="fas fa-cog text-emerald-400 text-xl"></i></div>
+                        <h3 class="font-bold text-lg text-gray-100">ตั้งค่าทั่วไป (General Settings)</h3>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        
+                        <div class="space-y-3">
+                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">โลโก้เว็บไซต์ (Site Logo)</label>
+                            <div class="flex items-center gap-6">
+                                <div class="w-24 h-24 bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative group shrink-0">
+                                    <?php
+                                        $currentLogo = \App\Models\SiteSetting::get('site_logo');
+                                        $logoUrl = $currentLogo ? asset('storage/' . $currentLogo) : asset('images/logo/logo1.png');
+                                    ?>
+                                    <img src="<?php echo e($logoUrl); ?>" class="w-full h-full object-contain p-2" id="logo-preview">
+                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                        <i class="fas fa-camera text-white text-xl"></i>
+                                    </div>
+                                    <input type="file" name="site_logo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                        onchange="document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0])">
+                                </div>
+                                <div class="space-y-1">
+                                    <p class="text-xs text-gray-500">แนะนำเป็นไฟล์ PNG พื้นหลังโปร่งใส</p>
+                                    <p class="text-xs text-gray-500">ขนาดที่แนะนำ: 512x512 px</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="space-y-3">
+                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">คำอธิบายเว็บไซต์ (Site Description)</label>
+                            <textarea name="settings[site_description]" rows="3" 
+                                class="w-full bg-gray-900 border-gray-700 rounded-xl text-sm text-gray-200 px-4 py-2 focus:ring-emerald-500"><?php echo e(\App\Models\SiteSetting::get('site_description')); ?></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-red-500/10 rounded-lg"><i class="fas fa-images text-red-400 text-xl"></i></div>

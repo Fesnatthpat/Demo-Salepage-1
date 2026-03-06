@@ -30,6 +30,7 @@
                 $promotionsData[] = [
                     'id' => $promo->id,
                     'name' => $promo->name,
+                    'condition_type' => $promo->condition_type,
                     'end_date' => $promo->end_date ? $promo->end_date->toIso8601String() : null,
                     'logic' => $promo->frontend_logic,
                     'gifts_per_item' => $promo->actions->sum(fn($a) => (int) ($a->actions['quantity_to_get'] ?? 0)),
@@ -234,71 +235,94 @@
                         <template x-if="promotions.length > 0">
                             <div class="space-y-6 mb-8">
                                 <template x-for="promo in promotions" :key="promo.id">
-                                        <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm relative overflow-hidden">
-                                            {{-- Countdown Badge --}}
-                                            <div class="absolute top-0 right-0" x-show="promo.remainingTime">
-                                                <div class="flex items-center gap-1.5 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-bl-2xl border-b border-l border-red-100 shadow-sm"
-                                                    :class="promo.isExpiringSoon ? 'text-red-600 animate-pulse' : 'text-gray-600'">
-                                                    <i class="fas fa-stopwatch text-sm"></i>
-                                                    <span class="text-xs font-black tracking-tighter" x-text="promo.remainingTime"></span>
-                                                </div>
+                                    <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm relative overflow-hidden">
+                                        {{-- Countdown Badge --}}
+                                        <div class="absolute top-0 right-0" x-show="promo.remainingTime">
+                                            <div class="flex items-center gap-1.5 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-bl-2xl border-b border-l border-red-100 shadow-sm"
+                                                :class="promo.isExpiringSoon ? 'text-red-600 animate-pulse' : 'text-gray-600'">
+                                                <i class="fas fa-stopwatch text-sm"></i>
+                                                <span class="text-xs font-black tracking-tighter" x-text="promo.remainingTime"></span>
                                             </div>
+                                        </div>
 
-                                            <div class="flex items-center gap-3 mb-4">
+                                        <div class="flex items-center gap-3 mb-4">
                                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-600 text-white shadow-md">
                                                 <i class="fas fa-gift text-sm"></i>
                                             </span>
                                             <h3 class="text-lg font-black text-gray-900">โปรโมชั่นสุดพิเศษ!</h3>
                                         </div>
 
-                                        <p class="text-gray-700 font-bold mb-4">
-                                            ซื้อครบ <span class="text-red-600" x-text="promo.logic.required_qty"></span> ชิ้น 
-                                            รับของแถมฟรีทันที <span class="text-red-600" x-text="promo.gifts_per_item * Math.floor(quantity / promo.logic.required_qty)"></span> ชิ้น
-                                        </p>
+                                        {{-- 🎁 Case 1: Simple Promotion (ANY) --}}
+                                        <template x-if="promo.condition_type !== 'all'">
+                                            <div>
+                                                <p class="text-gray-700 font-bold mb-4">
+                                                    ซื้อครบ <span class="text-red-600" x-text="promo.logic.required_qty"></span> ชิ้น 
+                                                    รับของแถมฟรีทันที <span class="text-red-600" x-text="promo.gifts_per_item * Math.floor(quantity / promo.logic.required_qty)"></span> ชิ้น
+                                                </p>
 
-                                        {{-- Progress Bar --}}
-                                        <div class="mb-6">
-                                            <div class="flex justify-between text-xs font-bold mb-2">
-                                                <span class="text-gray-500 uppercase tracking-wider">ความคืบหน้า</span>
-                                                <span class="text-red-600" x-text="Math.min(100, Math.round((quantity / promo.logic.required_qty) * 100)) + '%'"></span>
-                                            </div>
-                                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
-                                                <div class="bg-red-600 h-2.5 rounded-full transition-all duration-500" 
-                                                    :style="`width: ${Math.min(100, (quantity / promo.logic.required_qty) * 100)}%`"
-                                                    :class="quantity >= promo.logic.required_qty ? 'bg-emerald-500 animate-pulse' : 'bg-red-600'">
+                                                {{-- Progress Bar --}}
+                                                <div class="mb-6">
+                                                    <div class="flex justify-between text-xs font-bold mb-2">
+                                                        <span class="text-gray-500 uppercase tracking-wider">ความคืบหน้า</span>
+                                                        <span class="text-red-600" x-text="Math.min(100, Math.round((quantity / promo.logic.required_qty) * 100)) + '%'"></span>
+                                                    </div>
+                                                    <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                                        <div class="bg-red-600 h-2.5 rounded-full transition-all duration-500" 
+                                                            :style="`width: ${Math.min(100, (quantity / promo.logic.required_qty) * 100)}%`"
+                                                            :class="quantity >= promo.logic.required_qty ? 'bg-emerald-500 animate-pulse' : 'bg-red-600'">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Gift Selector --}}
+                                                <div x-show="quantity >= promo.logic.required_qty" x-transition class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-red-100/50">
+                                                    <div class="flex items-center justify-between mb-4">
+                                                        <h4 class="font-bold text-gray-800">เลือกของแถมของคุณ:</h4>
+                                                        <span class="badge badge-error text-white font-bold" x-text="`เลือกได้อีก ${giftLimit - selectedGifts.length} ชิ้น`"></span>
+                                                    </div>
+                                                    
+                                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                                        <template x-for="gift in promo.gifts" :key="gift.id">
+                                                            <button @click="toggleGift(gift.id)"
+                                                                class="group relative flex flex-col items-center p-2 rounded-xl border-2 transition-all duration-300"
+                                                                :class="selectedGifts.includes(gift.id) ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-white hover:border-red-200'">
+                                                                <div class="aspect-square w-full rounded-lg overflow-hidden mb-2 bg-gray-50">
+                                                                    <img :src="gift.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                                                </div>
+                                                                <span class="text-[10px] font-bold text-center text-gray-700 line-clamp-1" x-text="gift.name"></span>
+                                                                <div x-show="selectedGifts.includes(gift.id)" class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce">
+                                                                    <i class="fas fa-check text-[8px]"></i>
+                                                                </div>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+
+                                                <div x-show="quantity < promo.logic.required_qty" class="text-center p-4 bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
+                                                    <p class="text-sm text-gray-500 font-medium italic">
+                                                        เพิ่มอีก <span class="text-red-600 font-bold" x-text="promo.logic.required_qty - quantity"></span> ชิ้น เพื่อรับของแถมฟรี!
+                                                    </p>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </template>
 
-                                        {{-- Gift Selector --}}
-                                        <div x-show="quantity >= promo.logic.required_qty" x-transition class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-red-100/50">
-                                            <div class="flex items-center justify-between mb-4">
-                                                <h4 class="font-bold text-gray-800">เลือกของแถมของคุณ:</h4>
-                                                <span class="badge badge-error text-white font-bold" x-text="`เลือกได้อีก ${giftLimit - selectedGifts.length} ชิ้น`"></span>
-                                            </div>
-                                            
-                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                                <template x-for="gift in promo.gifts" :key="gift.id">
-                                                    <button @click="toggleGift(gift.id)"
-                                                        class="group relative flex flex-col items-center p-2 rounded-xl border-2 transition-all duration-300"
-                                                        :class="selectedGifts.includes(gift.id) ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-white hover:border-red-200'">
-                                                        <div class="aspect-square w-full rounded-lg overflow-hidden mb-2 bg-gray-50">
-                                                            <img :src="gift.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                        {{-- 🎁 Case 2: Complex Promotion (AND / All Items Required) --}}
+                                        <template x-if="promo.condition_type === 'all'">
+                                            <div class="bg-white/60 backdrop-blur-sm p-5 rounded-xl border border-pink-100 mt-2">
+                                                <div class="flex gap-3 items-start">
+                                                    <div class="w-10 h-10 shrink-0 bg-pink-100 rounded-full flex items-center justify-center text-pink-600">
+                                                        <i class="fas fa-layer-group"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-gray-800 text-sm font-bold leading-tight">โปรโมชั่นเซ็ตสุดคุ้ม!</p>
+                                                        <p class="text-gray-600 text-xs mt-1">ซื้อสินค้านี้ร่วมกับสินค้าอื่นที่ร่วมรายการครบชุด รับของแถมฟรีทันที</p>
+                                                        <div class="mt-3 inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold">
+                                                            <i class="fas fa-info-circle mr-1"></i> เลือกของแถมได้ที่หน้าตะกร้าเมื่อครบเงื่อนไข
                                                         </div>
-                                                        <span class="text-[10px] font-bold text-center text-gray-700 line-clamp-1" x-text="gift.name"></span>
-                                                        <div x-show="selectedGifts.includes(gift.id)" class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce">
-                                                            <i class="fas fa-check text-[8px]"></i>
-                                                        </div>
-                                                    </button>
-                                                </template>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div x-show="quantity < promo.logic.required_qty" class="text-center p-4 bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
-                                            <p class="text-sm text-gray-500 font-medium italic">
-                                                เพิ่มอีก <span class="text-red-600 font-bold" x-text="promo.logic.required_qty - quantity"></span> ชิ้น เพื่อรับของแถมฟรี!
-                                            </p>
-                                        </div>
+                                        </template>
                                     </div>
                                 </template>
                             </div>
@@ -458,8 +482,16 @@
 
                 get giftLimit() {
                     if (this.promotions.length === 0) return 0;
-                    // หาโปรโมชั่นแรกที่เงื่อนไขครบ (รองรับ 1 โปรโมชั่นหลักต่อหน้าสินค้า)
-                    const activePromo = this.promotions.find(p => this.quantity >= p.logic.required_qty);
+                    
+                    // หาโปรโมชั่นแรกที่เงื่อนไขครบ
+                    const activePromo = this.promotions.find(p => {
+                        // ถ้าเป็นแบบ AND (ต้องซื้อหลายอย่าง) ให้ข้ามไปเลยในหน้านี้ (ไปเช็คในตะกร้าแทน)
+                        if (p.condition_type === 'all') return false;
+                        
+                        // ถ้าเป็นแบบปกติ ให้เช็คจำนวนที่ซื้อหน้านี้
+                        return this.quantity >= p.logic.required_qty;
+                    });
+                    
                     if (!activePromo) return 0;
                     return activePromo.gifts_per_item * Math.floor(this.quantity / activePromo.logic.required_qty);
                 },

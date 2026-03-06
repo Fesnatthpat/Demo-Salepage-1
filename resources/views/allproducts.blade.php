@@ -111,7 +111,7 @@
                 <main class="w-full">
 
                     {{-- ★★★ HERO SECTION (สไลด์หลัก) ★★★ --}}
-                    <div class="w-full bg-white pb-6 pt-2 md:pt-4">
+                    <div class="w-full pb-6 pt-2 md:pt-4">
                         <div class="container mx-auto px-4">
                             <div
                                 class="relative w-full aspect-[16/10] md:aspect-[2.5/1] lg:aspect-[3/1] bg-gray-100 group rounded-2xl overflow-hidden shadow-xl">

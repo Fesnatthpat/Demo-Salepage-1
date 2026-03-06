@@ -77,7 +77,14 @@
         if (class_exists('Cart')) {
             $cartCount = \Cart::session($cartSessionId)->getTotalQuantity();
         }
-        $siteLogo = isset($settings['site_logo']) ? asset('storage/' . $settings['site_logo']) : '/images/logo1.png';
+        
+        // จัดการ URL ของ Logo
+        $logoPath = $settings['site_logo'] ?? null;
+        if ($logoPath) {
+            $siteLogo = str_starts_with($logoPath, 'http') ? $logoPath : asset('storage/' . $logoPath);
+        } else {
+            $siteLogo = asset('images/logo/logo1.png');
+        }
 
         $menuItems = [
             ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false],
@@ -381,6 +388,28 @@
 
     {{-- ★★★ JS ของ Swiper ★★★ --}}
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#dc2626',
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ขออภัย!',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#dc2626',
+                });
+            @endif
+        });
+    </script>
 
     @yield('scripts')
     @livewireScripts

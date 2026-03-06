@@ -30,7 +30,17 @@ class SiteSetting extends Model
     {
         $setting = self::where('key', $key)->first();
 
-        return $setting ? $setting->value : $default;
+        if (!$setting) return $default;
+
+        $value = $setting->value;
+        
+        // ตรวจสอบว่าเป็น JSON หรือไม่ (เช่น ["..."] หรือ {"..."} หรือ "...")
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $decoded;
+        }
+
+        return $value;
     }
 
     // Helper: ฟังก์ชันสำหรับบันทึกค่า (Set)

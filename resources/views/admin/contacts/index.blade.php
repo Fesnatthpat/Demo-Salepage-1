@@ -1,73 +1,141 @@
 @extends('layouts.admin')
 
-@section('title', 'จัดการติดต่อเรา')
+@section('title', 'จัดการข้อมูลติดต่อ')
 
 @section('page-title')
-    <div class="text-2xl font-bold">จัดการข้อมูลติดต่อเรา</div>
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">จัดการข้อมูลติดต่อ (Contacts)</h1>
+            <p class="text-sm text-gray-400 mt-1">ตั้งค่าข้อมูลที่อยู่ เบอร์โทร และช่องทางการติดต่อต่างๆ</p>
+        </div>
+        <a href="{{ route('admin.contacts.create') }}"
+            class="group flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 font-medium">
+            <i class="fas fa-plus transition-transform group-hover:rotate-90"></i>
+            เพิ่มข้อมูลติดต่อ
+        </a>
+    </div>
 @endsection
 
 @section('content')
-<div class="bg-gray-800 rounded-lg shadow-lg p-6">
-    <div class="flex justify-end mb-4">
-        <a href="{{ route('admin.contacts.create') }}" class="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none">
-            <i class="fas fa-plus mr-2"></i> เพิ่มข้อมูลติดต่อ
-        </a>
-    </div>
-
-    @if (session('success'))
-        <div class="alert alert-success mb-4">
-            {{ session('success') }}
+    <div class="space-y-6">
+        {{-- Search Section --}}
+        <div class="bg-gray-800 rounded-xl shadow-sm border border-gray-700/50 p-4">
+            <form action="{{ route('admin.contacts.index') }}" method="GET" class="relative">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-600 rounded-lg leading-5 bg-gray-700/50 text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors"
+                        placeholder="ค้นหาชื่อ, เบอร์โทร หรืออีเมล...">
+                </div>
+            </form>
         </div>
-    @endif
 
-    <div class="overflow-x-auto">
-        <table class="table w-full">
-            <thead>
-                <tr class="text-gray-300">
-                    <th class="w-10">#</th>
-                    <th>หัวข้อ</th>
-                    <th>เบอร์โทร</th>
-                    <th>อีเมล</th>
-                    <th>สถานะ</th>
-                    <th class="text-right">จัดการ</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($contacts as $contact)
-                    <tr class="hover:bg-gray-700">
-                        <td>{{ $contact->sort_order }}</td>
-                        <td>{{ $contact->title }}</td>
-                        <td>{{ $contact->phone }}</td>
-                        <td>{{ $contact->email }}</td>
-                        <td>
-                            @if ($contact->is_active)
-                                <span class="badge badge-success">เปิดใช้งาน</span>
-                            @else
-                                <span class="badge badge-error">ปิดใช้งาน</span>
-                            @endif
-                        </td>
-                        <td class="text-right">
-                            <a href="{{ route('admin.contacts.edit', $contact->id) }}" class="btn btn-sm btn-warning text-white">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('admin.contacts.destroy', $contact->id) }}" method="POST" class="inline-block" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-error text-white">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-8 text-gray-400">
-                            ยังไม่มีข้อมูลติดต่อ
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+        {{-- Alert Messages --}}
+        @if (session('success'))
+            <div
+                class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-lg flex items-center gap-2 shadow-sm">
+                <i class="fas fa-check-circle"></i>
+                {{ session('success') }}
+            </div>
+        @endif
+
+        {{-- Table Section --}}
+        <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700/50 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-400">
+                    <thead class="bg-gray-900/50 text-xs uppercase font-semibold text-gray-300">
+                        <tr>
+                            <th class="px-6 py-4 w-16 text-center">ลำดับ</th>
+                            <th class="px-6 py-4 min-w-[150px]">หัวข้อ (Title)</th>
+                            <th class="px-6 py-4 min-w-[200px]">ข้อมูลติดต่อ</th>
+                            <th class="px-6 py-4 text-center w-32">สถานะ</th>
+                            <th class="px-6 py-4 text-right w-32">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        @forelse ($contacts as $contact)
+                            <tr class="hover:bg-gray-700/50 transition-colors duration-150">
+                                <td class="px-6 py-4 text-center">
+                                    <span
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-gray-300 font-mono text-xs">
+                                        {{ $contact->sort_order }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-white font-medium text-base mb-1">{{ $contact->title }}</div>
+                                    @if ($contact->address)
+                                        <div class="text-xs text-gray-500 truncate max-w-xs"
+                                            title="{{ $contact->address }}">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            {{ Str::limit($contact->address, 40) }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-1">
+                                        @if ($contact->phone)
+                                            <div class="flex items-center gap-2 text-gray-300">
+                                                <i class="fas fa-phone text-emerald-500 text-xs w-4"></i>
+                                                <span>{{ $contact->phone }}</span>
+                                            </div>
+                                        @endif
+                                        @if ($contact->email)
+                                            <div class="flex items-center gap-2 text-gray-300">
+                                                <i class="fas fa-envelope text-blue-400 text-xs w-4"></i>
+                                                <span>{{ $contact->email }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if ($contact->is_active)
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> เปิดใช้งาน
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> ปิดใช้งาน
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('admin.contacts.edit', $contact->id) }}"
+                                            class="p-2 text-yellow-400 hover:text-white hover:bg-yellow-500 rounded-lg transition-all duration-200"
+                                            title="แก้ไข">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('admin.contacts.destroy', $contact->id) }}" method="POST"
+                                            onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="p-2 text-red-400 hover:text-white hover:bg-red-500 rounded-lg transition-all duration-200"
+                                                title="ลบ">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center text-gray-500">
+                                        <i class="fas fa-address-book text-4xl mb-3 opacity-50"></i>
+                                        <p class="text-lg font-medium">ยังไม่มีข้อมูลติดต่อ</p>
+                                        <p class="text-sm mt-1">เพิ่มข้อมูลใหม่เพื่อแสดงผลในหน้าเว็บ</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 @endsection

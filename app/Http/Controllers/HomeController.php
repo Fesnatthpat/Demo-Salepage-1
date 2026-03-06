@@ -25,10 +25,6 @@ class HomeController extends Controller
             ->where(fn($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->get();
 
-        $settings = SiteSetting::all()->mapWithKeys(function ($setting) {
-            return [$setting->key => SiteSetting::get($setting->key)];
-        })->toArray();
-
         // ดึงข้อมูล CMS จากตารางใหม่
         $heroSlides = \App\Models\Banner::location('homepage')->hero()->active()->get();
         $infoBanner = \App\Models\Banner::location('homepage')->info()->active()->first();
@@ -39,7 +35,6 @@ class HomeController extends Controller
         return view('index', compact(
             'recommendedProducts', 
             'promotions',
-            'settings', 
             'heroSlides', 
             'infoBanner', 
             'secSlides', 
@@ -55,12 +50,6 @@ class HomeController extends Controller
             return $query->where('is_active', 1);
         })->orderBy('sort_order', 'asc')->get();
 
-        // 2. ✅ ดึงข้อมูล Settings (พวกข้อความส่วนหัว และเบอร์โทร/อีเมล)
-        $settings = SiteSetting::all()->mapWithKeys(function ($setting) {
-            return [$setting->key => SiteSetting::get($setting->key)];
-        })->toArray();
-
-        // ส่งทั้ง 2 ตัวแปรไปที่หน้า View
-        return view('about', compact('favorites', 'settings'));
+        return view('about', compact('favorites'));
     }
 }

@@ -2,21 +2,23 @@
 
 namespace App\Http\View\Composers;
 
-use App\Models\Setting;
+use App\Models\SiteSetting;
 use Illuminate\View\View;
 
 class SettingsComposer
 {
-    protected $settings;
-
-    public function __construct()
-    {
-        // Cache the settings for the duration of the request
-        $this->settings = Setting::pluck('value', 'key')->all();
-    }
-
     public function compose(View $view)
     {
-        $view->with('settings', $this->settings);
+        // ดึงข้อมูลจาก SiteSetting และจัดการ JSON Decoding
+        $rawSettings = SiteSetting::all();
+        $settings = [];
+        
+        foreach ($rawSettings as $s) {
+            $value = $s->value;
+            $decoded = json_decode($value, true);
+            $settings[$s->key] = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $value;
+        }
+        
+        $view->with('settings', $settings);
     }
 }

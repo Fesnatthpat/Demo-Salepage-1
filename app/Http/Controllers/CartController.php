@@ -10,9 +10,14 @@ class CartController extends Controller
 {
     public function __construct(private CartService $cartService) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = $this->cartService->getCartDataForView();
+        $selectedIds = $request->input('selected_items');
+        if ($selectedIds && is_string($selectedIds)) {
+            $selectedIds = explode(',', $selectedIds);
+        }
+        
+        $data = $this->cartService->getCartDataForView($selectedIds);
 
         return view('cart', $data);
     }

@@ -123,6 +123,11 @@ class OrderService
                         ->orderBy('stock_id', 'asc')
                         ->lockForUpdate()
                         ->first();
+                    
+                    // หากใช้สต็อกของ Option มาแทน ให้เก็บ option_id นั้นไว้เพื่อบันทึกลง OrderDetail ด้วย
+                    if ($stockRecord) {
+                        $optionId = $stockRecord->option_id;
+                    }
                 }
 
                 if (! $stockRecord) {
@@ -180,27 +185,21 @@ class OrderService
                 ]);
             }
 
-            $additionalDiscountFromCode = 0;
-            if (session()->has('applied_discount_code')) {
-                $discountData = session('applied_discount_code');
-                if (isset($discountData['fixed']) && $discountData['fixed'] > 0) {
-                    $additionalDiscountFromCode = $discountData['fixed'];
-                } elseif (isset($discountData['percentage']) && $discountData['percentage'] > 0) {
-                    $additionalDiscountFromCode = $netAmount * $discountData['percentage'];
-                }
-                $additionalDiscountFromCode = round($additionalDiscountFromCode, 2);
-                session()->forget('applied_discount_code');
-            }
-
-            $netAmount = max(0, $netAmount - $additionalDiscountFromCode);
-            $totalDiscount += $additionalDiscountFromCode;
+            // 5. คำนวณส่วนลดเพิ่มเติมจากโปรโมชั่น (รหัสส่วนลด และส่วนลดอัตโนมัติ)
+            $additionalDiscount = $this->cartService->calculateTotalDiscount($netAmount);
+            
+            $netAmount = max(0, $netAmount - $additionalDiscount);
+            $totalDiscount += $additionalDiscount;
 
             $order->total_price = $totalPrice;
             $order->total_discount = $totalDiscount;
             $order->net_amount = $netAmount;
             $order->save();
 
-            // 6. ลบสินค้าออกจากตะกร้า (เฉพาะที่สั่งซื้อจริง)
+            // 6. ล้างรหัสส่วนลด (ถ้ามี)
+            $this->cartService->removePromoCode();
+
+            // 7. ลบสินค้าออกจากตะกร้า (เฉพาะที่สั่งซื้อจริง)
             foreach ($cartItems as $item) {
                 Cart::session($user->id)->remove($item->id);
             }

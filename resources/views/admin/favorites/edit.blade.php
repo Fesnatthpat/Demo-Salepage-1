@@ -2,135 +2,202 @@
 
 @section('title', 'แก้ไขเนื้อหา "เกี่ยวกับติดใจ"')
 
+{{-- 1. เพิ่ม CSS ของ CodeMirror --}}
+@section('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <style>
+        .CodeMirror {
+            height: 400px;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 10px;
+        }
+    </style>
+@endsection
+
 @section('page-title')
-    <div class="flex items-center gap-2 text-sm text-gray-400">
-        <a href="{{ route('admin.favorites.index') }}" class="hover:text-red-400 transition-colors">
-            <i class="fas fa-heart mr-1"></i> เกี่ยวกับติดใจ
+    <div class="flex items-center gap-4">
+        <a href="{{ route('admin.favorites.index') }}" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fas fa-arrow-left text-xl"></i>
         </a>
-        <span>/</span>
-        <span class="text-gray-100 font-medium">แก้ไขข้อมูล</span>
+        <div>
+            <h1 class="text-2xl font-bold text-white">แก้ไขเนื้อหา</h1>
+            <p class="text-sm text-gray-400">แก้ไขข้อมูล: {{ Str::limit($favorite->title, 40) }}</p>
+        </div>
     </div>
 @endsection
 
 @section('content')
-    <div class="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
-        <div class="mb-6 border-b border-gray-700 pb-4">
-            <h2 class="text-2xl font-bold text-gray-100">แก้ไข: <span class="text-red-500">{{ $favorite->title }}</span></h2>
-        </div>
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700/50 overflow-hidden">
+            <div class="p-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
 
-        <form action="{{ route('admin.favorites.update', $favorite->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
+            <form action="{{ route('admin.favorites.update', $favorite->id) }}" method="POST" enctype="multipart/form-data"
+                class="p-6 md:p-8">
+                @csrf
+                @method('PUT')
 
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {{-- ฝั่งซ้าย --}}
-                <div class="xl:col-span-2 space-y-6">
-                    {{-- Title --}}
-                    <div>
-                        <label for="title" class="block text-sm font-semibold text-gray-300 mb-2">หัวข้อ (Title) <span
-                                class="text-red-500">*</span></label>
-                        <input type="text" name="title" id="title" value="{{ old('title', $favorite->title) }}"
-                            required
-                            class="block w-full bg-gray-900 border-gray-600 rounded-lg shadow-sm text-white focus:ring-red-500 focus:border-red-500 px-4 py-3">
-                        @error('title')
-                            <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
-                        @enderror
+                    {{-- Left Column: Main Content --}}
+                    <div class="lg:col-span-2 space-y-6">
+                        {{-- Title --}}
+                        <div class="space-y-2">
+                            <label for="title" class="block text-sm font-medium text-gray-200">
+                                หัวข้อ (Title) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span
+                                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                    <i class="fas fa-heading"></i>
+                                </span>
+                                <input type="text" name="title" id="title"
+                                    value="{{ old('title', $favorite->title) }}" required
+                                    class="block w-full pl-10 bg-gray-900 border border-gray-600 rounded-lg shadow-sm py-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all">
+                            </div>
+                            @error('title')
+                                <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Content (CodeMirror Editor) --}}
+                        <div class="space-y-2">
+                            <label for="content" class="block text-sm font-medium text-gray-200">
+                                รายละเอียด (Content) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative border border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                                <textarea name="content" id="content" required>{{ old('content', $favorite->content) }}</textarea>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span><i class="fas fa-code mr-1"></i> รองรับ HTML & CSS Highlighting</span>
+                                <span>Theme: Dracula</span>
+                            </div>
+                            @error('content')
+                                <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    {{-- Content --}}
-                    <div>
-                        <label for="content" class="block text-sm font-semibold text-gray-300 mb-2">รายละเอียด (Content)
-                            <span class="text-red-500">*</span></label>
-                        <textarea name="content" id="content" rows="8" required
-                            class="block w-full bg-gray-900 border-gray-600 rounded-lg shadow-sm text-white focus:ring-red-500 focus:border-red-500 px-4 py-3 leading-relaxed">{{ old('content', $favorite->content) }}</textarea>
-                        @error('content')
-                            <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
+                    {{-- Right Column: Settings & Images --}}
+                    <div class="space-y-6">
+                        {{-- Status Card --}}
+                        <div class="bg-gray-900 rounded-xl p-5 border border-gray-700/50 space-y-4">
+                            <h3 class="text-gray-100 font-semibold border-b border-gray-700 pb-2 mb-4">การตั้งค่า</h3>
 
-                {{-- ฝั่งขวา: รูปภาพ --}}
-                <div class="space-y-6">
-                    <div class="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
-                        <label class="block text-sm font-semibold text-gray-300 mb-3">รูปภาพประกอบ</label>
+                            <div class="space-y-2">
+                                <label for="sort_order"
+                                    class="block text-sm font-medium text-gray-400">ลำดับการแสดงผล</label>
+                                <input type="number" name="sort_order" id="sort_order"
+                                    value="{{ old('sort_order', $favorite->sort_order) }}"
+                                    class="block w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-yellow-500 focus:border-yellow-500">
+                            </div>
 
-                        {{-- แสดงรูปภาพเดิม (ถ้ามี) --}}
-                        <div class="mb-2">
-                            <span class="text-xs text-gray-400">รูปภาพปัจจุบัน:</span>
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                {{-- 1. กรณีรองรับหลายรูป (Relation: images) --}}
-                                @if (isset($favorite->images) && $favorite->images->count() > 0)
-                                    @foreach ($favorite->images as $img)
-                                        <div class="relative w-20 h-20 group">
-                                            <img src="{{ asset('storage/' . $img->image_path) }}"
-                                                class="w-full h-full object-cover rounded-lg border border-gray-600">
-                                            {{-- ปุ่มลบรูปเก่า (ต้องเขียน Logic Backend รองรับ) --}}
-                                            {{-- <button type="button" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">x</button> --}}
-                                        </div>
-                                    @endforeach
-                                    {{-- 2. กรณีรูปเดียวแบบเดิม (Fallback) --}}
-                                @elseif($favorite->image_path)
-                                    <div class="w-24 h-24">
-                                        <img src="{{ asset('storage/' . $favorite->image_path) }}"
-                                            class="w-full h-full object-cover rounded-lg border border-gray-600">
+                            <div class="space-y-2 pt-2">
+                                <label class="block text-sm font-medium text-gray-400 mb-2">สถานะ</label>
+                                <label class="inline-flex items-center cursor-pointer group">
+                                    <input type="checkbox" name="is_active" value="1" class="sr-only peer"
+                                        @if (old('is_active', $favorite->is_active)) checked @endif>
+                                    <div
+                                        class="relative w-14 h-7 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500">
                                     </div>
-                                @else
-                                    <span class="text-xs text-gray-500 italic">ไม่มีรูปภาพเดิม</span>
-                                @endif
+                                    <span
+                                        class="ml-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                                        @if ($favorite->is_active)
+                                            เปิดแสดงผล
+                                        @else
+                                            ปิดการแสดงผล
+                                        @endif
+                                    </span>
+                                </label>
                             </div>
                         </div>
 
-                        {{-- Preview รูปใหม่ --}}
-                        <div id="newImagePreviewContainer"
-                            class="mb-4 w-full min-h-[8rem] bg-gray-800 rounded-lg border-2 border-dashed border-gray-600 flex flex-wrap gap-2 p-2 items-start justify-center relative mt-4">
-                            <div id="imagePlaceholder"
-                                class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 pointer-events-none">
-                                <i class="fas fa-plus text-2xl mb-1"></i>
-                                <p class="text-xs">อัปโหลดเพิ่ม</p>
+                        {{-- Image Upload Card --}}
+                        <div class="bg-gray-900 rounded-xl p-5 border border-gray-700/50">
+                            <label class="block text-sm font-semibold text-gray-200 mb-3">รูปภาพประกอบ</label>
+
+                            @if ((isset($favorite->images) && $favorite->images->count() > 0) || $favorite->image_path)
+                                <div class="mb-4">
+                                    <span class="text-xs text-gray-400 mb-2 block">รูปภาพปัจจุบัน:</span>
+                                    <div class="flex flex-wrap gap-2">
+                                        @if (isset($favorite->images) && $favorite->images->count() > 0)
+                                            @foreach ($favorite->images as $img)
+                                                <div
+                                                    class="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-600 group">
+                                                    <img src="{{ asset('storage/' . $img->image_path) }}"
+                                                        class="w-full h-full object-cover">
+                                                </div>
+                                            @endforeach
+                                        @elseif($favorite->image_path)
+                                            <div
+                                                class="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-600">
+                                                <img src="{{ asset('storage/' . $favorite->image_path) }}"
+                                                    class="w-full h-full object-cover">
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="border-t border-gray-700 my-4"></div>
+
+                            <label class="block text-xs text-yellow-500 mb-2">อัปโหลดเพิ่ม / แทนที่</label>
+                            <div id="imagePreviewContainer"
+                                class="mb-4 w-full min-h-[100px] bg-gray-800 rounded-lg border-2 border-dashed border-gray-600 flex flex-wrap gap-2 p-3 items-start justify-center relative hover:border-gray-500 transition-colors">
+                                <div id="imagePlaceholder"
+                                    class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 pointer-events-none">
+                                    <i class="fas fa-plus text-2xl mb-1"></i>
+                                    <p class="text-xs">เลือกไฟล์ใหม่</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <label class="text-xs text-yellow-400 mb-2 block">เลือกไฟล์เพื่ออัปโหลดเพิ่ม (หรือแทนที่)</label>
-                        <input type="file" name="images[]" id="images" accept="image/*" multiple
-                            onchange="previewImages(event)"
-                            class="block w-full text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 cursor-pointer transition-colors">
-                    </div>
-
-                    {{-- Settings --}}
-                    <div class="bg-gray-900/50 p-6 rounded-xl border border-gray-700 space-y-5">
-                        <div>
-                            <label for="sort_order"
-                                class="block text-sm font-semibold text-gray-300 mb-2">ลำดับการแสดงผล</label>
-                            <input type="number" name="sort_order" id="sort_order"
-                                value="{{ old('sort_order', $favorite->sort_order) }}"
-                                class="block w-full bg-gray-800 border-gray-600 rounded-lg shadow-sm text-white focus:ring-red-500 focus:border-red-500 px-4 py-2">
-                        </div>
-                        <hr class="border-gray-700">
-                        <div class="flex items-center pt-2">
-                            <input type="checkbox" name="is_active" id="is_active" value="1"
-                                @if (old('is_active', $favorite->is_active)) checked @endif
-                                class="h-6 w-6 rounded border-gray-500 bg-gray-800 text-yellow-500 focus:ring-yellow-500 focus:ring-offset-gray-900 cursor-pointer">
-                            <label for="is_active"
-                                class="ml-3 block text-sm font-medium text-gray-200 cursor-pointer">เปิดแสดงผลที่หน้าเว็บ</label>
+                            <input type="file" name="images[]" id="images" accept="image/*" multiple
+                                onchange="previewImages(event)"
+                                class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-yellow-600 file:text-white hover:file:bg-yellow-500 cursor-pointer">
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="mt-8 pt-6 border-t border-gray-700 flex justify-end gap-4">
-                <a href="{{ route('admin.favorites.index') }}"
-                    class="btn btn-ghost text-gray-300 hover:bg-gray-700">ยกเลิก</a>
-                <button type="submit" class="btn bg-yellow-600 hover:bg-yellow-700 text-white border-none shadow-lg px-8">
-                    <i class="fas fa-save mr-2"></i> บันทึกการเปลี่ยนแปลง
-                </button>
-            </div>
-        </form>
+                {{-- Action Buttons --}}
+                <div class="pt-8 border-t border-gray-700 mt-8 flex items-center justify-end gap-3">
+                    <a href="{{ route('admin.favorites.index') }}"
+                        class="px-5 py-2.5 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium">
+                        ยกเลิก
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2.5 rounded-lg bg-yellow-600 hover:bg-yellow-500 text-white shadow-lg shadow-yellow-600/20 transition-all transform hover:-translate-y-0.5 font-medium flex items-center gap-2">
+                        <i class="fas fa-save"></i> บันทึกการเปลี่ยนแปลง
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    {{-- 2. เพิ่ม Script ของ CodeMirror --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var editor = CodeMirror.fromTextArea(document.getElementById("content"), {
+                mode: "htmlmixed",
+                theme: "dracula",
+                lineNumbers: true,
+                lineWrapping: true,
+                indentUnit: 4
+            });
+            editor.setSize("100%", "400px");
+        });
+
+        // Preview Images Script (เหมือนเดิม)
         function previewImages(event) {
-            const container = document.getElementById('newImagePreviewContainer');
+            const container = document.getElementById('imagePreviewContainer');
             const placeholder = document.getElementById('imagePlaceholder');
             const files = event.target.files;
 
@@ -144,7 +211,7 @@
                     reader.onload = function(e) {
                         const imgDiv = document.createElement('div');
                         imgDiv.className =
-                            'w-16 h-16 relative rounded overflow-hidden border border-gray-600 shadow-sm';
+                            'w-16 h-16 relative rounded-lg overflow-hidden border border-gray-600 shadow-md';
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.className = 'w-full h-full object-cover';

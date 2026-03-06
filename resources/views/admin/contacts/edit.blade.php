@@ -3,80 +3,154 @@
 @section('title', 'แก้ไขข้อมูลติดต่อ')
 
 @section('page-title')
-    <div class="text-2xl font-bold">แก้ไขข้อมูลติดต่อ</div>
+    <div class="flex items-center gap-4">
+        <a href="{{ route('admin.contacts.index') }}" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-white">แก้ไขข้อมูลติดต่อ</h1>
+            <p class="text-sm text-gray-400">แก้ไข: {{ $contact->title }}</p>
+        </div>
+    </div>
 @endsection
 
 @section('content')
-<div class="bg-gray-800 rounded-lg shadow-lg p-6 max-w-3xl mx-auto">
-    <form action="{{ route('admin.contacts.update', $contact->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-        <div class="space-y-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700/50 overflow-hidden">
+            <div class="p-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
 
-            <div>
-                <label for="title" class="block text-sm font-medium text-gray-300">หัวข้อ (Title)</label>
-                <input type="text" name="title" id="title" value="{{ old('title', $contact->title) }}" required
-                       class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">
-                @error('title') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
-            </div>
+            <form action="{{ route('admin.contacts.update', $contact->id) }}" method="POST" class="p-6 md:p-8 space-y-6">
+                @csrf
+                @method('PUT')
 
-            <div>
-                <label for="content" class="block text-sm font-medium text-gray-300">เนื้อหา (Content)</label>
-                <textarea name="content" id="content" rows="3"
-                          class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">{{ old('content', $contact->content) }}</textarea>
-                @error('content') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
-            </div>
-            
-            <div>
-                <label for="address" class="block text-sm font-medium text-gray-300">ที่อยู่ (Address)</label>
-                <textarea name="address" id="address" rows="3"
-                          class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">{{ old('address', $contact->address) }}</textarea>
-                @error('address') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
-            </div>
+                {{-- Title --}}
+                <div class="space-y-2">
+                    <label for="title" class="block text-sm font-medium text-gray-200">หัวข้อ (Title) <span
+                            class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                            <i class="fas fa-heading"></i>
+                        </span>
+                        <input type="text" name="title" id="title" value="{{ old('title', $contact->title) }}"
+                            required
+                            class="block w-full pl-10 bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm py-2.5 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                    </div>
+                    @error('title')
+                        <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-300">เบอร์โทรศัพท์</label>
-                    <input type="text" name="phone" id="phone" value="{{ old('phone', $contact->phone) }}"
-                           class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">
-                    @error('phone') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-300">อีเมล</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $contact->email) }}"
-                           class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">
-                    @error('email') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
-                </div>
-            </div>
+                {{-- Content & Address Grid --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="content" class="block text-sm font-medium text-gray-200">รายละเอียดเพิ่มเติม</label>
+                        <textarea name="content" id="content" rows="4"
+                            class="block w-full bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm p-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">{{ old('content', $contact->content) }}</textarea>
+                        @error('content')
+                            <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-            <div>
-                <label for="map_url" class="block text-sm font-medium text-gray-300">ลิงก์แผนที่ (Google Maps URL)</label>
-                <input type="url" name="map_url" id="map_url" value="{{ old('map_url', $contact->map_url) }}"
-                       class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">
-                @error('map_url') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="sort_order" class="block text-sm font-medium text-gray-300">ลำดับ</label>
-                    <input type="number" name="sort_order" id="sort_order" value="{{ old('sort_order', $contact->sort_order) }}"
-                           class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-emerald-500 focus:border-emerald-500">
-                    @error('sort_order') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
+                    <div class="space-y-2">
+                        <label for="address" class="block text-sm font-medium text-gray-200">ที่อยู่ (Address)</label>
+                        <textarea name="address" id="address" rows="4"
+                            class="block w-full bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm p-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">{{ old('address', $contact->address) }}</textarea>
+                        @error('address')
+                            <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
-                <div class="flex items-center pt-6">
-                    <input type="checkbox" name="is_active" id="is_active" value="1" @if(old('is_active', $contact->is_active)) checked @endif
-                           class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-emerald-600 focus:ring-emerald-500">
-                    <label for="is_active" class="ml-2 block text-sm text-gray-300">เปิดใช้งาน</label>
+
+                {{-- Phone & Email Grid --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="phone" class="block text-sm font-medium text-gray-200">เบอร์โทรศัพท์</label>
+                        <div class="relative">
+                            <span
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $contact->phone) }}"
+                                class="block w-full pl-10 bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm py-2.5 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                        </div>
+                        @error('phone')
+                            <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="space-y-2">
+                        <label for="email" class="block text-sm font-medium text-gray-200">อีเมล</label>
+                        <div class="relative">
+                            <span
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" name="email" id="email" value="{{ old('email', $contact->email) }}"
+                                class="block w-full pl-10 bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm py-2.5 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                        </div>
+                        @error('email')
+                            <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
-            </div>
+
+                {{-- Map URL --}}
+                <div class="space-y-2">
+                    <label for="map_url" class="block text-sm font-medium text-gray-200">ลิงก์ Google Maps</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </span>
+                        <input type="url" name="map_url" id="map_url" value="{{ old('map_url', $contact->map_url) }}"
+                            class="block w-full pl-10 bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm py-2.5 text-white placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                    </div>
+                    @error('map_url')
+                        <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Sort & Active --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    <div class="space-y-2">
+                        <label for="sort_order" class="block text-sm font-medium text-gray-200">ลำดับการแสดงผล</label>
+                        <input type="number" name="sort_order" id="sort_order"
+                            value="{{ old('sort_order', $contact->sort_order) }}"
+                            class="block w-full bg-gray-900/50 border border-gray-600 rounded-lg shadow-sm py-2.5 px-3 text-white focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                        @error('sort_order')
+                            <p class="text-sm text-red-400 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-200 mb-3">สถานะ</label>
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" name="is_active" value="1" class="sr-only peer"
+                                @if (old('is_active', $contact->is_active)) checked @endif>
+                            <div
+                                class="relative w-14 h-7 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600">
+                            </div>
+                            <span class="ml-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                                @if ($contact->is_active)
+                                    เปิดใช้งานอยู่
+                                @else
+                                    ปิดการใช้งาน
+                                @endif
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Buttons --}}
+                <div class="pt-6 border-t border-gray-700 flex items-center justify-end gap-3">
+                    <a href="{{ route('admin.contacts.index') }}"
+                        class="px-5 py-2.5 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium">
+                        ยกเลิก
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all transform hover:-translate-y-0.5 font-medium flex items-center gap-2">
+                        <i class="fas fa-save"></i> บันทึกการเปลี่ยนแปลง
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <div class="mt-8 flex justify-end gap-4">
-            <a href="{{ route('admin.contacts.index') }}" class="btn btn-ghost">ยกเลิก</a>
-            <button type="submit" class="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none">
-                <i class="fas fa-save mr-2"></i> บันทึกการเปลี่ยนแปลง
-            </button>
-        </div>
-    </form>
-</div>
+    </div>
 @endsection

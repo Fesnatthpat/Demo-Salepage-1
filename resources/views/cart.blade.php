@@ -20,33 +20,26 @@
                     </div>
 
                     @if (isset($items) && !$items->isEmpty())
-                        @php
-                            $summaryTotalPrice = 0;
-                            $summaryTotalOriginal = 0;
-                        @endphp
+                        <div id="cart-items-list">
+                            @foreach ($items as $item)
+                                @php
+                                    $quantity = $item->quantity;
+                                    $price = $item->price;
+                                    $originalPrice = $item->attributes->has('original_price')
+                                        ? $item->attributes->original_price
+                                        : $price;
+                                    $totalPrice = $price * $quantity;
+                                    $isFree = $item->attributes->has('is_freebie') && $item->attributes->is_freebie;
 
-                        @foreach ($items as $item)
-                            @php
-                                $quantity = $item->quantity;
-                                $price = $item->price;
-                                $originalPrice = $item->attributes->has('original_price')
-                                    ? $item->attributes->original_price
-                                    : $price;
-                                $totalPrice = $price * $quantity;
-                                $isFree = $item->attributes->has('is_freebie') && $item->attributes->is_freebie;
+                                    $calcOriginalPrice = $isFree ? 0 : $originalPrice;
+                                    $totalOriginalPrice = $calcOriginalPrice * $quantity;
 
-                                $calcOriginalPrice = $isFree ? 0 : $originalPrice;
-                                $totalOriginalPrice = $calcOriginalPrice * $quantity;
+                                    $lineDiscount = $totalOriginalPrice - $totalPrice;
+                                    $hasDiscount = $lineDiscount > 0;
 
-                                $lineDiscount = $totalOriginalPrice - $totalPrice;
-                                $hasDiscount = $lineDiscount > 0;
-
-                                $summaryTotalPrice += $totalPrice;
-                                $summaryTotalOriginal += $totalOriginalPrice;
-
-                                $displayImage =
-                                    $item->attributes->image ?? 'https://via.placeholder.com/150?text=No+Image';
-                            @endphp
+                                    $displayImage =
+                                        $item->attributes->image ?? 'https://via.placeholder.com/150?text=No+Image';
+                                @endphp
 
                             <div
                                 class="flex flex-col md:flex-row md:items-start md:justify-between border-b border-gray-200 py-6 gap-4">
@@ -56,7 +49,7 @@
                                         <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
                                             data-price="{{ $totalPrice }}" data-original-price="{{ $totalOriginalPrice }}"
                                             class="item-checkbox w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
-                                            onchange="calculateTotal()">
+                                            onchange="onItemSelectionChange()">
                                     </div>
                                     <div class="flex-shrink-0">
                                         <img src="{{ $displayImage }}" alt="{{ $item->name }}"
@@ -119,22 +112,72 @@
                                 <div class="flex justify-between mt-5 text-base text-gray-600">
                                     <div>ยอดรวมสินค้า (<span id="selected-count">{{ count($items) }}</span> รายการ)</div>
                                     <div class="font-medium">฿<span
-                                            id="subtotal-display">{{ number_format($summaryTotalOriginal) }}</span></div>
+                                            id="subtotal-display">{{ number_format($subTotal) }}</span></div>
                                 </div>
                                 <div class="flex justify-between mt-2 text-base text-red-500 font-semibold">
-                                    <div>ส่วนลดรวม</div>
+                                    <div>ส่วนลดโปรโมชั่น</div>
                                     <div class="font-medium">-฿<span
-                                            id="discount-display">{{ number_format($summaryTotalOriginal - $summaryTotalPrice) }}</span>
+                                            id="discount-display">{{ number_format($totalDiscount) }}</span>
                                     </div>
                                 </div>
                                 <div class="border-t border-gray-200 my-4"></div>
                                 <div class="flex justify-between items-center mb-6">
                                     <h1 class="font-bold text-xl text-gray-800">ยอดสุทธิ</h1>
                                     <h1 class="text-red-600 font-bold text-3xl">฿<span
-                                            id="total-display">{{ number_format($summaryTotalPrice) }}</span></h1>
+                                            id="total-display">{{ number_format($total) }}</span></h1>
                                 </div>
+
+                                {{-- ★ ส่วนเลือกของแถม (จะปรากฏเมื่อเงื่อนไขครบในตะกร้า) ★ --}}
+                                @if(isset($freebieLimit) && $freebieLimit > 0 && isset($giftableProducts) && $giftableProducts->count() > 0)
+                                    <div class="mt-2 mb-6 p-5 bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl border border-pink-100 shadow-sm" id="gift-selection-area">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-pink-600 text-white shadow-sm">
+                                                    <i class="fas fa-gift text-[10px]"></i>
+                                                </span>
+                                                <h3 class="font-bold text-pink-800 text-sm">เลือกของแถมของคุณ</h3>
+                                            </div>
+                                            <span class="text-[10px] font-bold bg-white text-pink-600 border border-pink-200 px-2.5 py-1 rounded-full shadow-sm">
+                                                สิทธิ์คงเหลือ: <span id="gift-limit-display">{{ $freebieLimit }}</span> ชิ้น
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3" id="gift-pool">
+                                            @foreach($giftableProducts as $gift)
+                                                <div class="relative group">
+                                                    <input type="checkbox" name="selected_freebies[]" value="{{ $gift->pd_sp_id }}" 
+                                                        class="gift-checkbox hidden" id="cart-gift-{{ $gift->pd_sp_id }}"
+                                                        onchange="validateGiftSelection(this)">
+                                                    <label for="cart-gift-{{ $gift->pd_sp_id }}" 
+                                                        class="gift-label block p-2 bg-white border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:border-pink-300 hover:shadow-md">
+                                                        <div class="aspect-square w-full rounded-lg overflow-hidden bg-gray-50 mb-2">
+                                                            <img src="{{ $gift->cover_image_url }}" class="w-full h-full object-cover">
+                                                        </div>
+                                                        <p class="text-[10px] font-bold text-gray-700 truncate px-1">{{ $gift->pd_sp_name }}</p>
+                                                        
+                                                        {{-- Checkmark Overlay --}}
+                                                        <div class="selected-overlay absolute inset-0 bg-pink-600/10 rounded-xl border-2 border-pink-500 items-center justify-center hidden">
+                                                            <div class="bg-pink-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg transform scale-110">
+                                                                <i class="fas fa-check text-xs"></i>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        
+                                        <div class="mt-4 pt-3 border-t border-pink-100 flex justify-center">
+                                            <p class="text-[11px] font-bold text-pink-500 bg-white px-4 py-1 rounded-full shadow-sm border border-pink-50" id="gift-count-text">
+                                                เลือกไปแล้ว 0 / {{ $freebieLimit }} ชิ้น
+                                            </p>
+                                        </div>
+                                    </div>
+                                @endif
+
                                 <button type="submit" id="checkout-btn"
-                                    class="btn bg-red-600 hover:bg-red-700 border-none text-white w-full text-lg h-12">ชำระเงิน</button>
+                                    class="btn bg-red-600 hover:bg-red-700 border-none text-white w-full text-lg h-12 shadow-lg shadow-red-600/20 transition-all active:scale-95 font-black uppercase tracking-wider">
+                                    ชำระเงิน <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
                             </div>
                         </div>
                     @else
@@ -167,37 +210,38 @@
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        function calculateTotal() {
-            let totalSale = 0,
-                totalOrig = 0;
-            let count = 0;
+        function onItemSelectionChange() {
+            calculateTotal();
             
-            const checkboxes = document.querySelectorAll('.item-checkbox');
-            checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    totalSale += parseFloat(cb.dataset.price) || 0;
-                    totalOrig += parseFloat(cb.dataset.originalPrice) || 0;
-                    count++;
-                }
-            });
+            // ดึงรายการที่เลือกทั้งหมด
+            const selectedIds = Array.from(document.querySelectorAll('.item-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            // รีเฟรชหน้าเว็บพร้อมส่งรายการที่เลือกลูกค้าจะได้เห็นของแถมที่อัปเดตตามจริง
+            const url = new URL(window.location.href);
+            url.searchParams.set('selected_items', selectedIds.join(','));
+            window.location.href = url.toString();
+        }
 
-            // บันทึกสถานะการเลือกลง localStorage ทันทีที่มีการเปลี่ยน
+        function calculateTotal() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+            const count = checkedBoxes.length;
+            
+            // บันทึกสถานะการเลือกลง localStorage
             saveSelectedItems();
 
-            // อัปเดตตัวเลือก "เลือกทั้งหมด" (Select All)
+            // อัปเดตตัวเลือก "เลือกทั้งหมด"
             const selectAll = document.getElementById('select-all');
             if (selectAll) {
                 selectAll.checked = (checkboxes.length > 0 && checkboxes.length === count);
             }
 
-            let disc = totalOrig - totalSale;
-            if (disc < 0) disc = 0;
+            // อัปเดตจำนวนที่เลือกใน UI
+            const selectedCountEl = document.getElementById('selected-count');
+            if (selectedCountEl) selectedCountEl.innerText = count;
 
-            document.getElementById('total-display').innerText = numberWithCommas(totalSale);
-            document.getElementById('subtotal-display').innerText = numberWithCommas(totalOrig);
-            document.getElementById('discount-display').innerText = numberWithCommas(disc);
-            document.getElementById('selected-count').innerText = count;
-
+            // จัดการปุ่มชำระเงิน
             const btn = document.getElementById('checkout-btn');
             if (btn) {
                 btn.disabled = (count === 0);
@@ -209,26 +253,72 @@
             }
         }
 
+        function validateGiftSelection(checkbox) {
+            const limit = parseInt(document.getElementById('gift-limit-display')?.innerText || 0);
+            const checkedGifts = document.querySelectorAll('.gift-checkbox:checked');
+            
+            // อัปเดต UI ของ Label (Overlay)
+            const label = checkbox.nextElementSibling;
+            const overlay = label.querySelector('.selected-overlay');
+            
+            if (checkbox.checked) {
+                if (checkedGifts.length > limit) {
+                    checkbox.checked = false;
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'เลือกเกินจำนวน',
+                        text: `คุณสามารถเลือกของแถมได้สูงสุด ${limit} ชิ้น`,
+                        confirmButtonColor: '#ec4899',
+                    });
+                    return;
+                }
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+                label.classList.add('border-pink-500', 'bg-pink-50');
+            } else {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                label.classList.remove('border-pink-500', 'bg-pink-50');
+            }
+
+            // อัปเดตตัวเลขจำนวนที่เลือก
+            const countText = document.getElementById('gift-count-text');
+            if (countText) {
+                countText.innerText = `เลือกไปแล้ว ${checkedGifts.length} / ${limit} ชิ้น`;
+            }
+        }
+
         function toggleAll(source) {
             document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = source.checked);
-            calculateTotal();
+            onItemSelectionChange();
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedFromUrl = urlParams.get('selected_items');
             const savedIds = getSavedSelectedItems();
             const checkboxes = document.querySelectorAll('.item-checkbox');
             
-            if (savedIds === null) {
-                // ครั้งแรกที่เข้า หรือไม่มีการบันทึก: ให้ติ๊กถูกทั้งหมดตามเดิม
+            if (selectedFromUrl !== null) {
+                // ถ้ามีใน URL (หลัง Refresh): ให้ใช้จาก URL
+                const ids = selectedFromUrl.split(',').filter(id => id !== '');
+                checkboxes.forEach(cb => {
+                    cb.checked = ids.includes(cb.value);
+                });
+            } else if (savedIds === null) {
+                // ครั้งแรกที่เข้า: ให้ติ๊กถูกทั้งหมด
                 checkboxes.forEach(cb => cb.checked = true);
             } else {
-                // ถ้ามีในบันทึก: ให้ติ๊กตามที่เคยเลือกไว้
+                // ถ้ามีใน localStorage: ให้ติ๊กตามที่เคยเลือกไว้
                 checkboxes.forEach(cb => {
                     cb.checked = savedIds.includes(cb.value);
                 });
             }
 
-            calculateTotal();
+            // รันเพื่ออัปเดตสถานะปุ่มชำระเงิน
+            const count = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const btn = document.getElementById('checkout-btn');
+            if (btn) btn.disabled = (count === 0);
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 

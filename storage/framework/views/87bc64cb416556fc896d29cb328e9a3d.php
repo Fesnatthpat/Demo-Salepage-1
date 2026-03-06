@@ -108,37 +108,41 @@
                 <main class="w-full">
 
                     
-                    <div class="w-full mb-4 md:mb-6 shadow-sm group relative rounded-xl overflow-hidden">
-                        <div class="aspect-[16/9] md:aspect-[3/1] lg:aspect-[5/1] w-full relative">
-                            <div class="swiper mySwiper w-full h-full absolute inset-0">
-                                <div class="swiper-wrapper">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($heroSlides) && $heroSlides->count() > 0): ?>
-                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $heroSlides; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slide): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                            <div class="swiper-slide">
-                                                <a href="<?php echo e($slide->link_url ?? '#'); ?>" class="block w-full h-full">
-                                                    <img src="<?php echo e(Storage::url($slide->image_path)); ?>"
-                                                        class="w-full h-full object-cover object-center"
-                                                        alt="<?php echo e($slide->title ?? 'Banner'); ?>"
-                                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner';" />
-                                                </a>
-                                            </div>
-                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                                    <?php else: ?>
-                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
-                                            <div class="swiper-slide">
-                                                <a href="#" class="block w-full h-full">
-                                                    <img src="<?php echo e(asset('images/' . $image)); ?>"
-                                                        class="w-full h-full object-cover object-center"
-                                                        alt="Banner <?php echo e($index + 1); ?>"
-                                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x400/ef4444/ffffff?text=Banner+<?php echo e($index + 1); ?>';" />
-                                                </a>
-                                            </div>
-                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <div class="w-full bg-white pb-6 pt-2 md:pt-4">
+                        <div class="container mx-auto px-4">
+                            <div
+                                class="relative w-full aspect-[16/10] md:aspect-[2.5/1] lg:aspect-[3/1] bg-gray-100 group rounded-2xl overflow-hidden shadow-xl">
+                                <div class="swiper mySwiper w-full h-full absolute inset-0">
+                                    <div class="swiper-wrapper">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($heroSlides) && $heroSlides->count() > 0): ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $heroSlides; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slide): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                                <div class="swiper-slide">
+                                                    <a href="<?php echo e($slide->link_url ?? '/allproducts'); ?>"
+                                                        class="block w-full h-full">
+                                                        <img src="<?php echo e(Storage::url($slide->image_path)); ?>"
+                                                            class="w-full h-full object-cover object-center"
+                                                            alt="<?php echo e($slide->title ?? 'Slide'); ?>"
+                                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Banner+Image';" />
+                                                    </a>
+                                                </div>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                        <?php else: ?>
+                                            
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png', 'th-4.png', 'th-5.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                                <div class="swiper-slide">
+                                                    <a href="/allproducts" class="block w-full h-full">
+                                                        <img src="<?php echo e(asset('images/' . $img)); ?>"
+                                                            class="w-full h-full object-cover object-center" alt="Slide"
+                                                            onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Welcome+Banner';" />
+                                                    </a>
+                                                </div>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                    </div>
+                                    <div class="swiper-button-next"></div>
+                                    <div class="swiper-button-prev"></div>
+                                    <div class="swiper-pagination"></div>
                                 </div>
-                                <div class="swiper-button-next hidden md:flex"></div>
-                                <div class="swiper-button-prev hidden md:flex"></div>
-                                <div class="swiper-pagination"></div>
                             </div>
                         </div>
                     </div>
@@ -162,7 +166,8 @@
                                                                 class="w-full h-full object-contain"
                                                                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150x150/fca5a5/ffffff?text=IMG';" />
                                                         <?php else: ?>
-                                                            <i class="<?php echo e($menu->icon ?? 'fas fa-th-large'); ?> text-red-600 text-xl md:text-2xl"></i>
+                                                            <i
+                                                                class="<?php echo e($menu->icon ?? 'fas fa-th-large'); ?> text-red-600 text-xl md:text-2xl"></i>
                                                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </div>
                                                     <span
@@ -384,11 +389,17 @@
                 },
             });
 
-            // Category
+            // ★★★ Category (แก้ไขเพิ่ม Autoplay) ★★★
             new Swiper(".categorySwiper", {
                 slidesPerView: 4.5,
                 spaceBetween: 10,
                 loop: true,
+                // เพิ่มการตั้งค่า Autoplay ตรงนี้
+                autoplay: {
+                    delay: 3000,
+                    disableOnInteraction: false, // เลื่อนต่อแม้จะมีการกดปุ่ม
+                    pauseOnMouseEnter: true, // หยุดเมื่อเอาเมาส์ชี้ (เพื่อให้กดง่ายขึ้น)
+                },
                 navigation: {
                     nextEl: ".categorySwiper .swiper-button-next",
                     prevEl: ".categorySwiper .swiper-button-prev"

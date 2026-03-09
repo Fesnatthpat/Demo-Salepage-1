@@ -99,6 +99,7 @@
         standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
         bundleAddUrl: @js(route('cart.addBundle')),
         checkoutUrl: @js(route('payment.checkout')),
+        cartUrl: @js(route('cart.index')),
         promotions: @js($promotionsData),
         reviewImages: @js($reviewImagesList)
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased"
@@ -678,7 +679,7 @@
                         });
                         const data = await response.json();
                         if (data.success) {
-                            if (isBuyNow) window.location.href = config.checkoutUrl;
+                            if (isBuyNow) window.location.href = config.cartUrl;
                             else {
                                 Swal.fire({
                                     icon: 'success',

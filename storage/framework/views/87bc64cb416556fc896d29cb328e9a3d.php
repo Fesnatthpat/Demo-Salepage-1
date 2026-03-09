@@ -117,10 +117,12 @@
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($heroSlides) && $heroSlides->count() > 0): ?>
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $heroSlides; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slide): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                                 <div class="swiper-slide">
+                                                    
                                                     <a href="<?php echo e($slide->link_url ?? '/allproducts'); ?>"
-                                                        class="block w-full h-full">
+                                                        class="block w-full h-full bg-gray-50">
+                                                        
                                                         <img src="<?php echo e(Storage::url($slide->image_path)); ?>"
-                                                            class="w-full h-full object-cover object-center"
+                                                            class="w-full h-full object-center object-center"
                                                             alt="<?php echo e($slide->title ?? 'Slide'); ?>"
                                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Banner+Image';" />
                                                     </a>
@@ -130,9 +132,12 @@
                                             
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['th-1.png', 'th-2.png', 'th-3.png', 'th-4.png', 'th-5.png']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                                 <div class="swiper-slide">
-                                                    <a href="/allproducts" class="block w-full h-full">
+                                                    
+                                                    <a href="/allproducts" class="block w-full h-full bg-gray-50">
+                                                        
                                                         <img src="<?php echo e(asset('images/' . $img)); ?>"
-                                                            class="w-full h-full object-cover object-center" alt="Slide"
+                                                            class="w-full h-full object-contain object-center"
+                                                            alt="Slide"
                                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Welcome+Banner';" />
                                                     </a>
                                                 </div>

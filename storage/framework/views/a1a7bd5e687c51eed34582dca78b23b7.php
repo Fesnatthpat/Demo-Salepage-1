@@ -97,6 +97,7 @@
         standardAction: <?php echo \Illuminate\Support\Js::from(route('cart.add', ['id' => $product->pd_sp_id]))->toHtml() ?>,
         bundleAddUrl: <?php echo \Illuminate\Support\Js::from(route('cart.addBundle'))->toHtml() ?>,
         checkoutUrl: <?php echo \Illuminate\Support\Js::from(route('payment.checkout'))->toHtml() ?>,
+        cartUrl: <?php echo \Illuminate\Support\Js::from(route('cart.index'))->toHtml() ?>,
         promotions: <?php echo \Illuminate\Support\Js::from($promotionsData)->toHtml() ?>,
         reviewImages: <?php echo \Illuminate\Support\Js::from($reviewImagesList)->toHtml() ?>
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased"
@@ -677,7 +678,7 @@
                         });
                         const data = await response.json();
                         if (data.success) {
-                            if (isBuyNow) window.location.href = config.checkoutUrl;
+                            if (isBuyNow) window.location.href = config.cartUrl;
                             else {
                                 Swal.fire({
                                     icon: 'success',

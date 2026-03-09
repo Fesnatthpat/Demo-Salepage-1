@@ -22,6 +22,11 @@ class OrderService
         $this->cartService = $cartService;
     }
 
+    public function getCartService(): CartService
+    {
+        return $this->cartService;
+    }
+
     public function createOrder(array $data, User $user, array $selectedItems = [], array $selectedFreebies = []): Order
     {
         return DB::transaction(function () use ($data, $user, $selectedItems, $selectedFreebies) {
@@ -186,7 +191,27 @@ class OrderService
             }
 
             // 5. คำนวณส่วนลดเพิ่มเติมจากโปรโมชั่น (รหัสส่วนลด และส่วนลดอัตโนมัติ)
-            $additionalDiscount = $this->cartService->calculateTotalDiscount($netAmount);
+            $promos = $this->cartService->getApplicablePromotions($allCartItems);
+            $additionalDiscount = 0;
+
+            foreach ($promos as $promo) {
+                // ตรวจสอบ usage_limit ก่อนใช้งาน (Double check ใน Transaction)
+                if ($promo->usage_limit !== null && $promo->used_count >= $promo->usage_limit) {
+                    continue; // ข้ามโปรโมชั่นที่สิทธิ์เต็มแล้ว
+                }
+
+                // คำนวณส่วนลด
+                if ($promo->discount_value > 0) {
+                    if ($promo->discount_type === 'fixed') {
+                        $additionalDiscount += (float) $promo->discount_value;
+                    } elseif ($promo->discount_type === 'percentage') {
+                        $additionalDiscount += ($netAmount * ((float) $promo->discount_value / 100));
+                    }
+                }
+
+                // [NEW] เพิ่มจำนวนการใช้งานโปรโมชั่น
+                \App\Models\Promotion::where('id', $promo->id)->increment('used_count');
+            }
             
             $netAmount = max(0, $netAmount - $additionalDiscount);
             $totalDiscount += $additionalDiscount;

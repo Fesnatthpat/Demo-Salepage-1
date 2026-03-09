@@ -45,8 +45,8 @@ class AuthController extends Controller
             return redirect('/login')->with('error', 'LINE Login Failed: '.$e->getMessage());
         }
 
-        // 1. Get guest session key BEFORE login changes the session
-        $guestSessionKey = '_guest_'.session()->getId();
+        // 1. Get guest session ID BEFORE login changes the session
+        $guestSessionId = session()->getId();
 
         // 2. Create or find the user
         $user = User::updateOrCreate(
@@ -62,7 +62,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         // 4. Use the CartService to merge the guest cart into the user's cart
-        $this->cartService->mergeGuestCart($guestSessionKey, $user->id);
+        $this->cartService->mergeGuestCart($guestSessionId, $user->id);
 
         return redirect()->intended('/');
     }

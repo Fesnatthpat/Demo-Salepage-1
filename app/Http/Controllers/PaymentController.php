@@ -33,14 +33,24 @@ class PaymentController extends Controller
     // [Step 1] Checkout Page
     public function checkout(Request $request)
     {
+        $userId = auth()->id();
+        $cartContent = Cart::session($userId)->getContent();
+
+        // 1. ดึงรายการที่เลือกจาก Request
         $selectedItems = $request->input('selected_items', []);
         $selectedFreebies = $request->input('selected_freebies', []);
 
-        if (empty($selectedItems)) {
-            return redirect()->route('cart.index')->with('error', 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
+        // 2. ถ้าไม่มีการส่ง selected_items มา (เช่น กด "สั่งซื้อเลย" จากหน้าสินค้า หรือเข้า URL ตรงๆ)
+        // ให้เลือกสินค้าทั้งหมดที่มีอยู่ในตะกร้าโดยอัตโนมัติ
+        if (empty($selectedItems) && !$cartContent->isEmpty()) {
+            $selectedItems = $cartContent->pluck('id')->map(fn($id) => (string)$id)->toArray();
         }
 
-        $cartContent = Cart::session(auth()->id())->getContent();
+        // 3. ถ้าตะกร้าว่างเปล่าจริงๆ หรือยังไม่ได้เลือกสินค้า (กรณีที่อาจจะหลุดมา)
+        if (empty($selectedItems)) {
+            return redirect()->route('cart.index')->with('error', 'ขออภัย! กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
+        }
+
         $cartItems = collect();
 
         foreach ($cartContent as $item) {
@@ -130,30 +140,12 @@ class PaymentController extends Controller
 
         $user = Auth::user();
 
-        // [New] ถ้ามีการส่งโค้ดส่วนลดมา ให้เก็บเข้า session ก่อนสร้างออเดอร์
+        // [New] ใช้ CartService ในการจัดการรหัสส่วนลด
         if ($request->filled('discount_code')) {
-            $discountCode = trim($request->input('discount_code'));
-            $promotion = \App\Models\Promotion::where('code', $discountCode)
-                ->where('is_discount_code', true)
-                ->where('is_active', true)
-                ->where(function ($q) {
-                    $now = now();
-                    $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
-                })
-                ->where(function ($q) {
-                    $now = now();
-                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
-                })
-                ->first();
-
-            if ($promotion) {
-                $fixed = 0; $percentage = 0;
-                if ($promotion->discount_type === 'fixed') {
-                    $fixed = $promotion->discount_value;
-                } elseif ($promotion->discount_type === 'percentage') {
-                    $percentage = $promotion->discount_value / 100;
-                }
-                session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixed, 'percentage' => $percentage]]);
+            try {
+                $this->orderService->getCartService()->applyPromoCode($request->input('discount_code'));
+            } catch (\Exception $e) {
+                return redirect()->route('cart.index')->with('error', $e->getMessage());
             }
         }
 
@@ -297,45 +289,22 @@ class PaymentController extends Controller
 
             Log::info('applyDiscount: Processing code', ['code' => $discountCode, 'current_time' => $now]);
 
-            $promotion = Promotion::where('code', $discountCode)
-                ->where('is_discount_code', true)
-                ->where('is_active', true)
-                // [FIX] เปลี่ยนกลับมาใช้ where ธรรมดา เพื่อให้เช็คเวลาด้วย (HH:mm:ss)
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('start_date')->orWhere('start_date', '<=', $now);
-                })
-                ->where(function ($q) use ($now) {
-                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
-                })
-                ->first();
-
-            if ($promotion) {
-                Log::info('applyDiscount: Promotion found', [
-                    'promotion_id' => $promotion->id,
-                    'is_active' => $promotion->is_active,
-                    'start_date' => $promotion->start_date,
-                    'end_date' => $promotion->end_date,
-                    'current_time' => $now,
-                ]);
-
+            try {
+                $this->orderService->getCartService()->applyPromoCode($discountCode);
                 $success = true;
                 $message = 'ใช้รหัสส่วนลด '.$discountCode.' สำเร็จ!';
-                if ($promotion->discount_type === 'fixed') {
-                    $fixedDiscountValue = $promotion->discount_value;
-                } elseif ($promotion->discount_type === 'percentage') {
-                    $percentageDiscountRate = $promotion->discount_value / 100;
+                
+                // ดึงค่าลดราคามาคำนวณ Preview
+                $promo = \App\Models\Promotion::where('code', $discountCode)->first();
+                if ($promo->discount_type === 'fixed') {
+                    $fixedDiscountValue = $promo->discount_value;
+                } else {
+                    $percentageDiscountRate = $promo->discount_value / 100;
                 }
-            } else {
-                Log::warning('applyDiscount: Code invalid or expired', [
-                    'code_attempted' => $discountCode,
-                    'server_time' => $now->toDateTimeString(),
-                    'timezone' => config('app.timezone'),
-                ]);
-                session()->forget('applied_discount_code');
-            }
-
-            if ($success) {
-                session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixedDiscountValue, 'percentage' => $percentageDiscountRate]]);
+            } catch (\Exception $e) {
+                $success = false;
+                $message = $e->getMessage();
+                session()->forget('applied_discount_code'); // Clear old data if new code fails
             }
 
             $cartContent = Cart::session($userId)->getContent();

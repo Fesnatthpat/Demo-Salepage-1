@@ -120,10 +120,12 @@
                                         @if (isset($heroSlides) && $heroSlides->count() > 0)
                                             @foreach ($heroSlides as $slide)
                                                 <div class="swiper-slide">
+                                                    {{-- เพิ่ม bg-gray-50 เพื่อรองรับพื้นที่ว่าง --}}
                                                     <a href="{{ $slide->link_url ?? '/allproducts' }}"
-                                                        class="block w-full h-full">
+                                                        class="block w-full h-full bg-gray-50">
+                                                        {{-- ▼▼▼ แก้ไขตรงนี้: เปลี่ยน object-cover เป็น object-contain ▼▼▼ --}}
                                                         <img src="{{ Storage::url($slide->image_path) }}"
-                                                            class="w-full h-full object-cover object-center"
+                                                            class="w-full h-full object-center object-center"
                                                             alt="{{ $slide->title ?? 'Slide' }}"
                                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Banner+Image';" />
                                                     </a>
@@ -133,9 +135,12 @@
                                             {{-- Fallback Images --}}
                                             @foreach (['th-1.png', 'th-2.png', 'th-3.png', 'th-4.png', 'th-5.png'] as $img)
                                                 <div class="swiper-slide">
-                                                    <a href="/allproducts" class="block w-full h-full">
+                                                    {{-- เพิ่ม bg-gray-50 เพื่อรองรับพื้นที่ว่าง --}}
+                                                    <a href="/allproducts" class="block w-full h-full bg-gray-50">
+                                                        {{-- ▼▼▼ แก้ไขตรงนี้: เปลี่ยน object-cover เป็น object-contain ▼▼▼ --}}
                                                         <img src="{{ asset('images/' . $img) }}"
-                                                            class="w-full h-full object-cover object-center" alt="Slide"
+                                                            class="w-full h-full object-contain object-center"
+                                                            alt="Slide"
                                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Welcome+Banner';" />
                                                     </a>
                                                 </div>

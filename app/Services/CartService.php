@@ -476,8 +476,9 @@ class CartService
             throw new Exception("รหัสส่วนลดไม่ถูกต้อง หรือหมดอายุแล้ว");
         }
 
-        if ($promo->usage_limit && $promo->used_count >= $promo->usage_limit) {
-            throw new Exception("รหัสส่วนลดนี้ถูกใช้ครบจำนวนสิทธิ์แล้ว");
+        // [NEW] ตรวจสอบสิทธิ์การใช้งาน
+        if ($promo->usage_limit !== null && $promo->used_count >= $promo->usage_limit) {
+            throw new Exception("ขออภัย! รหัสส่วนลดนี้ถูกใช้ครบจำนวนสิทธิ์แล้ว");
         }
 
         // บันทึกรหัสลงใน Session ของตะกร้า
@@ -616,7 +617,7 @@ class CartService
         }
     }
 
-    private function getApplicablePromotions(Collection $cartItems): Collection
+    public function getApplicablePromotions(Collection $cartItems): Collection
     {
         if ($cartItems->isEmpty()) {
             return collect();
@@ -661,9 +662,14 @@ class CartService
 
         $allPromoIds = $potentialPromotionIds->merge($promoCodeIds)->unique();
 
-        // 🌟 แก้ไข: โหลด giftableProducts มาด้วย
+        // 🌟 แก้ไข: โหลด giftableProducts และกรองโปรโมชั่นที่สิทธิ์เต็มแล้ว
         return Promotion::with(['rules', 'actions.giftableProducts'])->whereIn('id', $allPromoIds)
             ->where('is_active', true)
+            ->where(function($q) {
+                // กรองเฉพาะโปรโมชั่นที่ยังมีสิทธิ์เหลือ (usage_limit เป็น null คือใช้ได้ไม่จำกัด)
+                $q->whereNull('usage_limit')
+                  ->orWhereColumn('used_count', '<', 'usage_limit');
+            })
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->get()->filter(function ($promo) use ($cartQuantities, $subTotal) {

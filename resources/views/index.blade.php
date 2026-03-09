@@ -121,7 +121,7 @@
                                 <div class="swiper-slide">
                                     <a href="{{ $slide->link_url ?? '/allproducts' }}" class="block w-full h-full">
                                         <img src="{{ Storage::url($slide->image_path) }}"
-                                            class="w-full h-full object-cover object-center"
+                                            class="w-full h-full object-center object-center"
                                             alt="{{ $slide->title ?? 'Slide' }}"
                                             onerror="this.onerror=null;this.src='https://via.placeholder.com/1600x600?text=Banner+Image';" />
                                     </a>

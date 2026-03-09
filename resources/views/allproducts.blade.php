@@ -102,7 +102,7 @@
 
     {{-- พื้นหลัง --}}
     <div class="min-h-screen py-4 md:py-8 bg-cover bg-center bg-no-repeat bg-fixed"
-        style="background-image: url('{{ asset('') }}');">
+        style="background-image: url('{{ asset('images/BG/fruit1.jpg') }}');">
 
         <div class="container mx-auto px-2 md:px-4">
 
@@ -111,7 +111,7 @@
                 <main class="w-full">
 
                     {{-- ★★★ HERO SECTION (สไลด์หลัก) ★★★ --}}
-                    <div class="w-full pb-6 pt-2 md:pt-4">
+                    <div class="w-full pb-6 pt-2 md:pt-4 bg-white rounded-xl shadow-md border border-gray-300">
                         <div class="container mx-auto px-4">
                             <div
                                 class="relative w-full aspect-[16/10] md:aspect-[2.5/1] lg:aspect-[3/1] bg-gray-100 group rounded-2xl overflow-hidden shadow-xl">
@@ -234,7 +234,7 @@
 
                     {{-- ★★★ PRODUCT GRID (Optimized for Mobile) ★★★ --}}
                     @if ($products->count() > 0)
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 bg-white p-4 rounded-xl shadow-sm border border-gray-300">
                             @foreach ($products as $product)
                                 @if ($product)
                                     @php

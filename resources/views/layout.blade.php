@@ -276,7 +276,8 @@
     @endunless
 
 
-    <div class="min-h-screen">
+    <div class="min-h-screen"
+    style="background-image: url('{{ asset('images/BG/fruit1.jpg') }}');">
         @yield('content')
     </div>
 

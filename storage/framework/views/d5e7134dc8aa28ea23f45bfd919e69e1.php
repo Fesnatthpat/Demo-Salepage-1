@@ -318,7 +318,8 @@ unset($__split);
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
 
-    <div class="min-h-screen">
+    <div class="min-h-screen"
+    style="background-image: url('<?php echo e(asset('images/BG/fruit1.jpg')); ?>');">
         <?php echo $__env->yieldContent('content'); ?>
     </div>
 

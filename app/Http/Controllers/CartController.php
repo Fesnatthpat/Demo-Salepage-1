@@ -14,11 +14,12 @@ class CartController extends Controller
     {
         $selectedIds = $request->input('selected_items');
         
-        // ถ้ามีการส่ง parameter มาแต่เป็นค่าว่าง (เช่น ?selected_items=) 
-        // ให้เป็น array ว่างแทนที่จะเป็น null
-        if ($selectedIds === '') {
+        // แก้ไข: ถ้าไม่มีการส่ง parameter มาเลย (เข้าหน้าตะกร้าครั้งแรก) 
+        // หรือส่งมาแต่เป็นค่าว่าง ให้เริ่มต้นเป็นอาร์เรย์ว่าง (ไม่เลือกสินค้าใดๆ)
+        // เพื่อให้ตรงตามความต้องการว่า "ต้องเลือกก่อนถึงจะแสดงของแถม"
+        if ($selectedIds === null || $selectedIds === '') {
             $selectedIds = [];
-        } elseif ($selectedIds && is_string($selectedIds)) {
+        } elseif (is_string($selectedIds)) {
             $selectedIds = explode(',', $selectedIds);
         }
         

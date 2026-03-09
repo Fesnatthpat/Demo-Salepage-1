@@ -41,8 +41,8 @@ class AdminController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'site_cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
+            'site_cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
         ]);
 
         // --- 1 & 2. Logo & Cover Image (SiteSetting) ---

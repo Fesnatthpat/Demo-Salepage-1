@@ -162,6 +162,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/products/{product}/toggle-recommended', [AdminProductController::class, 'toggleRecommended'])->name('products.toggleRecommended');
 
     // Promotion Management (จัดการโปรโมชั่น)
+    Route::get('/promotions/logs', [App\Http\Controllers\Admin\PromotionLogController::class, 'index'])->name('promotions.logs');
     Route::resource('promotions', PromotionController::class);
 
     // FAQ Management (จัดการคำถามที่พบบ่อย)

@@ -53,6 +53,30 @@ class Promotion extends Model
     }
 
     /**
+     * ความสัมพันธ์กับประวัติการใช้งาน
+     */
+    public function usageLogs()
+    {
+        return $this->hasMany(PromotionUsageLog::class);
+    }
+
+    /**
+     * จำนวนครั้งที่ใช้ (จาก Log จริง)
+     */
+    public function getUsageCountAttribute(): int
+    {
+        return $this->usageLogs()->count();
+    }
+
+    /**
+     * จำนวนคนที่ใช้ (นับ User แบบไม่ซ้ำ)
+     */
+    public function getUniqueUsersCountAttribute(): int
+    {
+        return $this->usageLogs()->distinct('user_id')->count('user_id');
+    }
+
+    /**
      * ตรวจสอบว่าโปรโมชั่นอยู่ในช่วงเวลาที่กำหนดหรือไม่
      */
     public function isWithinDateRange(): bool

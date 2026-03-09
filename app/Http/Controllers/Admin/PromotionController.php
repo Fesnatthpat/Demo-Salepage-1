@@ -17,7 +17,7 @@ class PromotionController extends Controller
 
     public function index()
     {
-        $promotions = Promotion::with(['rules', 'actions.giftableProducts'])
+        $promotions = Promotion::with(['rules', 'actions.giftableProducts', 'usageLogs'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         $products = ProductSalepage::get()->keyBy('pd_sp_id');

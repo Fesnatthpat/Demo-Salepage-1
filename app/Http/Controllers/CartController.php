@@ -13,7 +13,12 @@ class CartController extends Controller
     public function index(Request $request)
     {
         $selectedIds = $request->input('selected_items');
-        if ($selectedIds && is_string($selectedIds)) {
+        
+        // ถ้ามีการส่ง parameter มาแต่เป็นค่าว่าง (เช่น ?selected_items=) 
+        // ให้เป็น array ว่างแทนที่จะเป็น null
+        if ($selectedIds === '') {
+            $selectedIds = [];
+        } elseif ($selectedIds && is_string($selectedIds)) {
             $selectedIds = explode(',', $selectedIds);
         }
         

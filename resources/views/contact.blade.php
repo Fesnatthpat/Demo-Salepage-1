@@ -19,7 +19,7 @@
 
                 {{-- Contact Card --}}
                 <div class="bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100">
-                    <div class="p-8 md:p-12">
+                    <div class="p-8 md:p-12 bg-white">
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                             {{-- Left Column: ข้อมูลการติดต่อ --}}

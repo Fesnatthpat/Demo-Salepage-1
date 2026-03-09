@@ -1,12 +1,12 @@
-@extends('layouts.admin')
 
-@section('title', 'สร้างโปรโมชั่นใหม่')
 
-@section('content')
+<?php $__env->startSection('title', 'สร้างโปรโมชั่นใหม่'); ?>
+
+<?php $__env->startSection('content'); ?>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {{-- Header --}}
+        
         <div class="mb-10 animate-fade-in-down">
-            <a href="{{ route('admin.promotions.index') }}"
+            <a href="<?php echo e(route('admin.promotions.index')); ?>"
                 class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white mb-6 transition-all transform hover:-translate-x-1">
                 <i class="fas fa-arrow-left mr-2"></i> กลับไปหน้าจัดการ
             </a>
@@ -22,9 +22,10 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.promotions.store') }}" method="POST" autocomplete="off">
-            @csrf
-            @include('admin.promotions._form')
+        <form action="<?php echo e(route('admin.promotions.store')); ?>" method="POST" autocomplete="off">
+            <?php echo csrf_field(); ?>
+            <?php echo $__env->make('admin.promotions._form', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </form>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/promotions/create.blade.php ENDPATH**/ ?>

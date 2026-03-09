@@ -19,6 +19,19 @@
                     <i class="fas fa-check-circle"></i> {{ session('success') }}
                 </div>
             @endif
+
+            @if ($errors->any())
+                <div class="px-6 py-2 bg-red-500/20 border border-red-500 text-red-300 rounded-xl flex flex-col gap-1 animate-fade-in shadow-lg shadow-red-500/10">
+                    <div class="flex items-center gap-2 font-bold">
+                        <i class="fas fa-exclamation-circle"></i> พบข้อผิดพลาด:
+                    </div>
+                    <ul class="text-xs list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
 
         {{-- Tab Navigation --}}

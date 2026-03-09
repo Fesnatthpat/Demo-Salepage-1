@@ -1,4 +1,4 @@
-@php
+<?php
     $buyData = old('buy_items', $buy_items ?? [['product_id' => [], 'quantity' => 1]]);
     // Ensure array structure implies multi-select for products
     foreach ($buyData as &$item) {
@@ -8,7 +8,7 @@
     }
 
     $getData = old('get_items', $get_items ?? [['product_id' => '', 'quantity' => 1]]);
-@endphp
+?>
 
 <style>
     /* Custom TomSelect Dark Theme - Refined */
@@ -72,15 +72,15 @@
 </style>
 
 <div x-data="promotionForm(
-    {{ old('is_discount_code', isset($promotion) && $promotion->code ? 'true' : 'false') }},
-    '{{ old('discount_type', $promotion->discount_type ?? '') }}'
+    <?php echo e(old('is_discount_code', isset($promotion) && $promotion->code ? 'true' : 'false')); ?>,
+    '<?php echo e(old('discount_type', $promotion->discount_type ?? '')); ?>'
 )" class="space-y-8 animate-fade-in-up">
 
-    {{-- 1. Campaign Type Selector --}}
+    
     <div class="space-y-3">
         <label class="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">เลือกประเภทโปรโมชั่น</label>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {{-- Auto Discount --}}
+            
             <label class="cursor-pointer group relative">
                 <input type="radio" name="promo_type_selector" value="auto" x-model="promoType" class="peer sr-only" />
                 <div
@@ -99,7 +99,7 @@
                 </div>
             </label>
 
-            {{-- Coupon Code --}}
+            
             <label class="cursor-pointer group relative">
                 <input type="radio" name="promo_type_selector" value="code" x-model="promoType"
                     class="peer sr-only" />
@@ -119,7 +119,7 @@
                 </div>
             </label>
 
-            {{-- Buy X Get Y --}}
+            
             <label class="cursor-pointer group relative">
                 <input type="radio" name="promo_type_selector" value="bxgy" x-model="promoType"
                     class="peer sr-only" />
@@ -142,8 +142,8 @@
     </div>
     <input type="hidden" name="is_discount_code" :value="isDiscountCode ? 1 : 0">
 
-    {{-- Error Alert --}}
-    @if ($errors->any())
+    
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
         <div class="bg-red-500/10 border border-red-500/50 rounded-xl p-4 flex items-start gap-4 animate-shake">
             <div class="p-2 bg-red-500/20 rounded-lg text-red-500">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -151,27 +151,27 @@
             <div>
                 <h3 class="font-bold text-red-400">พบข้อผิดพลาด กรุณาตรวจสอบ</h3>
                 <ul class="text-sm text-red-300 mt-1 list-disc list-inside space-y-0.5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </ul>
             </div>
         </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-    {{-- MAIN FORM GRID --}}
+    
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
 
-        {{-- LEFT COLUMN: RULES & CONFIGURATION --}}
+        
         <div class="xl:col-span-2 space-y-6">
 
-            {{-- A. Discount Configuration (Auto/Code) --}}
+            
             <div x-show="promoType === 'auto' || promoType === 'code'"
                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
                 class="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden relative">
 
-                {{-- Decorative bg --}}
+                
                 <div
                     class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/5 to-transparent rounded-bl-full -z-0">
                 </div>
@@ -189,7 +189,7 @@
                 </div>
 
                 <div class="p-6 space-y-8 relative z-10">
-                    {{-- Coupon Code Field --}}
+                    
                     <div x-show="promoType === 'code'"
                         class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 relative group transition-all hover:border-blue-500/50">
                         <label class="block text-sm font-bold text-blue-300 mb-2 uppercase tracking-wide">รหัสส่วนลด
@@ -197,7 +197,7 @@
                         <div class="relative">
                             <input type="text" name="code" placeholder="เช่น SALE2024"
                                 class="block w-full bg-gray-900 border-gray-600 rounded-lg py-4 px-5 text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase tracking-widest font-mono text-xl shadow-inner transition-all"
-                                value="{{ old('code', $promotion->code ?? '') }}"
+                                value="<?php echo e(old('code', $promotion->code ?? '')); ?>"
                                 :required="promoType === 'code'" />
                             <div
                                 class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none text-blue-500">
@@ -215,12 +215,13 @@
                                 <select name="discount_type" x-model="discountType"
                                     class="block w-full bg-gray-900 border-gray-600 rounded-lg py-3 px-4 text-white appearance-none focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer">
                                     <option value="">-- เลือกรูปแบบ --</option>
-                                    @foreach ($discountTypes as $key => $value)
-                                        <option value="{{ $key }}"
-                                            {{ old('discount_type', $promotion->discount_type ?? '') == $key ? 'selected' : '' }}>
-                                            {{ $key === 'fixed' ? 'ลดเป็นจำนวนเงิน (Fixed Amount)' : 'ลดเป็นเปอร์เซ็นต์ (Percentage %)' }}
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $discountTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                        <option value="<?php echo e($key); ?>"
+                                            <?php echo e(old('discount_type', $promotion->discount_type ?? '') == $key ? 'selected' : ''); ?>>
+                                            <?php echo e($key === 'fixed' ? 'ลดเป็นจำนวนเงิน (Fixed Amount)' : 'ลดเป็นเปอร์เซ็นต์ (Percentage %)'); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </select>
                                 <div
                                     class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
@@ -235,7 +236,7 @@
                                 <input type="number" name="discount_value" step="0.01" min="0"
                                     placeholder="0"
                                     class="block w-full bg-gray-900 border-gray-600 rounded-lg py-3 px-4 text-white focus:ring-emerald-500 focus:border-emerald-500 font-bold text-xl text-right pr-12 shadow-inner"
-                                    value="{{ old('discount_value', $promotion->discount_value ?? '') }}"
+                                    value="<?php echo e(old('discount_value', $promotion->discount_value ?? '')); ?>"
                                     :required="promoType === 'auto' || promoType === 'code'" />
                                 <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                     <span class="text-gray-400 font-bold text-lg"
@@ -247,12 +248,12 @@
                 </div>
             </div>
 
-            {{-- B. Buy X Get Y Builder --}}
+            
             <div x-show="isBxGy" x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                 class="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden relative">
 
-                {{-- Decorative bg --}}
+                
                 <div
                     class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-500/5 to-transparent rounded-bl-full -z-0">
                 </div>
@@ -270,7 +271,7 @@
                         </div>
                     </div>
 
-                    {{-- AND/OR Switch --}}
+                    
                     <div class="bg-gray-900 p-1 rounded-lg border border-gray-600 inline-flex shadow-inner">
                         <label
                             class="cursor-pointer px-4 py-1.5 rounded-md text-xs font-bold transition-all duration-200"
@@ -294,7 +295,7 @@
                 <div class="p-6 relative z-10">
                     <div class="flex flex-col gap-6">
 
-                        {{-- 1. Buy Condition --}}
+                        
                         <div
                             class="relative border-2 border-dashed border-gray-600 rounded-xl p-6 bg-gray-900/30 hover:border-gray-500 transition-colors">
                             <div
@@ -303,17 +304,14 @@
                             </div>
 
                             <div class="space-y-4 pt-2">
-                                {{--
-                                    FIX: ใช้ x-data wrapper ใน template แต่ละ row เพื่อให้ TomSelect
-                                    init/destroy ได้อย่างถูกต้องตาม lifecycle ของ Alpine
-                                --}}
+                                
                                 <template x-for="(item, index) in buys" :key="'buy-row-' + index">
                                     <div
                                         x-data="buyRow(item, index)"
                                         x-init="initSelect()"
                                         x-destroy="destroySelect()"
                                         class="flex flex-col md:flex-row gap-3 items-start md:items-center bg-gray-800 p-4 rounded-xl border border-gray-700 relative group transition-all hover:border-gray-500">
-                                        {{-- Remove Button --}}
+                                        
                                         <button type="button" x-show="buys.length > 1"
                                             @click="$dispatch('remove-buy-item', { index: index })"
                                             class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:scale-110 shadow-lg z-20">
@@ -323,18 +321,16 @@
                                         <div class="flex-grow w-full">
                                             <label
                                                 class="text-[10px] uppercase text-gray-500 font-bold mb-1.5 block tracking-wider">เลือกสินค้าที่ต้องซื้อ</label>
-                                            {{--
-                                                FIX: ใช้ x-ref แทน dynamic id เพื่อหลีกเลี่ยงปัญหา
-                                                ID ซ้ำหลังจาก splice
-                                            --}}
+                                            
                                             <select x-ref="buySelect"
                                                 :name="`buy_items[${index}][product_id][]`" multiple
                                                 class="buy-products-select" x-bind:disabled="isDiscountCode">
-                                                @foreach ($products as $p)
-                                                    <option value="{{ $p->pd_sp_id }}">
-                                                        {{ $p->pd_sp_name }}
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                                    <option value="<?php echo e($p->pd_sp_id); ?>">
+                                                        <?php echo e($p->pd_sp_name); ?>
+
                                                     </option>
-                                                @endforeach
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                             </select>
                                         </div>
                                         <div class="w-full md:w-32 flex-shrink-0">
@@ -368,7 +364,7 @@
                             </div>
                         </div>
 
-                        {{-- Connector Arrow --}}
+                        
                         <div class="flex justify-center -my-4 z-10">
                             <div
                                 class="bg-gray-700 text-gray-300 rounded-full w-10 h-10 flex items-center justify-center border-4 border-gray-800 shadow-xl">
@@ -376,7 +372,7 @@
                             </div>
                         </div>
 
-                        {{-- 2. Get Result --}}
+                        
                         <div
                             class="relative border-2 border-dashed border-pink-500/30 rounded-xl p-6 bg-pink-900/5 hover:border-pink-500/50 transition-colors">
                             <div
@@ -391,7 +387,7 @@
                                     </label>
                                     <select id="giftable-products-select" name="giftable_product_ids[]" multiple
                                         x-bind:disabled="isDiscountCode">
-                                        @php
+                                        <?php
                                             $selectedGiftIds = collect(
                                                 old(
                                                     'giftable_product_ids',
@@ -402,13 +398,14 @@
                                                         : [],
                                                 ),
                                             )->map(fn($id) => (string) $id);
-                                        @endphp
-                                        @foreach ($products as $p)
-                                            <option value="{{ $p->pd_sp_id }}"
-                                                {{ $selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : '' }}>
-                                                {{ $p->pd_sp_name }}
+                                        ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                            <option value="<?php echo e($p->pd_sp_id); ?>"
+                                                <?php echo e($selectedGiftIds->contains((string) $p->pd_sp_id) ? 'selected' : ''); ?>>
+                                                <?php echo e($p->pd_sp_name); ?>
+
                                             </option>
-                                        @endforeach
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                     </select>
                                     <p
                                         class="text-[10px] text-gray-500 mt-2 bg-gray-900/50 p-2 rounded border border-gray-700/50">
@@ -452,24 +449,24 @@
 
         </div>
 
-        {{-- RIGHT COLUMN: BASIC INFO --}}
+        
         <div class="xl:col-span-1 space-y-6">
             <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl p-6 sticky top-6">
                 <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2 pb-4 border-b border-gray-700">
                     <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span> ข้อมูลทั่วไป
                 </h3>
 
-                {{-- Name --}}
+                
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-300 mb-2">ชื่อแคมเปญ <span
                             class="text-red-400">*</span></label>
                     <input type="text" name="name"
                         class="block w-full bg-gray-900 border-gray-600 rounded-lg py-3 px-4 text-white focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder-gray-500"
-                        value="{{ old('name', $promotion->name ?? '') }}" required
+                        value="<?php echo e(old('name', $promotion->name ?? '')); ?>" required
                         placeholder="ตั้งชื่อให้จำง่าย (Admin Only)" />
                 </div>
 
-                {{-- Active Status --}}
+                
                 <div class="mb-6">
                     <label
                         class="flex items-center justify-between p-4 bg-gray-900 rounded-xl border border-gray-600 cursor-pointer hover:border-emerald-500/50 transition-all group">
@@ -488,7 +485,7 @@
                         <div class="relative inline-flex items-center cursor-pointer">
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" class="sr-only peer"
-                                {{ old('is_active', $promotion->is_active ?? true) ? 'checked' : '' }}>
+                                <?php echo e(old('is_active', $promotion->is_active ?? true) ? 'checked' : ''); ?>>
                             <div
                                 class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner">
                             </div>
@@ -496,15 +493,15 @@
                     </label>
                 </div>
 
-                {{-- Description --}}
+                
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-300 mb-2">รายละเอียด (Internal Note)</label>
                     <textarea name="description" rows="3"
                         class="block w-full bg-gray-900 border-gray-600 rounded-lg py-3 px-4 text-white focus:ring-emerald-500 focus:border-emerald-500 text-sm placeholder-gray-500"
-                        placeholder="โน้ตสำหรับแอดมิน... (ลูกค้าไม่เห็น)">{{ old('description', $promotion->description ?? '') }}</textarea>
+                        placeholder="โน้ตสำหรับแอดมิน... (ลูกค้าไม่เห็น)"><?php echo e(old('description', $promotion->description ?? '')); ?></textarea>
                 </div>
 
-                {{-- Dates --}}
+                
                 <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-700 mb-5 space-y-4">
                     <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">ระยะเวลาแคมเปญ</h4>
                     <div>
@@ -512,7 +509,7 @@
                         <div class="relative">
                             <input type="datetime-local" name="start_date"
                                 class="block w-full bg-gray-900 border-gray-600 rounded-lg py-2 pl-3 pr-2 text-white text-sm focus:ring-emerald-500 focus:border-emerald-500"
-                                value="{{ old('start_date', isset($promotion->start_date) ? \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i') : '') }}" />
+                                value="<?php echo e(old('start_date', isset($promotion->start_date) ? \Carbon\Carbon::parse($promotion->start_date)->format('Y-m-d\TH:i') : '')); ?>" />
 
                         </div>
                     </div>
@@ -521,35 +518,35 @@
                         <div class="relative">
                             <input type="datetime-local" name="end_date"
                                 class="block w-full bg-gray-900 border-gray-600 rounded-lg py-2 pl-3 pr-2 text-white text-sm focus:ring-emerald-500 focus:border-emerald-500"
-                                value="{{ old('end_date', isset($promotion->end_date) ? \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i') : '') }}" />
+                                value="<?php echo e(old('end_date', isset($promotion->end_date) ? \Carbon\Carbon::parse($promotion->end_date)->format('Y-m-d\TH:i') : '')); ?>" />
                         </div>
                     </div>
                 </div>
 
-                {{-- Limits --}}
+                
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5">จำกัดสิทธิ์
                             (ครั้ง)</label>
                         <input type="number" name="usage_limit" min="1" placeholder="ไม่จำกัด"
                             class="block w-full bg-gray-900 border-gray-600 rounded-lg py-2.5 px-3 text-white text-sm focus:ring-emerald-500 focus:border-emerald-500 text-center"
-                            value="{{ old('usage_limit', $promotion->usage_limit ?? '') }}" />
+                            value="<?php echo e(old('usage_limit', $promotion->usage_limit ?? '')); ?>" />
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5">ยอดขั้นต่ำ (บาท)</label>
                         <input type="number" name="min_order_value" min="0" step="0.01" placeholder="0"
                             class="block w-full bg-gray-900 border-gray-600 rounded-lg py-2.5 px-3 text-white text-sm focus:ring-emerald-500 focus:border-emerald-500 text-center"
-                            value="{{ old('min_order_value', $promotion->min_order_value ?? '') }}" />
+                            value="<?php echo e(old('min_order_value', $promotion->min_order_value ?? '')); ?>" />
                     </div>
                 </div>
 
-                {{-- Actions --}}
+                
                 <div class="flex flex-col gap-3">
                     <button type="submit"
                         class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/50 transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
                         <i class="fas fa-save"></i> บันทึกข้อมูล
                     </button>
-                    <a href="{{ route('admin.promotions.index') }}"
+                    <a href="<?php echo e(route('admin.promotions.index')); ?>"
                         class="w-full py-3 px-4 bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:bg-gray-700 font-medium rounded-xl text-center transition-colors">
                         ยกเลิก / ย้อนกลับ
                     </a>
@@ -560,7 +557,7 @@
 
 </div>
 
-{{-- Alpine Logic --}}
+
 <script>
     document.addEventListener('alpine:init', () => {
 
@@ -617,11 +614,11 @@
         }));
 
         Alpine.data('promotionForm', (initialIsDiscountCode, initialDiscountType) => ({
-            buys: @json($buyData),
-            gets: @json($getData),
+            buys: <?php echo json_encode($buyData, 15, 512) ?>,
+            gets: <?php echo json_encode($getData, 15, 512) ?>,
             discountType: initialDiscountType,
-            conditionType: '{{ old('condition_type', $promotion->condition_type ?? 'any') }}',
-            promoType: '{{ old('promo_type_selector', isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto') }}',
+            conditionType: '<?php echo e(old('condition_type', $promotion->condition_type ?? 'any')); ?>',
+            promoType: '<?php echo e(old('promo_type_selector', isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto')); ?>',
             giftTomSelect: null,
 
             get isDiscountCode() {
@@ -687,4 +684,4 @@
             },
         }));
     });
-</script>
+</script><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/promotions/_form.blade.php ENDPATH**/ ?>

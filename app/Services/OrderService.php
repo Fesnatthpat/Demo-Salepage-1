@@ -8,6 +8,7 @@ use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductSalepage;
+use App\Models\PromotionUsageLog;
 use App\Models\StockProduct;
 use App\Models\User;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
@@ -201,16 +202,28 @@ class OrderService
                 }
 
                 // คำนวณส่วนลด
+                $thisPromoDiscount = 0;
                 if ($promo->discount_value > 0) {
                     if ($promo->discount_type === 'fixed') {
-                        $additionalDiscount += (float) $promo->discount_value;
+                        $thisPromoDiscount = (float) $promo->discount_value;
                     } elseif ($promo->discount_type === 'percentage') {
-                        $additionalDiscount += ($netAmount * ((float) $promo->discount_value / 100));
+                        $thisPromoDiscount = ($netAmount * ((float) $promo->discount_value / 100));
                     }
                 }
 
+                $additionalDiscount += $thisPromoDiscount;
+
                 // [NEW] เพิ่มจำนวนการใช้งานโปรโมชั่น
                 \App\Models\Promotion::where('id', $promo->id)->increment('used_count');
+
+                // [NEW] บันทึก Log การใช้โปรโมชั่น
+                \App\Models\PromotionUsageLog::create([
+                    'promotion_id' => $promo->id,
+                    'order_id' => $order->id,
+                    'user_id' => $user->id,
+                    'code_used' => $promo->code, // อาจเป็นรหัสส่วนลด หรือ NULL ถ้าเป็น Auto Promotion
+                    'discount_amount' => $thisPromoDiscount,
+                ]);
             }
             
             $netAmount = max(0, $netAmount - $additionalDiscount);

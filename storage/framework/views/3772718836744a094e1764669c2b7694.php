@@ -1,28 +1,26 @@
-@extends('layout')
+<?php $__env->startSection('title', 'ตะกร้าสินค้า | Salepage Demo'); ?>
 
-@section('title', 'ตะกร้าสินค้า | Salepage Demo')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
     <div class="container px-4 mx-auto md:px-8 lg:p-12">
         <div class="p-6 bg-white shadow rounded-lg border-gray-200 md:p-8 lg:p-12">
-            <form action="{{ route('payment.checkout') }}" method="GET" id="checkout-form">
+            <form action="<?php echo e(route('payment.checkout')); ?>" method="GET" id="checkout-form">
                 <div class="">
-                    {{-- Header --}}
+                    
                     <div class="mb-6 border-b border-gray-200 pb-4 flex items-center gap-3">
-                        @if (isset($items) && !$items->isEmpty())
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($items) && !$items->isEmpty()): ?>
                             <div class="flex items-center">
                                 <input type="checkbox" id="select-all"
                                     class="w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
                                     onclick="toggleAll(this)">
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <h1 class="text-2xl font-bold text-gray-800">ตะกร้าสินค้า</h1>
                     </div>
 
-                    @if (isset($items) && !$items->isEmpty())
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($items) && !$items->isEmpty()): ?>
                         <div id="cart-items-list">
-                            @foreach ($items as $item)
-                                @php
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                <?php
                                     $quantity = $item->quantity;
                                     $price = $item->price;
                                     $originalPrice = $item->attributes->has('original_price')
@@ -39,96 +37,96 @@
 
                                     $displayImage =
                                         $item->attributes->image ?? 'https://via.placeholder.com/150?text=No+Image';
-                                @endphp
+                                ?>
 
                             <div
                                 class="flex flex-col md:flex-row md:items-start md:justify-between border-b border-gray-200 py-6 gap-4">
-                                {{-- Checkbox & Details --}}
+                                
                                 <div class="flex flex-row gap-4 w-full md:w-auto items-start">
                                     <div class="mt-8 md:mt-10">
-                                        <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" 
-                                            data-price="{{ $totalPrice }}" data-original-price="{{ $totalOriginalPrice }}"
+                                        <input type="checkbox" name="selected_items[]" value="<?php echo e($item->id); ?>" 
+                                            data-price="<?php echo e($totalPrice); ?>" data-original-price="<?php echo e($totalOriginalPrice); ?>"
                                             class="item-checkbox w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
                                             onchange="onItemSelectionChange()">
                                     </div>
                                     <div class="flex-shrink-0">
-                                        <img src="{{ $displayImage }}" alt="{{ $item->name }}"
+                                        <img src="<?php echo e($displayImage); ?>" alt="<?php echo e($item->name); ?>"
                                             class="w-20 h-20 object-cover rounded-lg bg-gray-100 border border-gray-100">
                                     </div>
                                     <div class="flex-1 mt-1">
                                         <h1 class="font-bold text-gray-800 text-sm md:text-base break-words">
-                                            {{ $item->name }}</h1>
+                                            <?php echo e($item->name); ?></h1>
 
                                         <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น:
-                                            @if ($isFree)
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isFree): ?>
                                                 <span class="font-bold text-red-600">ฟรี</span>
-                                            @elseif ($hasDiscount)
-                                                <s class="text-gray-400">฿{{ number_format($originalPrice) }}</s>
+                                            <?php elseif($hasDiscount): ?>
+                                                <s class="text-gray-400">฿<?php echo e(number_format($originalPrice)); ?></s>
                                                 <span
-                                                    class="font-semibold text-red-600 ml-1">฿{{ number_format($price) }}</span>
-                                            @else
-                                                <span class="text-gray-800">฿{{ number_format($price) }}</span>
-                                            @endif
+                                                    class="font-semibold text-red-600 ml-1">฿<?php echo e(number_format($price)); ?></span>
+                                            <?php else: ?>
+                                                <span class="text-gray-800">฿<?php echo e(number_format($price)); ?></span>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         </p>
                                     </div>
                                 </div>
 
-                                {{-- Actions --}}
+                                
                                 <div
                                     class="flex flex-row justify-between items-center md:flex-col md:items-end gap-4 w-full md:w-auto mt-2 md:mt-0 pl-9 md:pl-0">
                                     <div class="flex flex-col items-end">
-                                        @if ($isFree)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isFree): ?>
                                             <div class="text-2xl font-bold text-red-600">ฟรี</div>
-                                        @else
+                                        <?php else: ?>
                                             <div class="text-2xl font-bold text-red-600">
-                                                ฿{{ number_format($totalPrice) }}</div>
-                                        @endif
+                                                ฿<?php echo e(number_format($totalPrice)); ?></div>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </div>
                                     <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                                         <div class="flex items-center border border-gray-300 rounded h-10 md:h-12 bg-white">
                                             <button type="button"
                                                 class="cart-action-btn px-3 text-gray-600 hover:bg-gray-100 h-full flex items-center"
-                                                data-url="{{ route('cart.update', ['id' => $item->id, 'action' => 'decrease']) }}"
+                                                data-url="<?php echo e(route('cart.update', ['id' => $item->id, 'action' => 'decrease'])); ?>"
                                                 data-method="PATCH">-</button>
                                             <span
-                                                class="font-bold text-gray-700 text-sm md:text-base w-12 text-center">{{ $quantity }}</span>
+                                                class="font-bold text-gray-700 text-sm md:text-base w-12 text-center"><?php echo e($quantity); ?></span>
                                             <button type="button"
                                                 class="cart-action-btn px-3 text-gray-600 hover:bg-gray-100 h-full flex items-center"
-                                                data-url="{{ route('cart.update', ['id' => $item->id, 'action' => 'increase']) }}"
+                                                data-url="<?php echo e(route('cart.update', ['id' => $item->id, 'action' => 'increase'])); ?>"
                                                 data-method="PATCH">+</button>
                                         </div>
                                         <button type="button"
                                             class="cart-action-btn text-red-500 hover:text-red-700 text-sm md:btn md:btn-ghost md:btn-sm"
-                                            data-url="{{ route('cart.remove', $item->id) }}"
+                                            data-url="<?php echo e(route('cart.remove', $item->id)); ?>"
                                             data-method="DELETE">ลบ</button>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
 
-                        {{-- Summary --}}
+                        
                         <div class="flex flex-col lg:flex-row justify-end gap-5 mt-10">
                             <div class="w-full lg:w-[400px]">
                                 <div class="flex justify-between mt-5 text-base text-gray-600">
-                                    <div>ยอดรวมสินค้า (<span id="selected-count">{{ count($items) }}</span> รายการ)</div>
+                                    <div>ยอดรวมสินค้า (<span id="selected-count"><?php echo e(count($items)); ?></span> รายการ)</div>
                                     <div class="font-medium">฿<span
-                                            id="subtotal-display">{{ number_format($subTotal) }}</span></div>
+                                            id="subtotal-display"><?php echo e(number_format($subTotal)); ?></span></div>
                                 </div>
                                 <div class="flex justify-between mt-2 text-base text-red-500 font-semibold">
                                     <div>ส่วนลดโปรโมชั่น</div>
                                     <div class="font-medium">-฿<span
-                                            id="discount-display">{{ number_format($totalDiscount) }}</span>
+                                            id="discount-display"><?php echo e(number_format($totalDiscount)); ?></span>
                                     </div>
                                 </div>
                                 <div class="border-t border-gray-200 my-4"></div>
                                 <div class="flex justify-between items-center mb-6">
                                     <h1 class="font-bold text-xl text-gray-800">ยอดสุทธิ</h1>
                                     <h1 class="text-red-600 font-bold text-3xl">฿<span
-                                            id="total-display">{{ number_format($total) }}</span></h1>
+                                            id="total-display"><?php echo e(number_format($total)); ?></span></h1>
                                 </div>
 
-                                {{-- ★ ส่วนเลือกของแถม (จะปรากฏเมื่อเงื่อนไขครบในตะกร้า) ★ --}}
-                                @if(isset($freebieLimit) && $freebieLimit > 0 && isset($giftableProducts) && $giftableProducts->count() > 0)
+                                
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($freebieLimit) && $freebieLimit > 0 && isset($giftableProducts) && $giftableProducts->count() > 0): ?>
                                     <div class="mt-2 mb-6 p-5 bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl border border-pink-100 shadow-sm" id="gift-selection-area">
                                         <div class="flex items-center justify-between mb-4">
                                             <div class="flex items-center gap-2">
@@ -138,24 +136,24 @@
                                                 <h3 class="font-bold text-pink-800 text-sm">เลือกของแถมของคุณ</h3>
                                             </div>
                                             <span class="text-[10px] font-bold bg-white text-pink-600 border border-pink-200 px-2.5 py-1 rounded-full shadow-sm">
-                                                สิทธิ์คงเหลือ: <span id="gift-limit-display">{{ $freebieLimit }}</span> ชิ้น
+                                                สิทธิ์คงเหลือ: <span id="gift-limit-display"><?php echo e($freebieLimit); ?></span> ชิ้น
                                             </span>
                                         </div>
                                         
                                         <div class="grid grid-cols-2 gap-3" id="gift-pool">
-                                            @foreach($giftableProducts as $gift)
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $giftableProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $gift): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                                 <div class="relative group">
-                                                    <input type="checkbox" name="selected_freebies[]" value="{{ $gift->pd_sp_id }}" 
-                                                        class="gift-checkbox hidden" id="cart-gift-{{ $gift->pd_sp_id }}"
+                                                    <input type="checkbox" name="selected_freebies[]" value="<?php echo e($gift->pd_sp_id); ?>" 
+                                                        class="gift-checkbox hidden" id="cart-gift-<?php echo e($gift->pd_sp_id); ?>"
                                                         onchange="validateGiftSelection(this)">
-                                                    <label for="cart-gift-{{ $gift->pd_sp_id }}" 
+                                                    <label for="cart-gift-<?php echo e($gift->pd_sp_id); ?>" 
                                                         class="gift-label block p-2 bg-white border-2 border-gray-100 rounded-xl cursor-pointer transition-all hover:border-pink-300 hover:shadow-md">
                                                         <div class="aspect-square w-full rounded-lg overflow-hidden bg-gray-50 mb-2">
-                                                            <img src="{{ $gift->cover_image_url }}" class="w-full h-full object-cover">
+                                                            <img src="<?php echo e($gift->cover_image_url); ?>" class="w-full h-full object-cover">
                                                         </div>
-                                                        <p class="text-[10px] font-bold text-gray-700 truncate px-1">{{ $gift->pd_sp_name }}</p>
+                                                        <p class="text-[10px] font-bold text-gray-700 truncate px-1"><?php echo e($gift->pd_sp_name); ?></p>
                                                         
-                                                        {{-- Checkmark Overlay --}}
+                                                        
                                                         <div class="selected-overlay absolute inset-0 bg-pink-600/10 rounded-xl border-2 border-pink-500 items-center justify-center hidden">
                                                             <div class="bg-pink-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg transform scale-110">
                                                                 <i class="fas fa-check text-xs"></i>
@@ -163,16 +161,16 @@
                                                         </div>
                                                     </label>
                                                 </div>
-                                            @endforeach
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                         </div>
                                         
                                         <div class="mt-4 pt-3 border-t border-pink-100 flex justify-center">
                                             <p class="text-[11px] font-bold text-pink-500 bg-white px-4 py-1 rounded-full shadow-sm border border-pink-50" id="gift-count-text">
-                                                เลือกไปแล้ว 0 / {{ $freebieLimit }} ชิ้น
+                                                เลือกไปแล้ว 0 / <?php echo e($freebieLimit); ?> ชิ้น
                                             </p>
                                         </div>
                                     </div>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                                 <button type="submit" id="checkout-btn"
                                     class="btn bg-red-600 hover:bg-red-700 border-none text-white w-full text-lg h-12 shadow-lg shadow-red-600/20 transition-all active:scale-95 font-black uppercase tracking-wider">
@@ -180,13 +178,13 @@
                                 </button>
                             </div>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div class="text-center py-20 bg-gray-50 rounded-lg">
                             <h2 class="text-2xl font-bold text-gray-400 mb-2">ตะกร้าว่างเปล่า</h2>
-                            <a href="{{ route('allproducts') }}"
+                            <a href="<?php echo e(route('allproducts')); ?>"
                                 class="btn bg-red-600 hover:bg-red-700 border-none text-white mt-4">ไปเลือกซื้อสินค้า</a>
                         </div>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </form>
         </div>
@@ -346,4 +344,6 @@
             });
         });
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/cart.blade.php ENDPATH**/ ?>

@@ -115,9 +115,14 @@
                     ลูกค้า
                 </a>
                 <a href="<?php echo e(route('admin.promotions.index')); ?>"
-                    class="flex items-center px-4 py-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.promotions.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white'); ?>">
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.promotions.index') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white'); ?>">
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
+                </a>
+                <a href="<?php echo e(route('admin.promotions.logs')); ?>"
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.promotions.logs') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white'); ?>">
+                    <i class="fas fa-history mr-3 w-5 text-center"></i>
+                    ประวัติการใช้โปรโมชั่น
                 </a>
                 
                 <div x-data="{ open: <?php echo e(request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') ? 'true' : 'false'); ?> }" class="space-y-1">

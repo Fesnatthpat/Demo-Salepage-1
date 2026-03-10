@@ -99,7 +99,7 @@
 
     
     <div class="min-h-screen py-4 md:py-8 bg-cover bg-center bg-no-repeat bg-fixed"
-        style="background-image: url('<?php echo e(asset('images/BG/fruit1.jpg')); ?>');">
+        style="background-image: url('<?php echo e(asset('')); ?>');">
 
         <div class="container mx-auto px-2 md:px-4">
 

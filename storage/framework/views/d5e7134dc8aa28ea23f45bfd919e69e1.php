@@ -319,7 +319,7 @@ unset($__split);
 
 
     <div class="min-h-screen"
-    style="background-image: url('<?php echo e(asset('images/BG/fruit1.jpg')); ?>');">
+    style="background-image: url('<?php echo e(asset('images/BG/fruit2.png')); ?>');">
         <?php echo $__env->yieldContent('content'); ?>
     </div>
 

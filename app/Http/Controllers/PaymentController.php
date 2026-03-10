@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\ProductSalepage;
-use App\Models\Promotion;
 use App\Models\Province;
 use App\Services\OrderService;
 use App\Services\PromptPayService;
@@ -14,7 +13,6 @@ use Darryldecode\Cart\ItemCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -30,23 +28,18 @@ class PaymentController extends Controller
         $this->promptPayService = $promptPayService;
     }
 
-    // [Step 1] Checkout Page
     public function checkout(Request $request)
     {
         $userId = auth()->id();
         $cartContent = Cart::session($userId)->getContent();
 
-        // 1. ดึงรายการที่เลือกจาก Request
         $selectedItems = $request->input('selected_items', []);
         $selectedFreebies = $request->input('selected_freebies', []);
 
-        // 2. ถ้าไม่มีการส่ง selected_items มา (เช่น กด "สั่งซื้อเลย" จากหน้าสินค้า หรือเข้า URL ตรงๆ)
-        // ให้เลือกสินค้าทั้งหมดที่มีอยู่ในตะกร้าโดยอัตโนมัติ
-        if (empty($selectedItems) && !$cartContent->isEmpty()) {
-            $selectedItems = $cartContent->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        if (empty($selectedItems) && ! $cartContent->isEmpty()) {
+            $selectedItems = $cartContent->pluck('id')->map(fn ($id) => (string) $id)->toArray();
         }
 
-        // 3. ถ้าตะกร้าว่างเปล่าจริงๆ หรือยังไม่ได้เลือกสินค้า (กรณีที่อาจจะหลุดมา)
         if (empty($selectedItems)) {
             return redirect()->route('cart.index')->with('error', 'ขออภัย! กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
         }
@@ -59,7 +52,6 @@ class PaymentController extends Controller
             }
         }
 
-        // --- Freebie Logic (Preview) ---
         if (! empty($selectedFreebies)) {
             if (is_string($selectedFreebies)) {
                 $selectedFreebies = explode(',', $selectedFreebies);
@@ -119,10 +111,14 @@ class PaymentController extends Controller
             $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
         }
 
-        // --- เพิ่มการคำนวณโปรโมชั่น (อัตโนมัติ และ จากรหัสที่กรอกไว้) ---
         $cartService = $this->orderService->getCartService();
+
+        // 🌟 [แก้ไขใหม่] สั่งลบ Session ของคูปองส่วนลดออกเสมอเมื่อโหลดหน้า Payment ครั้งแรก
+        // ป้องกันปัญหาระบบลดราคาเองโดยที่หน้าเว็บช่องกรอกรหัสส่วนลดยังว่างเปล่า
+        $cartService->removePromoCode();
+
         $promoDiscount = $cartService->calculateTotalDiscount($totalAmount, $cartItems);
-        
+
         $totalDiscount += $promoDiscount;
         $totalAmount -= $promoDiscount;
 
@@ -134,7 +130,6 @@ class PaymentController extends Controller
         return view('payment', compact('cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 'addresses', 'selectedItems', 'selectedFreebies', 'provinces', 'products'));
     }
 
-    // [Step 2] Process Order (Create)
     public function process(Request $request)
     {
         $request->validate([
@@ -147,7 +142,6 @@ class PaymentController extends Controller
 
         $user = Auth::user();
 
-        // [New] ใช้ CartService ในการจัดการรหัสส่วนลด
         if ($request->filled('discount_code')) {
             try {
                 $this->orderService->getCartService()->applyPromoCode($request->input('discount_code'));
@@ -171,17 +165,14 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             $message = $e->getMessage();
-            
-            // ตรวจสอบว่าเกี่ยวข้องกับสต็อกสินค้าหรือไม่
             if (str_contains($message, 'ไม่เพียงพอ') || str_contains($message, 'หมดสต็อก') || str_contains($message, 'มีไม่เพียงพอ')) {
-                return redirect()->route('cart.index')->with('error', 'ขออภัย: ' . $message . ' กรุณาตรวจสอบจำนวนสินค้าในตะกร้าอีกครั้ง');
+                return redirect()->route('cart.index')->with('error', 'ขออภัย: '.$message.' กรุณาตรวจสอบจำนวนสินค้าในตะกร้าอีกครั้ง');
             }
 
-            return back()->with('error', 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ: ' . $message);
+            return back()->with('error', 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ: '.$message);
         }
     }
 
-    // [Step 3] Show QR Code
     public function showQr($orderId, PromptPayService $promptPayService)
     {
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
@@ -199,7 +190,6 @@ class PaymentController extends Controller
         return view('qr', compact('order', 'qrCodeBase64', 'secondsRemaining'));
     }
 
-    // [Step 3.1] Refresh QR Code
     public function refreshQr($orderCode)
     {
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
@@ -208,7 +198,6 @@ class PaymentController extends Controller
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถสร้าง QR Code ใหม่ได้');
         }
 
-        // ตรวจสอบว่าหมดเวลาหรือยัง (1 นาทีจากเวลาสร้าง)
         if (now()->greaterThan($order->created_at->addMinutes(1))) {
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
                 $order->status_id = 5;
@@ -225,6 +214,7 @@ class PaymentController extends Controller
                     }
                 }
             });
+
             return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
         }
 
@@ -237,9 +227,6 @@ class PaymentController extends Controller
         return back()->with('error', 'ไม่สามารถรีเฟรชได้');
     }
 
-    /**
-     * [New Step 3.2] Manual Cancel Order
-     */
     public function cancelOrder($orderCode)
     {
         $order = Order::where('ord_code', $orderCode)
@@ -266,24 +253,22 @@ class PaymentController extends Controller
 
             return redirect()->route('orders.index')->with('success', 'ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
         } catch (\Exception $e) {
-            return back()->with('error', 'เกิดข้อผิดพลาดในการยกเลิก: ' . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการยกเลิก: '.$e->getMessage());
         }
     }
 
-    // [Apply Discount Logic - Fixed Time Check]
     public function applyDiscount(Request $request)
     {
         try {
             $request->validate([
                 'code' => 'required|string|max:255',
                 'selected_items' => 'required|array',
-                'selected_items.*' => 'string',                'selected_freebies' => 'nullable|array',
+                'selected_items.*' => 'string',
+                'selected_freebies' => 'nullable|array',
                 'selected_freebies.*' => 'numeric',
             ]);
 
-            // ประกาศตัวแปร $now
             $now = now();
-
             $discountCode = trim($request->input('code'));
             $selectedItems = $request->input('selected_items');
             $selectedFreebies = $request->input('selected_freebies', []);
@@ -291,27 +276,15 @@ class PaymentController extends Controller
 
             $success = false;
             $message = 'รหัสส่วนลดไม่ถูกต้องหรือไม่สามารถใช้ได้';
-            $fixedDiscountValue = 0;
-            $percentageDiscountRate = 0;
-
-            Log::info('applyDiscount: Processing code', ['code' => $discountCode, 'current_time' => $now]);
 
             try {
                 $this->orderService->getCartService()->applyPromoCode($discountCode);
                 $success = true;
                 $message = 'ใช้รหัสส่วนลด '.$discountCode.' สำเร็จ!';
-                
-                // ดึงค่าลดราคามาคำนวณ Preview
-                $promo = \App\Models\Promotion::where('code', $discountCode)->first();
-                if ($promo->discount_type === 'fixed') {
-                    $fixedDiscountValue = $promo->discount_value;
-                } else {
-                    $percentageDiscountRate = $promo->discount_value / 100;
-                }
             } catch (\Exception $e) {
                 $success = false;
                 $message = $e->getMessage();
-                session()->forget('applied_discount_code'); // Clear old data if new code fails
+                session()->forget("cart_{$userId}_promo_code");
             }
 
             $cartContent = Cart::session($userId)->getContent();
@@ -351,12 +324,10 @@ class PaymentController extends Controller
                 $totalDiscountFromProducts += (($originalPrice - $item->price) * $item->quantity);
             }
 
-            // คำนวณส่วนลดจากโปรโมชั่นทั้งหมด (ทั้ง Auto และรหัสที่เพิ่งใส่)
             $promoDiscount = $this->orderService->getCartService()->calculateTotalDiscount($totalAmount, $checkoutCartItems);
 
             $grandTotal = max(0, $totalAmount - $promoDiscount);
             $totalDiscount = $totalDiscountFromProducts + $promoDiscount;
-
             $shippingCost = 0;
             $finalTotal = $grandTotal + $shippingCost;
 
@@ -383,12 +354,10 @@ class PaymentController extends Controller
 
     public function uploadSlip(Request $request, $orderCode)
     {
-        // ใช้ slip_image ตามที่โค้ดเก่าของคุณกำหนดไว้
         $request->validate(['slip_image' => 'required|image|max:5120']);
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
-        // 🌟 ตรวจสอบว่าออเดอร์ถูกยกเลิกไปแล้วหรือยัง (เช็คสถานะ 5 หรือเช็คเวลา)
         if ($order->status_id == 5) {
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกเนื่องจากชำระเงินเกินเวลาที่กำหนด');
         }
@@ -398,12 +367,9 @@ class PaymentController extends Controller
         }
 
         if ($request->hasFile('slip_image')) {
-            // อัปเดตข้อมูลสลิปและสถานะ
             $order->slip_path = $path = $request->file('slip_image')->store('slips', 'public');
-            $order->status_id = 2; // สถานะชำระเงินแล้ว
-            
-            // 🌟 [แก้ไขใหม่] เมื่อลูกค้าจ่ายเงินแล้ว ให้หักออกจากสต๊อกจริง (quantity)
-            // และต้องหักออกจากยอดจอง (reserved_qty) คืนด้วย เพราะสินค้าออกไปแล้ว ไม่ได้อยู่ในสถานะจองแล้ว
+            $order->status_id = 2;
+
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
                 foreach ($order->details as $detail) {
                     $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
@@ -411,9 +377,7 @@ class PaymentController extends Controller
                         ->lockForUpdate()
                         ->first();
                     if ($stockRecord) {
-                        // หักออกจากคลังจริง
                         $stockRecord->decrement('quantity', $detail->ordd_count);
-                        // ลบออกจากยอดจอง
                         $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
                         $stockRecord->decrement('reserved_qty', $reserveToSubtract);
                     }
@@ -421,7 +385,6 @@ class PaymentController extends Controller
                 $order->save();
             });
 
-            // 🌟 พระเอกอยู่ตรงนี้: รีเฟรชข้อมูลให้ชัวร์ และเรียก Job ส่ง API
             $order->refresh();
             \App\Jobs\SendOrderToApiJob::dispatchSync($order);
 

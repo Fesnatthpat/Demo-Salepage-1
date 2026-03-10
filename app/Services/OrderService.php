@@ -8,7 +8,6 @@ use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductSalepage;
-use App\Models\PromotionUsageLog;
 use App\Models\StockProduct;
 use App\Models\User;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
@@ -33,7 +32,6 @@ class OrderService
         return DB::transaction(function () use ($data, $user, $selectedItems, $selectedFreebies) {
             $allCartItems = $this->cartService->getCartContents();
 
-            // 1. กรองเอาเฉพาะสินค้าที่เลือก (ตรวจสอบทั้ง ID ที่เป็น String และ Integer)
             $cartItems = $allCartItems->filter(function ($item) use ($selectedItems) {
                 return in_array((string) $item->id, array_map('strval', $selectedItems));
             });
@@ -42,10 +40,8 @@ class OrderService
                 throw new \Exception('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
             }
 
-            // 2. จัดการข้อมูลของแถม
             $itemsToProcess = collect();
 
-            // เพิ่มสินค้าปกติเข้าคอลเลกชันที่จะประมวลผล
             foreach ($cartItems as $item) {
                 $itemsToProcess->push([
                     'id' => $item->id,
@@ -57,10 +53,17 @@ class OrderService
                 ]);
             }
 
-            // ดึงข้อมูลของแถมจากฐานข้อมูลและเพิ่มเข้าคอลเลกชัน
             if (! empty($selectedFreebies)) {
+                $existingFreebieIdsInCart = $itemsToProcess->filter(fn ($i) => $i['is_freebie'])
+                    ->map(fn ($i) => (int) ($i['attributes']['product_id'] ?? $i['id']))
+                    ->toArray();
+
                 $freebieProducts = ProductSalepage::whereIn('pd_sp_id', $selectedFreebies)->get();
                 foreach ($freebieProducts as $fp) {
+                    if (in_array((int) $fp->pd_sp_id, $existingFreebieIdsInCart)) {
+                        continue;
+                    }
+
                     $itemsToProcess->push([
                         'id' => $fp->pd_sp_id,
                         'name' => $fp->pd_sp_name.' (ของแถม)',
@@ -76,7 +79,6 @@ class OrderService
                 }
             }
 
-            // 3. เตรียมข้อมูลที่อยู่จัดส่ง
             $deliveryAddress = DeliveryAddress::with(['province', 'amphure', 'district'])
                 ->where('user_id', $user->id)
                 ->where('id', $data['delivery_address_id'])
@@ -109,59 +111,50 @@ class OrderService
             $totalDiscount = 0;
             $netAmount = 0;
 
-            // 4. วนลูปสร้าง OrderDetail และจองสต็อก
             foreach ($itemsToProcess as $item) {
                 $item = (object) $item;
                 $productId = $item->attributes['product_id'] ?? $item->id;
                 $optionId = $item->attributes['option_id'] ?? null;
 
-                // ดึงข้อมูลสต็อกและล็อคแถวไว้เพื่อป้องกัน Race Condition
                 $stockRecord = StockProduct::where('pd_sp_id', $productId)
                     ->where('option_id', $optionId)
                     ->lockForUpdate()
                     ->first();
 
-                // 🌟 [แก้ไข] หากไม่พบสต็อกหลัก (NULL) แต่เป็นสินค้าที่มีตัวเลือก (Options) 
-                // ให้พยายามดึงสต็อกของตัวเลือกแรกมาใช้ (กรณีของแถมที่ไม่ได้ระบุตัวเลือก)
-                if (! $stockRecord && is_null($optionId)) {
-                    $stockRecord = StockProduct::where('pd_sp_id', $productId)
-                        ->whereNotNull('option_id')
-                        ->orderBy('stock_id', 'asc')
+                if (is_null($optionId) && (! $stockRecord || ($stockRecord->quantity - $stockRecord->reserved_qty) < $item->quantity)) {
+                    $fallbackStock = StockProduct::where('pd_sp_id', $productId)
+                        ->where('quantity', '>', 0)
+                        ->whereColumn('quantity', '>', 'reserved_qty')
+                        ->orderBy('quantity', 'desc')
                         ->lockForUpdate()
                         ->first();
-                    
-                    // หากใช้สต็อกของ Option มาแทน ให้เก็บ option_id นั้นไว้เพื่อบันทึกลง OrderDetail ด้วย
-                    if ($stockRecord) {
+
+                    if ($fallbackStock) {
+                        $stockRecord = $fallbackStock;
                         $optionId = $stockRecord->option_id;
                     }
                 }
 
                 if (! $stockRecord) {
-                    // หากยังไม่พบอีก ให้สร้างสต็อกหลอกขึ้นมา (เพื่อไม่ให้ระบบพัง) หรือโยน Exception
-                    // ในที่นี้เลือกที่จะสร้าง record ใหม่ด้วยจำนวน 0 หากเป็นสินค้าที่มีอยู่ในระบบจริง
                     $productExists = \App\Models\ProductSalepage::find($productId);
                     if ($productExists) {
                         $stockRecord = StockProduct::create([
                             'pd_sp_id' => $productId,
                             'option_id' => $optionId,
                             'quantity' => 0,
-                            'reserved_qty' => 0
+                            'reserved_qty' => 0,
                         ]);
                     } else {
                         throw new \Exception('ไม่พบข้อมูลสินค้าและสต็อกสำหรับ: '.$item->name);
                     }
                 }
 
-                // [แก้ไข] สต๊อกที่พร้อมขาย (Available Stock)
                 $availableStock = $stockRecord->quantity - $stockRecord->reserved_qty;
 
-                // ตรวจสอบสต๊อกที่ว่าง
                 if ($availableStock < $item->quantity) {
                     throw new \Exception('สินค้า '.$item->name.' มีไม่เพียงพอ (เหลือพร้อมขาย '.$availableStock.' ชิ้น)');
                 }
 
-                // 🌟 [แก้ไขใหม่] ทำการ "จองสต๊อก" ทันที เพื่อไม่ให้คนอื่นแย่ง
-                // เพิ่มยอดจอง (reserved_qty) เท่านั้น สต็อกหลัก (quantity) ยังไม่ลดจนกว่าจะจ่ายเงิน
                 $stockRecord->increment('reserved_qty', $item->quantity);
 
                 $originalPrice = $item->attributes['original_price'] ?? $item->price;
@@ -191,20 +184,23 @@ class OrderService
                 ]);
             }
 
-            // 5. คำนวณส่วนลดเพิ่มเติมจากโปรโมชั่น (รหัสส่วนลด และส่วนลดอัตโนมัติ)
-            // 🌟 แก้ไข: ใช้เฉพาะรายการที่เลือกจ่ายเงิน ($cartItems) แทนที่จะใช้ทั้งหมดในตะกร้า ($allCartItems)
+            // ✅ 🌟 แก้ไข: บันทึกส่วนลดลง Database ตามการรองรับทั้ง Auto-Discount และ Coupon Code
             $promos = $this->cartService->getApplicablePromotions($cartItems);
             $additionalDiscount = 0;
+            $appliedCode = $this->cartService->getAppliedPromoCode();
 
             foreach ($promos as $promo) {
-                // ตรวจสอบ usage_limit ก่อนใช้งาน (Double check ใน Transaction)
                 if ($promo->usage_limit !== null && $promo->used_count >= $promo->usage_limit) {
-                    continue; // ข้ามโปรโมชั่นที่สิทธิ์เต็มแล้ว
+                    continue;
                 }
 
-                // คำนวณส่วนลด
                 $thisPromoDiscount = 0;
-                if ($promo->discount_value > 0) {
+
+                // เช็คประเภทของส่วนลด
+                $isAutoDiscount = !$promo->is_discount_code;
+                $isMatchingCode = $promo->is_discount_code && !empty($appliedCode) && $promo->code === $appliedCode;
+
+                if ($promo->discount_value > 0 && ($isAutoDiscount || $isMatchingCode)) {
                     if ($promo->discount_type === 'fixed') {
                         $thisPromoDiscount = (float) $promo->discount_value;
                     } elseif ($promo->discount_type === 'percentage') {
@@ -212,21 +208,23 @@ class OrderService
                     }
                 }
 
-                $additionalDiscount += $thisPromoDiscount;
+                if ($thisPromoDiscount > 0) {
+                    $additionalDiscount += $thisPromoDiscount;
 
-                // [NEW] เพิ่มจำนวนการใช้งานโปรโมชั่น
-                \App\Models\Promotion::where('id', $promo->id)->increment('used_count');
+                    // บันทึกประวัติการใช้โปรโมชั่นลงฐานข้อมูล
+                    \App\Models\Promotion::where('id', $promo->id)->increment('used_count');
 
-                // [NEW] บันทึก Log การใช้โปรโมชั่น
-                \App\Models\PromotionUsageLog::create([
-                    'promotion_id' => $promo->id,
-                    'order_id' => $order->id,
-                    'user_id' => $user->id,
-                    'code_used' => $promo->code, // อาจเป็นรหัสส่วนลด หรือ NULL ถ้าเป็น Auto Promotion
-                    'discount_amount' => $thisPromoDiscount,
-                ]);
+                    \App\Models\PromotionUsageLog::create([
+                        'promotion_id' => $promo->id,
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        // ถ้าเป็นโปรอัตโนมัติ จะบันทึกโค้ดเป็น null, ถ้าใช้โค้ดก็บันทึกรหัสลงไป
+                        'code_used' => $promo->is_discount_code ? $promo->code : null, 
+                        'discount_amount' => $thisPromoDiscount, 
+                    ]);
+                }
             }
-            
+
             $netAmount = max(0, $netAmount - $additionalDiscount);
             $totalDiscount += $additionalDiscount;
 
@@ -235,21 +233,17 @@ class OrderService
             $order->net_amount = $netAmount;
             $order->save();
 
-            // 6. ล้างรหัสส่วนลด (ถ้ามี)
             $this->cartService->removePromoCode();
 
-            // 7. ลบสินค้าออกจากตะกร้า (เฉพาะที่สั่งซื้อจริง)
             foreach ($cartItems as $item) {
                 Cart::session($user->id)->remove($item->id);
             }
 
-            // อัปเดต Database Storage
             CartStorage::updateOrCreate(
                 ['user_id' => $user->id],
                 ['cart_data' => Cart::session($user->id)->getContent()->toJson()]
             );
 
-            // 7. ส่งข้อมูลเข้า CRM
             $addressData = [
                 'province' => $deliveryAddress->province->name_th ?? '',
                 'amphure' => $deliveryAddress->amphure->name_th ?? '',

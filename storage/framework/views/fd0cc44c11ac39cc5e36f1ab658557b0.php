@@ -264,24 +264,13 @@
                             $originalPrice = $attrs['original_price'] ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
 
-                            // --- แก้ไข: ดึงข้อมูลสินค้าจาก Collection เพื่อความแม่นยำ ---
                             $realProductId = $attrs['product_id'] ?? $item->id;
                             $productDb = isset($products) ? $products->get($realProductId) : null;
 
-                            // เตรียมรูปภาพ
                             $imgUrl = $productDb ? $productDb->cover_image_url : null;
-
-                            // ตรวจสอบว่าเป็น URL เต็มหรือ Path ในเครื่อง
                             if ($imgUrl) {
-                                if (strpos($imgUrl, 'http') === 0) {
-                                    $displayImage = $imgUrl;
-                                } else {
-                                    // ถ้าเป็น Path ให้ใช้ asset()
-                                    // หมายเหตุ: ถ้าเก็บใน storage/app/public อาจต้องใช้ asset('storage/' . $imgUrl)
-                                    $displayImage = asset($imgUrl);
-                                }
+                                $displayImage = strpos($imgUrl, 'http') === 0 ? $imgUrl : asset($imgUrl);
                             } else {
-                                // ถ้าไม่มีใน DB ให้ลองดูใน Attribute ของ Cart หรือใช้ภาพ Default
                                 $displayImage = isset($attrs['image'])
                                     ? asset($attrs['image'])
                                     : 'https://via.placeholder.com/150?text=No+Image';
@@ -299,26 +288,66 @@
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
-                                        <?php echo e($item->name); ?>
-
-                                    </p>
+                                        <?php echo e($item->name); ?></p>
                                     <p class="text-sm text-gray-500">จำนวน: <?php echo e($item->quantity); ?> ชิ้น</p>
                                 </div>
                             </div>
-
                             <div class="text-right">
                                 <p class="font-bold text-red-600">฿<?php echo e(number_format($totalPrice)); ?></p>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($originalPrice > $item->price): ?>
                                     <p class="text-xs text-gray-400 line-through">
-                                        ฿<?php echo e(number_format($originalPrice * $item->quantity)); ?>
-
-                                    </p>
+                                        ฿<?php echo e(number_format($originalPrice * $item->quantity)); ?></p>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                         </div>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 <?php else: ?>
                     <p class="text-center text-gray-400 py-4">ไม่พบรายการสินค้า</p>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($selectedFreebies) && is_array($selectedFreebies) && count($selectedFreebies) > 0): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $selectedFreebies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $freeId): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                        <?php
+                            $freeProduct = isset($products)
+                                ? $products->get($freeId)
+                                : \App\Models\ProductSalepage::find($freeId);
+                            if (!$freeProduct) {
+                                continue;
+                            }
+
+                            $imgUrl = $freeProduct->cover_image_url;
+                            $displayImage =
+                                strpos($imgUrl, 'http') === 0
+                                    ? $imgUrl
+                                    : asset($imgUrl ?: 'https://via.placeholder.com/150');
+                        ?>
+                        <div
+                            class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0 bg-red-50/40 p-3 rounded-lg mt-3">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-16 h-16 bg-white rounded-md overflow-hidden border border-red-200 flex-shrink-0 relative">
+                                    <img src="<?php echo e($displayImage); ?>" class="w-full h-full object-cover"
+                                        alt="<?php echo e($freeProduct->pd_sp_name); ?>"
+                                        onerror="this.src='https://via.placeholder.com/150?text=Gift';" />
+                                    <div
+                                        class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-md">
+                                        ของแถม</div>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
+                                        <?php echo e($freeProduct->pd_sp_name); ?>
+
+                                    </p>
+                                    <p class="text-sm text-red-500 font-bold">จำนวน: 1 ชิ้น</p>
+                                </div>
+                            </div>
+                            <div class="text-right flex items-center h-full">
+                                <span
+                                    class="px-3 py-1 bg-red-600 text-white rounded-full font-bold text-xs shadow-sm">ฟรี!</span>
+                            </div>
+                        </div>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
@@ -341,7 +370,6 @@
                         <input type="checkbox" checked
                             class="checkbox border-gray-400 checked:border-red-600 [--chkbg:theme(colors.red.600)] [--chkfg:white] rounded-sm w-5 h-5" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
-                            
                             <img src="<?php echo e(asset('images/ci-qrpayment-img-01.png')); ?>" alt="PromptPay" class="w-24"
                                 onerror="this.style.display='none'">
                         </div>
@@ -409,7 +437,7 @@
                                 <input type="hidden" name="selected_items[]" value="<?php echo e($id); ?>">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($selectedFreebies)): ?>
+                        <?php if(isset($selectedFreebies)): ?>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $selectedFreebies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <input type="hidden" name="selected_freebies[]" value="<?php echo e($id); ?>">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
@@ -543,21 +571,20 @@
             if (loader) loader.classList.remove('hidden');
         }
 
-        // ฟังก์ชัน Confirm Delete ด้วย SweetAlert2
         function confirmDelete(formId) {
             Swal.fire({
                 title: 'ยืนยันการลบ?',
                 text: "คุณต้องการลบที่อยู่นี้ใช่หรือไม่",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#ef4444', // สีแดง
-                cancelButtonColor: '#6b7280', // สีเทา
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
                 confirmButtonText: 'ใช่, ลบเลย!',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    showLoading(); // แสดง Loading
-                    document.getElementById(formId).submit(); // ส่ง Form
+                    showLoading();
+                    document.getElementById(formId).submit();
                 }
             })
         }
@@ -573,9 +600,9 @@
                     title: 'กรุณาเลือกที่อยู่',
                     text: 'โปรดเลือกหรือเพิ่มที่อยู่สำหรับจัดส่งสินค้าก่อนดำเนินการต่อ',
                     position: 'center',
-                    confirmButtonColor: '#DC2626' // สีแดง
+                    confirmButtonColor: '#DC2626'
                 });
-                return false; // Prevent form submission
+                return false;
             }
 
             document.getElementById('hidden_address_id').value = finalId;
@@ -594,8 +621,8 @@
                 applyingDiscount: false,
                 discountMessage: '',
                 discountMessageType: '',
-                selectedItems: config.selectedItems || [], // รับค่ารายการสินค้า
-                selectedFreebies: config.selectedFreebies || [], // รับค่าของแถม
+                selectedItems: config.selectedItems || [],
+                selectedFreebies: config.selectedFreebies || [],
 
                 formatNumber(value) {
                     return new Intl.NumberFormat('th-TH', {
@@ -612,21 +639,19 @@
                     this.discountMessageType = '';
 
                     try {
-                        const response = await fetch(
-                            '/payment/apply-discount', { // This URL needs to be defined
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').content,
-                                },
-                                // ส่งข้อมูลให้ครบถ้วนตามที่ Controller ต้องการ
-                                body: JSON.stringify({
-                                    code: this.discountCode,
-                                    selected_items: this.selectedItems,
-                                    selected_freebies: this.selectedFreebies
-                                }),
-                            });
+                        const response = await fetch('/payment/apply-discount', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content,
+                            },
+                            body: JSON.stringify({
+                                code: this.discountCode,
+                                selected_items: this.selectedItems,
+                                selected_freebies: this.selectedFreebies
+                            }),
+                        });
 
                         const data = await response.json();
 

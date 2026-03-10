@@ -2,7 +2,6 @@
 
 <?php $__env->startSection('content'); ?>
     <?php
-        // --- 1. เตรียมข้อมูล PHP ---
         $initialBasePrice = (float) $product->pd_price;
         $initialBasePrice2 = (float) $product->pd_price2;
         $discountAmount = (float) $product->pd_sp_discount;
@@ -12,7 +11,6 @@
             $allImages[] = $product->cover_image_url;
         }
 
-        // เตรียมข้อมูลโปรโมชั่น
         $promotionsData = [];
         if (isset($promotions) && $promotions->isNotEmpty()) {
             foreach ($promotions as $promo) {
@@ -67,7 +65,6 @@
                 'final_price' => (float) $option->final_price,
                 'price2' => (float) $option->option_price2,
                 'stock' => (int) $option->option_stock,
-                // ✅ เพิ่ม URL รูปภาพของ Option เพื่อให้ JS นำไปเปลี่ยนรูปหลัก
                 'image_url' => $option->option_image_url,
             ];
         });
@@ -128,7 +125,6 @@
                                 </svg>
                             </button>
 
-                            
                             <img :src="activeImage" @load="imagesLoaded = true"
                                 class="w-full h-full object-contain p-4 transition-all duration-500 group-hover:scale-105"
                                 onerror="this.src='https://via.placeholder.com/600?text=Image+Error'">
@@ -235,89 +231,160 @@
                         <template x-if="promotions.length > 0">
                             <div class="space-y-6 mb-8">
                                 <template x-for="promo in promotions" :key="promo.id">
-                                    <div class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm relative overflow-hidden">
-                                        
+                                    <div
+                                        class="bg-gradient-to-br from-pink-50 to-red-50 rounded-2xl p-6 border border-red-100 shadow-sm relative overflow-hidden">
                                         <div class="absolute top-0 right-0" x-show="promo.remainingTime">
                                             <div class="flex items-center gap-1.5 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-bl-2xl border-b border-l border-red-100 shadow-sm"
                                                 :class="promo.isExpiringSoon ? 'text-red-600 animate-pulse' : 'text-gray-600'">
                                                 <i class="fas fa-stopwatch text-sm"></i>
-                                                <span class="text-xs font-black tracking-tighter" x-text="promo.remainingTime"></span>
+                                                <span class="text-xs font-black tracking-tighter"
+                                                    x-text="promo.remainingTime"></span>
                                             </div>
                                         </div>
 
                                         <div class="flex items-center gap-3 mb-4">
-                                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-600 text-white shadow-md">
+                                            <span
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-red-600 text-white shadow-md">
                                                 <i class="fas fa-gift text-sm"></i>
                                             </span>
                                             <h3 class="text-lg font-black text-gray-900">โปรโมชั่นสุดพิเศษ!</h3>
                                         </div>
 
-                                        
                                         <template x-if="promo.condition_type !== 'all'">
                                             <div>
                                                 <p class="text-gray-700 font-bold mb-4">
-                                                    ซื้อครบ <span class="text-red-600" x-text="promo.logic.required_qty"></span> ชิ้น 
-                                                    รับของแถมฟรีทันที <span class="text-red-600" x-text="promo.gifts_per_item * Math.floor(quantity / promo.logic.required_qty)"></span> ชิ้น
+                                                    ซื้อครบ <span class="text-red-600"
+                                                        x-text="promo.logic.required_qty"></span> ชิ้น
+                                                    รับของแถมฟรีทันที <span class="text-red-600"
+                                                        x-text="promo.gifts_per_item * Math.floor(quantity / promo.logic.required_qty)"></span>
+                                                    ชิ้น
                                                 </p>
 
-                                                
                                                 <div class="mb-6">
                                                     <div class="flex justify-between text-xs font-bold mb-2">
-                                                        <span class="text-gray-500 uppercase tracking-wider">ความคืบหน้า</span>
-                                                        <span class="text-red-600" x-text="Math.min(100, Math.round((quantity / promo.logic.required_qty) * 100)) + '%'"></span>
+                                                        <span
+                                                            class="text-gray-500 uppercase tracking-wider">ความคืบหน้า</span>
+                                                        <span class="text-red-600"
+                                                            x-text="Math.min(100, Math.round((quantity / promo.logic.required_qty) * 100)) + '%'"></span>
                                                     </div>
-                                                    <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
-                                                        <div class="bg-red-600 h-2.5 rounded-full transition-all duration-500" 
+                                                    <div
+                                                        class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                                        <div class="bg-red-600 h-2.5 rounded-full transition-all duration-500"
                                                             :style="`width: ${Math.min(100, (quantity / promo.logic.required_qty) * 100)}%`"
-                                                            :class="quantity >= promo.logic.required_qty ? 'bg-emerald-500 animate-pulse' : 'bg-red-600'">
+                                                            :class="quantity >= promo.logic.required_qty ?
+                                                                'bg-emerald-500 animate-pulse' : 'bg-red-600'">
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                
-                                                <div x-show="quantity >= promo.logic.required_qty" x-transition class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-red-100/50">
+                                                <div x-show="quantity >= promo.logic.required_qty" x-transition
+                                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-red-100/50">
                                                     <div class="flex items-center justify-between mb-4">
-                                                        <h4 class="font-bold text-gray-800">เลือกของแถมของคุณ:</h4>
-                                                        <span class="badge badge-error text-white font-bold" x-text="`เลือกได้อีก ${giftLimit - selectedGifts.length} ชิ้น`"></span>
+                                                        <h4 class="font-bold text-gray-800">ของแถมที่คุณจะได้รับ:</h4>
+                                                        <span
+                                                            class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-full shadow-sm"
+                                                            x-text="`รับฟรี ${giftLimit} ชิ้น`"></span>
                                                     </div>
+
                                                     
-                                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                                    <div
+                                                        class="flex flex-wrap gap-3 mb-6 p-3 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                                                        <template
+                                                            x-for="(giftId, index) in Array.from({length: giftLimit}, (_, i) => selectedGifts[i])"
+                                                            :key="index">
+                                                            <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-sm"
+                                                                :class="giftId ? 'border-red-500 bg-white scale-105' :
+                                                                    'border-gray-200 bg-gray-100/30'">
+
+                                                                <template x-if="giftId">
+                                                                    <div class="w-full h-full group">
+                                                                        <img :src="promo.gifts.find(g => g.id === giftId)?.image"
+                                                                            class="w-full h-full object-cover">
+                                                                        <button @click.stop="removeGift(giftId)"
+                                                                            class="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-black transition-colors">
+                                                                            <i class="fas fa-times text-[10px]"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </template>
+
+                                                                <template x-if="!giftId">
+                                                                    <div
+                                                                        class="w-full h-full flex flex-col items-center justify-center text-gray-300 opacity-50">
+                                                                        <i class="fas fa-gift text-xl mb-1"></i>
+                                                                        <span
+                                                                            class="text-[8px] font-bold uppercase">ว่าง</span>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+
+                                                    <p
+                                                        class="text-[11px] font-bold text-gray-500 mb-3 flex items-center gap-1">
+                                                        <i class="fas fa-mouse-pointer text-red-400"></i>
+                                                        เลือกสินค้าที่ต้องการด้านล่าง:
+                                                    </p>
+
+                                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                                         <template x-for="gift in promo.gifts" :key="gift.id">
-                                                            <button @click="toggleGift(gift.id)"
-                                                                class="group relative flex flex-col items-center p-2 rounded-xl border-2 transition-all duration-300"
-                                                                :class="selectedGifts.includes(gift.id) ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-white hover:border-red-200'">
-                                                                <div class="aspect-square w-full rounded-lg overflow-hidden mb-2 bg-gray-50">
-                                                                    <img :src="gift.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                                            <div class="relative group flex flex-col items-center p-1.5 rounded-xl border-2 transition-all duration-300 cursor-pointer"
+                                                                :class="getGiftCount(gift.id) > 0 ?
+                                                                    'border-red-500 bg-red-50 ring-2 ring-red-100' :
+                                                                    'border-gray-100 bg-white hover:border-red-200'"
+                                                                @click="addGift(gift.id)">
+                                                                <div
+                                                                    class="aspect-square w-full rounded-lg overflow-hidden mb-1.5 bg-gray-50">
+                                                                    <img :src="gift.image"
+                                                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform">
                                                                 </div>
-                                                                <span class="text-[10px] font-bold text-center text-gray-700 line-clamp-1" x-text="gift.name"></span>
-                                                                <div x-show="selectedGifts.includes(gift.id)" class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-bounce">
-                                                                    <i class="fas fa-check text-[8px]"></i>
+                                                                <span
+                                                                    class="text-[9px] font-bold text-center text-gray-700 line-clamp-1"
+                                                                    x-text="gift.name"></span>
+
+                                                                <button x-show="getGiftCount(gift.id) > 0"
+                                                                    @click.stop="removeGift(gift.id)"
+                                                                    class="absolute -top-2 -left-2 w-6 h-6 bg-white border border-gray-300 text-gray-700 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 z-10 transition-transform hover:scale-110">
+                                                                    <i class="fas fa-minus text-[10px]"></i>
+                                                                </button>
+                                                                <div x-show="getGiftCount(gift.id) > 0"
+                                                                    class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                                                                    <span class="text-[10px] font-bold"
+                                                                        x-text="getGiftCount(gift.id)"></span>
                                                                 </div>
-                                                            </button>
+                                                            </div>
                                                         </template>
                                                     </div>
                                                 </div>
 
-                                                <div x-show="quantity < promo.logic.required_qty" class="text-center p-4 bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
+                                                <div x-show="quantity < promo.logic.required_qty"
+                                                    class="text-center p-4 bg-gray-100/50 rounded-xl border border-dashed border-gray-300">
                                                     <p class="text-sm text-gray-500 font-medium italic">
-                                                        เพิ่มอีก <span class="text-red-600 font-bold" x-text="promo.logic.required_qty - quantity"></span> ชิ้น เพื่อรับของแถมฟรี!
+                                                        เพิ่มอีก <span class="text-red-600 font-bold"
+                                                            x-text="promo.logic.required_qty - quantity"></span> ชิ้น
+                                                        เพื่อรับของแถมฟรี!
                                                     </p>
                                                 </div>
                                             </div>
                                         </template>
 
-                                        
                                         <template x-if="promo.condition_type === 'all'">
-                                            <div class="bg-white/60 backdrop-blur-sm p-5 rounded-xl border border-pink-100 mt-2">
+                                            <div
+                                                class="bg-white/60 backdrop-blur-sm p-5 rounded-xl border border-pink-100 mt-2">
                                                 <div class="flex gap-3 items-start">
-                                                    <div class="w-10 h-10 shrink-0 bg-pink-100 rounded-full flex items-center justify-center text-pink-600">
+                                                    <div
+                                                        class="w-10 h-10 shrink-0 bg-pink-100 rounded-full flex items-center justify-center text-pink-600">
                                                         <i class="fas fa-layer-group"></i>
                                                     </div>
                                                     <div>
-                                                        <p class="text-gray-800 text-sm font-bold leading-tight">โปรโมชั่นเซ็ตสุดคุ้ม!</p>
-                                                        <p class="text-gray-600 text-xs mt-1">ซื้อสินค้านี้ร่วมกับสินค้าอื่นที่ร่วมรายการครบชุด รับของแถมฟรีทันที</p>
-                                                        <div class="mt-3 inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold">
-                                                            <i class="fas fa-info-circle mr-1"></i> เลือกของแถมได้ที่หน้าตะกร้าเมื่อครบเงื่อนไข
+                                                        <p class="text-gray-800 text-sm font-bold leading-tight">
+                                                            โปรโมชั่นเซ็ตสุดคุ้ม!</p>
+                                                        <p class="text-gray-600 text-xs mt-1">
+                                                            ซื้อสินค้านี้ร่วมกับสินค้าอื่นที่ร่วมรายการครบชุด
+                                                            รับของแถมฟรีทันที</p>
+                                                        <div
+                                                            class="mt-3 inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold">
+                                                            <i class="fas fa-info-circle mr-1"></i>
+                                                            เลือกของแถมได้ที่หน้าตะกร้าเมื่อครบเงื่อนไข
                                                         </div>
                                                     </div>
                                                 </div>
@@ -333,14 +400,18 @@
                             <div class="mb-8">
                                 <h3 class="text-lg font-bold text-gray-800 mb-4">แนะนำทานคู่กับ:</h3>
                                 <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                                    <template x-for="promo in promotions" :key="'partner-'+promo.id">
+                                    <template x-for="promo in promotions" :key="'partner-' + promo.id">
                                         <template x-for="partner in promo.partner_products" :key="partner.id">
                                             <a :href="partner.url" class="flex-shrink-0 w-32 group">
-                                                <div class="aspect-square rounded-xl overflow-hidden mb-2 shadow-sm border border-gray-100 group-hover:shadow-md transition-all">
-                                                    <img :src="partner.image" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                                                <div
+                                                    class="aspect-square rounded-xl overflow-hidden mb-2 shadow-sm border border-gray-100 group-hover:shadow-md transition-all">
+                                                    <img :src="partner.image"
+                                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform">
                                                 </div>
-                                                <p class="text-xs font-bold text-gray-800 truncate" x-text="partner.name"></p>
-                                                <p class="text-xs text-red-600 font-black" x-text="'฿' + partner.price"></p>
+                                                <p class="text-xs font-bold text-gray-800 truncate" x-text="partner.name">
+                                                </p>
+                                                <p class="text-xs text-red-600 font-black" x-text="'฿' + partner.price">
+                                                </p>
                                             </a>
                                         </template>
                                     </template>
@@ -382,75 +453,6 @@
                 </div>
             </div>
         </div>
-
-        
-        
-        
-        <template x-teleport="body">
-            <div x-show="isModalOpen" 
-                class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0">
-                
-                <button @click="isModalOpen = false" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-[110]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div class="relative w-full h-full flex items-center justify-center">
-                    <button x-show="images.length > 1" @click.stop="prevImage()" 
-                        class="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-[110]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-
-                    <img :src="activeImage" class="max-w-full max-h-full object-contain select-none shadow-2xl rounded-lg" 
-                        @click.away="isModalOpen = false">
-
-                    <button x-show="images.length > 1" @click.stop="nextImage()" 
-                        class="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-[110]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                </div>
-
-                
-                <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/10 px-4 py-2 rounded-full text-white/90 text-sm font-medium backdrop-blur-md">
-                    <span x-text="images.indexOf(activeImage) + 1"></span> / <span x-text="images.length"></span>
-                </div>
-            </div>
-        </template>
-
-        
-        <template x-teleport="body">
-            <div x-show="isReviewModalOpen" 
-                class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0">
-                
-                <button @click="isReviewModalOpen = false" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-[110]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div class="relative w-full h-full flex items-center justify-center">
-                    <img :src="activeReviewImage" class="max-w-full max-h-full object-contain select-none shadow-2xl rounded-lg" 
-                        @click.away="isReviewModalOpen = false">
-                </div>
-            </div>
-        </template>
     </div>
 <?php $__env->stopSection(); ?>
 
@@ -482,18 +484,15 @@
 
                 get giftLimit() {
                     if (this.promotions.length === 0) return 0;
-                    
-                    // หาโปรโมชั่นแรกที่เงื่อนไขครบ
+
                     const activePromo = this.promotions.find(p => {
-                        // ถ้าเป็นแบบ AND (ต้องซื้อหลายอย่าง) ให้ข้ามไปเลยในหน้านี้ (ไปเช็คในตะกร้าแทน)
                         if (p.condition_type === 'all') return false;
-                        
-                        // ถ้าเป็นแบบปกติ ให้เช็คจำนวนที่ซื้อหน้านี้
                         return this.quantity >= p.logic.required_qty;
                     });
-                    
+
                     if (!activePromo) return 0;
-                    return activePromo.gifts_per_item * Math.floor(this.quantity / activePromo.logic.required_qty);
+                    return activePromo.gifts_per_item * Math.floor(this.quantity / activePromo.logic
+                        .required_qty);
                 },
 
                 get isConditionMet() {
@@ -508,23 +507,24 @@
                             promo.isExpiringSoon = false;
                             return;
                         }
-                        
+
                         const end = new Date(promo.end_date);
                         const diff = end - now;
-                        
+
                         if (diff <= 0) {
                             promo.remainingTime = 'สิ้นสุดแล้ว';
                             promo.isExpiringSoon = false;
                             return;
                         }
-                        
+
                         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 *
+                            60));
                         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                        
-                        promo.isExpiringSoon = diff < (1000 * 60 * 60 * 24); // Less than 24h
-                        
+
+                        promo.isExpiringSoon = diff < (1000 * 60 * 60 * 24);
+
                         if (days > 0) {
                             promo.remainingTime = `${days} วัน ${hours} ชม. ${minutes} นาที`;
                         } else if (hours > 0) {
@@ -535,29 +535,35 @@
                     });
                 },
 
-                toggleGift(giftId) {
-                    const index = this.selectedGifts.indexOf(giftId);
+                // เปลี่ยนระบบให้รองรับการเลือกของแถมเดิมซ้ำ
+                addGift(giftId) {
+                    if (this.selectedGifts.length < this.giftLimit) {
+                        this.selectedGifts.push(giftId);
+                    } else {
+                        Swal.fire('สิทธิ์เต็มแล้ว',
+                            `คุณสามารถเลือกของแถมได้สูงสุด ${this.giftLimit} ชิ้น`, 'warning');
+                    }
+                },
+                removeGift(giftId) {
+                    const index = this.selectedGifts.lastIndexOf(giftId);
                     if (index > -1) {
                         this.selectedGifts.splice(index, 1);
-                    } else {
-                        if (this.selectedGifts.length < this.giftLimit) {
-                            this.selectedGifts.push(giftId);
-                        } else {
-                            // ถ้าเลือกเกิน ให้เอาตัวแรกออกแล้วเพิ่มตัวใหม่ (FIFO) หรือแจ้งเตือน
-                            // ในที่นี้เลือกเปลี่ยนตัวล่าสุดที่เลือก
-                            this.selectedGifts.shift();
-                            this.selectedGifts.push(giftId);
-                        }
                     }
+                },
+                getGiftCount(giftId) {
+                    return this.selectedGifts.filter(id => id === giftId).length;
                 },
 
                 init() {
                     this.imagesLoaded = true;
                     this.updateCountdowns();
                     setInterval(() => this.updateCountdowns(), 1000);
-                    this.$watch('quantity', () => this.validateSelection());
 
-                    // ✅ ส่วนที่แก้ไข: เปลี่ยนรูปภาพหลักตามตัวเลือกที่ลูกค้าคลิกเลือก
+                    this.$watch('quantity', () => this.validateSelection());
+                    this.$watch('giftLimit', () => this.validateSelection());
+
+                    this.validateSelection();
+
                     this.$watch('selectedOption', (newId) => {
                         if (newId) {
                             const foundOption = this.options.find(o => o.id == newId);
@@ -578,7 +584,7 @@
 
                 get finalPrice() {
                     if (this.options.length > 0 && !this.selectedOption)
-                    return `฿${config.initialDisplayPrice}`;
+                        return `฿${config.initialDisplayPrice}`;
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option) return `฿${option.final_price.toLocaleString()}`;
@@ -592,7 +598,7 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option && option.price > option.final_price)
-                        return `฿${option.price.toLocaleString()}`;
+                            return `฿${option.price.toLocaleString()}`;
                         return null;
                     }
                     return this.discountAmount > 0 ? `฿${this.basePrice.toLocaleString()}` : null;
@@ -603,7 +609,7 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option && option.price > option.final_price)
-                        return `ประหยัด ฿${(option.price - option.final_price).toLocaleString()}`;
+                            return `ประหยัด ฿${(option.price - option.final_price).toLocaleString()}`;
                         return null;
                     }
                     return this.discountAmount > 0 ?
@@ -618,12 +624,26 @@
                     let idx = this.images.indexOf(this.activeImage);
                     this.activeImage = this.images[(idx + 1) % this.images.length];
                 },
-                openReviewModal(url) {
-                    this.activeReviewImage = url;
-                    this.isReviewModalOpen = true;
-                },
+
                 validateSelection() {
-                    if (!this.isConditionMet) this.selectedGifts = [];
+                    if (!this.isConditionMet) {
+                        this.selectedGifts = [];
+                        return;
+                    }
+
+                    if (this.selectedGifts.length > this.giftLimit) {
+                        this.selectedGifts = this.selectedGifts.slice(0, this.giftLimit);
+                    }
+
+                    // Auto-fill ถ้ามีของแถมแค่ชนิดเดียว 
+                    const activePromo = this.promotions.find(p => p.condition_type !== 'all' && this
+                        .quantity >= p.logic.required_qty);
+                    if (activePromo && activePromo.gifts.length === 1) {
+                        const giftId = activePromo.gifts[0].id;
+                        while (this.selectedGifts.length < this.giftLimit) {
+                            this.selectedGifts.push(giftId);
+                        }
+                    }
                 },
 
                 async handleAddToCartClick(isBuyNow) {
@@ -633,7 +653,6 @@
                         return;
                     }
 
-                    // ตรวจสอบการเลือกของแถม
                     if (this.isConditionMet && this.selectedGifts.length < this.giftLimit) {
                         const remaining = this.giftLimit - this.selectedGifts.length;
                         Swal.fire({
@@ -646,10 +665,11 @@
                             confirmButtonColor: '#d33',
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // Scroll to gift section
-                                document.querySelector('.bg-gradient-to-br').scrollIntoView({ behavior: 'smooth' });
+                                document.querySelector('.bg-gradient-to-br')
+                                    .scrollIntoView({
+                                        behavior: 'smooth'
+                                    });
                             } else {
-                                // สละสิทธิ์ของแถม
                                 this.proceedAddToCart(isBuyNow);
                             }
                         });

@@ -16,7 +16,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProfileController; 
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrackingController;
 use Illuminate\Support\Facades\Route;
 
@@ -155,14 +155,18 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/products/{product}/review-images', [AdminProductController::class, 'storeReviewImage'])->name('products.review-images.store');
     Route::delete('/products/review-images/{review_image}', [AdminProductController::class, 'destroyReviewImage'])->name('products.review-images.destroy');
 
-    // ✅ Route สำหรับตั้งค่ารูปหลัก (ใหม่)
+    // Route สำหรับตั้งค่ารูปหลัก
     Route::post('/products/image/{image}/set-main', [AdminProductController::class, 'setMainImage'])->name('products.setMainImage');
 
-    // ✅ Route สำหรับ Toggle สินค้าแนะนำ (ใหม่)
+    // Route สำหรับ Toggle สินค้าแนะนำ
     Route::post('/products/{product}/toggle-recommended', [AdminProductController::class, 'toggleRecommended'])->name('products.toggleRecommended');
+
+    // ✅ เพิ่ม Route สำหรับกดเปลี่ยนสถานะเปิด/ปิดสินค้า
+    Route::post('/products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus'])->name('products.toggleStatus');
 
     // Promotion Management (จัดการโปรโมชั่น)
     Route::get('/promotions/logs', [App\Http\Controllers\Admin\PromotionLogController::class, 'index'])->name('promotions.logs');
+    Route::post('/promotions/{promotion}/toggle-status', [PromotionController::class, 'toggleStatus'])->name('promotions.toggle-status');
     Route::resource('promotions', PromotionController::class);
 
     // FAQ Management (จัดการคำถามที่พบบ่อย)
@@ -188,6 +192,5 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // Settings
     Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
-    // Route::delete('/settings/{key}', [App\Http\Controllers\Admin\SettingController::class, 'destroy'])->name('settings.destroy');
 
 });

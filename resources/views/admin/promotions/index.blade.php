@@ -214,14 +214,14 @@
                                                 <span
                                                     class="text-xs text-gray-500 uppercase font-bold tracking-tighter">ครั้ง</span>
                                                 <span
-                                                    class="text-emerald-400 font-bold">{{ number_format($promo->usage_count) }}</span>
+                                                    class="text-emerald-400 font-bold">{{ number_format($promo->usage_count ?? 0) }}</span>
                                             </div>
                                             <div class="w-px h-8 bg-gray-700"></div>
                                             <div class="flex flex-col items-center">
                                                 <span
                                                     class="text-xs text-gray-500 uppercase font-bold tracking-tighter">คน</span>
                                                 <span
-                                                    class="text-blue-400 font-bold">{{ number_format($promo->unique_users_count) }}</span>
+                                                    class="text-blue-400 font-bold">{{ number_format($promo->unique_users_count ?? 0) }}</span>
                                             </div>
                                         </div>
 
@@ -230,7 +230,7 @@
                                             <div class="w-full max-w-[120px] mx-auto">
                                                 <div class="w-full bg-gray-700 rounded-full h-1 overflow-hidden">
                                                     <div class="bg-gradient-to-r from-emerald-600 to-emerald-400 h-1 rounded-full transition-all duration-500"
-                                                        style="width: {{ min(100, ($promo->used_count / $promo->usage_limit) * 100) }}%">
+                                                        style="width: {{ min(100, (($promo->usage_count ?? 0) / $promo->usage_limit) * 100) }}%">
                                                     </div>
                                                 </div>
                                                 <div
@@ -251,15 +251,59 @@
                                     </div>
                                 </td>
 
-                                {{-- Status --}}
-                                <td class="px-6 py-5 text-center align-middle">
-                                    <div
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $promo->is_active ? 'bg-emerald-900/30 text-emerald-400' : 'bg-gray-700/50 text-gray-500' }}">
-                                        <div
-                                            class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $promo->is_active ? 'bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,0.8)]' : 'bg-gray-500' }}">
+                                {{-- Status (ปุ่มเปิด-ปิด แบบใหม่) --}}
+                                <td class="px-6 py-5 text-center align-middle" x-data="{ isActive: {{ $promo->is_active ? 'true' : 'false' }}, isToggling: false }">
+                                    <button type="button"
+                                        @click="async () => {
+                                            if(isToggling) return;
+                                            isToggling = true;
+                                            try {
+                                                const res = await fetch(`/admin/promotions/{{ $promo->id }}/toggle-status`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                        'Accept': 'application/json'
+                                                    }
+                                                });
+                                                if(res.ok) {
+                                                    const data = await res.json();
+                                                    isActive = data.is_active;
+                                                    if(typeof Swal !== 'undefined') {
+                                                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
+                                                        Toast.fire({ icon: 'success', title: 'อัปเดตสถานะสำเร็จ' });
+                                                    }
+                                                } else {
+                                                    throw new Error('Server error');
+                                                }
+                                            } catch(e) {
+                                                if(typeof Swal !== 'undefined') Swal.fire('ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้', 'error');
+                                                else alert('ไม่สามารถอัปเดตสถานะได้');
+                                            } finally {
+                                                isToggling = false;
+                                            }
+                                        }"
+                                        :disabled="isToggling"
+                                        class="relative inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-800 hover:scale-105"
+                                        :class="isActive ?
+                                            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 shadow-sm shadow-emerald-900/20' :
+                                            'bg-gray-700/50 text-gray-400 border border-gray-600/50 hover:bg-gray-600/50 shadow-sm'"
+                                        title="คลิกเพื่อเปิด/ปิดแคมเปญ">
+
+                                        {{-- วงกลมโหลด (แสดงตอนกด) --}}
+                                        <div x-show="isToggling"
+                                            class="absolute inset-0 flex items-center justify-center rounded-full"
+                                            :class="isActive ? 'bg-emerald-900/80' : 'bg-gray-800/80'">
+                                            <i class="fas fa-circle-notch fa-spin text-white"></i>
                                         </div>
-                                        {{ $promo->is_active ? 'Active' : 'Inactive' }}
-                                    </div>
+
+                                        {{-- จุดสีสถานะ --}}
+                                        <div class="w-1.5 h-1.5 rounded-full mr-1.5 transition-all duration-300"
+                                            :class="isActive ? 'bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,0.8)]' :
+                                                'bg-gray-500'">
+                                        </div>
+                                        <span x-text="isActive ? 'Active' : 'Inactive'"></span>
+                                    </button>
                                 </td>
 
                                 {{-- Actions --}}
@@ -271,7 +315,6 @@
                                             title="แก้ไข">
                                             <i class="fas fa-pen text-xs"></i>
                                         </a>
-                                        {{-- เปลี่ยนจาก Form มาใช้ Button เรียก Modal แทน --}}
                                         <button type="button"
                                             @click="openDeleteModal('{{ route('admin.promotions.destroy', $promo->id) }}', '{{ addslashes($promo->name) }}')"
                                             class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-600 rounded-lg transition-all shadow-sm"
@@ -298,7 +341,7 @@
                     </tbody>
                 </table>
             </div>
-            @if ($promotions->hasPages())
+            @if (method_exists($promotions, 'hasPages') && $promotions->hasPages())
                 <div class="px-6 py-4 border-t border-gray-700 bg-gray-800">
                     {{ $promotions->links() }}
                 </div>

@@ -31,8 +31,8 @@
         .swiper-button-prev {
             color: #ffffff !important;
             background: rgba(0, 0, 0, 0.3);
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             backdrop-filter: blur(4px);
             transition: all 0.3s ease;
@@ -40,7 +40,6 @@
 
         /* ปรับปุ่มให้ใหญ่ขึ้นในจอคอม */
         @media (min-width: 768px) {
-
             .swiper-button-next,
             .swiper-button-prev {
                 width: 50px;
@@ -51,13 +50,11 @@
         .swiper-button-next:hover,
         .swiper-button-prev:hover {
             background: rgba(220, 38, 38, 0.9);
-            /* สีแดง */
             transform: scale(1.1);
         }
 
         .swiper-pagination-bullet-active {
             background: #dc2626 !important;
-            /* สีแดง */
             width: 24px;
             border-radius: 5px;
         }
@@ -101,104 +98,94 @@
     @unless (isset($hideNavbar) && $hideNavbar)
         <div class="sticky top-0 z-50 shadow-sm bg-red-600 border-b border-red-500">
 
-            <div class="container mx-auto px-4">
+            <div class="container mx-auto px-4 max-w-7xl">
 
                 {{-- ================= MOBILE NAV (หน้าจอมือถือ) ================= --}}
-                <div class="navbar md:hidden px-0">
-                    <div class="navbar-start">
+                <div class="navbar md:hidden px-0 min-h-[60px]">
+                    <div class="navbar-start w-1/4">
                         <div class="dropdown">
-                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle text-white">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h7" />
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle text-white hover:bg-white/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
                                 </svg>
                             </div>
-                            <ul tabindex="-1"
-                                class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg text-gray-800">
+                            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-3 shadow-xl border border-gray-100 text-gray-800">
                                 @foreach ($menuItems as $item)
                                     @if (!$item['auth_required'] || auth()->check())
-                                        <li><a href="{{ $item['url'] }}"
-                                                class="py-3 font-bold hover:text-red-600">{{ $item['name'] }}</a></li>
+                                        <li><a href="{{ $item['url'] }}" class="py-3 px-4 font-bold text-sm hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">{{ $item['name'] }}</a></li>
                                     @endif
                                 @endforeach
                                 @auth
-                                    <li><a href="{{ route('profile.edit') }}"
-                                            class="py-3 font-bold hover:text-red-600">ข้อมูลส่วนตัว</a></li>
+                                    <div class="divider my-1"></div>
+                                    <li><a href="{{ route('profile.edit') }}" class="py-3 px-4 font-bold text-sm hover:text-red-600 hover:bg-red-50 rounded-lg">ข้อมูลส่วนตัว</a></li>
                                     <li>
-                                        <form action="{{ route('logout') }}" method="POST">@csrf<button type="submit"
-                                                class="text-red-500 font-bold py-2 w-full text-left">ออกจากระบบ</button>
+                                        <form action="{{ route('logout') }}" method="POST" class="p-0">@csrf
+                                            <button type="submit" class="text-red-500 font-bold py-3 px-4 w-full text-left hover:bg-red-50 rounded-lg">ออกจากระบบ</button>
                                         </form>
                                     </li>
                                 @else
-                                    <div class="p-2 mt-2"><a href="/login"
-                                            class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none">เข้าสู่ระบบ</a>
+                                    <div class="p-2 mt-2">
+                                        <a href="/login" class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none rounded-xl">เข้าสู่ระบบ</a>
                                     </div>
                                 @endauth
                             </ul>
                         </div>
                     </div>
-                    <div class="navbar-center">
-                        <a href="/" class="btn btn-ghost text-xl p-0 hover:bg-transparent">
-                            <img src="{{ $siteLogo }}" alt="Logo" class="h-10 w-auto object-contain">
+                    <div class="navbar-center flex-1 justify-center">
+                        <a href="/" class="btn btn-ghost p-0 hover:bg-transparent h-auto min-h-0">
+                            <img src="{{ $siteLogo }}" alt="Logo" class="h-10 sm:h-12 w-auto object-contain">
                         </a>
                     </div>
-                    <div class="navbar-end flex items-center gap-2">
-                        <a href="/cart" class="btn btn-ghost btn-circle relative">
+                    <div class="navbar-end w-1/4 flex justify-end items-center gap-1 sm:gap-2">
+                        <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-white/20">
                             <div class="indicator">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
                                 <livewire:cart-icon />
                             </div>
                         </a>
                         @auth
-                            <a href="{{ route('profile.edit') }}" class="btn btn-ghost btn-circle avatar">
+                            <a href="{{ route('profile.edit') }}" class="btn btn-ghost btn-circle avatar hover:bg-white/20 hidden sm:flex">
                                 <div class="w-8 rounded-full border border-white">
-                                    <img
-                                        src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name }}" />
+                                    <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name }}" />
                                 </div>
                             </a>
                         @endauth
                     </div>
                 </div>
+                
                 {{-- ช่องค้นหาสำหรับมือถือ --}}
                 @unless (isset($hideSearchBar) && $hideSearchBar)
-                    <div class="w-full flex justify-center pb-3 md:hidden">
+                    <div class="w-full flex justify-center pb-3 px-2 sm:px-4 md:hidden">
                         <form action="/allproducts" method="GET" class="relative w-full">
                             <input type="text" name="search" placeholder="ค้นหาสินค้า..."
-                                class="input input-sm w-full rounded-full pl-4 pr-10 text-gray-700 bg-white border-none shadow focus:outline-none" />
+                                class="w-full rounded-full pl-4 pr-10 py-2 text-sm text-gray-700 bg-white border-none shadow-inner focus:outline-none focus:ring-2 focus:ring-red-300 transition-all" />
                             <button type="submit"
-                                class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-circle btn-ghost btn-xs text-red-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </button>
                         </form>
                     </div>
                 @endunless
 
-
                 {{-- ================= DESKTOP NAV (หน้าจอคอม) ================= --}}
                 <div class="hidden md:flex items-center justify-between py-3 gap-6">
 
                     {{-- 1. Logo & Menu Group --}}
-                    <div class="flex items-center gap-6 flex-shrink-0">
+                    <div class="flex items-center gap-6 xl:gap-8 flex-shrink-0">
                         {{-- Logo --}}
                         <a href="/" class="hover:opacity-80 transition-opacity">
-                            <img src="{{ $siteLogo }}" alt="Logo" class="h-14 w-auto object-contain">
+                            <img src="{{ $siteLogo }}" alt="Logo" class="h-12 lg:h-14 w-auto object-contain">
                         </a>
 
                         {{-- Menu --}}
-                        <nav class="flex items-center gap-4 text-white text-base font-bold">
+                        <nav class="flex items-center gap-4 xl:gap-6 text-white text-sm lg:text-base font-bold">
                             @foreach ($menuItems as $item)
                                 @if (!$item['auth_required'] || auth()->check())
-                                    <a href="{{ $item['url'] }}"
-                                        class="hover:text-red-100 transition-colors">{{ $item['name'] }}</a>
+                                    <a href="{{ $item['url'] }}" class="hover:text-red-200 transition-colors whitespace-nowrap">{{ $item['name'] }}</a>
                                 @endif
                             @endforeach
                         </nav>
@@ -206,16 +193,14 @@
 
                     {{-- 2. Search Bar Group --}}
                     @unless (isset($hideSearchBar) && $hideSearchBar)
-                        <div class="flex-1 max-w-md mx-4">
+                        <div class="flex-1 max-w-md xl:max-w-lg mx-4">
                             <form action="/allproducts" method="GET" class="relative w-full">
                                 <input type="text" name="search" placeholder="ค้นหาสินค้าที่ต้องการ..."
-                                    class="input input-sm md:input-md w-full rounded-full pl-5 pr-12 text-gray-700 bg-white focus:bg-white border-none shadow-md focus:outline-none focus:ring-2 focus:ring-white/50 transition-all" />
+                                    class="w-full rounded-full pl-5 pr-12 py-2.5 text-sm text-gray-700 bg-white border-none shadow-inner focus:outline-none focus:ring-2 focus:ring-white/50 transition-all" />
                                 <button type="submit"
-                                    class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-circle btn-ghost btn-sm text-red-600 hover:bg-red-50">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </button>
                             </form>
@@ -223,14 +208,12 @@
                     @endunless
 
                     {{-- 3. Icons Group (Cart & Profile) --}}
-                    <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="flex items-center gap-2 lg:gap-3 flex-shrink-0">
                         {{-- Cart --}}
                         <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-white/20">
                             <div class="indicator">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 lg:h-7 lg:w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
                                 <livewire:cart-icon />
                             </div>
@@ -239,7 +222,7 @@
                         {{-- Login / Profile --}}
                         @guest
                             <a href="/login"
-                                class="btn bg-white text-red-600 hover:bg-gray-100 border-none rounded-full px-5 shadow-sm font-bold">
+                                class="bg-white text-red-600 hover:bg-gray-50 border-none rounded-full px-5 py-2 text-sm lg:text-base shadow-sm font-bold transition-colors">
                                 เข้าสู่ระบบ
                             </a>
                         @endguest
@@ -247,21 +230,19 @@
                         @auth
                             <div class="dropdown dropdown-end">
                                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar hover:bg-white/20">
-                                    <div class="w-10 rounded-full border-2 border-white/50">
-                                        <img
-                                            src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name }}" />
+                                    <div class="w-9 lg:w-10 rounded-full border-2 border-white/50">
+                                        <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name }}" />
                                     </div>
                                 </div>
-                                <ul tabindex="-1"
-                                    class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-white rounded-xl w-52 border border-gray-100 text-gray-800">
-                                    <li class="menu-title px-4 py-2 border-b mb-1 text-red-600 font-bold">
+                                <ul tabindex="-1" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-white rounded-xl w-52 border border-gray-100 text-gray-800">
+                                    <li class="menu-title px-4 py-2 border-b border-gray-100 mb-1 text-red-600 font-bold">
                                         {{ auth()->user()->name }}
                                     </li>
-                                    <li><a href="{{ route('profile.edit') }}">ข้อมูลส่วนตัว</a></li>
-                                    <li><a href="/orderhistory">ประวัติการสั่งซื้อ</a></li>
+                                    <li><a href="{{ route('profile.edit') }}" class="py-2.5 font-medium hover:bg-red-50 hover:text-red-600 rounded-lg">ข้อมูลส่วนตัว</a></li>
+                                    <li><a href="/orderhistory" class="py-2.5 font-medium hover:bg-red-50 hover:text-red-600 rounded-lg">ประวัติการสั่งซื้อ</a></li>
                                     <li>
-                                        <form action="{{ route('logout') }}" method="POST">@csrf
-                                            <button type="submit" class="text-red-500 hover:bg-red-50">ออกจากระบบ</button>
+                                        <form action="{{ route('logout') }}" method="POST" class="p-0 mt-1">@csrf
+                                            <button type="submit" class="text-red-500 font-bold py-2.5 px-4 w-full text-left hover:bg-red-50 rounded-lg">ออกจากระบบ</button>
                                         </form>
                                     </li>
                                 </ul>
@@ -275,113 +256,93 @@
         </div>
     @endunless
 
-
-    <div class="min-h-screen"
-    style="background-image: url('{{ asset('images/BG/fruit2.png') }}');">
+    {{-- Main Content Background (เพิ่ม bg-cover bg-center bg-fixed เพื่อให้มือถือสเกลรูปได้ถูกต้อง) --}}
+    <div class="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat"
+        style="background-image: url('{{ asset('images/BG/fruit2.png') }}');">
         @yield('content')
     </div>
 
     {{-- ★★★ FOOTER ★★★ --}}
-    <div class="bg-red-600 text-white  border-t border-red-700">
-        <footer class="container mx-auto p-10 flex flex-wrap lg:flex-nowrap justify-between gap-10">
+    <div class="bg-red-600 text-white border-t border-red-700">
+        <footer class="container mx-auto px-4 py-10 lg:py-12 max-w-7xl">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
+                
+                {{-- Column 1: โลโก้และข้อมูลร้าน --}}
+                <div class="sm:col-span-2 lg:col-span-4 flex flex-col gap-4 items-center sm:items-start text-center sm:text-left">
+                    <img src="{{ asset('images/logo/logo1.png') }}" alt="Tidjai Logo"
+                        class="w-24 h-24 sm:w-28 sm:h-28 object-contain bg-white rounded-full p-2 shadow-md hover:scale-105 transition-transform duration-300">
+                    <p class="text-red-100 text-sm leading-relaxed mt-2">
+                        <span class="font-bold text-white text-lg">ติดใจ</span><br>
+                        ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย<br>
+                        คัดสรรวัตถุดิบคุณภาพเพื่อคุณ
+                    </p>
+                </div>
 
-            {{-- โลโก้ใน Footer --}}
-            <aside class="flex flex-col gap-4 w-full sm:w-1/2 lg:w-auto min-w-[200px]">
-                <img src="{{ asset('images/logo/logo1.png') }}" alt="Tidjai Logo"
-                    class="w-28 h-28 object-contain bg-white rounded-full p-2 shadow-md hover:scale-105 transition-transform duration-300">
-                <p class="text-red-100 text-sm">
-                    <span class="font-bold text-white text-lg">ติดใจ</span><br>
-                    ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย<br>
-                    คัดสรรวัตถุดิบคุณภาพเพื่อคุณ
-                </p>
-            </aside>
+                {{-- Column 2: ศูนย์ช่วยเหลือ --}}
+                <div class="flex flex-col gap-3 lg:col-span-2">
+                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">ศูนย์ช่วยเหลือ</h6>
+                    <a href="{{ route('order.tracking.form') }}" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> ติดตามสถานะคำสั่งซื้อ</a>
+                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> การรับประกันสินค้า</a>
+                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> การคืนสินค้าและการคืนเงิน</a>
+                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> วิธีการสั่งซื้อ</a>
+                </div>
 
-            {{-- Column 1 --}}
-            <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
-                <h6 class="text-lg font-bold text-white mb-2 opacity-100">ศูนย์ช่วยเหลือ</h6>
-                <a href="{{ route('order.tracking.form') }}"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">ติดตามสถานะคำสั่งซื้อ</a>
-                <a href="#"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">การรับประกันสินค้า</a>
-                <a href="#"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">การคืนสินค้าและการคืนเงิน</a>
-                <a href="#"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">วิธีการสั่งซื้อ</a>
-            </nav>
-            {{-- Column 2 --}}
-            <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
-                <h6 class="text-lg font-bold text-white mb-2 opacity-100">เกี่ยวกับติดใจ</h6>
-                <a href="/about"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">เรื่องราวของเรา</a>
-                <a href="#"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">บทความน่ารู้</a>
-                <a href="#"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">นโยบายความเป็นส่วนตัว</a>
-                <a href="#"
-                    class="link link-hover text-red-50 hover:text-white transition-colors">ข้อกำหนดและเงื่อนไข</a>
-            </nav>
-            {{-- Column 3 --}}
-            <nav class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto">
-                <h6 class="text-lg font-bold text-white mb-2 opacity-100">ติดต่อติดใจ</h6>
-                <div class="flex items-start gap-2 text-red-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        class="w-5 h-5 flex-shrink-0 mt-0.5">
-                        <path fill-rule="evenodd"
-                            d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.006.003.002.001.003.001a.79.79 0 00.01.003zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    <span>บริษัท ติดใจ จำกัด<br>123 ถนนสุขุมวิท แขวงคลองเตย<br>เขตคลองเตย กรุงเทพฯ 10110</span>
+                {{-- Column 3: เกี่ยวกับติดใจ --}}
+                <div class="flex flex-col gap-3 lg:col-span-2">
+                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">เกี่ยวกับติดใจ</h6>
+                    <a href="/about" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> เรื่องราวของเรา</a>
+                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> บทความน่ารู้</a>
+                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> นโยบายความเป็นส่วนตัว</a>
+                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> ข้อกำหนดและเงื่อนไข</a>
                 </div>
-                <div class="flex items-center gap-2 text-red-50 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                        <path
-                            d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                    </svg>
-                    <span>02-123-4567</span>
-                </div>
-                <div class="flex items-center gap-2 text-red-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                    <span>contact@tidjai.com</span>
-                </div>
-            </nav>
-            {{-- Column 4 --}}
-            <form class="flex flex-col gap-2 w-full sm:w-1/2 lg:w-auto min-w-[250px]">
-                <h6 class="text-lg font-bold text-white mb-2 opacity-100">รับข่าวสารโปรโมชั่น</h6>
-                <fieldset class="form-control w-full">
-                    <label class="label pt-0"><span
-                            class="label-text text-red-100">กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร</span></label>
-                    <div class="join w-full">
-                        <input type="text" placeholder="your-email@example.com"
-                            class="input input-bordered join-item text-gray-800 w-full focus:outline-none" />
-                        <button
-                            class="btn bg-white text-red-600 hover:bg-red-50 border-none join-item font-bold">สมัคร</button>
+
+                {{-- Column 4: ติดต่อและจดหมายข่าว --}}
+                <div class="flex flex-col gap-6 lg:col-span-4 sm:col-span-2">
+                    {{-- Contact Info --}}
+                    <div>
+                        <h6 class="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">ติดต่อติดใจ</h6>
+                        <div class="flex flex-col gap-3 text-sm text-red-100">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-map-marker-alt mt-1 flex-shrink-0 w-4 text-center"></i>
+                                <span class="leading-relaxed">บริษัท ติดใจ จำกัด<br>123 ถนนสุขุมวิท แขวงคลองเตย<br>เขตคลองเตย กรุงเทพฯ 10110</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-phone-alt flex-shrink-0 w-4 text-center"></i>
+                                <span>02-123-4567</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-envelope flex-shrink-0 w-4 text-center"></i>
+                                <span>contact@tidjai.com</span>
+                            </div>
+                        </div>
                     </div>
-                </fieldset>
-            </form>
+
+                    {{-- Newsletter --}}
+                    <form class="flex flex-col gap-2 w-full mt-2">
+                        <label class="text-sm text-white font-bold">รับข่าวสารโปรโมชั่น</label>
+                        <p class="text-xs text-red-200 mb-1">กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร</p>
+                        <div class="flex">
+                            <input type="email" placeholder="your-email@example.com" required
+                                class="w-full px-4 py-2.5 rounded-l-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400 border-none" />
+                            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-r-lg font-bold text-sm transition-colors border-none shadow-md">
+                                สมัคร
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
         </footer>
 
-        <div class="bg-red-700 py-4 text-center text-red-200 text-sm border-t border-red-800">
-            <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
-                <p>Copyright © {{ date('Y') }} - All right reserved by Tidjai Co., Ltd.</p>
+        {{-- Footer Bottom --}}
+        <div class="bg-red-700 py-4 text-center border-t border-red-800/50">
+            <div class="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-3">
+                <p class="text-xs sm:text-sm text-red-200">Copyright © {{ date('Y') }} - All right reserved by Tidjai Co., Ltd.</p>
                 <div class="flex gap-4">
-                    <a href="#" class="hover:text-white transition-colors"><svg fill="currentColor"
-                            class="w-5 h-5" viewBox="0 0 24 24">
-                            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
-                        </svg></a>
-                    <a href="#" class="hover:text-white transition-colors"><svg fill="currentColor"
-                            class="w-5 h-5" viewBox="0 0 24 24">
-                            <path
-                                d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
-                            </path>
-                        </svg></a>
-                    <a href="#" class="hover:text-white transition-colors"><svg fill="none"
-                            stroke="currentColor" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
-                            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                            <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
-                        </svg></a>
+                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-line"></i></a>
                 </div>
             </div>
         </div>
@@ -398,6 +359,7 @@
                     title: 'สำเร็จ!',
                     text: "{{ session('success') }}",
                     confirmButtonColor: '#dc2626',
+                    borderRadius: '1rem'
                 });
             @endif
 
@@ -407,6 +369,7 @@
                     title: 'ขออภัย!',
                     text: "{{ session('error') }}",
                     confirmButtonColor: '#dc2626',
+                    borderRadius: '1rem'
                 });
             @endif
         });

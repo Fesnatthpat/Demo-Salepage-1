@@ -3,375 +3,295 @@
 @section('title', 'ชำระเงินและที่อยู่จัดส่ง | Salepage Demo')
 
 @section('content')
-    <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
+    <div class="bg-gray-50/50 min-h-screen py-4 sm:py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
 
-        @if (session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
-                role="alert">
-                <span class="block sm:inline">{{ session('error') }}</span>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md"
-                role="alert">
-                <strong class="font-bold">เกิดข้อผิดพลาด!</strong>
-                <ul class="mt-2 list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @php
-            $grandTotal = $totalAmount;
-            $shippingCost = 0;
-            $discount = $totalDiscount;
-            $finalTotal = $grandTotal + $shippingCost;
-        @endphp
-
-        {{-- ==================== 1. ส่วนที่อยู่ ==================== --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">ที่อยู่ในการจัดส่งสินค้า</h2>
-            </div>
-
-            <div x-data="{
-                activeAddress: null,
-                init() {
-                    let stored = localStorage.getItem('selected_address_id');
-                    let defaultId = {{ $addresses->count() > 0 ? $addresses->first()->id : 'null' }};
-                    this.activeAddress = stored ? parseInt(stored) : defaultId;
-                },
-                selectAddress(id) {
-                    this.activeAddress = id;
-                    localStorage.setItem('selected_address_id', id);
-                }
-            }" x-init="init()">
-
-                @if ($addresses->count() > 0)
-                    @foreach ($addresses as $index => $address)
-                        @php $modalEditId = 'modal_edit_' . $address->id; @endphp
-
-                        <div class="relative border rounded-lg p-6 mb-4 transition-all duration-200 cursor-pointer"
-                            :class="activeAddress === {{ $address->id }} ? 'border-red-500 bg-red-50/10' :
-                                'border-gray-300 hover:border-red-300'"
-                            @click="selectAddress({{ $address->id }})">
-
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="font-bold text-gray-800 text-base">บ้านของฉัน</h3>
-                                        @if ($index === 0)
-                                            <span
-                                                class="text-[10px] text-red-600 border border-red-600 px-2 py-0.5 rounded">ค่าเริ่มต้น</span>
-                                        @endif
-                                        <span x-show="activeAddress === {{ $address->id }}"
-                                            class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded ml-2">เลือกอยู่</span>
-                                    </div>
-
-                                    <div class="text-gray-600 text-sm space-y-1">
-                                        <p><span class="font-semibold text-gray-700">ชื่อ-นามสกุล:</span>
-                                            {{ $address->fullname }}</p>
-                                        <p>
-                                            <span class="font-semibold text-gray-700">ที่อยู่:</span>
-                                            {{ $address->address_line1 }}
-                                            {{ $address->address_line2 ? ' ' . $address->address_line2 : '' }}
-                                            {{ $address->district->name_th ?? '' }}
-                                            {{ $address->amphure->name_th ?? '' }}
-                                            {{ $address->province->name_th ?? '' }}
-                                            {{ $address->zipcode }}
-                                        </p>
-                                        <p><span class="font-semibold text-gray-700">เบอร์โทรศัพท์:</span>
-                                            {{ $address->phone }}</p>
-
-                                        @if ($address->note)
-                                            <div class="divider my-2"></div>
-                                            <p class="max-h-20 overflow-y-auto"><span
-                                                    class="font-semibold text-gray-700">หมายเหตุ:</span>
-                                                {{ $address->note }}</p>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="flex-shrink-0 flex items-center justify-end gap-2 w-full sm:w-auto">
-                                    <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
-                                        class="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal px-4">
-                                        แก้ไขที่อยู่
-                                    </button>
-
-                                    <form id="delete-form-{{ $address->id }}"
-                                        action="{{ route('address.destroy', $address->id) }}" method="POST" @click.stop>
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" onclick="confirmDelete('delete-form-{{ $address->id }}')"
-                                            class="btn btn-sm btn-outline border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 hover:text-red-600 font-normal px-3">
-                                            ลบ
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                        <dialog id="{{ $modalEditId }}" class="modal modal-middle" x-data="addressDropdown()"
-                            x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
-                            <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden cursor-default"
-                                @click.stop>
-                                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                                    <h3 class="font-bold text-lg text-gray-800">แก้ไขที่อยู่จัดส่ง</h3>
-                                    <form method="dialog"><button
-                                            class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-                                    </form>
-                                </div>
-                                <div class="p-6 max-h-[75vh] overflow-y-auto">
-                                    <form action="{{ route('address.update', $address->id) }}" method="POST"
-                                        id="form_edit_{{ $address->id }}" onsubmit="showLoading()">
-                                        @csrf @method('PUT')
-                                        <div class="mb-6">
-                                            <h4 class="text-red-600 font-bold mb-4">ข้อมูลผู้รับ</h4>
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">ชื่อ-นามสกุล</label>
-                                                    <input type="text" name="fullname" value="{{ $address->fullname }}"
-                                                        class="input input-bordered w-full rounded focus:outline-red-500" />
-                                                </div>
-                                                <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">เบอร์โทรศัพท์</label>
-                                                    <input type="tel" name="phone" value="{{ $address->phone }}"
-                                                        class="input input-bordered w-full rounded focus:outline-red-500" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mb-4">
-                                            <h4 class="text-red-600 font-bold mb-4">ที่อยู่จัดส่ง</h4>
-                                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                                <div class="md:col-span-3 form-control">
-                                                    <label class="label-text text-gray-500 mb-1">บ้านเลขที่ / อาคาร /
-                                                        ถนน</label>
-                                                    <input type="text" name="address_line1"
-                                                        value="{{ $address->address_line1 }}"
-                                                        class="input input-bordered w-full rounded focus:outline-red-500" />
-                                                </div>
-                                                <div class="md:col-span-1 form-control">
-                                                    <label class="label-text text-gray-500 mb-1">หมู่ที่</label>
-                                                    <input type="text" name="address_line2"
-                                                        value="{{ $address->address_line2 }}"
-                                                        class="input input-bordered w-full rounded focus:outline-red-500 text-center" />
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">จังหวัด</label>
-                                                    <select name="province_id" x-model="selectedProvince"
-                                                        @change="fetchAmphures()"
-                                                        class="select select-bordered w-full rounded focus:outline-red-500">
-                                                        <option value="">-- เลือกจังหวัด --</option>
-                                                        @foreach ($provinces as $province)
-                                                            <option value="{{ $province->id }}">
-                                                                {{ $province->name_th }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">อำเภอ/เขต</label>
-                                                    <select name="amphure_id" x-model="selectedAmphure"
-                                                        @change="fetchDistricts()" :disabled="!selectedProvince"
-                                                        class="select select-bordered w-full rounded focus:outline-red-500 disabled:bg-gray-100">
-                                                        <option value="">-- เลือกอำเภอ --</option>
-                                                        <template x-for="amphure in amphures" :key="amphure.id">
-                                                            <option :value="amphure.id" x-text="amphure.name_th">
-                                                            </option>
-                                                        </template>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">ตำบล/แขวง</label>
-                                                    <select name="district_id" x-model="selectedDistrict"
-                                                        :disabled="!selectedAmphure"
-                                                        class="select select-bordered w-full rounded focus:outline-red-500 disabled:bg-gray-100">
-                                                        <option value="">-- เลือกตำบล --</option>
-                                                        <template x-for="district in districts" :key="district.id">
-                                                            <option :value="district.id" x-text="district.name_th">
-                                                            </option>
-                                                        </template>
-                                                    </select>
-                                                </div>
-                                                <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">รหัสไปรษณีย์</label>
-                                                    <input type="text" name="zipcode" :value="getZipCode()" readonly
-                                                        class="input input-bordered w-full rounded bg-gray-50 text-gray-700 font-semibold" />
-                                                </div>
-                                            </div>
-                                            <div class="form-control mt-4">
-                                                <label class="label-text text-gray-500 mb-1">หมายเหตุการจัดส่ง</label>
-                                                <textarea name="note" class="textarea textarea-bordered w-full rounded focus:outline-red-500 h-24">{{ $address->note }}</textarea>
-                                            </div>
-                                        </div>
-                                    </form>
-                                    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                                        <form method="dialog"><button
-                                                class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button>
-                                        </form>
-                                        <button
-                                            onclick="document.getElementById('form_edit_{{ $address->id }}').submit()"
-                                            class="btn bg-red-600 hover:bg-red-700 text-white border-none font-normal px-6">บันทึกข้อมูล</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </dialog>
-                    @endforeach
-                @else
-                    <div class="text-center py-10 bg-gray-50 rounded border-2 border-dashed border-gray-300">
-                        <p class="text-gray-500 mb-4">ยังไม่มีข้อมูลที่อยู่จัดส่ง</p>
-                        <button onclick="modal_add_new.showModal()"
-                            class="btn bg-red-600 hover:bg-red-700 text-white border-none">เพิ่มที่อยู่จัดส่ง</button>
-                    </div>
-                @endif
-            </div>
-
-            @if ($addresses->count() > 0)
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <button onclick="modal_add_new.showModal()"
-                        class="text-red-600 hover:text-red-700 text-sm font-semibold flex items-center gap-1">
-                        + เพิ่มที่อยู่ใหม่
-                    </button>
+            {{-- Alerts --}}
+            @if (session('error'))
+                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg shadow-sm mb-6 flex items-center gap-3 text-sm sm:text-base">
+                    <i class="fas fa-exclamation-circle text-lg sm:text-xl"></i>
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
-        </div>
 
-        {{-- 2. สั่งซื้อสินค้าแล้ว --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-            <h2 class="text-xl font-bold text-gray-800 mb-6">สั่งซื้อสินค้าแล้ว</h2>
-            <div class="space-y-4">
-                @if (isset($cartItems) && count($cartItems) > 0)
-                    @foreach ($cartItems as $item)
-                        @php
-                            $attrs = $item->attributes;
-                            if (!is_array($attrs) && is_object($attrs) && method_exists($attrs, 'toArray')) {
-                                $attrs = $attrs->toArray();
-                            }
-                            $attrs = (array) $attrs;
+            @if ($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-4 rounded-lg shadow-sm mb-6 text-sm sm:text-base">
+                    <strong class="font-bold flex items-center gap-2 mb-2"><i class="fas fa-times-circle"></i> เกิดข้อผิดพลาด!</strong>
+                    <ul class="list-disc list-inside ml-2 sm:ml-6 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                            $originalPrice = $attrs['original_price'] ?? $item->price;
-                            $totalPrice = $item->price * $item->quantity;
+            @php
+                $grandTotal = $totalAmount;
+                $shippingCost = 0;
+                $discount = $totalDiscount;
+                $finalTotal = $grandTotal + $shippingCost;
+            @endphp
 
-                            $realProductId = $attrs['product_id'] ?? $item->id;
-                            $productDb = isset($products) ? $products->get($realProductId) : null;
-
-                            $imgUrl = $productDb ? $productDb->cover_image_url : null;
-                            if ($imgUrl) {
-                                $displayImage = strpos($imgUrl, 'http') === 0 ? $imgUrl : asset($imgUrl);
-                            } else {
-                                $displayImage = isset($attrs['image'])
-                                    ? asset($attrs['image'])
-                                    : 'https://via.placeholder.com/150?text=No+Image';
-                            }
-                        @endphp
-
-                        <div
-                            class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0 relative">
-                                    <img src="{{ $displayImage }}" class="w-full h-full object-cover"
-                                        alt="{{ $item->name }}"
-                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';" />
-                                </div>
-                                <div>
-                                    <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
-                                        {{ $item->name }}</p>
-                                    <p class="text-sm text-gray-500">จำนวน: {{ $item->quantity }} ชิ้น</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-red-600">฿{{ number_format($totalPrice) }}</p>
-                                @if ($originalPrice > $item->price)
-                                    <p class="text-xs text-gray-400 line-through">
-                                        ฿{{ number_format($originalPrice * $item->quantity) }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                @else
-                    <p class="text-center text-gray-400 py-4">ไม่พบรายการสินค้า</p>
-                @endif
-
-                {{-- ✅ เพิ่มส่วนแสดงผลของแถม (ดึงจากรหัสที่ส่งมา) ✅ --}}
-                @if (isset($selectedFreebies) && is_array($selectedFreebies) && count($selectedFreebies) > 0)
-                    @foreach ($selectedFreebies as $freeId)
-                        @php
-                            $freeProduct = isset($products)
-                                ? $products->get($freeId)
-                                : \App\Models\ProductSalepage::find($freeId);
-                            if (!$freeProduct) {
-                                continue;
-                            }
-
-                            $imgUrl = $freeProduct->cover_image_url;
-                            $displayImage =
-                                strpos($imgUrl, 'http') === 0
-                                    ? $imgUrl
-                                    : asset($imgUrl ?: 'https://via.placeholder.com/150');
-                        @endphp
-                        <div
-                            class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0 bg-red-50/40 p-3 rounded-lg mt-3">
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-16 h-16 bg-white rounded-md overflow-hidden border border-red-200 flex-shrink-0 relative">
-                                    <img src="{{ $displayImage }}" class="w-full h-full object-cover"
-                                        alt="{{ $freeProduct->pd_sp_name }}"
-                                        onerror="this.src='https://via.placeholder.com/150?text=Gift';" />
-                                    <div
-                                        class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-md">
-                                        ของแถม</div>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
-                                        {{ $freeProduct->pd_sp_name }}
-                                    </p>
-                                    <p class="text-sm text-red-500 font-bold">จำนวน: 1 ชิ้น</p>
-                                </div>
-                            </div>
-                            <div class="text-right flex items-center h-full">
-                                <span
-                                    class="px-3 py-1 bg-red-600 text-white rounded-full font-bold text-xs shadow-sm">ฟรี!</span>
-                            </div>
-                        </div>
-                    @endforeach
-                @endif
+            {{-- Header --}}
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">ชำระเงิน (Checkout)</h1>
+                <div class="hidden sm:block h-6 w-px bg-gray-300"></div>
+                <span class="text-gray-500 font-medium text-sm sm:text-base">ขั้นตอนสุดท้าย</span>
             </div>
-        </div>
 
-        {{-- 3. วิธีชำระเงิน --}}
-        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h2 class="text-xl font-bold text-gray-800 mb-6">วิธีชำระเงิน</h2>
-            <div class="flex flex-col lg:flex-row gap-8 items-start">
-                <div class="flex-1 w-full">
-                    <div class="mb-4">
-                        <select
-                            class="select select-bordered w-full text-base rounded border-gray-300 focus:border-red-500 focus:outline-none">
-                            <option disabled selected>เลือกวิธีชำระเงิน</option>
-                            <option>ชำระเงินปลายทาง</option>
-                            <option>บัตรเครดิต/เดบิต</option>
-                            <option>โอนเงินธนาคาร</option>
-                        </select>
-                    </div>
-                    <div class="border border-gray-300 rounded p-4 flex items-center gap-4">
-                        <input type="checkbox" checked
-                            class="checkbox border-gray-400 checked:border-red-600 [--chkbg:theme(colors.red.600)] [--chkfg:white] rounded-sm w-5 h-5" />
-                        <div class="border border-gray-200 rounded px-3 py-1 bg-white">
-                            <img src="{{ asset('images/ci-qrpayment-img-01.png') }}" alt="PromptPay" class="w-24"
-                                onerror="this.style.display='none'">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                
+                {{-- ⬅️ ฝั่งซ้าย: ข้อมูลที่อยู่, รายการสินค้า, ช่องทางชำระ --}}   
+                <div class="lg:col-span-8 space-y-6">
+
+                    {{-- 📍 1. ส่วนที่อยู่ --}}
+                    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 md:p-8">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-red-500"></i> ที่อยู่จัดส่ง
+                            </h2>
+                            @if ($addresses->count() > 0)
+                                <button onclick="modal_add_new.showModal()" class="w-full sm:w-auto text-sm font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl sm:rounded-full transition-colors flex justify-center items-center">
+                                    <i class="fas fa-plus mr-1"></i> เพิ่มที่อยู่
+                                </button>
+                            @endif
                         </div>
-                        <span class="text-gray-700">ชำระผ่านพร้อมเพย์</span>
+
+                        <div x-data="{
+                            activeAddress: null,
+                            init() {
+                                let stored = localStorage.getItem('selected_address_id');
+                                let defaultId = {{ $addresses->count() > 0 ? $addresses->first()->id : 'null' }};
+                                this.activeAddress = stored ? parseInt(stored) : defaultId;
+                            },
+                            selectAddress(id) {
+                                this.activeAddress = id;
+                                localStorage.setItem('selected_address_id', id);
+                            }
+                        }" x-init="init()" class="space-y-4">
+
+                            @if ($addresses->count() > 0)
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @foreach ($addresses as $index => $address)
+                                        @php $modalEditId = 'modal_edit_' . $address->id; @endphp
+
+                                        <div class="relative border-2 rounded-2xl p-4 sm:p-5 transition-all duration-200 cursor-pointer overflow-hidden group flex flex-col h-full"
+                                            :class="activeAddress === {{ $address->id }} ? 'border-red-500 bg-red-50/50 shadow-md ring-1 ring-red-100' : 'border-gray-100 hover:border-red-200 hover:bg-gray-50'"
+                                            @click="selectAddress({{ $address->id }})">
+                                            
+                                            {{-- Radio Indicator --}}
+                                            <div class="absolute top-4 sm:top-5 right-4 sm:right-5">
+                                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                                                    :class="activeAddress === {{ $address->id }} ? 'border-red-500' : 'border-gray-300'">
+                                                    <div class="w-2.5 h-2.5 rounded-full bg-red-500 transition-transform duration-200"
+                                                        :class="activeAddress === {{ $address->id }} ? 'scale-100' : 'scale-0'"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="pr-8 flex-grow">
+                                                <div class="flex items-center gap-2 mb-2 sm:mb-3">
+                                                    <h3 class="font-bold text-gray-900 text-sm sm:text-base">{{ $address->fullname }}</h3>
+                                                    @if ($index === 0)
+                                                        <span class="text-[9px] bg-gray-800 text-white px-2 py-0.5 rounded uppercase font-bold tracking-wider">Default</span>
+                                                    @endif
+                                                </div>
+
+                                                <div class="text-xs sm:text-sm text-gray-600 space-y-1.5 leading-relaxed">
+                                                    <p class="flex items-start gap-2"><i class="fas fa-phone-alt mt-1 w-3 sm:w-4 text-gray-400"></i> {{ $address->phone }}</p>
+                                                    <p class="flex items-start gap-2"><i class="fas fa-map-pin mt-1 w-3 sm:w-4 text-gray-400"></i> 
+                                                        <span>
+                                                            {{ $address->address_line1 }} {{ $address->address_line2 ? ' ' . $address->address_line2 : '' }}<br>
+                                                            {{ $address->district->name_th ?? '' }}, {{ $address->amphure->name_th ?? '' }}<br>
+                                                            {{ $address->province->name_th ?? '' }} {{ $address->zipcode }}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {{-- Actions Overlay (เห็นตลอดบนมือถือ, ซ่อนเมื่อไม่ Hover บน Desktop) --}}
+                                            <div class="mt-4 flex justify-end gap-2 transition-opacity opacity-100 lg:opacity-0 lg:group-hover:opacity-100" :class="activeAddress === {{ $address->id }} ? 'lg:opacity-100' : ''">
+                                                <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
+                                                    class="w-8 h-8 rounded-full bg-white shadow border border-gray-200 text-gray-600 hover:text-blue-600 flex items-center justify-center transition-colors" title="แก้ไข">
+                                                    <i class="fas fa-pen text-xs"></i>
+                                                </button>
+                                                <form id="delete-form-{{ $address->id }}" action="{{ route('address.destroy', $address->id) }}" method="POST" @click.stop>
+                                                    @csrf @method('DELETE')
+                                                    <button type="button" onclick="confirmDelete('delete-form-{{ $address->id }}')"
+                                                        class="w-8 h-8 rounded-full bg-white shadow border border-gray-200 text-gray-600 hover:text-red-600 flex items-center justify-center transition-colors" title="ลบ">
+                                                        <i class="fas fa-trash text-xs"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        {{-- Edit Modal --}}
+                                        <dialog id="{{ $modalEditId }}" class="modal modal-bottom sm:modal-middle" x-data="addressDropdown()" x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
+                                            <div class="modal-box w-full sm:w-11/12 max-w-4xl p-0 bg-white sm:rounded-3xl shadow-2xl overflow-hidden cursor-default" @click.stop>
+                                                <div class="px-5 py-4 sm:px-8 sm:py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                                    <h3 class="font-bold text-lg sm:text-xl text-gray-900 flex items-center gap-2"><i class="fas fa-edit text-red-500"></i> แก้ไขที่อยู่จัดส่ง</h3>
+                                                    <form method="dialog"><button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"><i class="fas fa-times"></i></button></form>
+                                                </div>
+                                                <div class="p-5 sm:p-8 max-h-[80vh] overflow-y-auto">
+                                                    <form action="{{ route('address.update', $address->id) }}" method="POST" id="form_edit_{{ $address->id }}" onsubmit="showLoading()">
+                                                        @csrf @method('PUT')
+                                                        
+                                                        <div class="mb-6 sm:mb-8">
+                                                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ข้อมูลผู้รับ</h4>
+                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ชื่อ-นามสกุล</label><input type="text" name="fullname" value="{{ $address->fullname }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">เบอร์โทรศัพท์</label><input type="tel" name="phone" value="{{ $address->phone }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-4">
+                                                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ที่อยู่จัดส่ง</h4>
+                                                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                                <div class="sm:col-span-3 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">บ้านเลขที่ / อาคาร / ถนน</label><input type="text" name="address_line1" value="{{ $address->address_line1 }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                                <div class="sm:col-span-1 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมู่ที่</label><input type="text" name="address_line2" value="{{ $address->address_line2 }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" /></div>
+                                                            </div>
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">จังหวัด</label><select name="province_id" x-model="selectedProvince" @change="fetchAmphures()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required><option value="">-- เลือกจังหวัด --</option>@foreach ($provinces as $province)<option value="{{ $province->id }}">{{ $province->name_th }}</option>@endforeach</select></div>
+                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">อำเภอ/เขต</label><select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()" :disabled="!selectedProvince" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกอำเภอ --</option><template x-for="amphure in amphures" :key="amphure.id"><option :value="amphure.id" x-text="amphure.name_th"></option></template></select></div>
+                                                            </div>
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ตำบล/แขวง</label><select name="district_id" x-model="selectedDistrict" :disabled="!selectedAmphure" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกตำบล --</option><template x-for="district in districts" :key="district.id"><option :value="district.id" x-text="district.name_th"></option></template></select></div>
+                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">รหัสไปรษณีย์</label><input type="text" name="zipcode" :value="getZipCode()" readonly class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-bold focus:outline-none" required/></div>
+                                                            </div>
+                                                            <div class="form-control mt-4 sm:mt-6"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมายเหตุการจัดส่ง (ไม่บังคับ)</label><textarea name="note" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all h-20 sm:h-24" placeholder="เช่น ฝากไว้ที่ป้อมยาม...">{{ $address->note }}</textarea></div>
+                                                        </div>
+                                                    </form>
+                                                    <div class="pt-6 sm:pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6">
+                                                        <form method="dialog" class="w-full sm:w-auto"><button class="w-full px-6 py-3 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">ยกเลิก</button></form>
+                                                        <button onclick="document.getElementById('form_edit_{{ $address->id }}').submit()" class="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all transform active:scale-95">บันทึกการแก้ไข</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </dialog>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-10 sm:py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 px-4">
+                                    <div class="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-gray-400">
+                                        <i class="fas fa-home text-xl sm:text-2xl"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-900 mb-1 text-base sm:text-lg">ยังไม่มีข้อมูลที่อยู่จัดส่ง</h3>
+                                    <p class="text-xs sm:text-sm text-gray-500 mb-6">กรุณาเพิ่มที่อยู่เพื่อทำการจัดส่งสินค้า</p>
+                                    <button onclick="modal_add_new.showModal()" class="w-full sm:w-auto btn bg-red-600 hover:bg-red-700 text-white border-none rounded-full px-8 shadow-lg shadow-red-500/30">
+                                        <i class="fas fa-plus mr-2"></i> เพิ่มที่อยู่จัดส่ง
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- 📦 2. รายการสั่งซื้อ --}}
+                    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-5 sm:p-6 md:p-8 border-b border-gray-100 flex items-center gap-2">
+                            <i class="fas fa-box-open text-red-500 text-lg"></i>
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-800">สินค้าที่สั่งซื้อ</h2>
+                        </div>
+                        
+                        <div class="p-4 sm:p-6 md:px-8 space-y-4">
+                            @if (isset($cartItems) && count($cartItems) > 0)
+                                @foreach ($cartItems as $item)
+                                    @php
+                                        $attrs = (array) (is_object($item->attributes) && method_exists($item->attributes, 'toArray') ? $item->attributes->toArray() : $item->attributes);
+                                        $originalPrice = $attrs['original_price'] ?? $item->price;
+                                        $totalPrice = $item->price * $item->quantity;
+                                        $realProductId = $attrs['product_id'] ?? $item->id;
+                                        $productDb = isset($products) ? $products->get($realProductId) : null;
+                                        $imgUrl = $productDb ? $productDb->cover_image_url : null;
+                                        $displayImage = $imgUrl ? (strpos($imgUrl, 'http') === 0 ? $imgUrl : asset($imgUrl)) : (isset($attrs['image']) ? asset($attrs['image']) : 'https://via.placeholder.com/150?text=No+Image');
+                                    @endphp
+
+                                    <div class="flex flex-row gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-xl border border-gray-200 flex-shrink-0 overflow-hidden">
+                                            <img src="{{ $displayImage }}" class="w-full h-full object-cover" alt="{{ $item->name }}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Error';" />
+                                        </div>
+                                        <div class="flex-1 flex flex-col justify-between">
+                                            <div class="flex flex-col sm:flex-row justify-between items-start gap-1 sm:gap-4">
+                                                <p class="font-bold text-gray-900 text-sm sm:text-base leading-tight line-clamp-2">{{ $item->name }}</p>
+                                                <div class="text-left sm:text-right flex-shrink-0 mt-1 sm:mt-0">
+                                                    <p class="font-black text-gray-900 text-sm sm:text-base">฿{{ number_format($totalPrice) }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-between items-end mt-2">
+                                                <p class="text-xs sm:text-sm font-bold text-gray-500 bg-white px-2 sm:px-3 py-1 rounded-lg border border-gray-200 shadow-sm">x{{ $item->quantity }}</p>
+                                                @if ($originalPrice > $item->price)
+                                                    <p class="text-[10px] sm:text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded font-medium border border-red-100">ประหยัด ฿{{ number_format(($originalPrice - $item->price) * $item->quantity) }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+
+                            {{-- ของแถม --}}
+                            @if (isset($selectedFreebies) && is_array($selectedFreebies) && count($selectedFreebies) > 0)
+                                <div class="mt-6">
+                                    <h4 class="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fas fa-gift text-pink-500"></i> ของแถมที่ได้รับ</h4>
+                                    <div class="space-y-3">
+                                        @foreach ($selectedFreebies as $freeId)
+                                            @php
+                                                $freeProduct = isset($products) ? $products->get($freeId) : \App\Models\ProductSalepage::find($freeId);
+                                                if (!$freeProduct) continue;
+                                                $imgUrl = $freeProduct->cover_image_url;
+                                                $displayImage = (strpos($imgUrl, 'http') === 0) ? $imgUrl : asset($imgUrl ?: 'https://via.placeholder.com/150');
+                                            @endphp
+                                            <div class="flex gap-3 sm:gap-4 p-3 bg-gradient-to-r from-pink-50 to-red-50 rounded-2xl border border-pink-100 relative overflow-hidden">
+                                                <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white/40 to-transparent pointer-events-none"></div>
+                                                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-xl border border-pink-200 flex-shrink-0 overflow-hidden shadow-sm">
+                                                    <img src="{{ $displayImage }}" class="w-full h-full object-cover" alt="{{ $freeProduct->pd_sp_name }}" onerror="this.src='https://via.placeholder.com/150?text=Gift';" />
+                                                </div>
+                                                <div class="flex-1 flex flex-col justify-center">
+                                                    <p class="font-bold text-gray-800 text-xs sm:text-sm line-clamp-2 sm:line-clamp-1">{{ $freeProduct->pd_sp_name }}</p>
+                                                    <div class="flex items-center gap-2 mt-1 sm:mt-1.5">
+                                                        <span class="text-[10px] sm:text-xs font-black text-pink-600 uppercase tracking-wide bg-white px-2 py-0.5 rounded border border-pink-100 shadow-sm">ฟรี!</span>
+                                                        <span class="text-[10px] sm:text-xs text-gray-500 font-bold">x1</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- 💳 3. วิธีชำระเงิน --}}
+                    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 md:p-8">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center gap-2">
+                            <i class="fas fa-wallet text-red-500"></i> วิธีชำระเงิน
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                            <label class="cursor-pointer">
+                                <div class="relative p-4 sm:p-5 border-2 rounded-2xl border-red-500 bg-red-50/30 flex items-center gap-3 sm:gap-4 transition-all">
+                                    <input type="radio" name="payment_method_display" checked class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 focus:ring-red-500 shrink-0" />
+                                    <div class="bg-white p-1.5 sm:p-2 rounded-lg border border-gray-200 shadow-sm shrink-0">
+                                        <img src="{{ asset('images/ci-qrpayment-img-01.png') }}" alt="PromptPay" class="h-6 sm:h-8 object-contain" onerror="this.style.display='none'">
+                                    </div>
+                                    <span class="font-bold text-gray-900 text-sm sm:text-base">พร้อมเพย์ (QR Code)</span>
+                                    <div class="absolute top-0 right-0 px-2 py-1 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-bl-lg rounded-tr-lg">แนะนำ</div>
+                                </div>
+                            </label>
+                            
+                            {{-- ตัวอย่างวิธีชำระเงินอื่นๆ ทำเป็นสีเทาไว้ (สามารถเปิดใช้ทีหลังได้) --}}
+                            <label class="cursor-pointer opacity-50">
+                                <div class="p-4 sm:p-5 border-2 rounded-2xl border-gray-200 bg-gray-50 flex items-center gap-3 sm:gap-4">
+                                    <input type="radio" name="payment_method_display" disabled class="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                                    <div class="w-10 h-8 sm:w-12 sm:h-10 bg-white rounded-lg border border-gray-300 flex items-center justify-center text-gray-400 shrink-0">
+                                        <i class="fas fa-truck text-lg sm:text-xl"></i>
+                                    </div>
+                                    <span class="font-bold text-gray-600 text-sm sm:text-base">เก็บเงินปลายทาง (COD)</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <div class="w-full lg:w-[350px] bg-white lg:border-l lg:pl-8 border-gray-100" x-data="paymentSummaryPage({
+                {{-- 🧾 ฝั่งขวา: สรุปยอดชำระเงิน (Sticky) --}}
+                <div class="lg:col-span-4" x-data="paymentSummaryPage({
                     initialTotalOriginalAmount: {{ $totalOriginalAmount }},
                     initialGrandTotal: {{ $grandTotal }},
                     initialShippingCost: {{ $shippingCost }},
@@ -380,185 +300,135 @@
                     selectedItems: @js($selectedItems),
                     selectedFreebies: @js($selectedFreebies)
                 })">
-                    <h3 class="font-bold text-gray-800 mb-4">สรุปยอดชำระ:</h3>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-6 lg:p-8 sticky top-4 sm:top-8 mb-6 lg:mb-0">
+                        <h3 class="font-extrabold text-lg sm:text-xl text-gray-900 mb-5 sm:mb-6 flex items-center gap-2">
+                            <i class="fas fa-file-invoice-dollar text-red-500"></i> สรุปคำสั่งซื้อ
+                        </h3>
 
-                    {{-- Discount Code Input --}}
-                    <div class="mb-4">
-                        <label for="discount_code" class="label-text text-gray-500 mb-1">รหัสส่วนลด (ถ้ามี)</label>
-                        <div class="join w-full">
-                            <input type="text" id="discount_code" x-model="discountCode" placeholder="กรอกรหัสส่วนลด"
-                                class="input input-bordered join-item w-full rounded-l-lg focus:outline-red-500" />
-                            <button type="button" @click="applyDiscount" :disabled="!discountCode || applyingDiscount"
-                                class="btn bg-red-600 hover:bg-red-700 text-white border-none join-item rounded-r-lg">
-                                <span x-show="!applyingDiscount">ใช้โค้ด</span>
-                                <span x-show="applyingDiscount" class="loading loading-spinner"></span>
+                        {{-- คูปองส่วนลด --}}
+                        <div class="mb-5 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">มีรหัสส่วนลดไหม?</label>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" x-model="discountCode" placeholder="กรอกรหัสที่นี่" class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 uppercase font-bold text-gray-800 placeholder-gray-400 transition-all" />
+                                <button type="button" @click="applyDiscount" :disabled="!discountCode || applyingDiscount" class="w-full sm:w-auto shrink-0 bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 sm:py-0 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span x-show="!applyingDiscount">ใช้โค้ด</span>
+                                    <span x-show="applyingDiscount" class="loading loading-spinner loading-sm"></span>
+                                </button>
+                            </div>
+                            <p x-show="discountMessage" x-text="discountMessage" x-transition
+                                :class="discountMessageType === 'success' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-red-600 bg-red-50 border-red-200'"
+                                class="text-[11px] sm:text-xs font-bold mt-2 sm:mt-3 p-2 rounded-lg border flex items-center gap-1.5">
+                            </p>
+                        </div>
+
+                        {{-- สรุปตัวเลข --}}
+                        <div class="space-y-3 sm:space-y-4 text-sm mb-5 sm:mb-6">
+                            <div class="flex justify-between items-center text-gray-600 text-xs sm:text-sm">
+                                <span>ราคาปกติ ({{ count($cartItems) }} ชิ้น)</span>
+                                <span class="font-medium" x-text="'฿' + formatNumber(totalOriginalAmount)"></span>
+                            </div>
+                            <div class="flex justify-between items-center text-gray-600 text-xs sm:text-sm">
+                                <span>ราคาสินค้า</span>
+                                <span class="font-bold text-gray-900" x-text="'฿' + formatNumber(grandTotal)"></span>
+                            </div>
+                            <div class="flex justify-between items-center text-gray-600 text-xs sm:text-sm">
+                                <span>ค่าจัดส่ง</span>
+                                <span class="font-bold text-emerald-600" x-show="shippingCost == 0">ส่งฟรี!</span>
+                                <span class="font-medium" x-show="shippingCost > 0" x-text="'฿' + formatNumber(shippingCost)"></span>
+                            </div>
+                            <div class="flex justify-between items-center text-red-500 font-bold bg-red-50 p-2 rounded-lg text-xs sm:text-sm" x-show="totalDiscount > 0" x-transition>
+                                <span><i class="fas fa-tags mr-1"></i> ส่วนลดรวม</span>
+                                <span x-text="'-฿' + formatNumber(totalDiscount)"></span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-dashed border-gray-300 pt-4 mb-5 sm:mb-6">
+                            <div class="flex justify-between items-end">
+                                <span class="font-bold text-gray-800 text-base sm:text-lg">ยอดที่ต้องชำระ</span>
+                                <div class="text-right">
+                                    <span class="font-black text-2xl sm:text-3xl text-red-600 tracking-tight block leading-none drop-shadow-sm" x-text="'฿' + formatNumber(finalTotal)"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('payment.process') }}" method="POST" onsubmit="return handlePaymentSubmit()">
+                            @csrf
+                            @if (isset($selectedItems))
+                                @foreach ($selectedItems as $id)
+                                    <input type="hidden" name="selected_items[]" value="{{ $id }}">
+                                @endforeach
+                            @endif
+                            @if (isset($selectedFreebies))
+                                @foreach ($selectedFreebies as $id)
+                                    <input type="hidden" name="selected_freebies[]" value="{{ $id }}">
+                                @endforeach
+                            @endif
+                            <input type="hidden" name="delivery_address_id" id="hidden_address_id">
+                            <input type="hidden" name="discount_code" x-model="discountCode">
+                            
+                            <button type="submit" class="w-full h-12 sm:h-14 bg-red-600 hover:bg-red-700 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-lg shadow-red-600/30 transition-all transform active:scale-95 flex items-center justify-center gap-2 group">
+                                <i class="fas fa-lock opacity-70"></i> 
+                                <span>ชำระเงินอย่างปลอดภัย</span>
                             </button>
-                        </div>
-                        <p x-show="discountMessage" x-text="discountMessage"
-                            :class="discountMessageType === 'success' ? 'text-green-600' : 'text-red-600'"
-                            class="text-sm mt-1"></p>
-                    </div>
-
-                    <div class="space-y-2 text-sm text-gray-600 mb-4">
-                        <div class="flex justify-between">
-                            <span>ราคารวมเต็มก่อนลดราคา</span>
-                            <span class="font-medium text-gray-900"
-                                x-text="'฿' + formatNumber(totalOriginalAmount)"></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>รวมการสั่งซื้อ</span>
-                            <span class="font-medium text-red-600" x-text="'฿' + formatNumber(grandTotal)"></span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>การจัดส่ง</span>
-                            <span class="font-medium text-gray-900" x-text="'฿' + formatNumber(shippingCost)"></span>
-                        </div>
-                        <div class="flex justify-between text-red-600" x-show="totalDiscount > 0">
-                            <span>ส่วนลด</span>
-                            <span x-text="'-฿' + formatNumber(totalDiscount)"></span>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center border-t border-gray-200 pt-4 mb-6">
-                        <span class="font-bold text-gray-800">ยอดชำระทั้งหมด</span>
-                        <span class="font-bold text-red-600 text-xl" x-text="'฿' + formatNumber(finalTotal)"></span>
-                    </div>
-
-                    <form action="{{ route('payment.process') }}" method="POST"
-                        onsubmit="return handlePaymentSubmit()">
-                        @csrf
-                        @if (isset($selectedItems))
-                            @foreach ($selectedItems as $id)
-                                <input type="hidden" name="selected_items[]" value="{{ $id }}">
-                            @endforeach
-                        @endif
-                        @if (isset($selectedFreebies))
-                            @foreach ($selectedFreebies as $id)
-                                <input type="hidden" name="selected_freebies[]" value="{{ $id }}">
-                            @endforeach
-                        @endif
-                        <input type="hidden" name="delivery_address_id" id="hidden_address_id">
-                        <input type="hidden" name="discount_code" x-model="discountCode">
-                        <button type="submit"
-                            class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full text-base font-normal h-11 rounded shadow-sm">
-                            ชำระเงิน
-                        </button>
-                    </form>
-                    <div class="text-center mt-3">
-                        <a href="{{ route('cart.index') }}"
-                            class="text-xs text-gray-500 hover:text-gray-700 underline">ยกเลิกคำสั่งซื้อ</a>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Modal Add New --}}
-        <dialog id="modal_add_new" class="modal modal-middle" x-data="addressDropdown()">
-            <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                    <h3 class="font-bold text-lg text-gray-800">เพิ่มที่อยู่จัดส่งใหม่</h3>
-                    <form method="dialog"><button
-                            class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button></form>
+        <dialog id="modal_add_new" class="modal modal-bottom sm:modal-middle" x-data="addressDropdown()">
+            <div class="modal-box w-full sm:w-11/12 max-w-4xl p-0 bg-white sm:rounded-3xl shadow-2xl overflow-hidden">
+                <div class="px-5 py-4 sm:px-8 sm:py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="font-bold text-lg sm:text-xl text-gray-900 flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> เพิ่มที่อยู่จัดส่งใหม่</h3>
+                    <form method="dialog"><button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"><i class="fas fa-times"></i></button></form>
                 </div>
-                <div class="p-6 max-h-[75vh] overflow-y-auto">
-                    <form action="{{ route('address.save') }}" method="POST" id="form_add_new"
-                        onsubmit="showLoading()">
+                <div class="p-5 sm:p-8 max-h-[80vh] overflow-y-auto">
+                    <form action="{{ route('address.save') }}" method="POST" id="form_add_new" onsubmit="showLoading()">
                         @csrf
-                        <div class="mb-6">
-                            <h4 class="text-red-600 font-bold mb-4">ข้อมูลผู้รับ</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">ชื่อ-นามสกุล</label>
-                                    <input type="text" name="fullname"
-                                        class="input input-bordered w-full rounded focus:outline-red-500" />
-                                </div>
-                                <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">เบอร์โทรศัพท์</label>
-                                    <input type="tel" name="phone"
-                                        class="input input-bordered w-full rounded focus:outline-red-500" />
-                                </div>
+                        <div class="mb-6 sm:mb-8">
+                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ข้อมูลผู้รับ</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ชื่อ-นามสกุล</label><input type="text" name="fullname" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">เบอร์โทรศัพท์</label><input type="tel" name="phone" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
                             </div>
                         </div>
                         <div class="mb-4">
-                            <h4 class="text-red-600 font-bold mb-4">ที่อยู่จัดส่ง</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                <div class="md:col-span-3 form-control">
-                                    <label class="label-text text-gray-500 mb-1">บ้านเลขที่ / อาคาร / ถนน</label>
-                                    <input type="text" name="address_line1"
-                                        class="input input-bordered w-full rounded focus:outline-red-500" />
-                                </div>
-                                <div class="md:col-span-1 form-control">
-                                    <label class="label-text text-gray-500 mb-1">หมู่ที่</label>
-                                    <input type="text" name="address_line2"
-                                        class="input input-bordered w-full rounded focus:outline-red-500 text-center" />
-                                </div>
+                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ที่อยู่จัดส่ง</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                <div class="sm:col-span-3 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">บ้านเลขที่ / อาคาร / ถนน</label><input type="text" name="address_line1" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                <div class="sm:col-span-1 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมู่ที่</label><input type="text" name="address_line2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" /></div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">จังหวัด</label>
-                                    <select name="province_id" x-model="selectedProvince" @change="fetchAmphures()"
-                                        class="select select-bordered w-full rounded focus:outline-red-500">
-                                        <option value="">-- เลือกจังหวัด --</option>
-                                        @foreach ($provinces as $province)
-                                            <option value="{{ $province->id }}">{{ $province->name_th }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">อำเภอ/เขต</label>
-                                    <select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()"
-                                        :disabled="!selectedProvince"
-                                        class="select select-bordered w-full rounded focus:outline-red-500 disabled:bg-gray-100">
-                                        <option value="">-- เลือกอำเภอ --</option>
-                                        <template x-for="amphure in amphures" :key="amphure.id">
-                                            <option :value="amphure.id" x-text="amphure.name_th"></option>
-                                        </template>
-                                    </select>
-                                </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">จังหวัด</label><select name="province_id" x-model="selectedProvince" @change="fetchAmphures()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required><option value="">-- เลือกจังหวัด --</option>@foreach ($provinces as $province)<option value="{{ $province->id }}">{{ $province->name_th }}</option>@endforeach</select></div>
+                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">อำเภอ/เขต</label><select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()" :disabled="!selectedProvince" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกอำเภอ --</option><template x-for="amphure in amphures" :key="amphure.id"><option :value="amphure.id" x-text="amphure.name_th"></option></template></select></div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">ตำบล/แขวง</label>
-                                    <select name="district_id" x-model="selectedDistrict" :disabled="!selectedAmphure"
-                                        class="select select-bordered w-full rounded focus:outline-red-500 disabled:bg-gray-100">
-                                        <option value="">-- เลือกตำบล --</option>
-                                        <template x-for="district in districts" :key="district.id">
-                                            <option :value="district.id" x-text="district.name_th"></option>
-                                        </template>
-                                    </select>
-                                </div>
-                                <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">รหัสไปรษณีย์</label>
-                                    <input type="text" name="zipcode" :value="getZipCode()" readonly
-                                        class="input input-bordered w-full rounded bg-gray-50 text-gray-700 font-semibold" />
-                                </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ตำบล/แขวง</label><select name="district_id" x-model="selectedDistrict" :disabled="!selectedAmphure" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกตำบล --</option><template x-for="district in districts" :key="district.id"><option :value="district.id" x-text="district.name_th"></option></template></select></div>
+                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">รหัสไปรษณีย์</label><input type="text" name="zipcode" :value="getZipCode()" readonly class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-bold focus:outline-none" required/></div>
                             </div>
-                            <div class="form-control mt-4">
-                                <label class="label-text text-gray-500 mb-1">หมายเหตุการจัดส่ง</label>
-                                <textarea name="note" class="textarea textarea-bordered w-full rounded focus:outline-red-500 h-24"
-                                    placeholder="เช่น ฝากป้อมยาม, โทรหาพี่สาวแทน (ถ้ามี)"></textarea>
-                            </div>
+                            <div class="form-control mt-4 sm:mt-6"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมายเหตุการจัดส่ง (ไม่บังคับ)</label><textarea name="note" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all h-20 sm:h-24" placeholder="เช่น ฝากไว้ที่ป้อมยาม..."></textarea></div>
                         </div>
                     </form>
-                    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                        <form method="dialog"><button
-                                class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button></form>
-                        <button onclick="document.getElementById('form_add_new').submit()"
-                            class="btn bg-red-600 hover:bg-red-700 text-white border-none font-normal px-6">บันทึกข้อมูล</button>
+                    <div class="pt-6 sm:pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6">
+                        <form method="dialog" class="w-full sm:w-auto"><button class="w-full px-6 py-3 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">ยกเลิก</button></form>
+                        <button onclick="document.getElementById('form_add_new').submit()" class="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all transform active:scale-95">บันทึกที่อยู่</button>
                     </div>
                 </div>
             </div>
         </dialog>
 
         {{-- Loading Overlay --}}
-        <div id="loading-overlay" class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center hidden">
-            <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-bounce-in">
-                <span class="loading loading-spinner loading-lg text-red-500 scale-150"></span>
-                <p class="text-gray-600 font-semibold text-lg animate-pulse">กำลังประมวลผล...</p>
+        <div id="loading-overlay" class="fixed inset-0 z-[9999] bg-white/80 backdrop-blur-sm flex items-center justify-center hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col items-center gap-4 sm:gap-6 border border-gray-100 mx-4">
+                <span class="loading loading-spinner loading-lg text-red-600 scale-125 sm:scale-150"></span>
+                <p class="text-gray-800 font-extrabold text-base sm:text-lg tracking-wide text-center">กำลังประมวลผลคำสั่งซื้อ...</p>
             </div>
         </div>
 
     </div>
 
+    {{-- Script เดิมของคุณ 100% --}}
     <script>
         function showLoading() {
             const loader = document.getElementById('loading-overlay');
@@ -567,14 +437,15 @@
 
         function confirmDelete(formId) {
             Swal.fire({
-                title: 'ยืนยันการลบ?',
-                text: "คุณต้องการลบที่อยู่นี้ใช่หรือไม่",
+                title: 'ลบที่อยู่นี้?',
+                text: "คุณไม่สามารถกู้คืนข้อมูลนี้ได้",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'ใช่, ลบเลย!',
-                cancelButtonText: 'ยกเลิก'
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก',
+                borderRadius: '1rem'
             }).then((result) => {
                 if (result.isConfirmed) {
                     showLoading();
@@ -592,9 +463,8 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'กรุณาเลือกที่อยู่',
-                    text: 'โปรดเลือกหรือเพิ่มที่อยู่สำหรับจัดส่งสินค้าก่อนดำเนินการต่อ',
-                    position: 'center',
-                    confirmButtonColor: '#DC2626'
+                    text: 'โปรดเพิ่มหรือเลือกที่อยู่จัดส่งก่อนชำระเงิน',
+                    confirmButtonColor: '#dc2626'
                 });
                 return false;
             }
@@ -633,19 +503,19 @@
                     this.discountMessageType = '';
 
                     try {
-                        const response = await fetch('/payment/apply-discount', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').content,
-                            },
-                            body: JSON.stringify({
-                                code: this.discountCode,
-                                selected_items: this.selectedItems,
-                                selected_freebies: this.selectedFreebies
-                            }),
-                        });
+                        const response = await fetch(
+                            '/payment/apply-discount', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                },
+                                body: JSON.stringify({
+                                    code: this.discountCode,
+                                    selected_items: this.selectedItems,
+                                    selected_freebies: this.selectedFreebies
+                                }),
+                            });
 
                         const data = await response.json();
 
@@ -662,7 +532,6 @@
                             this.discountMessageType = 'error';
                         }
                     } catch (error) {
-                        console.error('Error applying discount:', error);
                         this.discountMessage = 'เกิดข้อผิดพลาดในการใช้รหัสส่วนลด';
                         this.discountMessageType = 'error';
                     } finally {

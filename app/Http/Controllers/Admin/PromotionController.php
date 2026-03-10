@@ -39,7 +39,7 @@ class PromotionController extends Controller
 
         $promotion = DB::transaction(function () use ($request) {
             $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit');
-            
+
             $promoType = $request->input('promo_type_selector');
             $data['is_discount_code'] = ($promoType === 'code');
             $data['code'] = ($promoType === 'code') ? $request->input('code') : null;
@@ -122,7 +122,7 @@ class PromotionController extends Controller
             $originalData = $promotion->toArray();
 
             $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit');
-            
+
             $promoType = $request->input('promo_type_selector');
             $data['is_discount_code'] = ($promoType === 'code');
             $data['code'] = ($promoType === 'code') ? $request->input('code') : null;
@@ -150,8 +150,8 @@ class PromotionController extends Controller
                             'type' => 'buy_x_get_y',
                             // รองรับทั้ง product_id เดียว หรือหลายตัว (Array)
                             'rules' => [
-                                'product_id' => is_array($item['product_id']) ? $item['product_id'] : [$item['product_id']], 
-                                'quantity_to_buy' => $item['quantity']
+                                'product_id' => is_array($item['product_id']) ? $item['product_id'] : [$item['product_id']],
+                                'quantity_to_buy' => $item['quantity'],
                             ],
                         ]);
                     }
@@ -164,8 +164,8 @@ class PromotionController extends Controller
                             'promotion_id' => $promotion->id,
                             'type' => 'buy_x_get_y',
                             'actions' => [
-                                'product_id_to_get' => $item['product_id'] ?? null, 
-                                'quantity_to_get' => $item['quantity']
+                                'product_id_to_get' => $item['product_id'] ?? null,
+                                'quantity_to_get' => $item['quantity'],
                             ],
                         ]);
                     }
@@ -199,6 +199,24 @@ class PromotionController extends Controller
         return redirect()->back()->with('success', 'ลบโปรโมชั่นเรียบร้อยแล้ว');
     }
 
+    /**
+     * ฟังก์ชันสำหรับกดปุ่มสลับสถานะ (เปิด/ปิด) จากหน้าสารบัญ (Index) โดยตรงผ่าน AJAX
+     */
+    public function toggleStatus(Promotion $promotion)
+    {
+        $promotion->is_active = ! $promotion->is_active;
+        $promotion->save();
+
+        // บันทึก Log การเปิดปิดสถานะ (ถ้าต้องการ)
+        // $this->logActivity($promotion, $promotion->is_active ? 'activated' : 'deactivated');
+
+        return response()->json([
+            'success' => true,
+            'is_active' => $promotion->is_active,
+            'message' => 'อัปเดตสถานะแคมเปญสำเร็จ',
+        ]);
+    }
+
     private function validatePromotion(Request $request, $id = null)
     {
         $rules = [
@@ -222,7 +240,7 @@ class PromotionController extends Controller
             $rules['buy_items'] = 'required|array|min:1';
             $rules['buy_items.*.product_id'] = 'required|exists:product_salepage,pd_sp_id';
             $rules['buy_items.*.quantity'] = 'required|integer|min:1';
-            
+
             $rules['get_items'] = 'required|array|min:1';
             $rules['get_items.*.product_id'] = 'nullable|exists:product_salepage,pd_sp_id';
             $rules['get_items.*.quantity'] = 'required|integer|min:1';

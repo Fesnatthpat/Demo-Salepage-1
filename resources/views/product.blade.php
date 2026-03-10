@@ -502,25 +502,25 @@
 
                 updateCountdowns() {
                     const now = new Date();
-                    this.promotions.forEach(promo => {
+                    let hasExpired = false;
+
+                    this.promotions = this.promotions.filter(promo => {
                         if (!promo.end_date) {
                             promo.remainingTime = 'ใช้งานได้เรื่อยๆ';
                             promo.isExpiringSoon = false;
-                            return;
+                            return true;
                         }
 
                         const end = new Date(promo.end_date);
                         const diff = end - now;
 
                         if (diff <= 0) {
-                            promo.remainingTime = 'สิ้นสุดแล้ว';
-                            promo.isExpiringSoon = false;
-                            return;
+                            hasExpired = true;
+                            return false; // ลบโปรโมชั่นนี้ออกทันที
                         }
 
                         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 *
-                            60));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
@@ -533,7 +533,23 @@
                         } else {
                             promo.remainingTime = `${minutes} นาที ${seconds} วิ`;
                         }
+                        return true;
                     });
+
+                    if (hasExpired) {
+                        this.validateSelection();
+                        // ถ้าหลังจาก validate แล้วเงื่อนไขไม่ครบ ให้ล้างของแถม
+                        if (!this.isConditionMet && this.selectedGifts.length > 0) {
+                            this.selectedGifts = [];
+                            Swal.fire({
+                                title: 'โปรโมชั่นสิ้นสุดแล้ว',
+                                text: 'ขออภัย โปรโมชั่นหมดเวลาแล้ว รายการของแถมถูกยกเลิก',
+                                icon: 'warning',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        }
+                    }
                 },
 
                 // เปลี่ยนระบบให้รองรับการเลือกของแถมเดิมซ้ำ

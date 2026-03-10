@@ -6,196 +6,154 @@
 @section('styles')
     <style>
         .slip-thumbnail {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             object-fit: cover;
             cursor: pointer;
-            border-radius: 4px;
-            transition: transform 0.2s;
-            background-color: #374151;
-            /* gray-700 */
-            border: 1px solid #4b5563;
-            /* gray-600 */
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background-color: #1f2937;
+            border: 2px solid #374151;
         }
 
         .slip-thumbnail:hover {
-            transform: scale(1.1);
+            transform: scale(1.15) rotate(2deg);
             border-color: #10b981;
-            /* emerald-500 */
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            z-index: 10;
         }
 
-        /* ปรับปรุง Scrollbar สำหรับปุ่ม Filter */
-        .filter-scroll::-webkit-scrollbar {
+        .custom-scroll::-webkit-scrollbar {
             height: 6px;
         }
 
-        .filter-scroll::-webkit-scrollbar-track {
+        .custom-scroll::-webkit-scrollbar-track {
             background: #1f2937;
-            /* gray-900 */
             border-radius: 4px;
         }
 
-        .filter-scroll::-webkit-scrollbar-thumb {
+        .custom-scroll::-webkit-scrollbar-thumb {
             background: #4b5563;
-            /* gray-600 */
             border-radius: 4px;
         }
 
-        .filter-scroll::-webkit-scrollbar-thumb:hover {
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
             background: #6b7280;
-            /* gray-500 */
         }
     </style>
 @endsection
 
 @section('content')
-    <div class="card bg-gray-800 shadow-lg border border-gray-700">
-        <div class="card-body">
-            {{-- Header & Search Section --}}
-            <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
-                <div class="flex-1">
-                    <h2 class="card-title text-gray-100">สินค้าทั้งหมด <span
-                            class="text-sm font-normal text-gray-500">({{ $products->total() }})</span></h2>
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        {{-- Header & Actions --}}
+        <div
+            class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gray-800/80 backdrop-blur-sm p-6 rounded-3xl shadow-lg border border-gray-700/50">
+            <div>
+                <h2 class="text-2xl font-extrabold text-white flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    คลังสินค้าทั้งหมด
+                    <span
+                        class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 ml-2">
+                        {{ $products->total() }} รายการ
+                    </span>
+                </h2>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                <form action="{{ route('admin.products.index') }}" method="GET" class="w-full sm:w-72 relative group">
+                    @if (request('status') !== null)
+                        <input type="hidden" name="status" value="{{ request('status') }}">
+                    @endif
+                    @if (request('type'))
+                        <input type="hidden" name="type" value="{{ request('type') }}">
+                    @endif
+
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-500 group-focus-within:text-emerald-400 transition-colors"></i>
+                    </div>
+                    <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
+                        class="input w-full pl-11 pr-4 bg-gray-900/50 border border-gray-600 text-gray-200 placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl h-12 transition-all"
+                        value="{{ request('search') }}">
+                </form>
+
+                <a href="{{ route('admin.products.create') }}"
+                    class="btn bg-emerald-600 hover:bg-emerald-700 border-none text-white w-full sm:w-auto h-12 rounded-2xl shadow-lg shadow-emerald-900/20 transition-all transform active:scale-95">
+                    <i class="fas fa-plus mr-1"></i> เพิ่มสินค้าใหม่
+                </a>
+            </div>
+        </div>
+
+        @if (session('success'))
+            <div
+                class="alert alert-success bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-sm rounded-2xl flex items-center gap-3 animate-fade-in-up">
+                <i class="fas fa-check-circle text-xl"></i>
+                <span class="font-medium">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        {{-- Filters --}}
+        <div class="bg-gray-800/50 p-2 border border-gray-700/50 rounded-2xl">
+            <div class="flex overflow-x-auto custom-scroll gap-2 p-2">
+                {{-- Status Filters --}}
+                <div class="flex bg-gray-900/50 p-1.5 rounded-xl border border-gray-700">
+                    <a href="{{ route('admin.products.index', array_merge(request()->query(), ['status' => null, 'page' => null])) }}"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition-all {{ request('status') === null ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-gray-200' }}">
+                        ทั้งหมด
+                    </a>
+                    <a href="{{ route('admin.products.index', array_merge(request()->query(), ['status' => '1', 'page' => null])) }}"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition-all {{ request('status') === '1' ? 'bg-emerald-500/20 text-emerald-400 shadow' : 'text-gray-400 hover:text-emerald-400' }}">
+                        ใช้งานอยู่
+                    </a>
+                    <a href="{{ route('admin.products.index', array_merge(request()->query(), ['status' => '0', 'page' => null])) }}"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition-all {{ request('status') === '0' ? 'bg-red-500/20 text-red-400 shadow' : 'text-gray-400 hover:text-red-400' }}">
+                        ระงับการขาย
+                    </a>
                 </div>
-                <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-end">
-                    {{-- Search Form --}}
-                    <form action="{{ route('admin.products.index') }}" method="GET" class="w-full sm:w-auto">
-                        {{-- เก็บค่า filter ปัจจุบันไว้เวลาค้นหา --}}
-                        @if (request('status') !== null)
-                            <input type="hidden" name="status" value="{{ request('status') }}">
-                        @endif
-                        @if (request('type'))
-                            <input type="hidden" name="type" value="{{ request('type') }}">
-                        @endif
 
-                        <div class="flex w-full sm:w-auto relative">
-                            <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
-                                class="input input-bordered w-full sm:w-64 pr-12 bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
-                                value="{{ request('search') }}">
-
-                            <button type="submit"
-                                class="absolute right-0 top-0 bottom-0 btn btn-square btn-ghost text-gray-400 hover:text-emerald-400 hover:bg-transparent">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </form>
-
-                    {{-- Create Button --}}
-                    <a href="{{ route('admin.products.create') }}"
-                        class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white w-full sm:w-auto shadow-md">
-                        <i class="fas fa-plus mr-2"></i>
-                        เพิ่มสินค้าใหม่
+                {{-- Type Filters --}}
+                <div class="flex bg-gray-900/50 p-1.5 rounded-xl border border-gray-700">
+                    <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'recommended', 'page' => null])) }}"
+                        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all {{ request('type') == 'recommended' ? 'bg-yellow-500/20 text-yellow-400 shadow' : 'text-gray-400 hover:text-yellow-400' }}">
+                        <i class="fas fa-star"></i> แนะนำ
+                    </a>
+                    <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'promotion', 'page' => null])) }}"
+                        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all {{ request('type') == 'promotion' ? 'bg-purple-500/20 text-purple-400 shadow' : 'text-gray-400 hover:text-purple-400' }}">
+                        <i class="fas fa-tags"></i> มีส่วนลด
+                    </a>
+                    <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'out_of_stock', 'page' => null])) }}"
+                        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all {{ request('type') == 'out_of_stock' ? 'bg-orange-500/20 text-orange-400 shadow' : 'text-gray-400 hover:text-orange-400' }}">
+                        <i class="fas fa-box-open"></i> สินค้าหมด
                     </a>
                 </div>
             </div>
+        </div>
 
-            @if (session('success'))
-                <div class="alert alert-success bg-green-900/50 border-green-800 text-green-200 shadow-sm mb-6">
-                    <div>
-                        <i class="fas fa-check-circle"></i>
-                        <span>{{ session('success') }}</span>
-                    </div>
-                </div>
-            @endif
-
-            {{-- 🔥 ส่วนตัวกรอง (Filter Groups) แยก 2 แถว 🔥 --}}
-            <div
-                class="flex flex-col gap-4 mb-6 bg-gray-900/50 p-4 rounded-xl border border-gray-700 overflow-x-auto filter-scroll">
-
-                {{-- แถวที่ 1: สถานะ (Status) --}}
-                <div class="flex items-center gap-3 min-w-max">
-                    <span class="text-sm font-bold text-gray-400 whitespace-nowrap w-20">
-                        <i class="fas fa-toggle-on mr-1"></i> สถานะ:
-                    </span>
-                    <div class="join">
-                        {{-- ทั้งหมด --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['status' => null, 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('status') === null ? 'bg-gray-600 text-white border-gray-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            ทั้งหมด
-                        </a>
-                        {{-- ใช้งาน --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['status' => '1', 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('status') === '1' ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            ใช้งาน
-                        </a>
-                        {{-- ไม่ใช้งาน --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['status' => '0', 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('status') === '0' ? 'bg-red-600 text-white border-red-500 hover:bg-red-700' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            ไม่ใช้งาน
-                        </a>
-                    </div>
-                </div>
-
-                {{-- แถวที่ 2: ประเภท/เงื่อนไข (Type) --}}
-                <div class="flex items-center gap-3 min-w-max">
-                    <span class="text-sm font-bold text-gray-400 whitespace-nowrap w-20">
-                        <i class="fas fa-filter mr-1"></i> ประเภท:
-                    </span>
-                    <div class="join">
-                        {{-- ทั้งหมด --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => null, 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ !request('type') ? 'bg-gray-600 text-white border-gray-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            ทั้งหมด
-                        </a>
-
-                        {{-- แนะนำ --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'recommended', 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('type') == 'recommended' ? 'bg-yellow-600 text-white border-yellow-500 hover:bg-yellow-700' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            <i class="fas fa-star text-xs mr-1"></i> แนะนำ
-                        </a>
-
-                        {{-- โปรโมชั่น --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'promotion', 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('type') == 'promotion' ? 'bg-purple-600 text-white border-purple-500 hover:bg-purple-700' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            <i class="fas fa-tags text-xs mr-1"></i> โปรโมชั่น
-                        </a>
-
-                        {{-- ทั่วไป --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'general', 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('type') == 'general' ? 'bg-blue-600 text-white border-blue-500 hover:bg-blue-700' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            ทั่วไป
-                        </a>
-
-                        {{-- สินค้าหมด --}}
-                        <a href="{{ route('admin.products.index', array_merge(request()->query(), ['type' => 'out_of_stock', 'page' => null])) }}"
-                            class="join-item btn btn-sm border-gray-600 {{ request('type') == 'out_of_stock' ? 'bg-orange-600 text-white border-orange-500 hover:bg-orange-700' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white' }}">
-                            <i class="fas fa-box-open text-xs mr-1"></i> สินค้าหมด
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Table --}}
-            <div class="overflow-x-auto">
-                <table class="table w-full text-gray-300">
+        {{-- Table --}}
+        <div class="bg-gray-800 rounded-3xl shadow-xl border border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
-                        <tr class="border-b border-gray-700 bg-gray-900/50 text-gray-400">
-                            <th class="text-center">รูปภาพ</th>
-                            <th>สินค้า</th>
-                            <th class="text-right">ราคา</th>
-                            <th class="text-right">ส่วนลด</th>
-                            <th class="text-right">คลัง (Stock)</th>
-                            <th>รายละเอียด</th>
-                            <th class="text-center">สถานะ</th>
-                            <th class="text-center">Actions</th>
+                        <tr class="bg-gray-900/80 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <th class="px-6 py-4 font-bold text-center">รูปภาพ</th>
+                            <th class="px-6 py-4 font-bold">ข้อมูลสินค้า</th>
+                            <th class="px-6 py-4 font-bold text-right">ราคา/ส่วนลด</th>
+                            <th class="px-6 py-4 font-bold text-center">คลัง (Stock)</th>
+                            <th class="px-6 py-4 font-bold text-center">สถานะ</th>
+                            <th class="px-6 py-4 font-bold text-right">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-700/50">
                         @forelse ($products as $product)
-                            <tr class="hover:bg-gray-700/50 transition-colors border-b border-gray-700 last:border-0">
-                                <td class="align-middle text-center">
+                            <tr class="hover:bg-gray-700/30 transition-colors group">
+                                <td class="px-6 py-4 text-center">
                                     @php
-                                        // Logic รูปภาพ
                                         $imagePath = 'https://via.placeholder.com/150?text=No+Image';
-
                                         if ($product->images->isNotEmpty()) {
-                                            // หาภาพปก
                                             $primaryImage = $product->images->sortByDesc('img_sort')->first();
-
                                             if ($primaryImage) {
                                                 $path = $primaryImage->img_path ?? $primaryImage->image_path;
                                                 $imagePath = \Illuminate\Support\Str::startsWith($path, 'http')
@@ -204,101 +162,160 @@
                                             }
                                         }
                                     @endphp
-                                    <img src="{{ $imagePath }}" alt="{{ $product->pd_sp_name ?? 'Product Image' }}"
-                                        class="slip-thumbnail" data-slip-src="{{ $imagePath }}"
+                                    <img src="{{ $imagePath }}" alt="{{ $product->pd_sp_name }}"
+                                        class="mx-auto slip-thumbnail" data-slip-src="{{ $imagePath }}"
                                         onerror="this.src='https://via.placeholder.com/150?text=Error'">
                                 </td>
-                                <td>
-                                    <div class="flex items-center space-x-3">
-                                        <div>
-                                            <div class="font-bold w-64 truncate flex items-center gap-2 text-gray-200">
-                                                {{ $product->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}
 
-                                                {{-- Badge สถานะพิเศษ --}}
-                                                <button type="button" class="toggle-recommended-btn cursor-pointer outline-none" 
-                                                    data-id="{{ $product->pd_sp_id }}"
-                                                    data-url="{{ route('admin.products.toggleRecommended', $product->pd_sp_id) }}">
-                                                    @if ($product->is_recommended)
-                                                        <span class="badge badge-warning badge-xs text-yellow-900"
-                                                            title="คลิกเพื่อยกเลิกการแนะนำ">แนะนำ</span>
-                                                    @else
-                                                        <span class="badge badge-ghost badge-xs text-gray-500 hover:text-white"
-                                                            title="คลิกเพื่อตั้งเป็นสินค้าแนะนำ">แนะนำ</span>
-                                                    @endif
-                                                </button>
-                                                @if ($product->pd_sp_discount > 0)
-                                                    <span class="badge badge-secondary badge-xs text-white"
-                                                        title="ลดราคา">Sale</span>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col justify-center min-w-[250px]">
+                                        <div
+                                            class="font-bold text-gray-100 text-base whitespace-normal line-clamp-2 leading-tight group-hover:text-emerald-400 transition-colors">
+                                            {{ $product->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <span
+                                                class="text-[10px] font-mono text-gray-400 bg-gray-900 px-2 py-0.5 rounded border border-gray-700">SKU:
+                                                {{ $product->pd_sp_code }}</span>
+
+                                            <button type="button"
+                                                class="toggle-recommended-btn outline-none transition-transform active:scale-95"
+                                                data-id="{{ $product->pd_sp_id }}"
+                                                data-url="{{ route('admin.products.toggleRecommended', $product->pd_sp_id) }}">
+                                                @if ($product->is_recommended)
+                                                    <span
+                                                        class="inline-flex items-center gap-1 text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20"
+                                                        title="คลิกเพื่อยกเลิก">
+                                                        <i class="fas fa-star"></i> แนะนำ
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-800 px-2 py-0.5 rounded border border-gray-600 hover:text-white"
+                                                        title="คลิกเพื่อตั้งเป็นสินค้าแนะนำ">
+                                                        <i class="far fa-star"></i> ทั่วไป
+                                                    </span>
                                                 @endif
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                <span>{{ $product->pd_sp_code }}</span>
-                                                @if ($product->pd_sp_SKU)
-                                                    <span class="mx-1 text-gray-600">|</span>
-                                                    <span class="text-emerald-500/80">SKU: {{ $product->pd_sp_SKU }}</span>
-                                                @endif
-                                            </div>
+                                            </button>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-right text-gray-300">฿{{ number_format($product->pd_sp_price, 2) }}</td>
-                                <td class="text-right text-red-400">
+
+                                <td class="px-6 py-4 text-right align-middle">
+                                    <div class="font-bold text-gray-200 text-base">
+                                        ฿{{ number_format($product->pd_sp_price, 2) }}</div>
                                     @if ($product->pd_sp_discount > 0)
-                                        - ฿{{ number_format($product->pd_sp_discount, 2) }}
-                                    @else
-                                        <span class="text-gray-600">-</span>
+                                        <div
+                                            class="inline-flex items-center gap-1 text-xs font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 mt-1">
+                                            <i class="fas fa-arrow-down text-[10px]"></i>
+                                            ฿{{ number_format($product->pd_sp_discount, 2) }}
+                                        </div>
                                     @endif
                                 </td>
-                                <td class="text-right">
+
+                                <td class="px-6 py-4 text-center align-middle">
                                     @if ($product->pd_sp_stock > 0)
-                                        <span class="text-emerald-400">{{ number_format($product->pd_sp_stock) }}</span>
+                                        <span
+                                            class="inline-flex items-center justify-center px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-bold text-sm">
+                                            {{ number_format($product->pd_sp_stock) }}
+                                        </span>
                                     @else
-                                        <span class="font-bold text-red-500">สินค้าหมด</span>
+                                        <span
+                                            class="inline-flex items-center justify-center px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full font-bold text-sm animate-pulse">
+                                            สินค้าหมด
+                                        </span>
                                     @endif
                                 </td>
-                                <td>
-                                    <span
-                                        class="text-sm text-gray-500 line-clamp-2 max-w-xs">{{ $product->pd_sp_description ?? '-' }}</span>
+
+                                {{-- Status Toggle --}}
+                                <td class="px-6 py-4 text-center align-middle" x-data="{ isActive: {{ $product->pd_sp_active ? 'true' : 'false' }}, isToggling: false }">
+                                    <button type="button"
+                                        @click="async () => {
+                                            if(isToggling) return;
+                                            isToggling = true;
+                                            try {
+                                                const res = await fetch(`/admin/products/{{ $product->pd_sp_id }}/toggle-status`, {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                                                });
+                                                if(res.ok) {
+                                                    const data = await res.json();
+                                                    isActive = data.is_active;
+                                                    if(typeof Swal !== 'undefined') {
+                                                        Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'อัปเดตสถานะสำเร็จ' });
+                                                    }
+                                                } else throw new Error('Server error');
+                                            } catch(e) {
+                                                if(typeof Swal !== 'undefined') Swal.fire('ข้อผิดพลาด', 'อัปเดตสถานะไม่สำเร็จ', 'error');
+                                            } finally {
+                                                isToggling = false;
+                                            }
+                                        }"
+                                        :disabled="isToggling"
+                                        class="relative inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer focus:outline-none hover:scale-105"
+                                        :class="isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                                            'bg-gray-800 text-gray-400 border border-gray-600'">
+
+                                        <div x-show="isToggling"
+                                            class="absolute inset-0 flex items-center justify-center rounded-full bg-gray-900/80"
+                                            style="display: none;">
+                                            <i class="fas fa-circle-notch fa-spin text-white"></i>
+                                        </div>
+                                        <div class="w-2 h-2 rounded-full mr-2 transition-all duration-300"
+                                            :class="isActive ? 'bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,0.8)]' :
+                                                'bg-gray-500'">
+                                        </div>
+                                        <span x-text="isActive ? 'กำลังขาย' : 'ปิดการขาย'"></span>
+                                    </button>
                                 </td>
-                                <td class="text-center">
-                                    @if ($product->pd_sp_active == 1)
-                                        <span class="badge badge-success text-white">ใช้งาน</span>
-                                    @else
-                                        <span class="badge badge-ghost text-gray-400 bg-gray-700">ไม่ใช้งาน</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="flex justify-center items-center gap-2">
+
+                                <td class="px-6 py-4 text-right align-middle">
+                                    <div
+                                        class="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
                                         <a href="{{ route('admin.products.edit', $product->pd_sp_id) }}"
-                                            class="btn btn-sm btn-warning bg-yellow-600 hover:bg-yellow-700 border-none text-white">
-                                            <i class="fas fa-edit"></i>
+                                            class="w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white border border-indigo-500/20 transition-all"
+                                            title="แก้ไข">
+                                            <i class="fas fa-pen text-sm"></i>
                                         </a>
 
                                         <label for="delete-modal-{{ $product->pd_sp_id }}"
-                                            class="btn btn-sm btn-error bg-red-600 hover:bg-red-700 border-none text-white">
-                                            <i class="fas fa-trash-alt"></i>
+                                            class="w-9 h-9 flex items-center justify-center rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 transition-all cursor-pointer"
+                                            title="ลบ">
+                                            <i class="fas fa-trash text-sm"></i>
                                         </label>
 
-                                        {{-- Modal --}}
+                                        {{-- Modal สำหรับลบ --}}
                                         <input type="checkbox" id="delete-modal-{{ $product->pd_sp_id }}"
                                             class="modal-toggle" />
-                                        <div class="modal">
-                                            <div class="modal-box bg-gray-800 border border-gray-700 text-gray-200">
-                                                <h3 class="font-bold text-lg text-white">ยืนยันการลบ</h3>
-                                                <p class="py-4 text-gray-400">คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า <span
-                                                        class="font-bold text-white">"{{ $product->pd_sp_name }}"</span>?<br>การกระทำนี้ไม่สามารถย้อนกลับได้
+                                        <div class="modal modal-bottom sm:modal-middle">
+                                            <div
+                                                class="modal-box bg-gray-800 border border-gray-700 text-left rounded-3xl">
+                                                <div class="flex items-center gap-4 mb-4 border-b border-gray-700 pb-4">
+                                                    <div
+                                                        class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 border border-red-500/30">
+                                                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                                                    </div>
+                                                    <h3 class="font-bold text-xl text-white">ยืนยันการลบสินค้า</h3>
+                                                </div>
+                                                <p class="text-gray-300 text-base whitespace-normal">คุณต้องการลบสินค้า
+                                                    <span
+                                                        class="font-bold text-white bg-gray-700 px-2 py-0.5 rounded">"{{ $product->pd_sp_name }}"</span>
+                                                    ใช่หรือไม่?</p>
+                                                <p
+                                                    class="text-sm text-red-400 mt-4 bg-red-900/30 p-3 rounded-xl border border-red-500/30 whitespace-normal">
+                                                    <i class="fas fa-info-circle mr-1"></i> การกระทำนี้ไม่สามารถย้อนกลับได้
+                                                    ข้อมูลรูปภาพและตัวเลือกทั้งหมดจะถูกลบด้วย
                                                 </p>
-                                                <div class="modal-action">
+
+                                                <div class="modal-action border-t border-gray-700 pt-4 mt-6">
                                                     <form
                                                         action="{{ route('admin.products.destroy', $product->pd_sp_id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
+                                                        method="POST" class="m-0 w-full sm:w-auto">
+                                                        @csrf @method('DELETE')
                                                         <button type="submit"
-                                                            class="btn btn-error bg-red-600 border-none text-white">ลบสินค้า</button>
+                                                            class="btn bg-red-600 hover:bg-red-700 border-none text-white w-full sm:w-auto rounded-xl">ลบสินค้าถาวร</button>
                                                     </form>
                                                     <label for="delete-modal-{{ $product->pd_sp_id }}"
-                                                        class="btn btn-ghost text-gray-400 hover:text-white hover:bg-gray-700">ยกเลิก</label>
+                                                        class="btn btn-ghost text-gray-400 hover:text-white hover:bg-gray-700 w-full sm:w-auto mt-2 sm:mt-0 rounded-xl">ยกเลิก</label>
                                                 </div>
                                             </div>
                                             <label class="modal-backdrop"
@@ -309,10 +326,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-12 text-gray-500">
-                                    <div class="flex flex-col items-center opacity-60">
-                                        <i class="fas fa-box-open text-4xl mb-3 text-gray-600"></i>
-                                        ยังไม่มีข้อมูลสินค้าในระบบ หรือไม่พบข้อมูลตามเงื่อนไข
+                                <td colspan="6" class="text-center py-20">
+                                    <div class="flex flex-col items-center justify-center text-gray-500">
+                                        <div
+                                            class="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center mb-4 border border-gray-800 shadow-inner">
+                                            <i class="fas fa-box-open text-5xl opacity-50"></i>
+                                        </div>
+                                        <p class="text-xl font-bold text-gray-400">ไม่พบข้อมูลสินค้า</p>
+                                        <p class="text-sm mt-2">ลองเปลี่ยนเงื่อนไขการค้นหา หรือคลิกปุ่ม "เพิ่มสินค้าใหม่"
+                                        </p>
                                     </div>
                                 </td>
                             </tr>
@@ -320,22 +342,26 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-8">
-                {{ $products->appends(request()->query())->links() }}
-            </div>
+
+            @if ($products->hasPages())
+                <div class="bg-gray-900/50 px-6 py-4 border-t border-gray-700">
+                    {{ $products->appends(request()->query())->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
     {{-- Image Preview Modal --}}
-    <div id="slip-preview-modal" style="display: none; position: fixed; z-index: 1000; transition: opacity 0.2s;">
+    <div id="slip-preview-modal" class="hidden fixed z-[1000] transition-opacity duration-200 pointer-events-none">
         <img src="" alt="Preview"
-            style="max-width: 350px; height: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); background-color: #1f2937; border: 2px solid #374151;">
+            class="max-w-[250px] sm:max-w-[350px] h-auto rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] bg-gray-800 border-4 border-gray-700">
     </div>
 @endsection
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ระบบแสดงรูปภาพขยาย (ปรับให้ฉลาดขึ้นบนมือถือไม่บังจอ)
             const modal = document.getElementById('slip-preview-modal');
             if (!modal) return;
 
@@ -345,11 +371,13 @@
 
             thumbnails.forEach(thumb => {
                 thumb.addEventListener('mouseenter', (e) => {
+                    if (window.innerWidth < 768) return; // ไม่แสดง Hover บนมือถือ
+
                     clearTimeout(hideTimeout);
                     const rect = e.target.getBoundingClientRect();
                     modalImage.src = e.target.dataset.slipSrc;
                     modal.style.opacity = 0;
-                    modal.style.display = 'block';
+                    modal.classList.remove('hidden');
 
                     setTimeout(() => {
                         const modalRect = modal.getBoundingClientRect();
@@ -378,7 +406,7 @@
                 thumb.addEventListener('mouseleave', () => {
                     hideTimeout = setTimeout(() => {
                         modal.style.opacity = 0;
-                        setTimeout(() => modal.style.display = 'none', 200);
+                        setTimeout(() => modal.classList.add('hidden'), 200);
                     }, 100);
                 });
             });
@@ -389,44 +417,41 @@
                     e.preventDefault();
                     const url = this.dataset.url;
                     const button = this;
-                    const badge = button.querySelector('.badge');
-                    
-                    // Add loading state
+                    const badge = button.querySelector('span');
+
                     badge.classList.add('opacity-50');
                     button.disabled = true;
 
                     fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            if (data.is_recommended) {
-                                badge.className = 'badge badge-warning badge-xs text-yellow-900';
-                                badge.title = 'คลิกเพื่อยกเลิกการแนะนำ';
-                                badge.textContent = 'แนะนำ';
-                            } else {
-                                badge.className = 'badge badge-ghost badge-xs text-gray-500 hover:text-white';
-                                badge.title = 'คลิกเพื่อตั้งเป็นสินค้าแนะนำ';
-                                badge.textContent = 'แนะนำ';
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
                             }
-                        } else {
-                            alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-                    })
-                    .finally(() => {
-                        badge.classList.remove('opacity-50');
-                        button.disabled = false;
-                    });
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (data.is_recommended) {
+                                    badge.className =
+                                        'inline-flex items-center gap-1 text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20';
+                                    badge.innerHTML = '<i class="fas fa-star"></i> แนะนำ';
+                                } else {
+                                    badge.className =
+                                        'inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-800 px-2 py-0.5 rounded border border-gray-600 hover:text-white';
+                                    badge.innerHTML = '<i class="far fa-star"></i> ทั่วไป';
+                                }
+                            } else {
+                                if (typeof Swal !== 'undefined') Swal.fire('Error',
+                                    'เกิดข้อผิดพลาด', 'error');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error))
+                        .finally(() => {
+                            badge.classList.remove('opacity-50');
+                            button.disabled = false;
+                        });
                 });
             });
         });

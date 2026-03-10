@@ -316,12 +316,28 @@ class ProductController extends Controller
 
     public function toggleRecommended(ProductSalepage $product)
     {
-        $product->is_recommended = !$product->is_recommended;
+        $product->is_recommended = ! $product->is_recommended;
         $product->save();
 
         return response()->json([
             'success' => true,
-            'is_recommended' => $product->is_recommended
+            'is_recommended' => $product->is_recommended,
+        ]);
+    }
+
+    /**
+     * ✅ ฟังก์ชันสำหรับกดปุ่มสลับสถานะสินค้า (ใช้งาน/ไม่ใช้งาน) จากหน้าสารบัญ
+     */
+    public function toggleStatus(ProductSalepage $product)
+    {
+        // สลับค่า (ถ้า 1 ให้เป็น 0, ถ้า 0 ให้เป็น 1)
+        $product->pd_sp_active = ! $product->pd_sp_active;
+        $product->save();
+
+        return response()->json([
+            'success' => true,
+            'is_active' => (bool) $product->pd_sp_active,
+            'message' => 'อัปเดตสถานะการใช้งานสำเร็จ',
         ]);
     }
 

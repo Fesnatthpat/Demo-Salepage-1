@@ -3,36 +3,49 @@
 @section('title', 'เพิ่มสินค้าใหม่')
 
 @section('page-title')
-    <div class="flex items-center gap-2 text-sm text-gray-400">
-        <a href="{{ route('admin.products.index') }}" class="hover:text-emerald-400 transition-colors">
-            <i class="fas fa-box mr-1"></i> สินค้า
+    <div class="flex items-center gap-2 text-sm text-gray-400 overflow-x-auto whitespace-nowrap pb-1">
+        <a href="{{ route('admin.products.index') }}"
+            class="hover:text-emerald-400 transition-colors flex items-center gap-1">
+            <i class="fas fa-box"></i> สินค้าทั้งหมด
         </a>
-        <span>/</span>
-        <span class="text-gray-100 font-medium">เพิ่มสินค้าใหม่</span>
+        <span class="text-gray-600">/</span>
+        <span class="text-gray-100 font-bold text-emerald-400">เพิ่มสินค้าใหม่</span>
     </div>
 @endsection
 
 @section('content')
-    <div class="max-w-7xl mx-auto">
-        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+    <div class="max-w-7xl mx-auto pb-28 md:pb-0"> {{-- เผื่อที่ว่างด้านล่างบนมือถือ --}}
+
+        <div class="mb-6 flex items-center gap-4 animate-fade-in-down">
+            <div
+                class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30">
+                <i class="fas fa-plus text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-white tracking-tight">สร้างสินค้าใหม่</h1>
+                <p class="text-sm text-gray-400 mt-1">กรอกข้อมูลรายละเอียด ราคา และตัวเลือกสินค้า</p>
+            </div>
+        </div>
+
+        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             @include('admin.products._form')
 
+            {{-- Sticky Bottom Action Bar --}}
             <div
-                class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-4 z-50 md:static md:bg-transparent md:border-0 md:p-0 md:mt-8">
-                <div class="flex justify-end gap-3 max-w-7xl mx-auto">
+                class="fixed bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md border-t border-gray-700 p-4 z-50 md:static md:bg-transparent md:border-0 md:p-0 md:mt-8 shadow-[0_-10px_20px_rgba(0,0,0,0.3)] md:shadow-none transition-all">
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 max-w-7xl mx-auto w-full">
                     <a href="{{ route('admin.products.index') }}"
-                        class="btn btn-ghost text-gray-400 hover:text-white hover:bg-gray-700">
-                        ยกเลิก
+                        class="btn bg-gray-800 hover:bg-gray-700 text-gray-300 border-none w-full sm:w-auto h-14 sm:h-12 rounded-xl font-bold transition-colors">
+                        <i class="fas fa-times mr-1"></i> ยกเลิก
                     </a>
                     <button type="submit"
-                        class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white px-8 shadow-lg shadow-emerald-900/20">
-                        <i class="fas fa-save mr-2"></i> บันทึกสินค้า
+                        class="btn bg-emerald-600 hover:bg-emerald-700 border-none text-white px-8 shadow-lg shadow-emerald-900/30 w-full sm:w-auto h-14 sm:h-12 rounded-xl font-bold text-base transition-transform active:scale-95">
+                        <i class="fas fa-save mr-2"></i> บันทึกข้อมูลสินค้า
                     </button>
                 </div>
             </div>
-            <div class="h-20 md:hidden"></div>
         </form>
     </div>
 @endsection

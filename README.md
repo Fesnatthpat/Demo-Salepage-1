@@ -147,3 +147,19 @@
 
 -   Navbar กลับมาแสดงผลตามปกติในทุกหน้า รวมถึงหน้า `qr` และ `contact`
 -   ช่องค้นหาใน Navbar จะถูกซ่อนไว้เป็นค่าเริ่มต้น และสามารถเปิดใช้งานได้ตามต้องการโดยการกำหนดตัวแปร `$hideSearchBar = false;` ในหน้า Blade ที่ต้องการแสดงช่องค้นหา
+
+
+
+php artisan serve
+
+npm run dev
+
+run cronjob
+php artisan schedule:work
+
+php artisan view:clear
+php artisan config:clear
+--------------------------
+Admin Login              
+username: superadmin
+password: password

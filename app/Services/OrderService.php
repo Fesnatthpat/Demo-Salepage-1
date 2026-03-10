@@ -192,7 +192,8 @@ class OrderService
             }
 
             // 5. คำนวณส่วนลดเพิ่มเติมจากโปรโมชั่น (รหัสส่วนลด และส่วนลดอัตโนมัติ)
-            $promos = $this->cartService->getApplicablePromotions($allCartItems);
+            // 🌟 แก้ไข: ใช้เฉพาะรายการที่เลือกจ่ายเงิน ($cartItems) แทนที่จะใช้ทั้งหมดในตะกร้า ($allCartItems)
+            $promos = $this->cartService->getApplicablePromotions($cartItems);
             $additionalDiscount = 0;
 
             foreach ($promos as $promo) {

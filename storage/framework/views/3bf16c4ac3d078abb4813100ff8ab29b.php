@@ -1,8 +1,8 @@
-@extends('layouts.admin')
 
-@section('title', 'จัดการโปรโมชั่น')
 
-@section('content')
+<?php $__env->startSection('title', 'จัดการโปรโมชั่น'); ?>
+
+<?php $__env->startSection('content'); ?>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" x-data="{
         copyCode(code) {
                 navigator.clipboard.writeText(code);
@@ -18,13 +18,13 @@
             }
         // --- จบส่วนของ Modal ลบข้อมูล ---
     }">
-        {{-- Header & Actions --}}
+        
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-down">
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-tight">Campaign Manager</h1>
                 <p class="text-gray-400 text-sm mt-1">จัดการแคมเปญส่วนลด คูปอง และโปรโมชั่นของแถม</p>
             </div>
-            <a href="{{ route('admin.promotions.create') }}"
+            <a href="<?php echo e(route('admin.promotions.create')); ?>"
                 class="group relative inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white transition-all duration-200 bg-emerald-600 rounded-xl hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 shadow-lg shadow-emerald-900/30 overflow-hidden">
                 <span
                     class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
@@ -32,7 +32,7 @@
             </a>
         </div>
 
-        {{-- Stats Overview --}}
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 animate-fade-in-up">
             <div
                 class="bg-gray-800 rounded-2xl p-5 border border-gray-700/50 flex items-center gap-5 shadow-lg relative overflow-hidden group hover:border-emerald-500/30 transition-colors">
@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-400">ใช้งานอยู่ (Active)</p>
-                    <p class="text-3xl font-black text-white mt-1">{{ $promotions->where('is_active', true)->count() }}</p>
+                    <p class="text-3xl font-black text-white mt-1"><?php echo e($promotions->where('is_active', true)->count()); ?></p>
                 </div>
             </div>
 
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-400">แบบใช้โค้ด (Coupon)</p>
-                    <p class="text-3xl font-black text-white mt-1">{{ $promotions->whereNotNull('code')->count() }}</p>
+                    <p class="text-3xl font-black text-white mt-1"><?php echo e($promotions->whereNotNull('code')->count()); ?></p>
                 </div>
             </div>
 
@@ -76,29 +76,30 @@
                 <div>
                     <p class="text-sm font-medium text-gray-400">โปรฯ ของแถม (BxGy)</p>
                     <p class="text-3xl font-black text-white mt-1">
-                        {{ $promotions->filter(fn($p) => $p->rules->count() > 0)->count() }}
+                        <?php echo e($promotions->filter(fn($p) => $p->rules->count() > 0)->count()); ?>
+
                     </p>
                 </div>
             </div>
         </div>
 
-        {{-- Success Alert --}}
-        @if (session('success'))
+        
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
             <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms x-init="setTimeout(() => show = false, 5000)"
                 class="flex items-center p-4 mb-4 text-emerald-400 rounded-xl bg-emerald-900/20 border border-emerald-500/20 shadow-lg backdrop-blur-sm"
                 role="alert">
                 <div class="p-2 bg-emerald-500/20 rounded-lg mr-3">
                     <i class="fas fa-check-circle flex-shrink-0 w-5 h-5"></i>
                 </div>
-                <div class="text-sm font-medium">{{ session('success') }}</div>
+                <div class="text-sm font-medium"><?php echo e(session('success')); ?></div>
                 <button @click="show = false" type="button"
                     class="ml-auto -mx-1.5 -my-1.5 bg-transparent text-emerald-400 rounded-lg p-1.5 hover:bg-emerald-900/40 inline-flex h-8 w-8 items-center justify-center transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        {{-- Table --}}
+        
         <div class="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden animate-fade-in-up"
             style="animation-delay: 100ms;">
             <div class="overflow-x-auto">
@@ -115,37 +116,41 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700/50">
-                        @forelse ($promotions as $promo)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $promotions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $promo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                             <tr class="hover:bg-gray-700/30 transition-colors duration-150 group">
-                                {{-- Name --}}
+                                
                                 <td class="px-6 py-5 align-top">
                                     <div class="flex flex-col">
                                         <span
                                             class="text-base font-bold text-white group-hover:text-emerald-400 transition-colors mb-1.5">
-                                            {{ $promo->name }}
+                                            <?php echo e($promo->name); ?>
+
                                         </span>
-                                        @if ($promo->description)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promo->description): ?>
                                             <span class="text-xs text-gray-500 line-clamp-1 mb-2"
-                                                title="{{ $promo->description }}">
-                                                {{ $promo->description }}
+                                                title="<?php echo e($promo->description); ?>">
+                                                <?php echo e($promo->description); ?>
+
                                             </span>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         <div
                                             class="flex items-center gap-2 mt-auto text-[10px] text-gray-400 font-mono bg-gray-900/50 w-fit px-2 py-1 rounded border border-gray-700/50">
                                             <i class="far fa-clock"></i>
                                             <span>
-                                                {{ $promo->start_date ? \Carbon\Carbon::parse($promo->start_date)->format('d M y') : 'Now' }}
+                                                <?php echo e($promo->start_date ? \Carbon\Carbon::parse($promo->start_date)->format('d M y') : 'Now'); ?>
+
                                                 <i class="fas fa-arrow-right mx-1 text-gray-600"></i>
-                                                {{ $promo->end_date ? \Carbon\Carbon::parse($promo->end_date)->format('d M y') : '∞' }}
+                                                <?php echo e($promo->end_date ? \Carbon\Carbon::parse($promo->end_date)->format('d M y') : '∞'); ?>
+
                                             </span>
                                         </div>
                                     </div>
                                 </td>
 
-                                {{-- Type Badge --}}
+                                
                                 <td class="px-6 py-5 text-center align-middle">
-                                    @if ($promo->code)
-                                        <button @click="copyCode('{{ $promo->code }}')"
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promo->code): ?>
+                                        <button @click="copyCode('<?php echo e($promo->code); ?>')"
                                             class="group/btn inline-flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
                                             title="คลิกเพื่อคัดลอก">
                                             <span
@@ -153,42 +158,44 @@
                                                 <i class="fas fa-ticket-alt"></i> Code
                                             </span>
                                             <span
-                                                class="font-mono text-sm font-bold text-white group-hover/btn:text-blue-300">{{ $promo->code }}</span>
+                                                class="font-mono text-sm font-bold text-white group-hover/btn:text-blue-300"><?php echo e($promo->code); ?></span>
                                         </button>
-                                    @elseif($promo->rules->count() > 0)
+                                    <?php elseif($promo->rules->count() > 0): ?>
                                         <span
                                             class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20 shadow-sm shadow-pink-900/20">
                                             <i class="fas fa-gift"></i> Buy X Get Y
                                         </span>
-                                    @else
+                                    <?php else: ?>
                                         <span
                                             class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-900/20">
                                             <i class="fas fa-bolt"></i> Auto
                                         </span>
-                                    @endif
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </td>
 
-                                {{-- Value --}}
+                                
                                 <td class="px-6 py-5 text-center align-middle">
-                                    @if (isset($promo->discount_value))
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($promo->discount_value)): ?>
                                         <div class="flex flex-col items-center">
                                             <span class="text-white font-mono text-xl font-bold tracking-tight">
-                                                {{ number_format($promo->discount_value, 0) }}<span
-                                                    class="text-sm text-gray-500 ml-0.5">{{ $promo->discount_type === 'percentage' ? '%' : '฿' }}</span>
+                                                <?php echo e(number_format($promo->discount_value, 0)); ?><span
+                                                    class="text-sm text-gray-500 ml-0.5"><?php echo e($promo->discount_type === 'percentage' ? '%' : '฿'); ?></span>
                                             </span>
-                                            @if ($promo->min_order_value > 0)
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promo->min_order_value > 0): ?>
                                                 <span
                                                     class="text-[10px] text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded mt-1">
-                                                    ขั้นต่ำ ฿{{ number_format($promo->min_order_value) }}
+                                                    ขั้นต่ำ ฿<?php echo e(number_format($promo->min_order_value)); ?>
+
                                                 </span>
-                                            @endif
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         </div>
-                                    @elseif($promo->rules->count() > 0)
+                                    <?php elseif($promo->rules->count() > 0): ?>
                                         <div class="flex items-center justify-center gap-2 text-xs">
                                             <div
                                                 class="flex flex-col items-center bg-gray-900/50 px-2 py-1 rounded border border-gray-700/50">
                                                 <span class="text-gray-400 text-[10px] uppercase">Buy</span>
-                                                <span class="text-white font-bold">{{ $promo->rules->sum('quantity') }}
+                                                <span class="text-white font-bold"><?php echo e($promo->rules->sum('quantity')); ?>
+
                                                     ชิ้น</span>
                                             </div>
                                             <i class="fas fa-arrow-right text-gray-600 text-[10px]"></i>
@@ -196,54 +203,55 @@
                                                 class="flex flex-col items-center bg-pink-900/20 px-2 py-1 rounded border border-pink-500/20">
                                                 <span class="text-pink-400 text-[10px] uppercase">Get</span>
                                                 <span
-                                                    class="text-pink-300 font-bold">{{ $promo->actions->sum('quantity') }}
+                                                    class="text-pink-300 font-bold"><?php echo e($promo->actions->sum('quantity')); ?>
+
                                                     ชิ้น</span>
                                             </div>
                                         </div>
-                                    @else
+                                    <?php else: ?>
                                         <span class="text-gray-600">-</span>
-                                    @endif
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </td>
 
-                                {{-- Usage --}}
+                                
                                 <td class="px-6 py-5 align-middle">
                                     <div class="flex flex-col gap-2">
-                                        {{-- Stats Summary --}}
+                                        
                                         <div class="flex justify-center gap-3">
                                             <div class="flex flex-col items-center">
                                                 <span
                                                     class="text-xs text-gray-500 uppercase font-bold tracking-tighter">ครั้ง</span>
                                                 <span
-                                                    class="text-emerald-400 font-bold">{{ number_format($promo->usage_count) }}</span>
+                                                    class="text-emerald-400 font-bold"><?php echo e(number_format($promo->usage_count)); ?></span>
                                             </div>
                                             <div class="w-px h-8 bg-gray-700"></div>
                                             <div class="flex flex-col items-center">
                                                 <span
                                                     class="text-xs text-gray-500 uppercase font-bold tracking-tighter">คน</span>
                                                 <span
-                                                    class="text-blue-400 font-bold">{{ number_format($promo->unique_users_count) }}</span>
+                                                    class="text-blue-400 font-bold"><?php echo e(number_format($promo->unique_users_count)); ?></span>
                                             </div>
                                         </div>
 
-                                        {{-- Progress Bar if limit exists --}}
-                                        @if ($promo->usage_limit)
+                                        
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promo->usage_limit): ?>
                                             <div class="w-full max-w-[120px] mx-auto">
                                                 <div class="w-full bg-gray-700 rounded-full h-1 overflow-hidden">
                                                     <div class="bg-gradient-to-r from-emerald-600 to-emerald-400 h-1 rounded-full transition-all duration-500"
-                                                        style="width: {{ min(100, ($promo->used_count / $promo->usage_limit) * 100) }}%">
+                                                        style="width: <?php echo e(min(100, ($promo->used_count / $promo->usage_limit) * 100)); ?>%">
                                                     </div>
                                                 </div>
                                                 <div
                                                     class="flex justify-between text-[8px] font-medium text-gray-500 mt-1 uppercase">
                                                     <span>Limit</span>
-                                                    <span>{{ number_format($promo->usage_limit) }}</span>
+                                                    <span><?php echo e(number_format($promo->usage_limit)); ?></span>
                                                 </div>
                                             </div>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                        {{-- View History Link --}}
+                                        
                                         <div class="text-center">
-                                            <a href="{{ route('admin.promotions.logs', ['promotion' => $promo->name]) }}"
+                                            <a href="<?php echo e(route('admin.promotions.logs', ['promotion' => $promo->name])); ?>"
                                                 class="text-[10px] text-emerald-500/70 hover:text-emerald-400 underline underline-offset-2 transition-colors">
                                                 <i class="fas fa-history mr-1"></i>ดูประวัติการใช้
                                             </a>
@@ -251,29 +259,30 @@
                                     </div>
                                 </td>
 
-                                {{-- Status --}}
+                                
                                 <td class="px-6 py-5 text-center align-middle">
                                     <div
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $promo->is_active ? 'bg-emerald-900/30 text-emerald-400' : 'bg-gray-700/50 text-gray-500' }}">
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo e($promo->is_active ? 'bg-emerald-900/30 text-emerald-400' : 'bg-gray-700/50 text-gray-500'); ?>">
                                         <div
-                                            class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $promo->is_active ? 'bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,0.8)]' : 'bg-gray-500' }}">
+                                            class="w-1.5 h-1.5 rounded-full mr-1.5 <?php echo e($promo->is_active ? 'bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,0.8)]' : 'bg-gray-500'); ?>">
                                         </div>
-                                        {{ $promo->is_active ? 'Active' : 'Inactive' }}
+                                        <?php echo e($promo->is_active ? 'Active' : 'Inactive'); ?>
+
                                     </div>
                                 </td>
 
-                                {{-- Actions --}}
+                                
                                 <td class="px-6 py-5 text-right align-middle">
                                     <div
                                         class="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                                        <a href="{{ route('admin.promotions.edit', $promo->id) }}"
+                                        <a href="<?php echo e(route('admin.promotions.edit', $promo->id)); ?>"
                                             class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all shadow-sm"
                                             title="แก้ไข">
                                             <i class="fas fa-pen text-xs"></i>
                                         </a>
-                                        {{-- เปลี่ยนจาก Form มาใช้ Button เรียก Modal แทน --}}
+                                        
                                         <button type="button"
-                                            @click="openDeleteModal('{{ route('admin.promotions.destroy', $promo->id) }}', '{{ addslashes($promo->name) }}')"
+                                            @click="openDeleteModal('<?php echo e(route('admin.promotions.destroy', $promo->id)); ?>', '<?php echo e(addslashes($promo->name)); ?>')"
                                             class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-600 rounded-lg transition-all shadow-sm"
                                             title="ลบ">
                                             <i class="fas fa-trash text-xs"></i>
@@ -281,7 +290,7 @@
                                     </div>
                                 </td>
                             </tr>
-                        @empty
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             <tr>
                                 <td colspan="6" class="px-6 py-16 text-center text-gray-500">
                                     <div class="flex flex-col items-center">
@@ -294,23 +303,24 @@
                                     </div>
                                 </td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
                 </table>
             </div>
-            @if ($promotions->hasPages())
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($promotions->hasPages()): ?>
                 <div class="px-6 py-4 border-t border-gray-700 bg-gray-800">
-                    {{ $promotions->links() }}
+                    <?php echo e($promotions->links()); ?>
+
                 </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
-        {{-- ========================================== --}}
-        {{-- Modal สำหรับยืนยันการลบ (Alpine & Tailwind) --}}
-        {{-- ========================================== --}}
+        
+        
+        
         <div x-show="showDeleteModal" style="display: none;" class="relative z-50" aria-labelledby="modal-title"
             role="dialog" aria-modal="true">
-            {{-- Background Backdrop --}}
+            
             <div x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -318,7 +328,7 @@
 
             <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
                 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    {{-- Modal Panel --}}
+                    
                     <div x-show="showDeleteModal" @click.away="showDeleteModal = false"
                         x-transition:enter="ease-out duration-300"
                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
@@ -329,8 +339,8 @@
                         class="relative transform overflow-hidden rounded-2xl bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-700">
 
                         <form :action="deleteFormAction" method="POST">
-                            @csrf
-                            @method('DELETE')
+                            <?php echo csrf_field(); ?>
+                            <?php echo method_field('DELETE'); ?>
 
                             <div class="bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                                 <div class="sm:flex sm:items-start">
@@ -373,4 +383,6 @@
         </div>
 
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/promotions/index.blade.php ENDPATH**/ ?>

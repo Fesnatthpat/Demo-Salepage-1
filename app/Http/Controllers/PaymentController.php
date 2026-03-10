@@ -119,6 +119,13 @@ class PaymentController extends Controller
             $totalDiscount += (($originalPrice - $item->price) * $item->quantity);
         }
 
+        // --- เพิ่มการคำนวณโปรโมชั่น (อัตโนมัติ และ จากรหัสที่กรอกไว้) ---
+        $cartService = $this->orderService->getCartService();
+        $promoDiscount = $cartService->calculateTotalDiscount($totalAmount, $cartItems);
+        
+        $totalDiscount += $promoDiscount;
+        $totalAmount -= $promoDiscount;
+
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
         $productIds = $cartItems->pluck('id')->toArray();
@@ -344,20 +351,11 @@ class PaymentController extends Controller
                 $totalDiscountFromProducts += (($originalPrice - $item->price) * $item->quantity);
             }
 
-            $additionalDiscountFromCode = 0;
-            if ($success) {
-                if ($fixedDiscountValue > 0) {
-                    $additionalDiscountFromCode = $fixedDiscountValue;
-                } elseif ($percentageDiscountRate > 0) {
-                    $additionalDiscountFromCode = $totalAmount * $percentageDiscountRate;
-                }
-                
-                // เก็บเข้า session เผื่อเรียกใช้ตอน process จริง
-                session(['applied_discount_code' => ['code' => $discountCode, 'fixed' => $fixedDiscountValue, 'percentage' => $percentageDiscountRate]]);
-            }
+            // คำนวณส่วนลดจากโปรโมชั่นทั้งหมด (ทั้ง Auto และรหัสที่เพิ่งใส่)
+            $promoDiscount = $this->orderService->getCartService()->calculateTotalDiscount($totalAmount, $checkoutCartItems);
 
-            $grandTotal = max(0, $totalAmount - $additionalDiscountFromCode);
-            $totalDiscount = $totalDiscountFromProducts + $additionalDiscountFromCode;
+            $grandTotal = max(0, $totalAmount - $promoDiscount);
+            $totalDiscount = $totalDiscountFromProducts + $promoDiscount;
 
             $shippingCost = 0;
             $finalTotal = $grandTotal + $shippingCost;

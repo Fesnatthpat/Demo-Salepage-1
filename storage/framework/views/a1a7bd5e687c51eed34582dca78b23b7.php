@@ -1,9 +1,7 @@
-@extends('layout')
+<?php $__env->startSection('title', $product->pd_name . ' | Salepage Demo'); ?>
 
-@section('title', $product->pd_name . ' | Salepage Demo')
-
-@section('content')
-    @php
+<?php $__env->startSection('content'); ?>
+    <?php
         $initialBasePrice = (float) $product->pd_price;
         $initialBasePrice2 = (float) $product->pd_price2;
         $discountAmount = (float) $product->pd_sp_discount;
@@ -48,7 +46,7 @@
                             return [
                                 'id' => $p->pd_sp_id,
                                 'name' => $p->pd_sp_name,
-                                'price' => number_format($p->pd_sp_price, 2),
+                                'price' => number_format($p->pd_sp_price, 0),
                                 'image' => $p->display_image,
                                 'url' => route('product.show', $p->pd_sp_id),
                             ];
@@ -81,24 +79,24 @@
                 })
                 ->all();
         }
-    @endphp
+    ?>
 
     <div x-data="productPage({
-        currentProductId: @js($product->pd_sp_id),
-        initialImage: @js($product->cover_image_url),
-        allImages: @js($allImages),
-        initialBasePrice: @js($initialBasePrice),
-        initialBasePrice2: @js($initialBasePrice2),
-        initialDisplayPrice: @js($product->display_price),
-        initialStock: @js($product->pd_sp_stock),
-        discountAmount: @js($discountAmount),
-        options: @js($optionsData),
-        standardAction: @js(route('cart.add', ['id' => $product->pd_sp_id])),
-        bundleAddUrl: @js(route('cart.addBundle')),
-        checkoutUrl: @js(route('payment.checkout')),
-        cartUrl: @js(route('cart.index')),
-        promotions: @js($promotionsData),
-        reviewImages: @js($reviewImagesList)
+        currentProductId: <?php echo \Illuminate\Support\Js::from($product->pd_sp_id)->toHtml() ?>,
+        initialImage: <?php echo \Illuminate\Support\Js::from($product->cover_image_url)->toHtml() ?>,
+        allImages: <?php echo \Illuminate\Support\Js::from($allImages)->toHtml() ?>,
+        initialBasePrice: <?php echo \Illuminate\Support\Js::from($initialBasePrice)->toHtml() ?>,
+        initialBasePrice2: <?php echo \Illuminate\Support\Js::from($initialBasePrice2)->toHtml() ?>,
+        initialDisplayPrice: <?php echo \Illuminate\Support\Js::from($product->display_price)->toHtml() ?>,
+        initialStock: <?php echo \Illuminate\Support\Js::from($product->pd_sp_stock)->toHtml() ?>,
+        discountAmount: <?php echo \Illuminate\Support\Js::from($discountAmount)->toHtml() ?>,
+        options: <?php echo \Illuminate\Support\Js::from($optionsData)->toHtml() ?>,
+        standardAction: <?php echo \Illuminate\Support\Js::from(route('cart.add', ['id' => $product->pd_sp_id]))->toHtml() ?>,
+        bundleAddUrl: <?php echo \Illuminate\Support\Js::from(route('cart.addBundle'))->toHtml() ?>,
+        checkoutUrl: <?php echo \Illuminate\Support\Js::from(route('payment.checkout'))->toHtml() ?>,
+        cartUrl: <?php echo \Illuminate\Support\Js::from(route('cart.index'))->toHtml() ?>,
+        promotions: <?php echo \Illuminate\Support\Js::from($promotionsData)->toHtml() ?>,
+        reviewImages: <?php echo \Illuminate\Support\Js::from($reviewImagesList)->toHtml() ?>
     })" class="max-w-6xl mx-auto px-4 py-8 font-sans antialiased"
         @keydown.escape.window="isModalOpen = false; isReviewModalOpen = false;"
         @keydown.arrow-left.window="if(isModalOpen) prevImage(); if(isReviewModalOpen) prevReviewImage();"
@@ -107,7 +105,7 @@
         <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
             <div class="grid grid-cols-1 lg:grid-cols-12">
 
-                {{-- Image Gallery Section --}}
+                
                 <div class="lg:col-span-5 p-8 bg-gray-50/50">
                     <div class="sticky top-8">
                         <div x-show="!imagesLoaded"
@@ -141,7 +139,7 @@
                             </button>
                         </div>
 
-                        @if (count($allImages) > 1)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($allImages) > 1): ?>
                             <div x-show="imagesLoaded" class="grid grid-cols-5 gap-3 mt-6">
                                 <template x-for="img in images" :key="img">
                                     <button @click="activeImage = img"
@@ -152,14 +150,14 @@
                                     </button>
                                 </template>
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                 </div>
 
-                {{-- Product Details Section --}}
+                
                 <div class="lg:col-span-7 p-8 lg:p-12 flex flex-col">
                     <div class="flex-1">
-                        <h1 class="text-3xl font-extrabold text-gray-900 mb-6">{{ $product->pd_name }}</h1>
+                        <h1 class="text-3xl font-extrabold text-gray-900 mb-6"><?php echo e($product->pd_name); ?></h1>
 
                         <div class="mb-4 text-sm font-semibold text-gray-500">
                             จำนวนสินค้าคงเหลือ:
@@ -179,13 +177,14 @@
                             </template>
                         </div>
 
-                        @if ($product->pd_details)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_details): ?>
                             <div x-data="{ expanded: false }" class="mb-8">
                                 <h2 class="text-lg font-bold text-gray-800 mb-4">รายละเอียดสินค้า:</h2>
                                 <div class="relative">
                                     <div class="prose max-w-none text-gray-600 transition-all duration-300"
                                         :class="expanded ? '' : 'max-h-[150px] overflow-hidden'">
-                                        {!! nl2br(e($product->pd_details)) !!}
+                                        <?php echo nl2br(e($product->pd_details)); ?>
+
                                     </div>
                                     <div x-show="!expanded"
                                         class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-white to-transparent pointer-events-none">
@@ -202,9 +201,9 @@
                                     </svg>
                                 </button>
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                        {{-- Options --}}
+                        
                         <template x-if="options.length > 0">
                             <div class="mb-8">
                                 <h3 class="text-lg font-bold text-gray-800 mb-4">เลือกตัวเลือก:</h3>
@@ -228,7 +227,7 @@
                             </div>
                         </template>
 
-                        {{-- Promotion Section --}}
+                        
                         <template x-if="promotions.length > 0">
                             <div class="space-y-6 mb-8">
                                 <template x-for="promo in promotions" :key="promo.id">
@@ -287,7 +286,7 @@
                                                             x-text="`รับฟรี ${giftLimit} ชิ้น`"></span>
                                                     </div>
 
-                                                    {{-- แสดงช่องว่างของแถมตามโควตา --}}
+                                                    
                                                     <div
                                                         class="flex flex-wrap gap-3 mb-6 p-3 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
                                                         <template
@@ -396,7 +395,7 @@
                             </div>
                         </template>
 
-                        {{-- Partner Products (Upsell) --}}
+                        
                         <template x-if="promotions.some(p => p.partner_products && p.partner_products.length > 0)">
                             <div class="mb-8">
                                 <h3 class="text-lg font-bold text-gray-800 mb-4">แนะนำทานคู่กับ:</h3>
@@ -420,7 +419,7 @@
                             </div>
                         </template>
 
-                        {{-- Review Images Section --}}
+                        
                         <template x-if="reviewImages.length > 0">
                             <div class="mt-12 pt-8 border-t border-gray-100">
                                 <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
@@ -440,7 +439,7 @@
                         </template>
                     </div>
 
-                    {{-- Main Actions --}}
+                    
                     <div class="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-6">
                         <div class="flex items-center bg-gray-100 rounded-2xl p-1.5 shadow-inner">
                             <button @click="quantity > 1 ? quantity-- : null"
@@ -474,7 +473,7 @@
             </div>
         </div>
 
-        {{-- Image Gallery Fullscreen Modal --}}
+        
         <template x-teleport="body">
             <div x-show="isModalOpen" x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -514,7 +513,7 @@
             </div>
         </template>
 
-        {{-- Review Image Fullscreen Modal --}}
+        
         <template x-teleport="body">
             <div x-show="isReviewModalOpen" x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -554,9 +553,9 @@
             </div>
         </template>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('productPage', (config) => ({
@@ -703,10 +702,10 @@
                         return `฿${config.initialDisplayPrice}`;
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
-                        if (option) return `฿${option.final_price.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        if (option) return `฿${option.final_price.toLocaleString()}`;
                     }
                     let final = Math.max(0, this.basePrice - this.discountAmount);
-                    return `฿${final.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    return `฿${final.toLocaleString()}`;
                 },
 
                 get originalPriceDisplay() {
@@ -714,10 +713,10 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option && option.price > option.final_price)
-                            return `฿${option.price.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            return `฿${option.price.toLocaleString()}`;
                         return null;
                     }
-                    return this.discountAmount > 0 ? `฿${this.basePrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null;
+                    return this.discountAmount > 0 ? `฿${this.basePrice.toLocaleString()}` : null;
                 },
 
                 get discountDisplay() {
@@ -725,11 +724,11 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option && option.price > option.final_price)
-                            return `ประหยัด ฿${(option.price - option.final_price).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            return `ประหยัด ฿${(option.price - option.final_price).toLocaleString()}`;
                         return null;
                     }
                     return this.discountAmount > 0 ?
-                        `ประหยัด ฿${this.discountAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null;
+                        `ประหยัด ฿${this.discountAmount.toLocaleString()}` : null;
                 },
 
                 prevImage() {
@@ -862,4 +861,6 @@
             }));
         });
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/product.blade.php ENDPATH**/ ?>

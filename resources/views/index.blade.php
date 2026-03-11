@@ -226,7 +226,7 @@
                                                 
                                                 @if ($isOnSale)
                                                     <div class="absolute top-2 left-2 bg-red-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black shadow-sm uppercase tracking-wide border border-red-500">
-                                                        ลด {{ number_format($discountAmount) }}.-
+                                                        ลด {{ number_format($discountAmount, 2) }}.-
                                                     </div>
                                                 @endif
                                             </a>
@@ -256,10 +256,10 @@
                                                             @if ($hasOptions)
                                                                 <span class="text-[9px] sm:text-[10px] text-gray-400 font-bold">เริ่ม</span>
                                                             @endif
-                                                            <span class="text-base sm:text-lg font-black text-red-600 tracking-tight leading-none">฿{{ number_format($finalSellingPrice) }}</span>
+                                                            <span class="text-base sm:text-lg font-black text-red-600 tracking-tight leading-none">฿{{ number_format($finalSellingPrice, 2) }}</span>
                                                         </div>
                                                         @if ($isOnSale)
-                                                            <span class="text-[9px] sm:text-[11px] font-bold text-gray-400 line-through decoration-gray-300">฿{{ number_format($originalPrice) }}</span>
+                                                            <span class="text-[9px] sm:text-[11px] font-bold text-gray-400 line-through decoration-gray-300">฿{{ number_format($originalPrice, 2) }}</span>
                                                         @endif
                                                     </div>
 

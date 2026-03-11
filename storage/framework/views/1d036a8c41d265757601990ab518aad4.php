@@ -1,11 +1,9 @@
-@extends('layouts.admin')
+<?php $__env->startSection('title', 'ตั้งค่าหน้าเว็บไซต์ & Live Preview'); ?>
 
-@section('title', 'ตั้งค่าหน้าเว็บไซต์ & Live Preview')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
     <div class="container mx-auto pb-24 max-w-5xl" x-data="siteSettings()">
 
-        {{-- Header --}}
+        
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <h1 class="text-3xl font-bold text-gray-100 flex items-center">
                 <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center mr-3">
@@ -14,27 +12,28 @@
                 ตกแต่งหน้าเว็บไซต์
             </h1>
 
-            @if (session('success'))
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
                 <div class="px-6 py-2 bg-emerald-500/20 border border-emerald-500 text-emerald-300 rounded-full flex items-center gap-2 animate-fade-in shadow-lg shadow-emerald-500/10">
-                    <i class="fas fa-check-circle"></i> {{ session('success') }}
-                </div>
-            @endif
+                    <i class="fas fa-check-circle"></i> <?php echo e(session('success')); ?>
 
-            @if ($errors->any())
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
                 <div class="px-6 py-2 bg-red-500/20 border border-red-500 text-red-300 rounded-xl flex flex-col gap-1 animate-fade-in shadow-lg shadow-red-500/10">
                     <div class="flex items-center gap-2 font-bold">
                         <i class="fas fa-exclamation-circle"></i> พบข้อผิดพลาด:
                     </div>
                     <ul class="text-xs list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                            <li><?php echo e($error); ?></li>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     </ul>
                 </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
-        {{-- Tab Navigation --}}
+        
         <div class="flex items-center gap-2 mb-8 bg-gray-800/50 p-1.5 rounded-2xl border border-gray-700 w-fit mx-auto md:mx-0 shadow-lg backdrop-blur-md">
             <button type="button" 
                 @click="activeTab = 'homepage'"
@@ -59,30 +58,30 @@
             </button>
         </div>
 
-        <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+        <form action="<?php echo e(route('admin.settings.update')); ?>" method="POST" enctype="multipart/form-data">
+            <?php echo csrf_field(); ?>
 
-            {{-- 🔵 TAB: SITE SETTINGS --}}
+            
             <div class="space-y-8" x-show="activeTab === 'site_settings'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {{-- 1. Logo & Background --}}
+                    
                     <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
                             <div class="p-2 bg-blue-500/10 rounded-lg"><i class="fas fa-image text-blue-400 text-xl"></i></div>
                             <h3 class="font-bold text-lg text-gray-100">รูปภาพเว็บไซต์ (Logo & Background)</h3>
                         </div>
                         <div class="p-6 space-y-8">
-                            {{-- Site Logo --}}
+                            
                             <div class="space-y-3">
                                 <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">โลโก้เว็บไซต์ (Site Logo)</label>
                                 <div class="flex items-center gap-6">
                                     <div class="w-24 h-24 bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative group shrink-0">
-                                        @php
+                                        <?php
                                             $currentLogo = \App\Models\SiteSetting::get('site_logo');
                                             $logoUrl = $currentLogo ? asset('storage/' . $currentLogo) : asset('images/logo/logo1.png');
-                                        @endphp
-                                        <img src="{{ $logoUrl }}" class="w-full h-full object-contain p-2" id="logo-preview-site">
+                                        ?>
+                                        <img src="<?php echo e($logoUrl); ?>" class="w-full h-full object-contain p-2" id="logo-preview-site">
                                         <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                             <i class="fas fa-camera text-white text-xl"></i>
                                         </div>
@@ -96,15 +95,15 @@
                                 </div>
                             </div>
 
-                            {{-- Site Cover Image (Background) --}}
+                            
                             <div class="space-y-3">
                                 <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">ภาพพื้นหลังเว็บไซต์ (Site Background Image)</label>
                                 <div class="relative w-full aspect-[2/1] bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden group">
-                                    @php
+                                    <?php
                                         $currentCover = \App\Models\SiteSetting::get('site_cover_image');
                                         $coverUrl = $currentCover ? asset('storage/' . $currentCover) : asset('images/BG/fruit2.png');
-                                    @endphp
-                                    <img src="{{ $coverUrl }}" class="w-full h-full object-cover" id="cover-preview">
+                                    ?>
+                                    <img src="<?php echo e($coverUrl); ?>" class="w-full h-full object-cover" id="cover-preview">
                                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                         <i class="fas fa-camera text-white text-3xl"></i>
                                     </div>
@@ -116,7 +115,7 @@
                         </div>
                     </div>
 
-                    {{-- 2. Contact Information --}}
+                    
                     <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
                             <div class="p-2 bg-blue-500/10 rounded-lg"><i class="fas fa-address-book text-blue-400 text-xl"></i></div>
@@ -125,25 +124,25 @@
                         <div class="p-6 space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ชื่อบริษัท/ชื่อร้าน</label>
-                                <input type="text" name="settings[site_name]" value="{{ \App\Models\SiteSetting::get('site_name') }}" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">
+                                <input type="text" name="settings[site_name]" value="<?php echo e(\App\Models\SiteSetting::get('site_name')); ?>" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">เบอร์โทรศัพท์</label>
-                                <input type="text" name="settings[site_phone]" value="{{ \App\Models\SiteSetting::get('site_phone') }}" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">
+                                <input type="text" name="settings[site_phone]" value="<?php echo e(\App\Models\SiteSetting::get('site_phone')); ?>" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">อีเมล</label>
-                                <input type="email" name="settings[site_email]" value="{{ \App\Models\SiteSetting::get('site_email') }}" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">
+                                <input type="email" name="settings[site_email]" value="<?php echo e(\App\Models\SiteSetting::get('site_email')); ?>" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ที่อยู่</label>
-                                <textarea name="settings[site_address]" rows="3" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500">{{ \App\Models\SiteSetting::get('site_address') }}</textarea>
+                                <textarea name="settings[site_address]" rows="3" class="w-full bg-gray-900 border-gray-700 rounded-xl text-gray-200 focus:ring-blue-500"><?php echo e(\App\Models\SiteSetting::get('site_address')); ?></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- 3. Social Media Links --}}
+                
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
                         <div class="p-2 bg-blue-500/10 rounded-lg"><i class="fas fa-share-alt text-blue-400 text-xl"></i></div>
@@ -155,14 +154,14 @@
                                 <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shrink-0"><i class="fab fa-facebook-f text-white"></i></div>
                                 <div class="flex-grow">
                                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Facebook URL</label>
-                                    <input type="text" name="settings[social_facebook]" value="{{ \App\Models\SiteSetting::get('social_facebook') }}" placeholder="https://facebook.com/yourpage" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
+                                    <input type="text" name="settings[social_facebook]" value="<?php echo e(\App\Models\SiteSetting::get('social_facebook')); ?>" placeholder="https://facebook.com/yourpage" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-sky-500 flex items-center justify-center shrink-0"><i class="fab fa-twitter text-white"></i></div>
                                 <div class="flex-grow">
                                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Twitter URL</label>
-                                    <input type="text" name="settings[social_twitter]" value="{{ \App\Models\SiteSetting::get('social_twitter') }}" placeholder="https://twitter.com/yourhandle" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
+                                    <input type="text" name="settings[social_twitter]" value="<?php echo e(\App\Models\SiteSetting::get('social_twitter')); ?>" placeholder="https://twitter.com/yourhandle" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
                                 </div>
                             </div>
                         </div>
@@ -171,14 +170,14 @@
                                 <div class="w-10 h-10 rounded-lg bg-pink-600 flex items-center justify-center shrink-0"><i class="fab fa-instagram text-white"></i></div>
                                 <div class="flex-grow">
                                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Instagram URL</label>
-                                    <input type="text" name="settings[social_instagram]" value="{{ \App\Models\SiteSetting::get('social_instagram') }}" placeholder="https://instagram.com/yourprofile" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
+                                    <input type="text" name="settings[social_instagram]" value="<?php echo e(\App\Models\SiteSetting::get('social_instagram')); ?>" placeholder="https://instagram.com/yourprofile" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0"><i class="fab fa-line text-white"></i></div>
                                 <div class="flex-grow">
                                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Line OA URL</label>
-                                    <input type="text" name="settings[social_line]" value="{{ \App\Models\SiteSetting::get('social_line') }}" placeholder="https://line.me/ti/p/@yourid" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
+                                    <input type="text" name="settings[social_line]" value="<?php echo e(\App\Models\SiteSetting::get('social_line')); ?>" placeholder="https://line.me/ti/p/@yourid" class="w-full bg-gray-900 border-gray-700 rounded-lg text-sm text-gray-200">
                                 </div>
                             </div>
                         </div>
@@ -186,26 +185,26 @@
                 </div>
             </div>
 
-            {{-- 🟢 TAB: HOMEPAGE --}}
+            
             <div class="space-y-8" x-show="activeTab === 'homepage'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                 
-                {{-- 0. GENERAL SETTINGS (Logo) --}}
+                
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
                         <div class="p-2 bg-emerald-500/10 rounded-lg"><i class="fas fa-cog text-emerald-400 text-xl"></i></div>
                         <h3 class="font-bold text-lg text-gray-100">ตั้งค่าทั่วไป (General Settings)</h3>
                     </div>
                     <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {{-- Site Logo --}}
+                        
                         <div class="space-y-3">
                             <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">โลโก้เว็บไซต์ (Site Logo)</label>
                             <div class="flex items-center gap-6">
                                 <div class="w-24 h-24 bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative group shrink-0">
-                                    @php
+                                    <?php
                                         $currentLogo = \App\Models\SiteSetting::get('site_logo');
                                         $logoUrl = $currentLogo ? asset('storage/' . $currentLogo) : asset('images/logo/logo1.png');
-                                    @endphp
-                                    <img src="{{ $logoUrl }}" class="w-full h-full object-contain p-2" id="logo-preview">
+                                    ?>
+                                    <img src="<?php echo e($logoUrl); ?>" class="w-full h-full object-contain p-2" id="logo-preview">
                                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                         <i class="fas fa-camera text-white text-xl"></i>
                                     </div>
@@ -219,16 +218,16 @@
                             </div>
                         </div>
 
-                        {{-- Site Description (SEO) --}}
+                        
                         <div class="space-y-3">
                             <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider">คำอธิบายเว็บไซต์ (Site Description)</label>
                             <textarea name="settings[site_description]" rows="3" 
-                                class="w-full h-24 bg-gray-900 border-gray-700 rounded-xl text-sm text-gray-200 px-4 py-2 focus:ring-emerald-500">{{ \App\Models\SiteSetting::get('site_description') }}</textarea>
+                                class="w-full h-24 bg-gray-900 border-gray-700 rounded-xl text-sm text-gray-200 px-4 py-2 focus:ring-emerald-500"><?php echo e(\App\Models\SiteSetting::get('site_description')); ?></textarea>
                         </div>
                     </div>
                 </div>
 
-                {{-- 1. HERO SLIDER (Homepage) --}}
+                
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                         <div class="flex items-center gap-3">
@@ -259,7 +258,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-8">
-                        {{-- Allergy Banner --}}
+                        
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-exclamation-triangle text-yellow-400"></i> ข้อมูลแพ้อาหาร</h3>
@@ -274,7 +273,7 @@
                             </div>
                         </div>
 
-                        {{-- Service Bar --}}
+                        
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-concierge-bell text-purple-400"></i> Service Bar</h3>
@@ -296,7 +295,7 @@
                     </div>
 
                     <div class="space-y-8">
-                        {{-- Secondary Sliders --}}
+                        
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-tags text-blue-400"></i> สไลด์รอง</h3>
@@ -318,7 +317,7 @@
                             </div>
                         </div>
 
-                        {{-- 6 Reasons --}}
+                        
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-th text-emerald-400"></i> 6 Reasons</h3>
@@ -341,7 +340,7 @@
                             </div>
                         </div>
 
-                        {{-- Customer Review Images --}}
+                        
                         <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl relative">
                             <div class="px-6 py-4 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                                 <h3 class="font-bold text-lg text-gray-200 flex items-center gap-2"><i class="fas fa-comment-dots text-amber-400"></i> รีวิวจากลูกค้า (Review Images)</h3>
@@ -376,10 +375,10 @@
                 </div>
             </div>
 
-            {{-- 🟣 TAB: ALL PRODUCTS --}}
+            
             <div class="space-y-8" x-show="activeTab === 'all_products'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
                 
-                {{-- 1. HERO SLIDER (All Products) --}}
+                
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                         <div class="flex items-center gap-3">
@@ -408,7 +407,7 @@
                     </div>
                 </div>
 
-                {{-- 2. CATEGORY MENU --}}
+                
                 <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex justify-between items-center">
                         <div class="flex items-center gap-3">
@@ -451,7 +450,7 @@
                 </div>
             </div>
 
-            {{-- 💾 SAVE BUTTON --}}
+            
             <div class="sticky bottom-6 z-30 pt-8 flex justify-center">
                 <button type="submit" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-10 rounded-full shadow-xl shadow-emerald-900/50 transform transition-all hover:-translate-y-1 hover:scale-105 flex items-center gap-3 border-2 border-emerald-400/30">
                     <i class="fas fa-save text-xl"></i>
@@ -460,7 +459,7 @@
             </div>
         </form>
 
-        {{-- 🎨 ICON PICKER MODAL --}}
+        
         <div x-show="showIconPicker" class="fixed inset-0 bg-gray-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4" style="display: none;" @click.self="showIconPicker = false">
             <div class="bg-gray-800 border border-gray-700 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
                 <div class="flex justify-between items-center px-6 py-4 bg-gray-900/80 border-b border-gray-700">
@@ -503,60 +502,60 @@
 
                 // Homepage Data
                 hero_slides: [
-                    @foreach ($heroBanners as $banner)
-                        { id: "{{ $banner->id }}", image: "{{ Storage::url($banner->image_path) }}", existing_path: "{{ $banner->image_path }}", link_url: "{{ $banner->link_url }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $heroBanners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($banner->id); ?>", image: "<?php echo e(Storage::url($banner->image_path)); ?>", existing_path: "<?php echo e($banner->image_path); ?>", link_url: "<?php echo e($banner->link_url); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addHeroSlide() { this.hero_slides.push({ id: null, image: 'https://via.placeholder.com/1200x400', existing_path: '', link_url: '' }); },
                 removeHeroSlide(index) { this.hero_slides.splice(index, 1); },
 
                 sec_slides: [
-                    @foreach ($secondaryBanners as $banner)
-                        { id: "{{ $banner->id }}", image: "{{ Storage::url($banner->image_path) }}", existing_path: "{{ $banner->image_path }}", link_url: "{{ $banner->link_url }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $secondaryBanners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($banner->id); ?>", image: "<?php echo e(Storage::url($banner->image_path)); ?>", existing_path: "<?php echo e($banner->image_path); ?>", link_url: "<?php echo e($banner->link_url); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addSecSlide() { this.sec_slides.push({ id: null, image: 'https://via.placeholder.com/800x320', existing_path: '', link_url: '' }); },
                 removeSecSlide(index) { this.sec_slides.splice(index, 1); },
 
-                allergy_img: "{{ (isset($infoBanner) && $infoBanner->image_path) ? Storage::url($infoBanner->image_path) : '' }}",
+                allergy_img: "<?php echo e((isset($infoBanner) && $infoBanner->image_path) ? Storage::url($infoBanner->image_path) : ''); ?>",
 
                 services: [
-                    @foreach ($services as $svc)
-                        { icon: "{{ $svc->icon }}", title: "{{ $svc->title }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $svc): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { icon: "<?php echo e($svc->icon); ?>", title: "<?php echo e($svc->title); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addService() { this.services.push({ icon: 'fas fa-star', title: '' }); },
                 removeService(index) { this.services.splice(index, 1); },
 
                 reasons: [
-                    @foreach ($features as $feature)
-                        { icon: "{{ $feature->icon }}", title: "{{ $feature->title }}", description: "{{ $feature->description }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $features; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { icon: "<?php echo e($feature->icon); ?>", title: "<?php echo e($feature->title); ?>", description: "<?php echo e($feature->description); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addReason() { this.reasons.push({ icon: 'fas fa-check', title: '', description: '' }); },
                 removeReason(index) { this.reasons.splice(index, 1); },
 
                 review_images: [
-                    @foreach ($reviewImages as $img)
-                        { id: "{{ $img->id }}", image: "{{ Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/')) }}", existing_path: "{{ $img->image_url }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $reviewImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($img->id); ?>", image: "<?php echo e(Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))); ?>", existing_path: "<?php echo e($img->image_url); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addReviewImage() { this.review_images.push({ id: null, image: 'https://via.placeholder.com/600x600?text=Review', existing_path: '' }); },
                 removeReviewImage(index) { this.review_images.splice(index, 1); },
 
                 // All Products Data
                 all_products_hero_slides: [
-                    @foreach ($allProductsHeroBanners as $banner)
-                        { id: "{{ $banner->id }}", image: "{{ Storage::url($banner->image_path) }}", existing_path: "{{ $banner->image_path }}", link_url: "{{ $banner->link_url }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $allProductsHeroBanners; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $banner): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($banner->id); ?>", image: "<?php echo e(Storage::url($banner->image_path)); ?>", existing_path: "<?php echo e($banner->image_path); ?>", link_url: "<?php echo e($banner->link_url); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addAllProdHeroSlide() { this.all_products_hero_slides.push({ id: null, image: 'https://via.placeholder.com/1200x400', existing_path: '', link_url: '' }); },
                 removeAllProdHeroSlide(index) { this.all_products_hero_slides.splice(index, 1); },
 
                 categories: [
-                    @foreach ($categories as $cat)
-                        { id: "{{ $cat->id }}", name: "{{ $cat->name }}", icon: "{{ $cat->icon }}", image: "{{ $cat->image_path ? Storage::url($cat->image_path) : 'https://via.placeholder.com/150' }}", existing_path: "{{ $cat->image_path }}" },
-                    @endforeach
+                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        { id: "<?php echo e($cat->id); ?>", name: "<?php echo e($cat->name); ?>", icon: "<?php echo e($cat->icon); ?>", image: "<?php echo e($cat->image_path ? Storage::url($cat->image_path) : 'https://via.placeholder.com/150'); ?>", existing_path: "<?php echo e($cat->image_path); ?>" },
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 ],
                 addCategory() { this.categories.push({ id: null, name: '', icon: 'fas fa-th', image: 'https://via.placeholder.com/150', existing_path: '' }); },
                 removeCategory(index) { this.categories.splice(index, 1); },
@@ -584,4 +583,6 @@
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/admin/settings/index.blade.php ENDPATH**/ ?>

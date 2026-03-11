@@ -312,10 +312,33 @@
 
                 
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($reviewImages) && count($reviewImages) > 0): ?>
-                    <div class="mt-12 sm:mt-16 pt-8 border-t border-gray-100">
+                    <div class="mt-12 sm:mt-16 pt-8 border-t border-gray-100" x-data="{
+                        isReviewModalOpen: false,
+                        activeReviewIndex: 0,
+                        reviewImages: <?php echo \Illuminate\Support\Js::from($reviewImages->map(fn($img) => Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))))->toHtml() ?>,
+                        openReviewModal(index) {
+                            this.activeReviewIndex = index;
+                            this.isReviewModalOpen = true;
+                            document.body.style.overflow = 'hidden';
+                        },
+                        closeReviewModal() {
+                            this.isReviewModalOpen = false;
+                            document.body.style.overflow = 'auto';
+                        },
+                        nextReview() {
+                            this.activeReviewIndex = (this.activeReviewIndex + 1) % this.reviewImages.length;
+                        },
+                        prevReview() {
+                            this.activeReviewIndex = (this.activeReviewIndex - 1 + this.reviewImages.length) % this.reviewImages.length;
+                        }
+                    }" 
+                    @keydown.escape.window="closeReviewModal()"
+                    @keydown.right.window="if(isReviewModalOpen) nextReview()"
+                    @keydown.left.window="if(isReviewModalOpen) prevReview()">
+                        
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 md:mb-8 gap-3">
                             <div>
-                                <div class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-amber-100 text-amber-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm">
+                                <div class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-amber-100 text-amber-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm uppercase tracking-wider">
                                     Customer Reviews
                                 </div>
                                 <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
@@ -325,25 +348,58 @@
                         </div>
 
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $reviewImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $reviewImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <div class="aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer"
-                                     onclick="openReviewModal('<?php echo e(Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))); ?>')">
+                                     @click="openReviewModal(<?php echo e($index); ?>)">
                                     <img src="<?php echo e(Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))); ?>"
                                          alt="Review"
                                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 </div>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </div>
-                    </div>
 
-                    
-                    <div id="reviewModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-all duration-300 opacity-0" onclick="closeReviewModal()">
-                        <div class="relative max-w-4xl w-full h-full flex items-center justify-center pointer-events-none">
-                            <img id="modalImg" src="" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto">
-                            <button class="absolute top-0 right-0 m-4 text-white text-3xl hover:text-red-500 transition pointer-events-auto" onclick="closeReviewModal()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+                        
+                        <template x-teleport="body">
+                            <div x-show="isReviewModalOpen" 
+                                x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0"
+                                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md"
+                                @click="closeReviewModal()"
+                                style="display: none;">
+                                
+                                <button @click.stop="closeReviewModal()" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors duration-200 z-[110]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                <div class="relative w-full max-w-5xl aspect-square flex items-center justify-center" @click.stop>
+                                    
+                                    <button x-show="reviewImages.length > 1" @click="prevReview()" class="absolute left-0 lg:-left-20 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <img :src="reviewImages[activeReviewIndex]" class="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-lg">
+
+                                    <button x-show="reviewImages.length > 1" @click="nextReview()" class="absolute right-0 lg:-right-20 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    
+                                    
+                                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-white/60 font-medium tracking-widest text-sm">
+                                        <span x-text="activeReviewIndex + 1"></span> / <span x-text="reviewImages.length"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
@@ -594,28 +650,6 @@
                         btnElement.innerHTML = originalHTML;
                     }, 500);
                 });
-        }
-
-        function openReviewModal(imgUrl) {
-            const modal = document.getElementById('reviewModal');
-            const modalImg = document.getElementById('modalImg');
-            modalImg.src = imgUrl;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.add('opacity-100');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeReviewModal() {
-            const modal = document.getElementById('reviewModal');
-            modal.classList.remove('opacity-100');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-            document.body.style.overflow = 'auto';
         }
     </script>
 <?php $__env->stopSection(); ?>

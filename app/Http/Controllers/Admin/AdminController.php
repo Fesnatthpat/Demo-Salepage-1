@@ -217,6 +217,31 @@ class AdminController extends Controller
             }
         }
 
+        // --- 8. Customer Review Images (Dynamic Array) ---
+        if ($request->has('review_images')) {
+            $keepReviewIds = [];
+            foreach ($request->review_images as $index => $reviewData) {
+                $id = !empty($reviewData['id']) ? $reviewData['id'] : null;
+                $updateData = [
+                    'sort_order' => $index,
+                ];
+
+                if ($request->hasFile("review_images.$index.image")) {
+                    $updateData['image_url'] = $request->file("review_images.$index.image")->store('uploads/reviews', 'public');
+                } elseif (!empty($reviewData['existing_path'])) {
+                    $updateData['image_url'] = $reviewData['existing_path'];
+                }
+
+                if (isset($updateData['image_url'])) {
+                    // ใช้ updateOrCreate หากต้องการคง id เดิม หรือ create ใหม่
+                    $review = \App\Models\ProductReviewImage::updateOrCreate(['id' => $id], array_merge($updateData, ['product_salepage_id' => null]));
+                    $keepReviewIds[] = $review->id;
+                }
+            }
+            // ลบรูปที่ไม่ได้อยู่ในรายการที่ส่งมา (เฉพาะที่เป็น site-wide reviews)
+            \App\Models\ProductReviewImage::whereNull('product_salepage_id')->whereNotIn('id', $keepReviewIds)->delete();
+        }
+
         // Handle generic settings array if exists
         if ($request->has('settings') && is_array($request->settings)) {
             foreach ($request->settings as $key => $value) {
@@ -253,6 +278,7 @@ class AdminController extends Controller
 
         $services = \App\Models\Service::orderBy('sort_order')->get();
         $features = \App\Models\Feature::orderBy('sort_order')->get();
+        $reviewImages = \App\Models\ProductReviewImage::whereNull('product_salepage_id')->orderBy('sort_order', 'asc')->get();
 
         return view('admin.settings.index', compact(
             'settings', 
@@ -262,7 +288,8 @@ class AdminController extends Controller
             'allProductsHeroBanners',
             'categories',
             'services', 
-            'features'
+            'features',
+            'reviewImages'
         ));
     }
 }

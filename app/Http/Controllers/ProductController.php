@@ -118,7 +118,11 @@ class ProductController extends Controller
             'reviewImages' => $salePageProduct->reviewImages,
         ];
 
-        return view('product', compact('product', 'promotions'));
+        $settings = \App\Models\SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
+            return [$key => \App\Models\SiteSetting::get($key)];
+        })->toArray();
+
+        return view('product', compact('product', 'promotions', 'settings'));
     }
 
     private function formatUrl($path)

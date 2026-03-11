@@ -31,12 +31,11 @@ class HomeController extends Controller
         $secSlides = \App\Models\Banner::location('homepage')->secondary()->active()->get();
         $services = \App\Models\Service::where('is_active', true)->orderBy('sort_order')->get();
         $reasons = \App\Models\Feature::where('is_active', true)->orderBy('sort_order')->get();
+        $reviewImages = \App\Models\ProductReviewImage::whereNull('product_salepage_id')->orderBy('sort_order', 'asc')->get();
 
-        // ดึงรูปภาพรีวิวทั้งหมด (สำหรับแสดงใต้รายการสินค้า)
-        $reviewImages = \App\Models\ProductReviewImage::orderBy('sort_order', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->limit(15)
-            ->get();
+        $settings = SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
+            return [$key => SiteSetting::get($key)];
+        })->toArray();
 
         return view('index', compact(
             'recommendedProducts', 
@@ -46,7 +45,8 @@ class HomeController extends Controller
             'secSlides', 
             'services', 
             'reasons',
-            'reviewImages'
+            'reviewImages',
+            'settings'
         ));
     }
 
@@ -57,6 +57,10 @@ class HomeController extends Controller
             return $query->where('is_active', 1);
         })->orderBy('sort_order', 'asc')->get();
 
-        return view('about', compact('favorites'));
+        $settings = SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
+            return [$key => SiteSetting::get($key)];
+        })->toArray();
+
+        return view('about', compact('favorites', 'settings'));
     }
 }

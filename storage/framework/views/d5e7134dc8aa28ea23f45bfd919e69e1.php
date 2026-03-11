@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
-    <title><?php echo $__env->yieldContent('title', 'Salepage Demo'); ?></title>
+    <title><?php echo $__env->yieldContent('title', $settings['site_name'] ?? 'Salepage Demo'); ?></title>
 
     <style>
         /* CSS ปรับแต่งปุ่มลูกศร Swiper */
@@ -59,6 +59,20 @@
             width: 24px;
             border-radius: 5px;
         }
+
+        /* Site Background Dynamic */
+        .site-bg-main {
+            min-height: 100vh;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            <?php
+                $bgPath = $settings['site_cover_image'] ?? null;
+                $bgUrl = $bgPath ? asset('storage/' . $bgPath) : asset('images/BG/fruit2.png');
+            ?>
+            background-image: url('<?php echo e($bgUrl); ?>');
+        }
     </style>
 </head>
 
@@ -83,6 +97,18 @@
         } else {
             $siteLogo = asset('images/logo/logo1.png');
         }
+
+        $siteName = $settings['site_name'] ?? 'ติดใจ';
+        $sitePhone = $settings['site_phone'] ?? '02-123-4567';
+        $siteEmail = $settings['site_email'] ?? 'contact@tidjai.com';
+        $siteAddress = $settings['site_address'] ?? "บริษัท ติดใจ จำกัด\n123 ถนนสุขุมวิท แขวงคลองเตย\nเขตคลองเตย กรุงเทพฯ 10110";
+
+        $socialLinks = [
+            'facebook' => $settings['social_facebook'] ?? '#',
+            'twitter' => $settings['social_twitter'] ?? '#',
+            'instagram' => $settings['social_instagram'] ?? '#',
+            'line' => $settings['social_line'] ?? '#',
+        ];
 
         $menuItems = [
             ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false],
@@ -299,8 +325,7 @@ unset($__split);
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     
-    <div class="min-h-screen bg-cover bg-center bg-fixed bg-no-repeat"
-        style="background-image: url('<?php echo e(asset('images/BG/fruit2.png')); ?>');">
+    <div class="site-bg-main">
         <?php echo $__env->yieldContent('content'); ?>
     </div>
 
@@ -311,10 +336,10 @@ unset($__split);
                 
                 
                 <div class="sm:col-span-2 lg:col-span-4 flex flex-col gap-4 items-center sm:items-start text-center sm:text-left">
-                    <img src="<?php echo e(asset('images/logo/logo1.png')); ?>" alt="Tidjai Logo"
+                    <img src="<?php echo e($siteLogo); ?>" alt="<?php echo e($siteName); ?> Logo"
                         class="w-24 h-24 sm:w-28 sm:h-28 object-contain bg-white rounded-full p-2 shadow-md hover:scale-105 transition-transform duration-300">
                     <p class="text-red-100 text-sm leading-relaxed mt-2">
-                        <span class="font-bold text-white text-lg">ติดใจ</span><br>
+                        <span class="font-bold text-white text-lg"><?php echo e($siteName); ?></span><br>
                         ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย<br>
                         คัดสรรวัตถุดิบคุณภาพเพื่อคุณ
                     </p>
@@ -342,19 +367,19 @@ unset($__split);
                 <div class="flex flex-col gap-6 lg:col-span-4 sm:col-span-2">
                     
                     <div>
-                        <h6 class="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">ติดต่อติดใจ</h6>
+                        <h6 class="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">ติดต่อ<?php echo e($siteName); ?></h6>
                         <div class="flex flex-col gap-3 text-sm text-red-100">
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-map-marker-alt mt-1 flex-shrink-0 w-4 text-center"></i>
-                                <span class="leading-relaxed">บริษัท ติดใจ จำกัด<br>123 ถนนสุขุมวิท แขวงคลองเตย<br>เขตคลองเตย กรุงเทพฯ 10110</span>
+                                <span class="leading-relaxed"><?php echo nl2br(e($siteAddress)); ?></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-phone-alt flex-shrink-0 w-4 text-center"></i>
-                                <span>02-123-4567</span>
+                                <span><?php echo e($sitePhone); ?></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-envelope flex-shrink-0 w-4 text-center"></i>
-                                <span>contact@tidjai.com</span>
+                                <span><?php echo e($siteEmail); ?></span>
                             </div>
                         </div>
                     </div>
@@ -379,12 +404,12 @@ unset($__split);
         
         <div class="bg-red-700 py-4 text-center border-t border-red-800/50">
             <div class="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-3">
-                <p class="text-xs sm:text-sm text-red-200">Copyright © <?php echo e(date('Y')); ?> - All right reserved by Tidjai Co., Ltd.</p>
+                <p class="text-xs sm:text-sm text-red-200">Copyright © <?php echo e(date('Y')); ?> - All right reserved by <?php echo e($siteName); ?> Co., Ltd.</p>
                 <div class="flex gap-4">
-                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-line"></i></a>
+                    <a href="<?php echo e($socialLinks['facebook']); ?>" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-facebook-f"></i></a>
+                    <a href="<?php echo e($socialLinks['twitter']); ?>" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-twitter"></i></a>
+                    <a href="<?php echo e($socialLinks['instagram']); ?>" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-instagram"></i></a>
+                    <a href="<?php echo e($socialLinks['line']); ?>" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-line"></i></a>
                 </div>
             </div>
         </div>

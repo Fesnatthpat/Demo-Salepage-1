@@ -77,6 +77,10 @@ class AllProductController extends Controller
         $heroSlides = \App\Models\Banner::location('all_products')->hero()->active()->get();
         $dbCategories = \App\Models\Category::active()->get();
 
-        return view('allproducts', compact('products', 'dbCategories', 'heroSlides'));
+        $settings = \App\Models\SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
+            return [$key => \App\Models\SiteSetting::get($key)];
+        })->toArray();
+
+        return view('allproducts', compact('products', 'dbCategories', 'heroSlides', 'settings'));
     }
 }

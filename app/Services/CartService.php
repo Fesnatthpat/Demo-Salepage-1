@@ -437,7 +437,7 @@ class CartService
         }
 
         $promos = $this->getApplicablePromotions($items);
-        $totalDiscount = 0;
+        $maxDiscount = 0;
         $appliedCode = $this->getAppliedPromoCode(); 
 
         foreach ($promos as $promo) {
@@ -449,15 +449,21 @@ class CartService
 
             // ถ้าเข้าเงื่อนไขใดเงื่อนไขหนึ่ง และมีการตั้งค่ามูลค่าส่วนลดไว้
             if ($promo->discount_value > 0 && ($isAutoDiscount || $isMatchingCode)) {
+                $currentPromoDiscount = 0;
                 if ($promo->discount_type === 'fixed') {
-                    $totalDiscount += (float) $promo->discount_value;
+                    $currentPromoDiscount = (float) $promo->discount_value;
                 } elseif ($promo->discount_type === 'percentage') {
-                    $totalDiscount += ($subTotal * ((float) $promo->discount_value / 100));
+                    $currentPromoDiscount = ($subTotal * ((float) $promo->discount_value / 100));
+                }
+                
+                // ใช้หลักการ "เลือกส่วนลดที่คุ้มที่สุดให้ลูกค้า" (Best Deal) ไม่เอามาบวกซ้อนกัน
+                if ($currentPromoDiscount > $maxDiscount) {
+                    $maxDiscount = $currentPromoDiscount;
                 }
             }
         }
 
-        return $totalDiscount;
+        return $maxDiscount;
     }
 
     public function applyPromoCode(string $code): void
@@ -674,16 +680,23 @@ class CartService
             })
             ->pluck('id');
 
-        // กรณีโปรโมชั่นที่ไม่มีกฎ (เช่น โปรลดทั้งร้านที่ใช้โค้ด)
-        $codeOnlyPromoIds = collect();
-        if (!empty($appliedCode)) {
-            $codeOnlyPromoIds = Promotion::where('is_active', true)
-                ->where('is_discount_code', true)
-                ->where('code', $appliedCode)
-                ->pluck('id');
-        }
+        // กรณีโปรโมชั่นที่ไม่มีกฎ (เช่น โปรลดทั้งร้านที่ใช้โค้ด หรือ โปรลดอัตโนมัติทั้งร้าน)
+        $noRulePromoIds = Promotion::where('is_active', true)
+            ->whereDoesntHave('rules')
+            ->where(function ($q) use ($appliedCode) {
+                // 1. เป็นโปรโมชั่นอัตโนมัติ (ไม่ต้องใช้โค้ด)
+                $q->where('is_discount_code', false);
+                // 2. หรือเป็นโปรโมชั่นที่ใช้รหัส และรหัสตรงกับที่ระบุ
+                if (!empty($appliedCode)) {
+                    $q->orWhere(function($sub) use ($appliedCode) {
+                        $sub->where('is_discount_code', true)
+                            ->where('code', $appliedCode);
+                    });
+                }
+            })
+            ->pluck('id');
 
-        $allPromoIds = $validPromotionIds->merge($codeOnlyPromoIds)->unique();
+        $allPromoIds = $validPromotionIds->merge($noRulePromoIds)->unique();
 
         return Promotion::with(['rules', 'actions.giftableProducts'])->whereIn('id', $allPromoIds)
             ->where('is_active', true)

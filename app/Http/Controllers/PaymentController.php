@@ -257,7 +257,7 @@ class PaymentController extends Controller
     {
         try {
             $request->validate([
-                'code' => 'required|string|max:255',
+                'code' => 'nullable|string|max:255',
                 'selected_items' => 'required|array',
                 'selected_items.*' => 'string',
                 'selected_freebies' => 'nullable|array',
@@ -265,7 +265,7 @@ class PaymentController extends Controller
             ]);
 
             $now = now();
-            $discountCode = trim($request->input('code'));
+            $discountCode = $request->filled('code') ? trim($request->input('code')) : null;
             $selectedItems = $request->input('selected_items');
             $selectedFreebies = $request->input('selected_freebies', []);
             $userId = auth()->id();
@@ -273,14 +273,20 @@ class PaymentController extends Controller
             $success = false;
             $message = 'รหัสส่วนลดไม่ถูกต้องหรือไม่สามารถใช้ได้';
 
-            try {
-                $this->orderService->getCartService()->applyPromoCode($discountCode);
+            if (empty($discountCode)) {
+                $this->orderService->getCartService()->removePromoCode();
                 $success = true;
-                $message = 'ใช้รหัสส่วนลด '.$discountCode.' สำเร็จ!';
-            } catch (\Exception $e) {
-                $success = false;
-                $message = $e->getMessage();
-                session()->forget("cart_{$userId}_promo_code");
+                $message = 'ลบรหัสส่วนลดแล้ว';
+            } else {
+                try {
+                    $this->orderService->getCartService()->applyPromoCode($discountCode);
+                    $success = true;
+                    $message = 'ใช้รหัสส่วนลด '.$discountCode.' สำเร็จ!';
+                } catch (\Exception $e) {
+                    $success = false;
+                    $message = $e->getMessage();
+                    session()->forget("cart_{$userId}_promo_code");
+                }
             }
 
             $cartContent = Cart::session($userId)->getContent();

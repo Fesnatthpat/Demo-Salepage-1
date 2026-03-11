@@ -336,24 +336,32 @@
                                                     @endif
                                                 </div>
 
-                                                <form class="add-to-cart-form-listing w-full" data-action="{{ route('cart.add', ['id' => $product->pd_sp_id]) }}">
-                                                    <input type="hidden" name="quantity" value="1">
-                                                    <button type="submit"
-                                                        class="w-full rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 h-9 sm:h-10 min-h-[36px] sm:min-h-[40px]
-                                                        {{ ($product->pd_sp_stock ?? 0) > 0 
-                                                            ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 hover:border-red-600 shadow-sm hover:shadow-red-500/30' 
-                                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' }}"
-                                                        {{ ($product->pd_sp_stock ?? 0) <= 0 ? 'disabled' : '' }}>
-
-                                                        @if (($product->pd_sp_stock ?? 0) <= 0)
-                                                            <i class="fas fa-ban opacity-70"></i> สินค้าหมด
-                                                        @elseif ($hasOptions)
-                                                            <i class="fas fa-list-ul"></i> เลือกตัวเลือก
-                                                        @else
-                                                            <i class="fas fa-cart-plus text-sm"></i> เพิ่มลงตะกร้า
-                                                        @endif
+                                                {{-- 🛠️ จุดที่แก้ไข: แยกปุ่ม "เลือกตัวเลือก" ออกจากการเป็น Form เพื่อป้องกันการชนกันของ GET/POST --}}
+                                                @if (($product->pd_sp_stock ?? 0) <= 0)
+                                                    {{-- กรณีสินค้าหมด: ปุ่มกดไม่ได้ --}}
+                                                    <button disabled
+                                                        class="w-full rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 h-9 sm:h-10 min-h-[36px] sm:min-h-[40px] bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200">
+                                                        <i class="fas fa-ban opacity-70"></i> สินค้าหมด
                                                     </button>
-                                                </form>
+
+                                                @elseif ($hasOptions)
+                                                    {{-- กรณีมีตัวเลือก: เป็นแท็ก <a> เพื่อ Redirect ไปหน้าสินค้าโดยตรง (GET) --}}
+                                                    <a href="{{ route('product.show', $product->pd_sp_id) }}" 
+                                                        class="w-full rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 h-9 sm:h-10 min-h-[36px] sm:min-h-[40px] bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 hover:border-red-600 shadow-sm hover:shadow-red-500/30">
+                                                        <i class="fas fa-list-ul"></i> เลือกตัวเลือก
+                                                    </a>
+
+                                                @else
+                                                    {{-- กรณีไม่มีตัวเลือก: ใช้ Form ส่ง AJAX แบบ POST --}}
+                                                    <form class="add-to-cart-form-listing w-full" data-action="{{ route('cart.add', ['id' => $product->pd_sp_id]) }}">
+                                                        <input type="hidden" name="quantity" value="1">
+                                                        <button type="submit"
+                                                            class="w-full rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 h-9 sm:h-10 min-h-[36px] sm:min-h-[40px] bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 hover:border-red-600 shadow-sm hover:shadow-red-500/30">
+                                                            <i class="fas fa-cart-plus text-sm"></i> เพิ่มลงตะกร้า
+                                                        </button>
+                                                    </form>
+                                                @endif
+
                                             </div>
                                         </div>
                                     </div>
@@ -415,41 +423,21 @@
                     prevEl: ".categorySwiper .swiper-button-prev"
                 },
                 breakpoints: {
-                    // Mobile (เล็กมาก)
-                    0: {
-                        slidesPerView: 3.5,
-                        spaceBetween: 8
-                    },
-                    // Mobile ปกติ
-                    480: {
-                        slidesPerView: 4.5,
-                        spaceBetween: 10
-                    },
-                    // Tablet
-                    640: {
-                        slidesPerView: 6,
-                        spaceBetween: 12
-                    },
-                    // Desktop
-                    1024: {
-                        slidesPerView: 8,
-                        spaceBetween: 16
-                    },
+                    0: { slidesPerView: 3.5, spaceBetween: 8 },
+                    480: { slidesPerView: 4.5, spaceBetween: 10 },
+                    640: { slidesPerView: 6, spaceBetween: 12 },
+                    1024: { slidesPerView: 8, spaceBetween: 16 },
                 },
             });
 
-            // Cart Logic
+            // Cart Logic 
             const forms = document.querySelectorAll('.add-to-cart-form-listing');
             forms.forEach(form => {
                 form.addEventListener('submit', function(e) {
-                    const btn = this.querySelector('button[type="submit"]');
-                    if (btn && btn.textContent.includes('เลือกตัวเลือก')) {
-                        e.preventDefault();
-                        window.location.href = this.getAttribute('data-action').split('?')[0]
-                            .replace('/cart/add/', '/product/');
-                        return;
-                    }
+                    // 🛠️ จุดที่แก้ไข: เอาเงื่อนไขที่คอยจับคำว่า "เลือกตัวเลือก" ออกไปเลย 
+                    // เพราะเราแยกปุ่มนั้นไปเป็น <a> แท็กแล้ว
                     e.preventDefault();
+                    
                     const currentForm = this;
                     const submitBtn = currentForm.querySelector('button[type="submit"]');
                     const actionUrl = currentForm.getAttribute('data-action');
@@ -457,7 +445,7 @@
                     const originalBtnContent = submitBtn.innerHTML;
 
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเพิ่ม...';
 
                     const formData = new FormData();
                     formData.append('quantity', quantity);
@@ -467,16 +455,14 @@
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]').getAttribute('content')
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
                             body: formData
                         })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                if (typeof window.flyToCart === 'function') window.flyToCart(
-                                    submitBtn);
+                                if (typeof window.flyToCart === 'function') window.flyToCart(submitBtn);
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'เพิ่มลงตะกร้าแล้ว',

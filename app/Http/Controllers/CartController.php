@@ -14,9 +14,7 @@ class CartController extends Controller
     {
         $selectedIds = $request->input('selected_items');
         
-        // แก้ไข: ถ้าไม่มีการส่ง parameter มาเลย (เข้าหน้าตะกร้าครั้งแรก) 
-        // หรือส่งมาแต่เป็นค่าว่าง ให้เริ่มต้นเป็นอาร์เรย์ว่าง (ไม่เลือกสินค้าใดๆ)
-        // เพื่อให้ตรงตามความต้องการว่า "ต้องเลือกก่อนถึงจะแสดงของแถม"
+        // ถ้าไม่มีการส่ง parameter มาเลย หรือส่งมาแต่เป็นค่าว่าง ให้เริ่มต้นเป็นอาร์เรย์ว่าง
         if ($selectedIds === null || $selectedIds === '') {
             $selectedIds = [];
         } elseif (is_string($selectedIds)) {
@@ -33,7 +31,6 @@ class CartController extends Controller
      */
     public function addToCart(Request $request, $productId)
     {
-        // 🔥 ขั้นตอนที่ 1: บังคับแปลงข้อมูลให้เป็นตัวเลขทันที (แก้ปัญหาถาวร)
         $quantity = (int) $request->input('quantity', 1);
         if ($quantity < 1) {
             $quantity = 1;
@@ -48,10 +45,7 @@ class CartController extends Controller
             'selected_option_id' => $optionId,
         ]);
 
-
-
         try {
-            // 🔥 ขั้นตอนที่ 2: ตรวจสอบข้อมูล (Validation)
             $request->validate([
                 'quantity' => 'integer|min:1',
                 'selected_gift_ids' => 'array',
@@ -70,21 +64,38 @@ class CartController extends Controller
                 $this->cartService->addOrUpdate((int) $productId, $quantity, $optionId);
             }
 
-            // Always return JSON for this endpoint, as it's explicitly called via AJAX
-            return response()->json([
-                'success' => true,
-                'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
-                'cartCount' => $this->cartService->getTotalQuantity(),
-            ]);
+            // 🛠️ แก้ไข: เช็คว่าเรียกผ่าน AJAX หรือไม่ ถ้าใช่ส่ง JSON, ถ้าไม่ใช่ให้ Redirect กลับพร้อมข้อความ
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'เพิ่มสินค้าเรียบร้อยแล้ว',
+                    'cartCount' => $this->cartService->getTotalQuantity(),
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'เพิ่มสินค้าลงตะกร้าเรียบร้อยแล้ว');
 
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'ข้อมูลไม่ถูกต้อง',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) { // Modified block
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ข้อมูลไม่ถูกต้อง',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            return redirect()->back()->withErrors($e->errors())->withInput();
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Cart error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+                'productId' => $productId ?? 'bundle'
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -93,7 +104,6 @@ class CartController extends Controller
      */
     public function addBundleToCart(Request $request)
     {
-        // 🔥 ขั้นตอนที่ 1: บังคับแปลงข้อมูล Bundle เหมือนกัน
         $mainId = (int) $request->input('main_product_id');
         $secId = (int) $request->input('secondary_product_id');
 
@@ -108,20 +118,31 @@ class CartController extends Controller
             'gift_ids' => $gifts,
         ]);
 
-
-
         try {
             $this->cartService->addBundle($mainId, $secId, $gifts);
 
-            // Always return JSON for this endpoint, as it's explicitly called via AJAX
-            return response()->json([
-                'success' => true,
-                'message' => 'เพิ่มสินค้าชุดโปรโมชั่นเรียบร้อยแล้ว',
-                'cartCount' => $this->cartService->getTotalQuantity(),
+            // 🛠️ แก้ไข: รองรับทั้ง AJAX และ การ Redirect
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'เพิ่มสินค้าชุดโปรโมชั่นเรียบร้อยแล้ว',
+                    'cartCount' => $this->cartService->getTotalQuantity(),
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'เพิ่มชุดโปรโมชั่นลงตะกร้าเรียบร้อยแล้ว');
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Cart error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+                'productId' => $productId ?? 'bundle'
             ]);
 
-        } catch (\Exception $e) { // Modified block
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -136,6 +157,6 @@ class CartController extends Controller
     {
         $this->cartService->removeItem($productId);
 
-        return back()->with('success', 'ลบสินค้าแล้ว');
+        return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 }

@@ -544,6 +544,27 @@
                     form.submit();
                 });
             });
+
+            // 🛠️ แก้ไขเพิ่ม: แสดง Popup แจ้งเตือนเมื่อทำรายการสำเร็จ หรือเกิดข้อผิดพลาด จาก Session
+            <?php if(session('success')): ?>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: '<?php echo e(session('success')); ?>',
+                    confirmButtonColor: '#10B981',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            <?php endif; ?>
+
+            <?php if(session('error')): ?>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: '<?php echo e(session('error')); ?>',
+                    confirmButtonColor: '#EF4444',
+                });
+            <?php endif; ?>
         });
     </script>
 <?php $__env->stopSection(); ?>

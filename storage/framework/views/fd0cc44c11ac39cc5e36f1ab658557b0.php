@@ -296,9 +296,10 @@
                     initialShippingCost: <?php echo e($shippingCost); ?>,
                     initialTotalDiscount: <?php echo e($discount); ?>,
                     initialFinalTotal: <?php echo e($finalTotal); ?>,
+                    initialDiscountCode: <?php echo \Illuminate\Support\Js::from(app(\App\Services\CartService::class)->getAppliedPromoCode())->toHtml() ?>,
                     selectedItems: <?php echo \Illuminate\Support\Js::from($selectedItems)->toHtml() ?>,
                     selectedFreebies: <?php echo \Illuminate\Support\Js::from($selectedFreebies)->toHtml() ?>
-                })">
+                    })">
                     <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-6 lg:p-8 sticky top-4 sm:top-8 mb-6 lg:mb-0">
                         <h3 class="font-extrabold text-lg sm:text-xl text-gray-900 mb-5 sm:mb-6 flex items-center gap-2">
                             <i class="fas fa-file-invoice-dollar text-red-500"></i> สรุปคำสั่งซื้อ
@@ -308,9 +309,18 @@
                         <div class="mb-5 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-2xl border border-gray-100">
                             <label class="block text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">มีรหัสส่วนลดไหม?</label>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" x-model="discountCode" placeholder="กรอกรหัสที่นี่" class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 uppercase font-bold text-gray-800 placeholder-gray-400 transition-all" />
-                                <button type="button" @click="applyDiscount" :disabled="!discountCode || applyingDiscount" class="w-full sm:w-auto shrink-0 bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 sm:py-0 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <input type="text" x-model="discountCode" :readonly="isDiscountApplied" placeholder="กรอกรหัสที่นี่" 
+                                    class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 uppercase font-bold text-gray-800 placeholder-gray-400 transition-all disabled:bg-gray-100" />
+
+                                <button x-show="!isDiscountApplied" type="button" @click="applyDiscount" :disabled="!discountCode || applyingDiscount" 
+                                    class="w-full sm:w-auto shrink-0 bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 sm:py-0 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                     <span x-show="!applyingDiscount">ใช้โค้ด</span>
+                                    <span x-show="applyingDiscount" class="loading loading-spinner loading-sm"></span>
+                                </button>
+
+                                <button x-show="isDiscountApplied" type="button" @click="removeDiscount" :disabled="applyingDiscount" 
+                                    class="w-full sm:w-auto shrink-0 bg-red-100 hover:bg-red-200 text-red-600 px-5 py-2.5 sm:py-0 rounded-xl font-bold text-sm transition-colors">
+                                    <span x-show="!applyingDiscount">ลบออก</span>
                                     <span x-show="applyingDiscount" class="loading loading-spinner loading-sm"></span>
                                 </button>
                             </div>
@@ -319,7 +329,6 @@
                                 class="text-[11px] sm:text-xs font-bold mt-2 sm:mt-3 p-2 rounded-lg border flex items-center gap-1.5">
                             </p>
                         </div>
-
                         
                         <div class="space-y-3 sm:space-y-4 text-sm mb-5 sm:mb-6">
                             <div class="flex justify-between items-center text-gray-600 text-xs sm:text-sm">
@@ -480,7 +489,8 @@
                 shippingCost: config.initialShippingCost,
                 totalDiscount: config.initialTotalDiscount,
                 finalTotal: config.initialFinalTotal,
-                discountCode: '',
+                discountCode: config.initialDiscountCode || '',
+                isDiscountApplied: !!config.initialDiscountCode,
                 applyingDiscount: false,
                 discountMessage: '',
                 discountMessageType: '',
@@ -488,6 +498,7 @@
                 selectedFreebies: config.selectedFreebies || [],
 
                 formatNumber(value) {
+                    if (value === null || value === undefined || isNaN(value)) return '0';
                     return new Intl.NumberFormat('th-TH', {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 0
@@ -507,6 +518,8 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                 },
                                 body: JSON.stringify({
@@ -519,20 +532,74 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            this.totalOriginalAmount = data.totalOriginalAmount;
-                            this.grandTotal = data.grandTotal;
-                            this.shippingCost = data.shippingCost;
-                            this.totalDiscount = data.totalDiscount;
-                            this.finalTotal = data.finalTotal;
+                            this.totalOriginalAmount = parseFloat(data.totalOriginalAmount) || 0;
+                            this.grandTotal = parseFloat(data.grandTotal) || 0;
+                            this.shippingCost = parseFloat(data.shippingCost) || 0;
+                            this.totalDiscount = parseFloat(data.totalDiscount) || 0;
+                            this.finalTotal = parseFloat(data.finalTotal) || 0;
+                            
                             this.discountMessage = data.message;
                             this.discountMessageType = 'success';
+                            this.isDiscountApplied = true;
                         } else {
+                            // ถ้าไม่สำเร็จ ก็ให้อัปเดตราคาจากข้อมูลที่ได้มา (ซึ่งจะเป็นราคาปกติไม่มีส่วนลด)
+                            if (data.grandTotal !== undefined) {
+                                this.totalOriginalAmount = parseFloat(data.totalOriginalAmount) || 0;
+                                this.grandTotal = parseFloat(data.grandTotal) || 0;
+                                this.shippingCost = parseFloat(data.shippingCost) || 0;
+                                this.totalDiscount = parseFloat(data.totalDiscount) || 0;
+                                this.finalTotal = parseFloat(data.finalTotal) || 0;
+                            }
+                            
                             this.discountMessage = data.message || 'ไม่สามารถใช้รหัสส่วนลดนี้ได้';
                             this.discountMessageType = 'error';
+                            this.isDiscountApplied = false;
                         }
                     } catch (error) {
                         this.discountMessage = 'เกิดข้อผิดพลาดในการใช้รหัสส่วนลด';
                         this.discountMessageType = 'error';
+                    } finally {
+                        this.applyingDiscount = false;
+                    }
+                },
+
+                async removeDiscount() {
+                    this.applyingDiscount = true;
+                    
+                    try {
+                        const response = await fetch(
+                            '/payment/apply-discount', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                },
+                                body: JSON.stringify({
+                                    code: '', // ส่งโค้ดว่างเพื่อยกเลิก
+                                    selected_items: this.selectedItems,
+                                    selected_freebies: this.selectedFreebies
+                                }),
+                            });
+
+                        const data = await response.json();
+
+                        // ไม่ว่าจะสำเร็จหรือล้มเหลว (เพราะโค้ดว่างมักจะ success: false แต่เราต้องการล้างค่า)
+                        if (data.grandTotal !== undefined) {
+                            this.totalOriginalAmount = parseFloat(data.totalOriginalAmount) || 0;
+                            this.grandTotal = parseFloat(data.grandTotal) || 0;
+                            this.shippingCost = parseFloat(data.shippingCost) || 0;
+                            this.totalDiscount = parseFloat(data.totalDiscount) || 0;
+                            this.finalTotal = parseFloat(data.finalTotal) || 0;
+                        }
+                        
+                        this.discountCode = '';
+                        this.isDiscountApplied = false;
+                        this.discountMessage = 'ลบรหัสส่วนลดแล้ว';
+                        this.discountMessageType = 'success';
+                    } catch (error) {
+                        console.error(error);
                     } finally {
                         this.applyingDiscount = false;
                     }

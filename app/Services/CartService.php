@@ -655,20 +655,35 @@ class CartService
             }
         })->pluck('promotion_id')->unique();
 
-        // ✅ 🌟 แก้ไข: ทำให้ปลอดภัยขึ้นตอน Query ดึงโปรโมชั่นที่ตรงกับรหัส
+        // ดึงข้อมูลโปรโมชั่นเบื้องต้นเพื่อแยกประเภท
         $appliedCode = $this->getAppliedPromoCode();
-        $promoCodeIds = Promotion::where('is_active', true)
+        
+        // กรองเอาเฉพาะโปรโมชั่นที่:
+        // 1. เป็นโปรโมชั่นอัตโนมัติ (is_discount_code = false)
+        // 2. เป็นโปรโมชั่นที่ใช้รหัส และรหัสตรงกับที่ระบุ (is_discount_code = true และ code = appliedCode)
+        $validPromotionIds = Promotion::whereIn('id', $potentialPromotionIds)
+            ->where('is_active', true)
             ->where(function ($q) use ($appliedCode) {
-                // ดึงโปรอัตโนมัติมาทั้งหมด
                 $q->where('is_discount_code', false);
-                // ถ้ามีกรอกโค้ดมา ค่อยไปดึงโปรที่เป็นโค้ดตัวนั้นพ่วงมาด้วย
                 if (!empty($appliedCode)) {
-                    $q->orWhere('code', $appliedCode);
+                    $q->orWhere(function($sub) use ($appliedCode) {
+                        $sub->where('is_discount_code', true)
+                            ->where('code', $appliedCode);
+                    });
                 }
             })
             ->pluck('id');
 
-        $allPromoIds = $potentialPromotionIds->merge($promoCodeIds)->unique();
+        // กรณีโปรโมชั่นที่ไม่มีกฎ (เช่น โปรลดทั้งร้านที่ใช้โค้ด)
+        $codeOnlyPromoIds = collect();
+        if (!empty($appliedCode)) {
+            $codeOnlyPromoIds = Promotion::where('is_active', true)
+                ->where('is_discount_code', true)
+                ->where('code', $appliedCode)
+                ->pluck('id');
+        }
+
+        $allPromoIds = $validPromotionIds->merge($codeOnlyPromoIds)->unique();
 
         return Promotion::with(['rules', 'actions.giftableProducts'])->whereIn('id', $allPromoIds)
             ->where('is_active', true)

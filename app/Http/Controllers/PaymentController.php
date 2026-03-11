@@ -113,10 +113,6 @@ class PaymentController extends Controller
 
         $cartService = $this->orderService->getCartService();
 
-        // 🌟 [แก้ไขใหม่] สั่งลบ Session ของคูปองส่วนลดออกเสมอเมื่อโหลดหน้า Payment ครั้งแรก
-        // ป้องกันปัญหาระบบลดราคาเองโดยที่หน้าเว็บช่องกรอกรหัสส่วนลดยังว่างเปล่า
-        $cartService->removePromoCode();
-
         $promoDiscount = $cartService->calculateTotalDiscount($totalAmount, $cartItems);
 
         $totalDiscount += $promoDiscount;

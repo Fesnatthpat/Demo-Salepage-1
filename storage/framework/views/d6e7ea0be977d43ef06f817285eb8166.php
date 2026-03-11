@@ -309,6 +309,43 @@
                         ดูสินค้าทั้งหมด <i class="fas fa-arrow-right ml-1"></i>
                     </a>
                 </div>
+
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($reviewImages) && count($reviewImages) > 0): ?>
+                    <div class="mt-12 sm:mt-16 pt-8 border-t border-gray-100">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 md:mb-8 gap-3">
+                            <div>
+                                <div class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-amber-100 text-amber-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm">
+                                    Customer Reviews
+                                </div>
+                                <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
+                                    รีวิวจาก <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-500">ลูกค้าของเรา</span>
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $reviewImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                <div class="aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer"
+                                     onclick="openReviewModal('<?php echo e(Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))); ?>')">
+                                    <img src="<?php echo e(Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))); ?>"
+                                         alt="Review"
+                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                </div>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        </div>
+                    </div>
+
+                    
+                    <div id="reviewModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/90 backdrop-blur-sm transition-all duration-300 opacity-0" onclick="closeReviewModal()">
+                        <div class="relative max-w-4xl w-full h-full flex items-center justify-center pointer-events-none">
+                            <img id="modalImg" src="" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto">
+                            <button class="absolute top-0 right-0 m-4 text-white text-3xl hover:text-red-500 transition pointer-events-auto" onclick="closeReviewModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
     </div>
@@ -557,6 +594,28 @@
                         btnElement.innerHTML = originalHTML;
                     }, 500);
                 });
+        }
+
+        function openReviewModal(imgUrl) {
+            const modal = document.getElementById('reviewModal');
+            const modalImg = document.getElementById('modalImg');
+            modalImg.src = imgUrl;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+            document.body.style.overflow = 'auto';
         }
     </script>
 <?php $__env->stopSection(); ?>

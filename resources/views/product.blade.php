@@ -77,7 +77,7 @@
                 ->map(function ($img) {
                     return filter_var($img->image_url, FILTER_VALIDATE_URL)
                         ? $img->image_url
-                        : asset('storage/' . $img->image_url);
+                        : asset('storage/' . ltrim($img->image_url, '/'));
                 })
                 ->all();
         }
@@ -419,6 +419,25 @@
                                 </div>
                             </div>
                         </template>
+
+                        {{-- Review Images Section --}}
+                        <template x-if="reviewImages.length > 0">
+                            <div class="mt-12 pt-8 border-t border-gray-100">
+                                <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                                    <i class="fas fa-camera-retro text-amber-500"></i>
+                                    รีวิวจากลูกค้า
+                                </h3>
+                                <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                                    <template x-for="(img, index) in reviewImages" :key="index">
+                                        <div @click="openReviewModal(img)"
+                                            class="aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+                                            <img :src="img"
+                                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
 
                     {{-- Main Actions --}}
@@ -454,6 +473,86 @@
                 </div>
             </div>
         </div>
+
+        {{-- Image Gallery Fullscreen Modal --}}
+        <template x-teleport="body">
+            <div x-show="isModalOpen" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm"
+                @click="isModalOpen = false">
+                <button @click.stop="isModalOpen = false"
+                    class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div class="relative w-full max-w-5xl aspect-square flex items-center justify-center pointer-events-none"
+                    @click.stop>
+                    <button x-show="images.length > 1" @click="prevImage()"
+                        class="absolute left-0 lg:-left-16 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 pointer-events-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <img :src="activeImage" class="max-w-full max-h-[85vh] object-contain shadow-2xl pointer-events-auto"
+                        @click.stop>
+
+                    <button x-show="images.length > 1" @click="nextImage()"
+                        class="absolute right-0 lg:-right-16 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 pointer-events-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        {{-- Review Image Fullscreen Modal --}}
+        <template x-teleport="body">
+            <div x-show="isReviewModalOpen" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm"
+                @click="closeReviewModal()">
+                <button @click.stop="closeReviewModal()"
+                    class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div class="relative w-full max-w-5xl aspect-square flex items-center justify-center pointer-events-none"
+                    @click.stop>
+                    <button x-show="reviewImages.length > 1" @click="prevReviewImage()"
+                        class="absolute left-0 lg:-left-16 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 pointer-events-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <img :src="activeReviewImage" class="max-w-full max-h-[85vh] object-contain shadow-2xl pointer-events-auto"
+                        @click.stop>
+
+                    <button x-show="reviewImages.length > 1" @click="nextReviewImage()"
+                        class="absolute right-0 lg:-right-16 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 pointer-events-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </template>
     </div>
 @endsection
 
@@ -642,6 +741,24 @@
                     this.activeImage = this.images[(idx + 1) % this.images.length];
                 },
 
+                openReviewModal(img) {
+                    this.activeReviewImage = img;
+                    this.isReviewModalOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                closeReviewModal() {
+                    this.isReviewModalOpen = false;
+                    document.body.style.overflow = 'auto';
+                },
+                prevReviewImage() {
+                    let idx = this.reviewImages.indexOf(this.activeReviewImage);
+                    this.activeReviewImage = this.reviewImages[(idx - 1 + this.reviewImages.length) % this.reviewImages.length];
+                },
+                nextReviewImage() {
+                    let idx = this.reviewImages.indexOf(this.activeReviewImage);
+                    this.activeReviewImage = this.reviewImages[(idx + 1) % this.reviewImages.length];
+                },
+
                 validateSelection() {
                     if (!this.isConditionMet) {
                         this.selectedGifts = [];
@@ -704,6 +821,8 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
                                 'X-CSRF-TOKEN': document.querySelector(
                                     'meta[name="csrf-token"]').content
                             },
@@ -713,6 +832,14 @@
                                 selected_gift_ids: this.selectedGifts
                             })
                         });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({
+                                message: 'Server error (' + response.status + ')'
+                            }));
+                            throw new Error(errorData.message || 'Something went wrong');
+                        }
+
                         const data = await response.json();
                         if (data.success) {
                             if (isBuyNow) window.location.href = config.cartUrl;

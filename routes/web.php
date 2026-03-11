@@ -45,7 +45,10 @@ Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 // 2. ระบบตะกร้าสินค้า (Cart)
 // ==========================================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+
+// 🛠️ จุดที่แก้ไข: เปลี่ยนกลับเป็น Route::post เพื่อให้ตรงกับการส่งค่า (AJAX Fetch API) จากหน้าเว็บ
 Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+
 // ✅ Route สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่)
 Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('cart.addBundle');
 // Route สำหรับอัปเดตและลบสินค้า
@@ -88,8 +91,8 @@ Route::middleware(['auth'])->group(function () {
     // -- กลุ่มที่ต้องกรอกข้อมูลส่วนตัวครบแล้ว --
     Route::middleware(['profile.completed'])->group(function () {
         // ประวัติการสั่งซื้อ (ฝั่งลูกค้า)
-        Route::get('/orderhistory', [OrderController::class, 'index'])->name('orders.index'); // ✅ เปลี่ยนเป็น orders.index
-        Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('orders.show'); // ✅ เปลี่ยนเป็น orders.show เพื่อให้ตรงกับ Controller
+        Route::get('/orderhistory', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('orders.show');
 
         // ✅ เพิ่ม Route สำหรับกดบันทึกคำสั่งซื้อ (เรียกไปที่ฟังก์ชัน store)
         Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
@@ -106,7 +109,7 @@ Route::middleware(['auth'])->group(function () {
 // 5. ติดตามพัสดุ (Tracking) - Guest เข้าได้
 // ==========================================
 Route::get('/ordertracking', [TrackingController::class, 'index'])->name('order.tracking');
-Route::get('/ordertracking/form', [TrackingController::class, 'index'])->name('order.tracking.form'); // เพิ่มกลับมาเพื่อรองรับโค้ดเก่า
+Route::get('/ordertracking/form', [TrackingController::class, 'index'])->name('order.tracking.form');
 
 // ==========================================
 // 6. API สำหรับ Dropdown ที่อยู่ (Ajax)

@@ -303,7 +303,7 @@
         </div>
     </div>
 
-    {{-- Script เดิม 100% --}}
+    {{-- Script --}}
     <script>
         const STORAGE_KEY = 'cart_selected_items';
         let selectedFreebiesArray = [];
@@ -544,6 +544,27 @@
                     form.submit();
                 });
             });
+
+            // 🛠️ แก้ไขเพิ่ม: แสดง Popup แจ้งเตือนเมื่อทำรายการสำเร็จ หรือเกิดข้อผิดพลาด จาก Session
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#10B981',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: '{{ session('error') }}',
+                    confirmButtonColor: '#EF4444',
+                });
+            @endif
         });
     </script>
 @endsection

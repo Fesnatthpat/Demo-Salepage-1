@@ -32,6 +32,12 @@ class HomeController extends Controller
         $services = \App\Models\Service::where('is_active', true)->orderBy('sort_order')->get();
         $reasons = \App\Models\Feature::where('is_active', true)->orderBy('sort_order')->get();
 
+        // ดึงรูปภาพรีวิวทั้งหมด (สำหรับแสดงใต้รายการสินค้า)
+        $reviewImages = \App\Models\ProductReviewImage::orderBy('sort_order', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->limit(15)
+            ->get();
+
         return view('index', compact(
             'recommendedProducts', 
             'promotions',
@@ -39,7 +45,8 @@ class HomeController extends Controller
             'infoBanner', 
             'secSlides', 
             'services', 
-            'reasons'
+            'reasons',
+            'reviewImages'
         ));
     }
 

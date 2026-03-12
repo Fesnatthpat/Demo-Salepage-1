@@ -224,7 +224,7 @@
                                                 
                                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
                                                     <div class="absolute top-2 left-2 bg-red-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black shadow-sm uppercase tracking-wide border border-red-500">
-                                                        ลด <?php echo e(number_format($discountAmount)); ?>.-
+                                                        ลด <?php echo e(number_format($discountAmount, 2)); ?>.-
                                                     </div>
                                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </a>
@@ -257,10 +257,10 @@
                                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasOptions): ?>
                                                                 <span class="text-[9px] sm:text-[10px] text-gray-400 font-bold">เริ่ม</span>
                                                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                                            <span class="text-base sm:text-lg font-black text-red-600 tracking-tight leading-none">฿<?php echo e(number_format($finalSellingPrice)); ?></span>
+                                                            <span class="text-base sm:text-lg font-black text-red-600 tracking-tight leading-none">฿<?php echo e(number_format($finalSellingPrice, 2)); ?></span>
                                                         </div>
                                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
-                                                            <span class="text-[9px] sm:text-[11px] font-bold text-gray-400 line-through decoration-gray-300">฿<?php echo e(number_format($originalPrice)); ?></span>
+                                                            <span class="text-[9px] sm:text-[11px] font-bold text-gray-400 line-through decoration-gray-300">฿<?php echo e(number_format($originalPrice, 2)); ?></span>
                                                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </div>
 

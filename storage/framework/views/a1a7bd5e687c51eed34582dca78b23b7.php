@@ -46,7 +46,7 @@
                             return [
                                 'id' => $p->pd_sp_id,
                                 'name' => $p->pd_sp_name,
-                                'price' => number_format($p->pd_sp_price, 0),
+                                'price' => number_format($p->pd_sp_price, 2),
                                 'image' => $p->display_image,
                                 'url' => route('product.show', $p->pd_sp_id),
                             ];
@@ -702,10 +702,10 @@
                         return `฿${config.initialDisplayPrice}`;
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
-                        if (option) return `฿${option.final_price.toLocaleString()}`;
+                        if (option) return `฿${option.final_price.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     }
                     let final = Math.max(0, this.basePrice - this.discountAmount);
-                    return `฿${final.toLocaleString()}`;
+                    return `฿${final.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 },
 
                 get originalPriceDisplay() {
@@ -713,10 +713,10 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option && option.price > option.final_price)
-                            return `฿${option.price.toLocaleString()}`;
+                            return `฿${option.price.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         return null;
                     }
-                    return this.discountAmount > 0 ? `฿${this.basePrice.toLocaleString()}` : null;
+                    return this.discountAmount > 0 ? `฿${this.basePrice.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null;
                 },
 
                 get discountDisplay() {
@@ -724,11 +724,11 @@
                     if (this.selectedOption) {
                         const option = this.options.find(o => o.id == this.selectedOption);
                         if (option && option.price > option.final_price)
-                            return `ประหยัด ฿${(option.price - option.final_price).toLocaleString()}`;
+                            return `ประหยัด ฿${(option.price - option.final_price).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         return null;
                     }
                     return this.discountAmount > 0 ?
-                        `ประหยัด ฿${this.discountAmount.toLocaleString()}` : null;
+                        `ประหยัด ฿${this.discountAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null;
                 },
 
                 prevImage() {

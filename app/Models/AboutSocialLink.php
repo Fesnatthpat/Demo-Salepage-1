@@ -4,18 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Contact extends Model
+class AboutSocialLink extends Model
 {
     protected $fillable = [
         'title',
-        'content',
-        'address',
-        'phone',
-        'email',
-        'map_url',
-        'map_link',
-        'transport_info',
+        'url',
         'image_path',
+        'icon_class',
+        'icon_color',
+        'bg_color',
         'is_active',
         'sort_order',
     ];

@@ -182,6 +182,24 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
 
     // Favorite Management (จัดการเกี่ยวกับติดใจ)
     Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);
+    
+    // About Page Additional Sections (จัดการส่วนอื่นๆ ของหน้าเกี่ยวกับติดใจ)
+    Route::post('/about-videos', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeVideo'])->name('about-videos.store');
+    Route::put('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateVideo'])->name('about-videos.update');
+    Route::delete('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideo'])->name('about-videos.destroy');
+    
+    Route::post('/about-galleries', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeGallery'])->name('about-galleries.store');
+    Route::put('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateGallery'])->name('about-galleries.update');
+    Route::delete('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGallery'])->name('about-galleries.destroy');
+    Route::delete('/about-gallery-images/{image}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGalleryImage'])->name('about-gallery-images.destroy');
+    
+    Route::post('/about-social-links', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeSocialLink'])->name('about-social-links.store');
+    Route::put('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateSocialLink'])->name('about-social-links.update');
+    Route::delete('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroySocialLink'])->name('about-social-links.destroy');
+
+    Route::post('/about-contacts', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeContact'])->name('about-contacts.store');
+    Route::put('/about-contacts/{contact}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateContact'])->name('about-contacts.update');
+    Route::delete('/about-contacts/{contact}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyContact'])->name('about-contacts.destroy');
 
     // Contact Management (จัดการติดต่อเรา)
     Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);

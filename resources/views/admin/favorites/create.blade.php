@@ -70,8 +70,8 @@
                                 รายละเอียด (Content) <span class="text-red-500">*</span>
                             </label>
                             <div class="relative border border-gray-600 rounded-lg overflow-hidden shadow-sm">
-                                {{-- Textarea ปกติจะถูกซ่อนและแทนที่ด้วย CodeMirror --}}
-                                <textarea name="content" id="content" required>{{ old('content') }}</textarea>
+                                {{-- เอา required ออกแล้ว --}}
+                                <textarea name="content" id="content">{{ old('content') }}</textarea>
                             </div>
                             <div class="flex justify-between text-xs text-gray-500 mt-1">
                                 <span><i class="fas fa-code mr-1"></i> รองรับ HTML & CSS Highlighting</span>
@@ -128,6 +128,22 @@
                                 onchange="previewImages(event)"
                                 class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
                         </div>
+
+                        {{-- Video Upload Card --}}
+                        <div class="bg-gray-900 rounded-xl p-5 border border-gray-700/50 mt-6">
+                            <label class="block text-sm font-semibold text-gray-200 mb-3">
+                                วิดีโอประกอบ <span class="text-xs text-gray-400 font-normal">(ไฟล์ .mp4, .mov)</span>
+                            </label>
+
+                            <div id="videoPreviewContainer" class="mb-4 hidden w-full rounded-lg overflow-hidden border border-gray-600 shadow-md bg-black flex justify-center">
+                                <video id="videoPreview" controls class="max-h-[200px] w-auto"></video>
+                            </div>
+
+                            <input type="file" name="video" id="video" accept="video/*"
+                                onchange="previewVideo(event)"
+                                class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                        </div>
+
                     </div>
                 </div>
 
@@ -146,7 +162,7 @@
         </div>
     </div>
 
-    {{-- 2. เพิ่ม Script ของ CodeMirror --}}
+    {{-- 2. เพิ่ม Script ของ CodeMirror และ Video Preview --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
@@ -167,9 +183,14 @@
 
             // บังคับให้ขนาดพอดีกับ Container
             editor.setSize("100%", "400px");
+            
+            // เพิ่มการอัปเดตค่ากลับไปที่ textarea อัตโนมัติเวลาที่มีการพิมพ์
+            editor.on('change', function() {
+                editor.save(); 
+            });
         });
 
-        // Preview Images Script (เหมือนเดิม)
+        // Preview Images Script
         function previewImages(event) {
             const container = document.getElementById('imagePreviewContainer');
             const placeholder = document.getElementById('imagePlaceholder');
@@ -196,6 +217,22 @@
                 });
             } else {
                 placeholder.classList.remove('hidden');
+            }
+        }
+
+        // Preview Video Script
+        function previewVideo(event) {
+            const file = event.target.files[0];
+            const container = document.getElementById('videoPreviewContainer');
+            const video = document.getElementById('videoPreview');
+
+            if (file) {
+                container.classList.remove('hidden');
+                const fileURL = URL.createObjectURL(file);
+                video.src = fileURL;
+            } else {
+                container.classList.add('hidden');
+                video.src = '';
             }
         }
     </script>

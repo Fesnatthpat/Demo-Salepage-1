@@ -52,15 +52,27 @@ class HomeController extends Controller
 
     public function about()
     {
-        // 1. ดึงข้อมูลหน้า "เกี่ยวกับติดใจ"
-        $favorites = Favorite::when(! auth('admin')->check(), function ($query) {
+        // 1. ดึงข้อมูลเนื้อหาหลัก
+        $favorites = Favorite::with('images')->when(! auth('admin')->check(), function ($query) {
             return $query->where('is_active', 1);
         })->orderBy('sort_order', 'asc')->get();
+
+        // 2. ดึงข้อมูลวิดีโอ (Life with ติดใจ)
+        $videos = \App\Models\AboutVideo::where('is_active', 1)->orderBy('sort_order', 'asc')->get();
+
+        // 3. ดึงข้อมูลอัลบั้มภาพ
+        $galleries = \App\Models\AboutGallery::with('images')->where('is_active', 1)->orderBy('sort_order', 'asc')->get();
+
+        // 4. ดึงข้อมูลโซเชียลมีเดีย
+        $socialLinks = \App\Models\AboutSocialLink::where('is_active', 1)->orderBy('sort_order', 'asc')->get();
+
+        // 5. ดึงข้อมูลติดต่อ
+        $contacts = \App\Models\Contact::where('is_active', 1)->orderBy('sort_order', 'asc')->get();
 
         $settings = SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
             return [$key => SiteSetting::get($key)];
         })->toArray();
 
-        return view('about', compact('favorites', 'settings'));
+        return view('about', compact('favorites', 'videos', 'galleries', 'socialLinks', 'contacts', 'settings'));
     }
 }

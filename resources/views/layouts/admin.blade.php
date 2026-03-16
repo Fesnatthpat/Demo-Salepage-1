@@ -83,14 +83,39 @@
 </head>
 
 <body class="bg-gray-900 antialiased text-gray-100">
-    <div x-data="{ sidebarOpen: true }" class="flex h-screen overflow-hidden bg-gray-900">
+    <div x-data="{ 
+            sidebarOpen: window.innerWidth > 1024, 
+            isMobile: window.innerWidth <= 1024 
+         }" 
+         x-init="window.addEventListener('resize', () => { 
+            isMobile = window.innerWidth <= 1024;
+            if (!isMobile) sidebarOpen = true;
+         })"
+         class="flex h-screen overflow-hidden bg-gray-900">
+
+        {{-- Mobile Sidebar Overlay --}}
+        <div x-show="isMobile && sidebarOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false"
+             class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden">
+        </div>
 
         {{-- Sidebar --}}
-        <aside class="flex-shrink-0 w-64 flex flex-col border-r border-gray-700 transition-all duration-300 bg-gray-800"
-            :class="{ '-ml-64': !sidebarOpen }">
+        <aside class="fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r border-gray-700 transition-all duration-300 bg-gray-800 lg:static lg:translate-x-0"
+            :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
 
-            <div class="h-16 flex items-center justify-center border-b border-gray-700 bg-gray-800">
-                <h1 class="text-2xl font-bold text-emerald-400 tracking-wider">CRM ADMIN</h1>
+            <div class="h-16 flex items-center justify-between px-6 border-b border-gray-700 bg-gray-800">
+                <h1 class="text-xl font-bold text-emerald-400 tracking-wider flex items-center">
+                    <i class="fas fa-rocket mr-2"></i> CRM ADMIN
+                </h1>
+                <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
 
             <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
@@ -118,6 +143,11 @@
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.promotions.index') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
+                </a>
+                <a href="{{ route('admin.birthday-promotion.index') }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.birthday-promotion.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
+                    <i class="fas fa-birthday-cake mr-3 w-5 text-center text-pink-400"></i>
+                    โปรโมชั่นวันเกิด
                 </a>
                 <a href="{{ route('admin.promotions.logs') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.promotions.logs') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
@@ -192,27 +222,27 @@
         </aside>
 
         {{-- Main Content Wrapper --}}
-        <div class="flex-1 flex flex-col overflow-hidden bg-gray-900">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-900">
             {{-- Header --}}
-            <header class="flex justify-between items-center p-4 bg-gray-800 border-b border-gray-700 shadow-sm z-20">
+            <header class="flex justify-between items-center h-16 px-4 sm:px-6 bg-gray-800 border-b border-gray-700 shadow-sm z-20">
                 <div class="flex items-center">
                     <button @click="sidebarOpen = !sidebarOpen"
-                        class="text-gray-400 focus:outline-none hover:text-white transition-colors">
+                        class="text-gray-400 focus:outline-none hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700">
                         <i class="fas fa-bars fa-lg"></i>
                     </button>
-                    <h1 class="text-xl font-semibold ml-4 text-gray-100">@yield('page-title', 'Dashboard')</h1>
+                    <h1 class="text-lg sm:text-xl font-semibold ml-2 sm:ml-4 text-gray-100 truncate max-w-[150px] sm:max-w-none">@yield('page-title', 'Dashboard')</h1>
                 </div>
-                <div class="flex items-center">
+                <div class="flex items-center space-x-2">
                     @if (auth()->guard('admin')->check())
                         <div x-data="{ dropdownOpen: false }" class="relative">
                             <button @click="dropdownOpen = !dropdownOpen"
-                                class="flex items-center space-x-2 relative focus:outline-none hover:opacity-80 transition-opacity">
-                                <div class="text-right mr-2 hidden sm:block">
+                                class="flex items-center p-1 sm:p-2 rounded-xl focus:outline-none hover:bg-gray-700 transition-all">
+                                <div class="text-right mr-3 hidden md:block">
                                     <div class="text-sm font-semibold text-gray-200">
                                         {{ Auth::user()->name ?? 'Admin User' }}</div>
-                                    <div class="text-xs text-gray-400">Administrator</div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-tighter">Administrator</div>
                                 </div>
-                                <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-600"
+                                <img class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-cover border border-gray-600 shadow-inner"
                                     src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . (Auth::user()->name ?? 'Admin') . '&background=10b981&color=fff' }}"
                                     alt="Avatar">
                             </button>
@@ -244,7 +274,7 @@
             </header>
 
             {{-- Page Content --}}
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-4 sm:p-6">
                 @yield('content')
             </main>
         </div>

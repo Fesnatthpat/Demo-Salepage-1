@@ -196,4 +196,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
 
+    // Birthday Promotion Management
+    Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
+    Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
+
 });

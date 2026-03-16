@@ -39,19 +39,33 @@ class ProductSalepage extends Model
 
     public function getCoverImageUrlAttribute()
     {
-        $placeholder = 'https://via.placeholder.com/150?text=No+Image';
+        // 1. ถ้าไม่มีข้อมูลรูปในฐานข้อมูลเลย ให้แสดง Placeholder
         if ($this->images->isEmpty()) {
-            return $placeholder;
+            return asset('images/pd-1.png'); // ใช้รูปสำรองที่มีอยู่จริงใน public/images
         }
 
         $image = $this->images->sortBy('img_sort')->first();
         if (! $image || ! $image->img_path) {
-            return $placeholder;
+            return asset('images/pd-1.png');
         }
 
         $rawPath = $image->img_path;
 
-        return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/'.ltrim($rawPath, '/'));
+        // 2. ถ้าเป็น URL สมบูรณ์ (เช่น http...) ให้ใช้ URL นั้นเลย
+        if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+            return $rawPath;
+        }
+
+        // 3. ตรวจสอบการมีอยู่ของไฟล์ใน storage/app/public/...
+        $filePath = storage_path('app/public/'.ltrim($rawPath, '/'));
+        if (file_exists($filePath)) {
+            return asset('storage/'.ltrim($rawPath, '/'));
+        }
+
+        // 4. ถ้าไฟล์หายไปจาก Disk ให้ใช้รูปสำรองใน public/images แทน
+        // พยายามสุ่มเลือก pd-1.png ถึง pd-8.png ตาม ID สินค้าเพื่อให้ดูหลากหลาย
+        $fallbackId = ($this->pd_sp_id % 8) + 1;
+        return asset("images/pd-{$fallbackId}.png");
     }
 
     public function getFinalPriceAttribute(): float

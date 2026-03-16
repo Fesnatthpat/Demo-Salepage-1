@@ -25,31 +25,31 @@
 @section('content')
 
     {{-- 1. Header & Filters --}}
-    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-8">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-100">ยินดีต้อนรับกลับ, Admin 👋</h1>
-            <p class="text-sm text-gray-400 mt-1">
-                ข้อมูลช่วง: <span
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+        <div class="text-center lg:text-left">
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-100 uppercase tracking-wide">ยินดีต้อนรับกลับ, Admin 👋</h1>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">
+                รายงานระหว่าง: <span
                     class="text-emerald-400 font-medium">{{ \Carbon\Carbon::parse($currentStartDate)->format('d/m/Y') }}</span>
-                ถึง <span
+                - <span
                     class="text-emerald-400 font-medium">{{ \Carbon\Carbon::parse($currentEndDate)->format('d/m/Y') }}</span>
             </p>
         </div>
 
         {{-- Filter Section --}}
         <div
-            class="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-gray-800 p-2 rounded-xl shadow-md border border-gray-700">
+            class="flex flex-col md:flex-row gap-4 items-center bg-gray-800 p-3 sm:p-2 rounded-2xl shadow-xl border border-gray-700/50 w-full lg:w-auto">
 
             {{-- Quick Filters --}}
-            <div class="flex items-center gap-1">
+            <div class="flex items-center justify-center gap-1 w-full md:w-auto">
                 @php
                     function getBtnClass($isActive)
                     {
                         return $isActive
-                            ? 'bg-emerald-600 text-white shadow-md'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
                             : 'text-gray-400 hover:bg-gray-700 hover:text-white';
                     }
-                    $commonClass = 'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200';
+                    $commonClass = 'flex-1 md:flex-none text-center px-4 py-2 text-xs font-bold rounded-xl transition-all duration-300';
                 @endphp
                 <a href="{{ route('admin.dashboard', ['period' => 'today']) }}"
                     class="{{ $commonClass }} {{ getBtnClass($period == 'today') }}">วันนี้</a>
@@ -59,34 +59,32 @@
                     class="{{ $commonClass }} {{ getBtnClass($period == 'this_month') }}">เดือนนี้</a>
             </div>
 
-            <div class="hidden sm:block w-px h-6 bg-gray-700 mx-1"></div>
+            <div class="hidden md:block w-px h-8 bg-gray-700 mx-1"></div>
 
             {{-- Custom Date Picker Form --}}
-            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center gap-2">
+            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                 <input type="hidden" name="period" value="custom">
 
-                <div class="relative">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
                     <input type="date" name="start_date" value="{{ request('start_date', $currentStartDate) }}"
-                        class="bg-gray-900 border border-gray-600 text-gray-200 text-xs rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-2 pr-1 py-1.5"
+                        class="bg-gray-900 border border-gray-600 text-gray-200 text-xs rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 block w-full px-3 py-2.5 outline-none"
                         required>
-                </div>
-                <span class="text-gray-500 text-xs">ถึง</span>
-                <div class="relative">
+                    <span class="text-gray-500 text-xs font-bold shrink-0">TO</span>
                     <input type="date" name="end_date" value="{{ request('end_date', $currentEndDate) }}"
-                        class="bg-gray-900 border border-gray-600 text-gray-200 text-xs rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-2 pr-1 py-1.5"
+                        class="bg-gray-900 border border-gray-600 text-gray-200 text-xs rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 block w-full px-3 py-2.5 outline-none"
                         required>
                 </div>
 
                 <button type="submit"
-                    class="btn btn-xs btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white">
-                    <i class="fas fa-search"></i>
+                    class="w-full sm:w-12 h-10 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-all shadow-lg shadow-emerald-900/20">
+                    <i class="fas fa-sync-alt"></i>
                 </button>
             </form>
         </div>
     </div>
 
     {{-- 2. Stat Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {{-- ยอดขายรวม --}}
         <div class="stat-card bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 relative overflow-hidden">
             <div class="flex justify-between items-start">
@@ -200,7 +198,9 @@
                     <i class="fas fa-download mr-1"></i> Export CSV
                 </a>
             </div>
-            <div class="overflow-x-auto custom-scroll">
+
+            {{-- Desktop Table View --}}
+            <div class="hidden md:block overflow-x-auto custom-scroll">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="text-xs text-gray-400 border-b border-gray-700 bg-gray-900/50">
@@ -270,6 +270,35 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Mobile Card View --}}
+            <div class="md:hidden divide-y divide-gray-700">
+                @forelse ($recentOrders as $order)
+                    <div class="p-4 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <a href="{{ route('admin.orders.show', $order->id) }}" class="font-bold text-emerald-400 text-base">#{{ $order->ord_code }}</a>
+                            <span class="text-xs text-gray-500">{{ $order->created_at->format('d M H:i') }}</span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-300 border border-gray-600">
+                                    {{ substr($order->user->name ?? 'G', 0, 1) }}
+                                </div>
+                                <span class="text-sm text-gray-300">{{ $order->user->name ?? 'Guest' }}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-base font-bold text-gray-100">฿{{ number_format($order->net_amount, 2) }}</div>
+                                @php
+                                    $mStatus = $statusConfig[$order->status_id] ?? ['label' => 'Unknown', 'class' => 'bg-gray-700 text-gray-400'];
+                                @endphp
+                                <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase mt-1 {{ $mStatus['class'] }}">{{ $mStatus['label'] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-10 text-center text-gray-500">ไม่มีรายการสั่งซื้อ</div>
+                @endforelse
             </div>
         </div>
 

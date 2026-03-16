@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Models\BirthdayPromotion;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,12 +12,20 @@ class SendBirthdayPromotions extends Command
 {
     protected $signature = 'botnoi:send-birthday';
 
-    protected $description = 'ส่งโปรโมชันวันเกิดแบบ Flex Message ผ่านบอท Kawin';
+    protected $description = 'ส่งโปรโมชันวันเกิดแบบ Flex Message ผ่าน LINE OA โดยใช้แคมเปญที่เปิดใช้งานอยู่';
 
     public function handle()
     {
         $today = now();
         $this->info("🔍 กำลังค้นหาลูกค้าที่เกิดวันที่: {$today->format('d/m')}");
+
+        // 1. ดึงแคมเปญที่เปิดใช้งานอยู่
+        $activeCampaign = BirthdayPromotion::where('is_active', true)->first();
+
+        if (!$activeCampaign) {
+            $this->error('❌ ไม่พบแคมเปญวันเกิดที่เปิดใช้งานอยู่ในระบบ');
+            return;
+        }
 
         $users = User::whereNotNull('line_id')
             ->whereMonth('date_of_birth', $today->month)
@@ -25,7 +34,6 @@ class SendBirthdayPromotions extends Command
 
         if ($users->isEmpty()) {
             $this->info('❌ วันนี้ไม่มีลูกค้าที่ตรงกับวันเกิดครับ');
-
             return;
         }
 
@@ -33,50 +41,76 @@ class SendBirthdayPromotions extends Command
 
         if (empty($token)) {
             $this->error('❌ ไม่พบ LINE_BOT_ACCESS_TOKEN ในไฟล์ .env ครับ');
-
             return;
         }
 
-        foreach ($users as $user) {
+        $title = $activeCampaign->title ?? 'HAPPY BIRTHDAY';
+        $message = $activeCampaign->message;
+        $link = $activeCampaign->link_url ?? config('app.url');
 
-            // ==========================================
-            // โครงสร้างของ Flex Message (การ์ดวันเกิด)
-            // ==========================================
+        if (empty($link)) {
+            $link = config('app.url');
+        }
+        if (!str_starts_with($link, 'http')) {
+            $link = 'https://' . ltrim($link, '/');
+        }
+        
+        $imagePath = $activeCampaign->image_path;
+        $appUrl = config('app.url');
+
+        // ตรวจสอบว่ามีรูปภาพหรือไม่
+        if (!$imagePath) {
+            $this->error('❌ แคมเปญไม่มีรูปภาพประกอบ: กรุณาอัปโหลดรูปภาพในหน้า Admin ก่อนส่งครับ');
+            return;
+        }
+
+        // สร้าง Full Image URL
+        $imageUrl = asset('storage/' . $imagePath);
+        
+        // ★★★ แก้ไขจุดสำคัญ: LINE บังคับต้องเป็น HTTPS เท่านั้น ★★★
+        if (str_starts_with($imageUrl, 'http://')) {
+            $imageUrl = str_replace('http://', 'https://', $imageUrl);
+        }
+
+        // สำหรับ LINE URL ต้องเข้าถึงได้จากภายนอก
+        if (str_contains($imageUrl, 'localhost') || str_contains($imageUrl, '127.0.0.1')) {
+            $this->warn('⚠️ คำเตือน: คุณกำลังรันบน Localhost รูปภาพอาจไม่แสดงใน LINE (LINE ต้องการ URL ที่เข้าถึงได้จากอินเทอร์เน็ต)');
+        }
+
+        foreach ($users as $user) {
             $flexMessage = [
                 'type' => 'flex',
-                'altText' => "🎂 สุขสันต์วันเกิดครับคุณ {$user->name} มีของขวัญมาให้!", // ข้อความที่จะโชว์ตอนแจ้งเตือน (Push Notification)
+                'altText' => "🎂 สุขสันต์วันเกิดครับคุณ {$user->name} มีของขวัญมาให้!", 
                 'contents' => [
                     'type' => 'bubble',
-                    // 1. ส่วนหัว: รูปภาพแบนเนอร์
                     'hero' => [
                         'type' => 'image',
-                        'url' => 'https://img.freepik.com/free-vector/happy-birthday-background-with-realistic-balloons_1361-2301.jpg', // 📌 เปลี่ยนเป็น URL รูปโปรโมชันของคุณได้
+                        'url' => $imageUrl, 
                         'size' => 'full',
                         'aspectRatio' => '20:13',
                         'aspectMode' => 'cover',
                     ],
-                    // 2. ส่วนตัว: ข้อความอวยพร
                     'body' => [
                         'type' => 'box',
                         'layout' => 'vertical',
                         'contents' => [
                             [
                                 'type' => 'text',
-                                'text' => 'HAPPY BIRTHDAY',
+                                'text' => $title,
                                 'weight' => 'bold',
-                                'color' => '#ff3344',
+                                'color' => '#ff3377',
                                 'size' => 'sm',
                             ],
                             [
                                 'type' => 'text',
-                                'text' => "คุณ {$user->name}", // ดึงชื่อลูกค้ามาใส่ตรงนี้
+                                'text' => "คุณ {$user->name}", 
                                 'weight' => 'bold',
                                 'size' => 'xl',
                                 'margin' => 'md',
                             ],
                             [
                                 'type' => 'text',
-                                'text' => 'ทางเราขอมอบของขวัญพิเศษ เป็นส่วนลด 50% สำหรับการสั่งซื้อในเดือนเกิดของคุณ เพียงกดปุ่มด้านล่างนี้ครับ! 🎂🎉',
+                                'text' => $message,
                                 'size' => 'sm',
                                 'color' => '#666666',
                                 'wrap' => true,
@@ -84,7 +118,6 @@ class SendBirthdayPromotions extends Command
                             ],
                         ],
                     ],
-                    // 3. ส่วนท้าย: ปุ่มกดรับสิทธิ์
                     'footer' => [
                         'type' => 'box',
                         'layout' => 'vertical',
@@ -94,7 +127,7 @@ class SendBirthdayPromotions extends Command
                                 'action' => [
                                     'type' => 'uri',
                                     'label' => '🎁 กดรับสิทธิ์เลย',
-                                    'uri' => 'http://127.0.0.1:8000/product/9', // 📌 เปลี่ยนเป็นลิงก์หน้าเว็บที่คุณต้องการให้ลูกค้าไป
+                                    'uri' => $link, 
                                 ],
                                 'style' => 'primary',
                                 'color' => '#ff3344',
@@ -104,13 +137,10 @@ class SendBirthdayPromotions extends Command
                 ],
             ];
 
-            // ==========================================
-            // ยิงข้อมูลไปที่ LINE API
-            // ==========================================
             $response = Http::withToken($token)->post('https://api.line.me/v2/bot/message/push', [
                 'to' => $user->line_id,
                 'messages' => [
-                    $flexMessage, // เอา Flex Message ใส่เข้าไปแทนข้อความ Text ธรรมดา
+                    $flexMessage, 
                 ],
             ]);
 

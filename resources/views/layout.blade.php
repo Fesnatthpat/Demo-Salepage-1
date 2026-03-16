@@ -68,7 +68,9 @@
             background-size: cover;
             @php
                 $bgPath = $settings['site_cover_image'] ?? null;
-                $bgUrl = $bgPath ? asset('storage/' . $bgPath) : asset('images/BG/fruit2.png');
+                // เช็คว่าไฟล์มีอยู่จริงใน storage/app/public หรือไม่
+                $isBgFileExists = $bgPath && file_exists(storage_path('app/public/' . $bgPath));
+                $bgUrl = $isBgFileExists ? asset('storage/' . $bgPath) : asset('images/BG/fruit2.png');
             @endphp
             background-image: url('{{ $bgUrl }}');
         }

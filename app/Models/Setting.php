@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    use HasFactory;
+    // ต้องมีบรรทัดนี้ ระบบถึงจะยอมให้บันทึกชื่อรูปลงฐานข้อมูลได้
+    protected $fillable = ['key', 'value'];
 
-    protected $fillable = [
-        'key',
-        'value',
-    ];
+    // ...
 }

@@ -1,0 +1,235 @@
+@extends('layouts.admin')
+
+@section('title', 'จัดการโปรโมชั่นวันเกิด')
+
+@section('content')
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" x-data="{
+        // --- เริ่มส่วนของ Modal ลบข้อมูล ---
+        showDeleteModal: false,
+        deleteFormAction: '',
+        promotionTitleToDelete: '',
+        openDeleteModal(actionUrl, title) {
+            this.deleteFormAction = actionUrl;
+            this.promotionTitleToDelete = title;
+            this.showDeleteModal = true;
+        }
+        // --- จบส่วนของ Modal ลบข้อมูล ---
+    }">
+        {{-- Header & Actions --}}
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-down">
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center shadow-lg shadow-pink-500/10">
+                        <i class="fas fa-birthday-cake text-pink-400 text-2xl"></i>
+                    </div>
+                    Birthday Campaigns
+                </h1>
+                <p class="text-gray-400 text-sm mt-1">จัดการข้อความและโปรโมชั่นที่จะส่งให้ลูกค้าในวันเกิดอัตโนมัติ</p>
+            </div>
+            <a href="{{ route('admin.birthday-promotion.create') }}"
+                class="group relative inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white transition-all duration-200 bg-pink-600 rounded-xl hover:bg-pink-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-600 shadow-lg shadow-pink-900/30 overflow-hidden">
+                <span
+                    class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                <i class="fas fa-plus mr-2 transition-transform group-hover:rotate-90"></i> สร้างแคมเปญวันเกิดใหม่
+            </a>
+        </div>
+
+        {{-- Success Alert --}}
+        @if (session('success'))
+            <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms x-init="setTimeout(() => show = false, 5000)"
+                class="flex items-center p-4 mb-4 text-emerald-400 rounded-xl bg-emerald-900/20 border border-emerald-500/20 shadow-lg backdrop-blur-sm"
+                role="alert">
+                <div class="p-2 bg-emerald-500/20 rounded-lg mr-3">
+                    <i class="fas fa-check-circle flex-shrink-0 w-5 h-5"></i>
+                </div>
+                <div class="text-sm font-medium">{{ session('success') }}</div>
+                <button @click="show = false" type="button"
+                    class="ml-auto -mx-1.5 -my-1.5 bg-transparent text-emerald-400 rounded-lg p-1.5 hover:bg-emerald-900/40 inline-flex h-8 w-8 items-center justify-center transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        @endif
+
+        {{-- Table --}}
+        <div class="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden animate-fade-in-up"
+            style="animation-delay: 100ms;">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            class="bg-gray-900/80 border-b border-gray-700 text-xs uppercase text-gray-400 font-bold tracking-wider">
+                            <th class="px-6 py-5">แคมเปญ</th>
+                            <th class="px-6 py-5">ข้อความ</th>
+                            <th class="px-6 py-5 text-center">โปรโมชั่นที่ผูก</th>
+                            <th class="px-6 py-5 text-center">สถานะใช้งาน</th>
+                            <th class="px-6 py-5 text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700/50">
+                        @forelse ($birthdayPromotions as $bp)
+                            <tr class="hover:bg-gray-700/30 transition-colors duration-150 group">
+                                {{-- Image & Title --}}
+                                <td class="px-6 py-5 align-top">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-20 h-14 rounded-lg bg-gray-900 overflow-hidden border border-gray-700 flex-shrink-0">
+                                            @if($bp->image_path)
+                                                <img src="{{ asset('storage/' . $bp->image_path) }}" class="w-full h-full object-cover">
+                                            @else
+                                                <div class="w-full h-full flex items-center justify-center bg-gray-800">
+                                                    <i class="fas fa-image text-gray-600"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-base font-bold text-white group-hover:text-pink-400 transition-colors mb-1">
+                                                {{ $bp->title }}
+                                            </span>
+                                            <span class="text-[10px] text-gray-500 font-mono">
+                                                Created: {{ $bp->created_at->format('d M Y') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {{-- Message Preview --}}
+                                <td class="px-6 py-5 align-top">
+                                    <div class="max-w-xs">
+                                        <p class="text-sm text-gray-400 line-clamp-2" title="{{ $bp->message }}">
+                                            {{ $bp->message }}
+                                        </p>
+                                    </div>
+                                </td>
+
+                                {{-- Linked Promotion --}}
+                                <td class="px-6 py-5 text-center align-middle">
+                                    @if($bp->promotion)
+                                        <div class="inline-flex flex-col items-center">
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">
+                                                <i class="fas fa-tag mr-1"></i> {{ $bp->promotion->name }}
+                                            </span>
+                                            <span class="text-xs text-gray-500">
+                                                {{ $bp->promotion->discount_type == 'percentage' ? $bp->promotion->discount_value . '%' : '฿' . $bp->promotion->discount_value }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-600 text-xs">ไม่ได้ผูกโปรโมชั่น</span>
+                                    @endif
+                                </td>
+
+                                {{-- Status Toggle --}}
+                                <td class="px-6 py-5 text-center align-middle" x-data="{ isActive: {{ $bp->is_active ? 'true' : 'false' }}, isToggling: false }">
+                                    <button type="button"
+                                        @click="async () => {
+                                            if(isToggling) return;
+                                            isToggling = true;
+                                            try {
+                                                const res = await fetch(`/admin/birthday-promotion/{{ $bp->id }}/toggle-status`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                        'Accept': 'application/json'
+                                                    }
+                                                });
+                                                if(res.ok) {
+                                                    const data = await res.json();
+                                                    // Since only one can be active, we might need to reload or update UI globally.
+                                                    // For now, let's just reload to be safe and simple.
+                                                    window.location.reload();
+                                                } else {
+                                                    throw new Error('Server error');
+                                                }
+                                            } catch(e) {
+                                                alert('ไม่สามารถอัปเดตสถานะได้');
+                                            } finally {
+                                                isToggling = false;
+                                            }
+                                        }"
+                                        :disabled="isToggling"
+                                        class="relative inline-flex items-center px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer"
+                                        :class="isActive ?
+                                            'bg-pink-500 text-white shadow-lg shadow-pink-500/30' :
+                                            'bg-gray-700 text-gray-400 border border-gray-600 hover:bg-gray-600'">
+                                        
+                                        <i x-show="!isToggling" class="fas" :class="isActive ? 'fa-check-circle mr-1.5' : 'fa-circle mr-1.5'"></i>
+                                        <i x-show="isToggling" class="fas fa-circle-notch fa-spin mr-1.5"></i>
+                                        
+                                        <span x-text="isActive ? 'กำลังใช้งาน' : 'ปิดใช้งาน'"></span>
+                                    </button>
+                                </td>
+
+                                {{-- Actions --}}
+                                <td class="px-6 py-5 text-right align-middle">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('admin.birthday-promotion.edit', $bp->id) }}"
+                                            class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-indigo-600 rounded-xl transition-all"
+                                            title="แก้ไข">
+                                            <i class="fas fa-pen text-sm"></i>
+                                        </a>
+                                        <button type="button"
+                                            @click="openDeleteModal('{{ route('admin.birthday-promotion.destroy', $bp->id) }}', '{{ addslashes($bp->title) }}')"
+                                            class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-600 rounded-xl transition-all"
+                                            title="ลบ">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-20 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-20 h-20 bg-gray-900 rounded-3xl flex items-center justify-center mb-4 border border-gray-700">
+                                            <i class="fas fa-birthday-cake text-4xl opacity-20 text-pink-500"></i>
+                                        </div>
+                                        <p class="text-lg font-medium text-gray-300">ยังไม่มีแคมเปญวันเกิด</p>
+                                        <p class="text-sm mt-1 text-gray-500">เริ่มต้นสร้างแคมเปญแรกของคุณได้เลย</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Help Section --}}
+        <div class="mt-12 bg-blue-500/5 border border-blue-500/20 rounded-3xl p-8 flex gap-6 items-start">
+            <div class="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/10">
+                <i class="fas fa-info-circle text-blue-400 text-xl"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-blue-300 mb-2">ข้อมูลระบบส่งโปรโมชั่นวันเกิด</h4>
+                <ul class="text-sm text-gray-400 space-y-2 list-disc list-inside">
+                    <li>ระบบจะเลือกเฉพาะแคมเปญที่มีสถานะ <span class="text-pink-400 font-bold">"กำลังใช้งาน"</span> เพียงรายการเดียวเท่านั้นเพื่อส่งให้ลูกค้า</li>
+                    <li>ข้อความจะถูกส่งทาง LINE OA ในเวลา 09:00 น. ของวันเกิดลูกค้า</li>
+                    <li>คุณสามารถสร้างแคมเปญไว้หลายแบบ และเลือกสลับใช้งานได้ตามความเหมาะสมหรือเทศกาลต่างๆ</li>
+                </ul>
+            </div>
+        </div>
+
+        {{-- Modal ยืนยันการลบ --}}
+        <div x-show="showDeleteModal" style="display: none;" class="relative z-50">
+            <div class="fixed inset-0 bg-gray-900/90 backdrop-blur-sm"></div>
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div class="relative transform overflow-hidden rounded-3xl bg-gray-800 border border-gray-700 p-8 text-left shadow-2xl transition-all sm:w-full sm:max-w-lg" @click.away="showDeleteModal = false">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">ยืนยันการลบแคมเปญ</h3>
+                        </div>
+                        <p class="text-gray-400 mb-8">คุณแน่ใจหรือไม่ว่าต้องการลบแคมเปญวันเกิด <span class="text-white font-bold" x-text="promotionTitleToDelete"></span>? ข้อมูลนี้ไม่สามารถกู้คืนได้</p>
+                        <form :action="deleteFormAction" method="POST" class="flex justify-end gap-3">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" @click="showDeleteModal = false" class="px-6 py-3 rounded-xl bg-gray-700 text-gray-300 font-bold hover:bg-gray-600 transition-colors">ยกเลิก</button>
+                            <button type="submit" class="px-6 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-500 shadow-lg shadow-red-900/30 transition-colors">ยืนยันการลบ</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

@@ -15,5 +15,5 @@ Schedule::command('orders:cancel-expired')->everyMinute();
 // เพิ่มคำสั่งใหม่: ส่งโปรโมชันวันเกิดผ่านบอท Kawin ทุกวัน เวลา 08:00 น.
 // ========================================================
 Schedule::command('botnoi:send-birthday')
-    ->dailyAt('15:56')
+    ->dailyAt('09:54')
     ->timezone('Asia/Bangkok');

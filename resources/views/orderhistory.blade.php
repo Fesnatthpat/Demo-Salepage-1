@@ -16,7 +16,6 @@
                     </svg>
                     <h2 class="text-2xl font-bold text-gray-400 mb-2">ไม่พบประวัติการสั่งซื้อ</h2>
                     <p class="text-gray-500 mb-6">คุณยังไม่มีคำสั่งซื้อใดๆ ในระบบ</p>
-                    {{-- ปรับปุ่มเป็นสีแดง --}}
                     <a href="{{ route('allproducts') }}"
                         class="btn bg-red-600 hover:bg-red-700 border-none text-white px-8">ไปเลือกซื้อสินค้า</a>
                 </div>
@@ -48,7 +47,7 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($orders as $order)
                                 @php
-                                    // 1. Status Logic (คงสีสถานะไว้ตามมาตรฐานสากล เพื่อความเข้าใจง่าย)
+                                    // 1. Status Logic
                                     $statusText = 'ไม่ระบุ';
                                     $statusClass = 'bg-gray-100 text-gray-800';
                                     switch ($order->status_id) {
@@ -77,7 +76,6 @@
                                     // 2. Auto-Detect Image Logic
                                     $displayImage = 'https://via.placeholder.com/150?text=No+Image';
                                     $itemCount = 0;
-                                    $debugInfo = 'Checking...';
 
                                     if ($order->relationLoaded('details')) {
                                         $details = $order->details;
@@ -114,19 +112,11 @@
                                                         'uploads/' . $cleanName,
                                                     ];
 
-                                                    $found = false;
                                                     foreach ($possiblePaths as $path) {
                                                         if (file_exists(public_path($path))) {
                                                             $displayImage = asset($path);
-                                                            $debugInfo = "Found in: $path";
-                                                            $found = true;
                                                             break;
                                                         }
-                                                    }
-
-                                                    if (!$found) {
-                                                        $displayImage = asset('storage/' . $rawPath);
-                                                        $debugInfo = 'Not Found (Try default)';
                                                     }
                                                 }
                                             }
@@ -156,10 +146,10 @@
 
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <span id="order-code-{{ $order->id }}"
-                                                class="text-sm font-semibold text-gray-900">{{ $order->ord_code }}</span>
-                                            {{-- ปรับ hover และ focus ring เป็นสีแดง --}}
-                                            <button onclick="copyToClipboard('order-code-{{ $order->id }}', this)"
+                                            <span class="text-sm font-semibold text-gray-900">{{ $order->ord_code }}</span>
+                                            
+                                            {{-- ปุ่มคัดลอก (ส่ง $order->ord_code เข้าไปตรงๆ) --}}
+                                            <button onclick="copyToClipboard('{{ $order->ord_code }}', this)"
                                                 class="p-1 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 group relative transition-colors">
                                                 <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-600"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -186,7 +176,6 @@
                                         </span>
                                     </td>
 
-                                    {{-- ปรับราคาสุทธิเป็นสีแดง --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         @if ((float) $order->net_amount <= 0)
                                             <div class="text-sm font-bold text-red-500">
@@ -200,7 +189,6 @@
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        {{-- ปรับลิงก์ดูรายละเอียดเป็นสีแดง --}}
                                         <a href="{{ route('orders.show', ['orderCode' => $order->ord_code]) }}"
                                             class="text-red-600 hover:text-red-900 font-semibold hover:underline">ดูรายละเอียด</a>
                                     </td>
@@ -212,27 +200,67 @@
             @endif
         </div>
     </div>
-@endsection
 
-@push('scripts')
+    {{-- ย้าย Script มาไว้ตรงนี้ เพื่อป้องกันปัญหา @push ไม่ทำงาน --}}
     <script>
-        function copyToClipboard(elementId, buttonElement) {
-            const textToCopy = document.getElementById(elementId).innerText;
-            const tooltip = buttonElement.querySelector('span');
-            const originalTooltipText = "Copy Code";
+        function copyToClipboard(text, btn) {
+            console.log("กำลังคัดลอกรหัส:", text); // เช็คใน Console (F12) ได้ว่าทำงานไหม
+            
+            const tooltip = btn.querySelector('span');
+            const originalText = "Copy Code";
 
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                tooltip.innerText = 'Copied!';
+            const updateUI = () => {
+                if(tooltip) tooltip.innerText = 'Copied!';
+                btn.classList.add('text-green-600'); // เปลี่ยนสีปุ่มเป็นสีเขียวชั่วคราว
                 setTimeout(() => {
-                    tooltip.innerText = originalTooltipText;
+                    if(tooltip) tooltip.innerText = originalText;
+                    btn.classList.remove('text-green-600');
                 }, 2000);
-            }).catch(err => {
-                tooltip.innerText = 'Failed';
-                console.error('Failed to copy text: ', err);
-                setTimeout(() => {
-                    tooltip.innerText = originalTooltipText;
-                }, 2000);
-            });
+            };
+
+            // วิธีที่ 1: Clipboard API (สำหรับ HTTPS หรือ Localhost แบบ Secure)
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(updateUI)
+                    .catch(err => {
+                        console.error('Clipboard API error:', err);
+                        fallbackCopy(text, updateUI); // ถ้าพังให้ไปใช้วิธีที่ 2
+                    });
+            } 
+            // วิธีที่ 2: Fallback (สำหรับ HTTP ทั่วไป)
+            else {
+                fallbackCopy(text, updateUI);
+            }
+        }
+
+        // ฟังก์ชันสำรองในการคัดลอก (บังคับทำงานบนเบราว์เซอร์เก่า/HTTP)
+        function fallbackCopy(text, callback) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // ซ่อน Textarea ไม่ให้ผู้ใช้เห็น
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.opacity = "0";
+            
+            document.body.appendChild(textArea);
+            
+            textArea.focus(); // สำคัญมากในบางเบราว์เซอร์
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    callback();
+                } else {
+                    console.error('Fallback Copy unsuccessful');
+                }
+            } catch (err) {
+                console.error('Fallback error:', err);
+            }
+            
+            document.body.removeChild(textArea);
         }
     </script>
-@endpush
+@endsection

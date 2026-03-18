@@ -20,13 +20,12 @@
             </p>
 
             {{-- Search Form --}}
-            <form action="{{ route('order.tracking') }}" method="POST" class="max-w-xl mx-auto">
-                @csrf
+            <form action="{{ route('order.tracking') }}" method="GET" class="max-w-xl mx-auto">
                 <div
                     class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-200 transition-all">
-                    <input type="text" name="order_code" placeholder="เช่น ORD-..."
+                    <input type="text" name="search" placeholder="เช่น ORD-..."
                         class="input input-ghost w-full focus:outline-none text-lg bg-transparent"
-                        value="{{ old('order_code', $order->ord_code ?? '') }}" required />
+                        value="{{ request('search') ?? old('order_code', $order->ord_code ?? '') }}" required />
                     <button type="submit"
                         class="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-none text-white px-8">
                         <i class="fas fa-search mr-2"></i>

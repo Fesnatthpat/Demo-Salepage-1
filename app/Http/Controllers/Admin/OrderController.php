@@ -63,12 +63,14 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status_id' => 'required|integer|in:1,2,3,4,5', // Validate against the available statuses
+            'status_id' => 'required|integer|in:1,2,3,4,5',
+            'tracking_number' => 'nullable|string|max:255',
         ]);
 
         $order->status_id = $request->input('status_id');
+        $order->tracking_number = $request->input('tracking_number');
         $order->save();
 
-        return back()->with('success', 'อัปเดตสถานะออเดอร์เรียบร้อยแล้ว');
+        return back()->with('success', 'อัปเดตสถานะและเลขพัสดุเรียบร้อยแล้ว');
     }
 }

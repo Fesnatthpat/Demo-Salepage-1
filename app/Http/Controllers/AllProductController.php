@@ -57,7 +57,7 @@ class AllProductController extends Controller
         }
 
         // 5. ดึงข้อมูลและแบ่งหน้า (Pagination)
-        $products = $query->paginate(12);
+        $products = $query->paginate(10);
 
         // 6. เพิ่มข้อมูลโปรโมชั่น/ของแถม (Logic เดิม)
         $products->getCollection()->transform(function ($product) {

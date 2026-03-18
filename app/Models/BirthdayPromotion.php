@@ -16,10 +16,14 @@ class BirthdayPromotion extends Model
         'link_url',
         'promotion_id',
         'is_active',
+        'start_date',
+        'end_date',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function promotion()

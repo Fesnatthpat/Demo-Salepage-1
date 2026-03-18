@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
 use App\Models\BirthdayPromotion;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -22,8 +22,9 @@ class SendBirthdayPromotions extends Command
         // 1. ดึงแคมเปญที่เปิดใช้งานอยู่
         $activeCampaign = BirthdayPromotion::where('is_active', true)->first();
 
-        if (!$activeCampaign) {
+        if (! $activeCampaign) {
             $this->error('❌ ไม่พบแคมเปญวันเกิดที่เปิดใช้งานอยู่ในระบบ');
+
             return;
         }
 
@@ -34,6 +35,7 @@ class SendBirthdayPromotions extends Command
 
         if ($users->isEmpty()) {
             $this->info('❌ วันนี้ไม่มีลูกค้าที่ตรงกับวันเกิดครับ');
+
             return;
         }
 
@@ -41,6 +43,7 @@ class SendBirthdayPromotions extends Command
 
         if (empty($token)) {
             $this->error('❌ ไม่พบ LINE_BOT_ACCESS_TOKEN ในไฟล์ .env ครับ');
+
             return;
         }
 
@@ -51,22 +54,23 @@ class SendBirthdayPromotions extends Command
         if (empty($link)) {
             $link = config('app.url');
         }
-        if (!str_starts_with($link, 'http')) {
-            $link = 'https://' . ltrim($link, '/');
+        if (! str_starts_with($link, 'http')) {
+            $link = 'https://'.ltrim($link, '/');
         }
-        
+
         $imagePath = $activeCampaign->image_path;
         $appUrl = config('app.url');
 
         // ตรวจสอบว่ามีรูปภาพหรือไม่
-        if (!$imagePath) {
+        if (! $imagePath) {
             $this->error('❌ แคมเปญไม่มีรูปภาพประกอบ: กรุณาอัปโหลดรูปภาพในหน้า Admin ก่อนส่งครับ');
+
             return;
         }
 
         // สร้าง Full Image URL
-        $imageUrl = asset('storage/' . $imagePath);
-        
+        $imageUrl = asset('storage/'.$imagePath);
+
         // ★★★ แก้ไขจุดสำคัญ: LINE บังคับต้องเป็น HTTPS เท่านั้น ★★★
         if (str_starts_with($imageUrl, 'http://')) {
             $imageUrl = str_replace('http://', 'https://', $imageUrl);
@@ -80,12 +84,12 @@ class SendBirthdayPromotions extends Command
         foreach ($users as $user) {
             $flexMessage = [
                 'type' => 'flex',
-                'altText' => "🎂 สุขสันต์วันเกิดครับคุณ {$user->name} มีของขวัญมาให้!", 
+                'altText' => "🎂 สุขสันต์วันเกิดครับคุณ {$user->name} มีของขวัญมาให้!",
                 'contents' => [
                     'type' => 'bubble',
                     'hero' => [
                         'type' => 'image',
-                        'url' => $imageUrl, 
+                        'url' => $imageUrl,
                         'size' => 'full',
                         'aspectRatio' => '20:13',
                         'aspectMode' => 'cover',
@@ -103,7 +107,7 @@ class SendBirthdayPromotions extends Command
                             ],
                             [
                                 'type' => 'text',
-                                'text' => "คุณ {$user->name}", 
+                                'text' => "คุณ {$user->name}",
                                 'weight' => 'bold',
                                 'size' => 'xl',
                                 'margin' => 'md',
@@ -127,7 +131,7 @@ class SendBirthdayPromotions extends Command
                                 'action' => [
                                     'type' => 'uri',
                                     'label' => '🎁 กดรับสิทธิ์เลย',
-                                    'uri' => $link, 
+                                    'uri' => $link,
                                 ],
                                 'style' => 'primary',
                                 'color' => '#ff3344',
@@ -140,7 +144,7 @@ class SendBirthdayPromotions extends Command
             $response = Http::withToken($token)->post('https://api.line.me/v2/bot/message/push', [
                 'to' => $user->line_id,
                 'messages' => [
-                    $flexMessage, 
+                    $flexMessage,
                 ],
             ]);
 

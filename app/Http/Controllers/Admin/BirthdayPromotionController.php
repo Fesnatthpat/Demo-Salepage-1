@@ -6,34 +6,37 @@ use App\Http\Controllers\Controller;
 use App\Models\BirthdayPromotion;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BirthdayPromotionController extends Controller
 {
     public function index()
     {
-        $birthdayPromotions = BirthdayPromotion::with('promotion')->orderBy('created_at', 'desc')->get();
+        $birthdayPromotions = BirthdayPromotion::with('promotion')->orderBy('created_at', 'desc')->paginate(10);
+
         return view('admin.birthday-promotion.index', compact('birthdayPromotions'));
     }
 
     public function create()
     {
         $promotions = Promotion::where('is_active', true)->get();
+
         return view('admin.birthday-promotion.create', compact('promotions'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'message' => 'required|string',
+            'title' => 'required|string|max:40',
+            'message' => 'required|string|max:200',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'link_url' => 'nullable|url',
             'promotion_id' => 'nullable|exists:promotions,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $data = $request->only(['title', 'message', 'link_url', 'promotion_id']);
+        $data = $request->only(['title', 'message', 'link_url', 'promotion_id', 'start_date', 'end_date']);
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('birthday_promotions', 'public');
@@ -48,6 +51,7 @@ class BirthdayPromotionController extends Controller
     {
         $birthdayPromotion = BirthdayPromotion::findOrFail($id);
         $promotions = Promotion::where('is_active', true)->get();
+
         return view('admin.birthday-promotion.edit', compact('birthdayPromotion', 'promotions'));
     }
 
@@ -56,14 +60,16 @@ class BirthdayPromotionController extends Controller
         $birthdayPromotion = BirthdayPromotion::findOrFail($id);
 
         $request->validate([
-            'title' => 'required|string|max:255',
-            'message' => 'required|string',
+            'title' => 'required|string|max:40',
+            'message' => 'required|string|max:200',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'link_url' => 'nullable|url',
             'promotion_id' => 'nullable|exists:promotions,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $data = $request->only(['title', 'message', 'link_url', 'promotion_id']);
+        $data = $request->only(['title', 'message', 'link_url', 'promotion_id', 'start_date', 'end_date']);
 
         if ($request->hasFile('image')) {
             if ($birthdayPromotion->image_path) {
@@ -80,7 +86,7 @@ class BirthdayPromotionController extends Controller
     public function destroy($id)
     {
         $birthdayPromotion = BirthdayPromotion::findOrFail($id);
-        
+
         if ($birthdayPromotion->image_path) {
             Storage::disk('public')->delete($birthdayPromotion->image_path);
         }
@@ -92,14 +98,9 @@ class BirthdayPromotionController extends Controller
 
     public function toggleStatus(BirthdayPromotion $birthdayPromotion)
     {
-        DB::transaction(function () use ($birthdayPromotion) {
-            // Deactivate all others
-            BirthdayPromotion::where('id', '!=', $birthdayPromotion->id)->update(['is_active' => false]);
-            
-            // Toggle current
-            $birthdayPromotion->is_active = !$birthdayPromotion->is_active;
-            $birthdayPromotion->save();
-        });
+        // สลับสถานะแค่ตัวที่กดเท่านั้น (อนุญาตให้เปิดพร้อมกันได้)
+        $birthdayPromotion->is_active = ! $birthdayPromotion->is_active;
+        $birthdayPromotion->save();
 
         return response()->json([
             'success' => true,

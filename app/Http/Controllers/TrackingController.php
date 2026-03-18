@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TrackingController extends Controller
 {
@@ -13,72 +16,114 @@ class TrackingController extends Controller
     public function index(Request $request)
     {
         $trackingData = null;
+        $searchValue = trim($request->search ?? $request->order_code);
 
-        // ถ้ามีการค้นหา (มีการกรอก order_code เข้ามา)
-        if ($request->has('order_code')) {
-            $orderCode = $request->order_code;
+        if ($searchValue) {
+            $order = Order::where('ord_code', $searchValue)
+                ->orWhere('tracking_number', $searchValue)
+                ->orWhere('shipping_phone', $searchValue)
+                ->first();
 
-            // 1. ดึงข้อมูล JSON จำลอง
-            $mockupJsonResponse = $this->getMockupData();
-
-            // 2. แปลง JSON string เป็น Array ของ PHP
-            $responseData = json_decode($mockupJsonResponse, true);
-
-            // 3. ค้นหาพัสดุที่ตรงกับรหัสที่กรอกเข้ามา
-            $foundShipment = null;
-            if (isset($responseData['trackItemResponse']['bd']['shipmentItems'])) {
-                foreach ($responseData['trackItemResponse']['bd']['shipmentItems'] as $item) {
-                    if ($item['shipmentID'] == $orderCode || $item['trackingID'] == $orderCode) {
-                        $foundShipment = $item;
-                        break;
-                    }
-                }
+            $searchCode = $searchValue;
+            if ($order) {
+                $searchCode = $order->tracking_number ?? $order->ord_code;
             }
 
-            // 4. ถ้าเจอข้อมูล ให้จัดรูปแบบเพื่อส่งไปที่ View
-            if ($foundShipment) {
+            try {
+                $apiToken = env('CRM_API_TOKEN');
 
-                // จัดการ Timeline Events
-                $events = collect($foundShipment['events'])->map(function ($event, $index) {
-                    $date = Carbon::parse($event['dateTime']);
+                $response = Http::withoutVerifying()
+                    ->withToken($apiToken)
+                    ->timeout(15)
+                    ->asJson()
+                    ->post('https://test.kawinbrothers.com/api/v1/get-tracking.php', [
+                        'keyword' => $searchCode,
+                    ]);
 
-                    return [
-                        // จัดรูปแบบวันที่: เช่น MONDAY ก.พ. 24, 2026
-                        'date' => $index === 0 ? strtoupper($date->format('l')).' '.$date->locale('th')->translatedFormat('M d, Y') : '',
-                        'time' => $date->format('H:i'),
-                        'status' => $event['description'], // จะเป็นภาษาไทยตามที่แก้ใน mockup
-                        'location' => $this->formatAddress($event['address']),
-                        'is_latest' => $index === 0,
-                    ];
-                })->toArray();
+                if ($response->successful()) {
+                    $responseData = $response->json();
 
-                // เช็คสถานะจัดส่งสำเร็จ (อิงจาก code 77093 ของ DHL)
-                $latestEvent = $foundShipment['events'][0] ?? null;
-                $isDelivered = $latestEvent && $latestEvent['status'] == '77093';
+                    if (isset($responseData['code']) && $responseData['code'] == 200) {
+                        $trackingResults = [];
 
-                // แมปปิ้งข้อมูลทั้งหมดส่งให้ View
-                $trackingData = [
-                    'trackingNumber' => $foundShipment['shipmentID'],
-                    'referenceId' => $foundShipment['trackingID'] ?? '-',
-                    'weight' => $foundShipment['weight'] ?? '-',
-                    'service' => $foundShipment['shippingService']['productName'] ?? '-',
-                    'origin' => $this->formatAddress(end($foundShipment['events'])['address'] ?? []),
-                    'destination' => $this->formatAddress($foundShipment['events'][0]['address'] ?? []),
-                    'deliveredAt' => $latestEvent ? Carbon::parse($latestEvent['dateTime'])->locale('th')->translatedFormat('d M Y เวลา H:i น.') : '-',
-                    'status_text' => $latestEvent['description'] ?? 'ไม่ทราบสถานะ',
-                    'timelineSteps' => [
-                        ['label' => 'ได้รับข้อมูลพัสดุ', 'active' => true],
-                        ['label' => 'เข้ารับพัสดุสำเร็จ', 'active' => count($events) > 1],
-                        ['label' => 'ดำเนินการจัดส่ง', 'active' => count($events) > 2],
-                        // ปรับแก้ตรงนี้ให้เช็คคำภาษาไทย:
-                        ['label' => 'อยู่ระหว่างการจัดส่ง', 'active' => collect($events)->contains('status', 'พัสดุอยู่ระหว่างการจัดส่ง') || $isDelivered],
-                        ['label' => 'จัดส่งสำเร็จ', 'active' => $isDelivered, 'is_truck' => true],
-                    ],
-                    'events' => $events,
-                ];
+                        if (isset($responseData['data_list_order'])) {
+                            foreach ($responseData['data_list_order'] as $customer) {
+                                foreach ($customer['order'] as $item) {
+                                    $result = null;
 
-            } else {
-                return back()->with('error', 'ไม่พบข้อมูลพัสดุ รหัสการจัดส่งนี้ในระบบ');
+                                    if (! empty($item['link'])) {
+                                        $result = [
+                                            'is_external' => true,
+                                            'external_url' => $item['link'],
+                                            'carrier_name' => $this->detectCarrier($item['link']),
+                                            'tracking_number' => $item['od_code'],
+                                            'order_date' => $item['od_date'] ?? '-',
+                                        ];
+                                    } elseif (! empty($item['data']) && is_array($item['data'])) {
+                                        $shipmentData = $item['data'][0] ?? [];
+                                        $eventsData = $shipmentData['events'] ?? [];
+
+                                        // 🔴 แปลภาษา Status และ Location ในลูปของเหตุการณ์ (Events)
+                                        foreach ($eventsData as $key => $event) {
+                                            $eventsData[$key]['description'] = $this->translateStatus($event['description'] ?? '');
+                                            if (! empty($eventsData[$key]['address']['city'])) {
+                                                $eventsData[$key]['address']['city'] = $this->translateLocation($eventsData[$key]['address']['city']);
+                                            }
+                                        }
+
+                                        // ดึงสถานะล่าสุด (ก้อนแรกของ events ที่แปลแล้ว)
+                                        $latestStatus = (count($eventsData) > 0) ? $eventsData[0]['description'] : 'อยู่ระหว่างการจัดส่ง';
+
+                                        $result = [
+                                            'is_external' => false,
+                                            'carrier_name' => $shipmentData['shippingService']['productName'] ?? 'Internal Service',
+                                            'tracking_number' => $shipmentData['trackingID'] ?? $item['od_code'],
+                                            'status_text' => $latestStatus,
+                                            'order_date' => $item['od_date'] ?? '-',
+                                            'timeline_data' => $eventsData,
+                                        ];
+                                    } else {
+                                        $result = [
+                                            'is_external' => false,
+                                            'carrier_name' => 'Internal Service',
+                                            'tracking_number' => $item['od_code'],
+                                            'status_text' => 'กำลังเตรียมการจัดส่ง',
+                                            'order_date' => $item['od_date'] ?? '-',
+                                            'timeline_data' => [
+                                                [
+                                                    'description' => 'รับคำสั่งซื้อแล้ว',
+                                                    'dateTime' => $item['od_date'] ?? Carbon::now()->format('Y-m-d'),
+                                                    'address' => null,
+                                                    'is_system_generated' => true,
+                                                ],
+                                            ],
+                                        ];
+                                    }
+
+                                    if ($result) {
+                                        $trackingResults[] = $result;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (count($trackingResults) > 0) {
+                            $trackingData = $trackingResults;
+                        } else {
+                            return back()->with('error', 'ไม่พบข้อมูลการจัดส่งสำหรับรหัส: '.$searchValue);
+                        }
+                    } else {
+                        return back()->with('error', 'ไม่พบรายการคำสั่งซื้อในระบบ CRM');
+                    }
+                } else {
+                    Log::error('Tracking API Failed');
+
+                    return back()->with('error', 'ระบบติดตามพัสดุขัดข้อง');
+                }
+            } catch (\Exception $e) {
+                Log::error('Tracking API Error: '.$e->getMessage());
+
+                return back()->with('error', 'ไม่สามารถเชื่อมต่อระบบติดตามพัสดุได้ในขณะนี้');
             }
         }
 
@@ -86,121 +131,66 @@ class TrackingController extends Controller
     }
 
     /**
-     * ฟังก์ชันตัวช่วยสำหรับจัดรูปแบบที่อยู่
+     * ดิกชันนารี แปลข้อความสถานะการจัดส่ง
      */
-    private function formatAddress($addressData)
+    private function translateStatus($text)
     {
-        if (empty($addressData)) {
-            return 'ไม่ระบุพื้นที่';
-        }
+        $dictionary = [
+            'Successfully delivered' => 'พัสดุจัดส่งสำเร็จ',
+            'Available for Delivery' => 'พัสดุเตรียมนำจ่าย',
+            'Out for Delivery' => 'พนักงานกำลังนำจ่ายพัสดุ',
+            'Processed at delivery facility' => 'ประมวลผลที่ศูนย์กระจายสินค้าปลายทาง',
+            'Arrived at facility' => 'พัสดุถึงศูนย์คัดแยก',
+            'Departed from facility' => 'พัสดุออกจากศูนย์คัดแยก',
+            'Sorted to delivery facility' => 'คัดแยกเพื่อส่งไปยังศูนย์กระจายสินค้า',
+            'Processed at facility' => 'ประมวลผลพัสดุเรียบร้อย',
+            'Arrival at Facility' => 'พัสดุถึงศูนย์คัดแยก',
+            'Shipment picked up' => 'บริษัทขนส่งเข้ารับพัสดุแล้ว',
+            'Shipment data received - Awaiting Parcel Handover to DHL' => 'ได้รับข้อมูลพัสดุแล้ว - รอการส่งมอบให้ขนส่ง',
+            'Data Submitted - Awaiting Parcel Handover to DHL' => 'ระบบได้รับข้อมูลแล้ว - รอการจัดส่ง',
+        ];
 
-        $parts = [];
-        if (! empty($addressData['city'])) {
-            $parts[] = $addressData['city'];
-        }
-        if (! empty($addressData['state']) && $addressData['state'] !== '-') {
-            $parts[] = $addressData['state'];
-        }
-        if (! empty($addressData['postCode'])) {
-            $parts[] = $addressData['postCode'];
-        }
-        if (! empty($addressData['country'])) {
-            // แปลตัวย่อประเทศ
-            $parts[] = $addressData['country'] === 'TH' ? 'ประเทศไทย' : $addressData['country'];
-        }
-
-        return implode(', ', $parts);
+        // ถ้ามีคำในดิกชันนารี ให้คืนค่าเป็นภาษาไทย ถ้าไม่มีให้ใช้ภาษาอังกฤษเหมือนเดิม
+        return $dictionary[$text] ?? $text;
     }
 
     /**
-     * ฟังก์ชันเก็บข้อมูล JSON จำลอง (Mockup) - แปลเป็นภาษาไทยแล้ว
+     * ดิกชันนารี แปลข้อความสถานที่/จังหวัด
      */
-    private function getMockupData()
+    private function translateLocation($text)
     {
-        return '{
-            "trackItemResponse": {
-                "hdr": {
-                    "messageType": "TRACKITEM",
-                    "messageDateTime": "2026-02-24T11:26:32+08:00",
-                    "messageVersion": "1.0",
-                    "messageLanguage": "th"
-                },
-                "bd": {
-                    "shipmentItems": [
-                        {
-                            "shipmentID": "THIUHKWB0001028032",
-                            "trackingID": "7127028494860786",
-                            "shippingService": {
-                                "productCode": "PDO",
-                                "productName": "ส่งพัสดุภายในประเทศ"
-                            },
-                            "weight": "180",
-                            "events": [
-                                {
-                                    "status": "77222",
-                                    "description": "โอนเงินค่าพัสดุปลายทาง (COD) เรียบร้อยแล้ว",
-                                    "dateTime": "2026-02-20 15:21:53",
-                                    "address": { "country": "TH" }
-                                },
-                                {
-                                    "status": "77223",
-                                    "description": "นำเงินค่าพัสดุปลายทางเข้าบัญชีเรียบร้อยแล้ว",
-                                    "dateTime": "2026-02-20 12:01:10",
-                                    "address": { "country": "TH" }
-                                },
-                                {
-                                    "status": "77093",
-                                    "description": "จัดส่งพัสดุสำเร็จ",
-                                    "dateTime": "2026-02-19 15:02:47",
-                                    "address": { "city": "สามพราน", "postCode": "73110", "state": "นครปฐม", "country": "TH" }
-                                },
-                                {
-                                    "status": "77702",
-                                    "description": "พัสดุพร้อมสำหรับการจัดส่ง",
-                                    "dateTime": "2026-02-19 09:04:53",
-                                    "address": { "city": "สามพราน", "state": "นครปฐม", "country": "TH" }
-                                },
-                                {
-                                    "status": "77090",
-                                    "description": "พัสดุอยู่ระหว่างการจัดส่ง",
-                                    "dateTime": "2026-02-19 09:04:53",
-                                    "address": { "city": "สามพราน", "state": "นครปฐม", "country": "TH" }
-                                },
-                                {
-                                    "status": "77184",
-                                    "description": "พัสดุถูกดำเนินการที่ศูนย์กระจายสินค้าปลายทาง",
-                                    "dateTime": "2026-02-19 08:29:29",
-                                    "address": { "city": "สามพราน", "state": "นครปฐม", "country": "TH" }
-                                },
-                                {
-                                    "status": "77178",
-                                    "description": "พัสดุถึงศูนย์กระจายสินค้าแล้ว",
-                                    "dateTime": "2026-02-19 07:49:17",
-                                    "address": { "city": "สามพราน", "state": "นครปฐม", "country": "TH" }
-                                },
-                                {
-                                    "status": "77169",
-                                    "description": "พัสดุออกจากศูนย์กระจายสินค้ากลาง",
-                                    "dateTime": "2026-02-19 02:18:50",
-                                    "address": { "city": "สมุทรปราการ", "postCode": "10540", "country": "TH" }
-                                },
-                                {
-                                    "status": "77206",
-                                    "description": "เข้ารับพัสดุสำเร็จ",
-                                    "dateTime": "2026-02-18 16:11:57",
-                                    "address": { "city": "บางแค", "postCode": "10160", "state": "กรุงเทพมหานคร", "country": "TH" }
-                                },
-                                {
-                                    "status": "71005",
-                                    "description": "ได้รับข้อมูลพัสดุเรียบร้อยแล้ว",
-                                    "dateTime": "2026-02-18 10:22:27",
-                                    "address": { "city": "บางแค", "state": "กรุงเทพมหานคร", "country": "TH" }
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        }';
+        // ใช้ str_replace เพื่อสับเปลี่ยนคำบางส่วน เช่น "Hub-" เป็น "ศูนย์คัดแยก "
+        $search = ['Hub-', '-Bangkok', 'Bang Khae, Bang Khae, Bangkok', 'Samut Prakarn'];
+        $replace = ['ศูนย์คัดแยก ', ', กรุงเทพมหานคร', 'เขตบางแค, กรุงเทพมหานคร', 'สมุทรปราการ'];
+
+        return str_replace($search, $replace, $text);
+    }
+
+    private function detectCarrier($url)
+    {
+        $url = strtolower($url);
+        if (str_contains($url, 'dhl')) {
+            return 'DHL Express';
+        }
+        if (str_contains($url, 'flashexpress')) {
+            return 'Flash Express';
+        }
+        if (str_contains($url, 'kerryexpress') || str_contains($url, 'kex')) {
+            return 'Kerry Express (KEX)';
+        }
+        if (str_contains($url, 'jtexpress')) {
+            return 'J&T Express';
+        }
+        if (str_contains($url, 'shopee')) {
+            return 'Shopee Express';
+        }
+        if (str_contains($url, 'ninja')) {
+            return 'Ninja Van';
+        }
+        if (str_contains($url, 'thailandpost')) {
+            return 'ไปรษณีย์ไทย (Thailand Post)';
+        }
+
+        return 'ขนส่งพาร์ทเนอร์';
     }
 }

@@ -159,6 +159,10 @@ php artisan schedule:work
 
 php artisan view:clear
 php artisan config:clear
+
+run test ส่ง Flex Message Line
+php artisan botnoi:send-birthday
+
 --------------------------
 Admin Login              
 username: superadmin

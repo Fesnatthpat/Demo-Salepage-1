@@ -4,10 +4,10 @@
 
 @section('content')
     <div class="container mx-auto pb-24 max-w-4xl">
-        {{-- Header --}}
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <h1 class="text-3xl font-bold text-gray-100 flex items-center">
-                <a href="{{ route('admin.birthday-promotion.index') }}" class="mr-4 text-gray-500 hover:text-white transition-colors">
+                <a href="{{ route('admin.birthday-promotion.index') }}"
+                    class="mr-4 text-gray-500 hover:text-white transition-colors">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 สร้างแคมเปญวันเกิดใหม่
@@ -15,7 +15,8 @@
         </div>
 
         @if ($errors->any())
-            <div class="px-6 py-4 bg-red-500/20 border border-red-500 text-red-300 rounded-2xl flex flex-col gap-1 animate-fade-in shadow-lg shadow-red-500/10 mb-6">
+            <div
+                class="px-6 py-4 bg-red-500/20 border border-red-500 text-red-300 rounded-2xl flex flex-col gap-1 mb-6 shadow-lg shadow-red-500/10">
                 <div class="flex items-center gap-2 font-bold text-sm mb-2">
                     <i class="fas fa-exclamation-triangle text-red-400"></i> ไม่สามารถบันทึกได้เนื่องจาก:
                 </div>
@@ -29,11 +30,11 @@
 
         <form action="{{ route('admin.birthday-promotion.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-
             <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
                 <div class="px-8 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="p-2.5 bg-pink-500/10 rounded-xl"><i class="fas fa-magic text-pink-400 text-xl"></i></div>
+                        <div class="p-2.5 bg-pink-500/10 rounded-xl"><i class="fas fa-magic text-pink-400 text-xl"></i>
+                        </div>
                         <div>
                             <h3 class="font-bold text-lg text-gray-100">รายละเอียดแคมเปญ</h3>
                             <p class="text-xs text-gray-500">กำหนดรูปภาพและข้อความที่จะแสดงบน LINE Flex Message</p>
@@ -47,15 +48,20 @@
                         <div class="space-y-8">
                             {{-- Image Upload --}}
                             <div class="space-y-4">
-                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">รูปภาพโปรโมชั่น</label>
+                                <label
+                                    class="block text-sm font-bold text-gray-400 uppercase tracking-widest">รูปภาพโปรโมชั่น</label>
                                 <div class="relative group">
-                                    <div class="w-full aspect-[20/13] bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative transition-all group-hover:border-pink-500/50">
-                                        <img src="https://placehold.co/1200x780/111827/4b5563?text=Upload+Image" class="w-full h-full object-cover" id="birthday-image-preview">
-                                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm">
+                                    <div
+                                        class="w-full aspect-[20/13] bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative transition-all group-hover:border-pink-500/50">
+                                        <img src="https://placehold.co/1200x780/111827/4b5563?text=Upload+Image"
+                                            class="w-full h-full object-cover" id="birthday-image-preview">
+                                        <div
+                                            class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm">
                                             <i class="fas fa-cloud-upload-alt text-white text-3xl mb-2"></i>
                                             <span class="text-white text-sm font-medium">คลิกเพื่อเลือกรูปภาพ</span>
                                         </div>
-                                        <input type="file" name="image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        <input type="file" name="image" accept="image/*"
+                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                             onchange="const file = this.files[0]; if(file) { document.getElementById('birthday-image-preview').src = window.URL.createObjectURL(file); document.getElementById('preview-img-card').src = window.URL.createObjectURL(file); }">
                                     </div>
                                     <p class="mt-2 text-[10px] text-gray-500 italic">* แนะนำขนาด 1200x780 px</p>
@@ -63,47 +69,98 @@
                             </div>
 
                             {{-- Title --}}
-                            <div class="space-y-2">
-                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">หัวข้อ (Title)</label>
-                                <input type="text" name="title" value="{{ old('title', 'HAPPY BIRTHDAY') }}" required
+                            <div class="space-y-2" x-data="{ title: '{{ old('title', 'HAPPY BIRTHDAY') }}' }">
+                                <div class="flex justify-between items-center">
+                                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">หัวข้อ
+                                        (Title)</label>
+                                    <span class="text-xs font-mono"
+                                        :class="title.length >= 40 ? 'text-red-400' : 'text-gray-500'"
+                                        x-text="title.length + '/40'"></span>
+                                </div>
+                                <input type="text" name="title" x-model="title" maxlength="40" required
                                     class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-pink-500/50 outline-none transition-all"
-                                    oninput="document.getElementById('preview-title').innerText = this.value">
+                                    @input="document.getElementById('preview-title').innerText = title">
                             </div>
 
                             {{-- Message --}}
-                            <div class="space-y-2">
-                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ข้อความอวยพร</label>
-                                <textarea name="message" rows="4" required
+                            <div class="space-y-2" x-data="{ message: '{{ old('message', 'สุขสันต์วันเกิดครับ! เรามีของขวัญพิเศษให้คุณ...') }}' }">
+                                <div class="flex justify-between items-center">
+                                    <label
+                                        class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ข้อความอวยพร</label>
+                                    <span class="text-xs font-mono"
+                                        :class="message.length >= 200 ? 'text-red-400' : 'text-gray-500'"
+                                        x-text="message.length + '/200'"></span>
+                                </div>
+                                <textarea name="message" rows="4" x-model="message" maxlength="200" required
                                     class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-pink-500/50 outline-none transition-all resize-none"
-                                    oninput="document.getElementById('preview-message').innerText = this.value">{{ old('message', 'สุขสันต์วันเกิดครับ! เรามีของขวัญพิเศษให้คุณ...') }}</textarea>
+                                    @input="document.getElementById('preview-message').innerText = message"></textarea>
                             </div>
                         </div>
 
                         {{-- Right: Preview --}}
                         <div class="flex flex-col items-center">
-                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 self-start text-center w-full">LINE Preview</label>
-                            <div class="w-full max-w-[280px] bg-[#ebebeb] rounded-[2.5rem] p-4 shadow-2xl border-[6px] border-gray-900">
+                            <label
+                                class="block text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 self-start text-center w-full">LINE
+                                Preview</label>
+                            <div
+                                class="w-full max-w-[280px] bg-[#ebebeb] rounded-[2.5rem] p-4 shadow-2xl border-[6px] border-gray-900">
                                 <div class="bg-white rounded-2xl overflow-hidden shadow-md flex flex-col">
                                     <div class="aspect-[20/13] w-full bg-gray-200">
-                                        <img id="preview-img-card" src="https://placehold.co/1200x780/111827/4b5563?text=Promotion+Image" class="w-full h-full object-cover">
+                                        <img id="preview-img-card"
+                                            src="https://placehold.co/1200x780/111827/4b5563?text=Promotion+Image"
+                                            class="w-full h-full object-cover">
                                     </div>
                                     <div class="p-4 space-y-1">
-                                        <div id="preview-title" class="text-pink-500 font-bold text-[10px] uppercase">HAPPY BIRTHDAY</div>
+                                        <div id="preview-title" class="text-pink-500 font-bold text-[10px] uppercase">HAPPY
+                                            BIRTHDAY</div>
                                         <div class="text-black font-bold text-base">คุณ ชื่อลูกค้า</div>
-                                        <div id="preview-message" class="text-gray-600 text-xs leading-relaxed">สุขสันต์วันเกิดครับ! เรามีของขวัญพิเศษให้คุณ...</div>
+                                        <div id="preview-message" class="text-gray-600 text-xs leading-relaxed">
+                                            สุขสันต์วันเกิดครับ! เรามีของขวัญพิเศษให้คุณ...</div>
                                     </div>
                                     <div class="px-4 pb-4">
-                                        <div class="w-full bg-red-500 text-white py-2 rounded-lg text-center font-bold text-xs">🎁 กดรับสิทธิ์เลย</div>
+                                        <div
+                                            class="w-full bg-red-500 text-white py-2 rounded-lg text-center font-bold text-xs">
+                                            🎁 กดรับสิทธิ์เลย</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-12 pt-8 border-t border-gray-700/50 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {{-- การตั้งค่าล่วงหน้า (Schedule) --}}
+                    <div class="mt-12 pt-8 border-t border-gray-700/50">
+                        <div class="flex items-center gap-2 mb-6">
+                            <i class="fas fa-calendar-alt text-blue-400 text-lg"></i>
+                            <div>
+                                <h3 class="font-bold text-gray-100">ตั้งเวลาแคมเปญล่วงหน้า <span
+                                        class="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md ml-2">ตัวเลือกเสริม</span>
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-1">หากไม่ระบุวันที่ ระบบจะใช้เป็น "แคมเปญพื้นฐาน"
+                                    (ส่งตลอด)</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-widest">เริ่มใช้งานวันที่</label>
+                                <input type="date" name="start_date" value="{{ old('start_date') }}"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-blue-500/50 outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">ถึงวันที่
+                                    (สิ้นสุด)</label>
+                                <input type="date" name="end_date" value="{{ old('end_date') }}"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-blue-500/50 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-8 border-t border-gray-700/50 grid grid-cols-1 md:grid-cols-2 gap-8">
                         {{-- Link --}}
                         <div class="space-y-2">
-                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ลิงก์ปุ่ม (URL)</label>
+                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ลิงก์ปุ่ม
+                                (URL)</label>
                             <input type="url" name="link_url" value="{{ old('link_url') }}"
                                 class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-pink-500/50 outline-none"
                                 placeholder="https://...">
@@ -111,12 +168,16 @@
 
                         {{-- Link to System Promotion --}}
                         <div class="space-y-2">
-                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ผูกโปรโมชั่นในระบบ</label>
-                            <select name="promotion_id" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-pink-500/50 outline-none">
+                            <label
+                                class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ผูกโปรโมชั่นในระบบ</label>
+                            <select name="promotion_id"
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-pink-500/50 outline-none">
                                 <option value="">-- ไม่ระบุ (ใช้เฉพาะลิงก์) --</option>
                                 @foreach ($promotions as $promo)
-                                    <option value="{{ $promo->id }}" {{ old('promotion_id') == $promo->id ? 'selected' : '' }}>
-                                        {{ $promo->name }} ({{ $promo->discount_type == 'percentage' ? $promo->discount_value.'%' : '฿'.$promo->discount_value }})
+                                    <option value="{{ $promo->id }}"
+                                        {{ old('promotion_id') == $promo->id ? 'selected' : '' }}>
+                                        {{ $promo->name }}
+                                        ({{ $promo->discount_type == 'percentage' ? $promo->discount_value . '%' : '฿' . $promo->discount_value }})
                                     </option>
                                 @endforeach
                             </select>
@@ -125,7 +186,8 @@
                 </div>
 
                 <div class="px-8 py-6 bg-gray-900/50 border-t border-gray-700 flex justify-end">
-                    <button type="submit" class="px-10 py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95">
+                    <button type="submit"
+                        class="px-10 py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95">
                         <i class="fas fa-plus mr-2"></i> สร้างแคมเปญ
                     </button>
                 </div>

@@ -23,6 +23,7 @@ class Order extends Model
     // ★ 2. อนุญาตให้บันทึกข้อมูลลงฟิลด์เหล่านี้
     protected $fillable = [
         'ord_code',
+        'tracking_number',
         'user_id',
         'total_price',
         'shipping_cost',

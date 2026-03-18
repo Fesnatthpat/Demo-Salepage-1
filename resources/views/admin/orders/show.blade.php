@@ -233,10 +233,9 @@
                 <div class="card-body p-5">
                     <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST">
                         @csrf
-                        <div class="form-control w-full">
-                            <label
-                                class="label text-xs font-bold text-gray-400 uppercase tracking-wider pb-1">สถานะใหม่</label>
-                            <div class="flex flex-col gap-3">
+                        <div class="form-control w-full space-y-4">
+                            <div>
+                                <label class="label text-xs font-bold text-gray-400 uppercase tracking-wider pb-1">สถานะใหม่</label>
                                 <select name="status_id"
                                     class="select select-bordered w-full bg-gray-900 border-gray-600 text-gray-100 focus:outline-none focus:border-emerald-500 shadow-inner">
                                     @foreach ($statuses as $id => $name)
@@ -246,15 +245,43 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <button type="submit"
-                                    class="btn w-full bg-emerald-600 hover:bg-emerald-700 border-none text-white font-bold shadow-lg shadow-emerald-900/30">
-                                    <i class="fas fa-save mr-1"></i> บันทึกสถานะ
-                                </button>
                             </div>
+
+                            <div>
+                                <label class="label text-xs font-bold text-gray-400 uppercase tracking-wider pb-1">เลขพัสดุ (Tracking Number)</label>
+                                <input type="text" name="tracking_number" value="{{ old('tracking_number', $order->tracking_number) }}"
+                                    placeholder="เช่น TH123456789"
+                                    class="input input-bordered w-full bg-gray-900 border-gray-600 text-gray-100 focus:outline-none focus:border-emerald-500 shadow-inner">
+                            </div>
+
+                            <button type="submit"
+                                class="btn w-full bg-emerald-600 hover:bg-emerald-700 border-none text-white font-bold shadow-lg shadow-emerald-900/30">
+                                <i class="fas fa-save mr-1"></i> บันทึกข้อมูล
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            @if ($order->tracking_number)
+                {{-- Tracking Number Info Card --}}
+                <div class="card bg-gray-800 shadow-xl border border-gray-700">
+                    <div class="p-5 border-b border-gray-700 flex items-center gap-2">
+                        <i class="fas fa-truck text-emerald-500"></i>
+                        <h2 class="font-bold text-gray-100">ข้อมูลพัสดุ</h2>
+                    </div>
+                    <div class="card-body p-5 space-y-3">
+                        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-700">
+                            <span class="text-xs font-bold text-gray-500 uppercase">เลขพัสดุปัจจุบัน</span>
+                            <span class="font-mono font-bold text-emerald-400 tracking-widest">{{ $order->tracking_number }}</span>
+                        </div>
+                        <a href="{{ route('order.tracking') }}?search={{ $order->tracking_number }}" target="_blank"
+                            class="btn btn-ghost btn-sm w-full text-xs text-gray-400 hover:text-white hover:bg-gray-700">
+                            <i class="fas fa-external-link-alt mr-1"></i> ตรวจสอบสถานะในหน้าบ้าน
+                        </a>
+                    </div>
+                </div>
+            @endif
 
             {{-- Customer Info Card --}}
             <div class="card bg-gray-800 shadow-xl border border-gray-700">

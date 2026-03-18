@@ -15,6 +15,7 @@
         }
 
         @media (min-width: 640px) {
+
             .mySwiper .swiper-pagination-bullet,
             .productSwiper .swiper-pagination-bullet,
             .mySwiper2 .swiper-pagination-bullet {
@@ -51,10 +52,16 @@
             font-weight: 900 !important;
         }
 
-        .swiper-button-prev { left: 4px !important; }
-        .swiper-button-next { right: 4px !important; }
+        .swiper-button-prev {
+            left: 4px !important;
+        }
+
+        .swiper-button-next {
+            right: 4px !important;
+        }
 
         @media (min-width: 768px) {
+
             .swiper-button-next,
             .swiper-button-prev {
                 width: 45px !important;
@@ -67,8 +74,13 @@
                 font-size: 18px !important;
             }
 
-            .mySwiper .swiper-button-prev { left: 16px !important; }
-            .mySwiper .swiper-button-next { right: 16px !important; }
+            .mySwiper .swiper-button-prev {
+                left: 16px !important;
+            }
+
+            .mySwiper .swiper-button-next {
+                right: 16px !important;
+            }
         }
 
         .swiper-button-next:hover,
@@ -98,7 +110,8 @@
     
     <div class="w-full pb-4 sm:pb-6 pt-2 md:pt-4">
         <div class="container mx-auto px-3 sm:px-4 max-w-7xl">
-            <div class="relative w-full aspect-[16/10] md:aspect-[2.5/1] lg:aspect-[3/1] bg-gray-50 group rounded-xl sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-xl border border-gray-100">
+            <div
+                class="relative w-full aspect-[16/10] md:aspect-[2.5/1] lg:aspect-[3/1] bg-gray-50 group rounded-xl sm:rounded-2xl overflow-hidden shadow-sm sm:shadow-xl border border-gray-100">
                 <div class="swiper mySwiper w-full h-full absolute inset-0">
                     <div class="swiper-wrapper">
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($heroSlides) && $heroSlides->count() > 0): ?>
@@ -124,8 +137,9 @@
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
-                    <div class="swiper-button-next hidden sm:flex"></div>
-                    <div class="swiper-button-prev hidden sm:flex"></div>
+                    
+                    <div class="swiper-button-next flex"></div>
+                    <div class="swiper-button-prev flex"></div>
                     <div class="swiper-pagination"></div>
                 </div>
             </div>
@@ -156,16 +170,19 @@
     <div class="w-full pb-10 sm:pb-16 pt-6 sm:pt-10">
         <div class="container mx-auto px-3 sm:px-4 mb-6 sm:mb-10 max-w-7xl">
 
-            <div class="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm sm:shadow-xl border border-gray-100">
+            <div
+                class="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm sm:shadow-xl border border-gray-100">
 
                 
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 md:mb-8 gap-3">
                     <div>
-                        <div class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-red-100 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm">
+                        <div
+                            class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-red-100 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm">
                             Recommended
                         </div>
                         <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
-                            เมนูแนะนำ <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500">ต้องลอง!</span>
+                            เมนูแนะนำ <span
+                                class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500">ต้องลอง!</span>
                         </h2>
                     </div>
                     <a href="/allproducts"
@@ -201,29 +218,39 @@
                                     ?>
 
                                     <div class="swiper-slide h-auto">
-                                        <div class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full rounded-xl sm:rounded-2xl overflow-hidden relative group/card">
-                                            
+                                        <div
+                                            class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full rounded-xl sm:rounded-2xl overflow-hidden relative group/card">
+
                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($productPromo): ?>
                                                 <div class="absolute top-0 right-0 z-20">
-                                                    <div class="bg-gradient-to-l from-pink-600 to-red-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-bl-lg sm:rounded-bl-xl shadow-md flex flex-col items-end">
-                                                        <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-tighter"><i class="fas fa-gift mr-0.5"></i> Free Gift</span>
-                                                        <span class="text-[7px] sm:text-[9px] font-bold opacity-90 leading-none truncate max-w-[80px] sm:max-w-[100px]"><?php echo e($productPromo->name); ?></span>
+                                                    <div
+                                                        class="bg-gradient-to-l from-pink-600 to-red-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-bl-lg sm:rounded-bl-xl shadow-md flex flex-col items-end">
+                                                        <span
+                                                            class="text-[8px] sm:text-[10px] font-black uppercase tracking-tighter"><i
+                                                                class="fas fa-gift mr-0.5"></i> Free Gift</span>
+                                                        <span
+                                                            class="text-[7px] sm:text-[9px] font-bold opacity-90 leading-none truncate max-w-[80px] sm:max-w-[100px]"><?php echo e($productPromo->name); ?></span>
                                                     </div>
                                                 </div>
                                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                            <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>" class="relative aspect-square overflow-hidden bg-gray-50 block">
+                                            <a href="<?php echo e(route('product.show', $product->pd_sp_id)); ?>"
+                                                class="relative aspect-square overflow-hidden bg-gray-50 block">
                                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_stock <= 0): ?>
-                                                    <div class="absolute inset-0 flex items-center justify-center z-10 bg-white/60 backdrop-blur-[2px]">
-                                                        <span class="bg-gray-800 text-white text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-bold shadow-md uppercase tracking-wider">สินค้าหมด</span>
+                                                    <div
+                                                        class="absolute inset-0 flex items-center justify-center z-10 bg-white/60 backdrop-blur-[2px]">
+                                                        <span
+                                                            class="bg-gray-800 text-white text-[10px] sm:text-xs px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-bold shadow-md uppercase tracking-wider">สินค้าหมด</span>
                                                     </div>
                                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                                <img src="<?php echo e(Str::startsWith($displayImage, 'http') ? $displayImage : asset('storage/' . $displayImage)); ?>" alt="<?php echo e($product->pd_sp_name); ?>"
+                                                <img src="<?php echo e(Str::startsWith($displayImage, 'http') ? $displayImage : asset('storage/' . $displayImage)); ?>"
+                                                    alt="<?php echo e($product->pd_sp_name); ?>"
                                                     class="w-full h-full object-cover group-hover/card:scale-105 transition duration-500 <?php echo e($product->pd_sp_stock <= 0 ? 'opacity-60 grayscale' : ''); ?>"
                                                     onerror="this.onerror=null;this.src='https://via.placeholder.com/400x400?text=No+Image';" />
-                                                
+
                                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
-                                                    <div class="absolute top-2 left-2 bg-red-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black shadow-sm uppercase tracking-wide border border-red-500">
+                                                    <div
+                                                        class="absolute top-2 left-2 bg-red-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black shadow-sm uppercase tracking-wide border border-red-500">
                                                         ลด <?php echo e(number_format($discountAmount, 2)); ?>.-
                                                     </div>
                                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -235,43 +262,51 @@
                                                     <?php echo e($product->pd_sp_name); ?>
 
                                                 </h2>
-                                                
+
                                                 <div class="flex items-center justify-between mb-2">
-                                                    <p class="text-[9px] sm:text-[10px] font-bold <?php echo e($product->pd_sp_stock > 0 ? 'text-emerald-500' : 'text-red-500'); ?> flex items-center gap-1">
+                                                    <p
+                                                        class="text-[9px] sm:text-[10px] font-bold <?php echo e($product->pd_sp_stock > 0 ? 'text-emerald-500' : 'text-red-500'); ?> flex items-center gap-1">
                                                         <span class="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
-                                                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 <?php echo e($product->pd_sp_stock > 0 ? 'bg-emerald-400' : 'hidden'); ?>"></span>
-                                                          <span class="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 <?php echo e($product->pd_sp_stock > 0 ? 'bg-emerald-500' : 'bg-red-500'); ?>"></span>
+                                                            <span
+                                                                class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 <?php echo e($product->pd_sp_stock > 0 ? 'bg-emerald-400' : 'hidden'); ?>"></span>
+                                                            <span
+                                                                class="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 <?php echo e($product->pd_sp_stock > 0 ? 'bg-emerald-500' : 'bg-red-500'); ?>"></span>
                                                         </span>
                                                         <?php echo e($product->pd_sp_stock > 0 ? 'มีสินค้า' : 'หมด'); ?>
 
                                                     </p>
-                                                    <p class="text-[9px] sm:text-[10px] font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">
+                                                    <p
+                                                        class="text-[9px] sm:text-[10px] font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">
                                                         ขายแล้ว <?php echo e(number_format($product->pd_sp_sold ?? 0)); ?>
 
                                                     </p>
                                                 </div>
 
                                                 <div class="mt-auto pt-2 sm:pt-3 border-t border-gray-100/80">
-                                                    <div class="flex flex-wrap items-baseline justify-between w-full mb-2.5 sm:mb-3 gap-x-1 gap-y-0.5">
+                                                    <div
+                                                        class="flex flex-wrap items-baseline justify-between w-full mb-2.5 sm:mb-3 gap-x-1 gap-y-0.5">
                                                         <div class="flex items-baseline gap-1">
                                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasOptions): ?>
-                                                                <span class="text-[9px] sm:text-[10px] text-gray-400 font-bold">เริ่ม</span>
+                                                                <span
+                                                                    class="text-[9px] sm:text-[10px] text-gray-400 font-bold">เริ่ม</span>
                                                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                                            <span class="text-base sm:text-lg font-black text-red-600 tracking-tight leading-none">฿<?php echo e(number_format($finalSellingPrice, 2)); ?></span>
+                                                            <span
+                                                                class="text-base sm:text-lg font-black text-red-600 tracking-tight leading-none">฿<?php echo e(number_format($finalSellingPrice, 2)); ?></span>
                                                         </div>
                                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isOnSale): ?>
-                                                            <span class="text-[9px] sm:text-[11px] font-bold text-gray-400 line-through decoration-gray-300">฿<?php echo e(number_format($originalPrice, 2)); ?></span>
+                                                            <span
+                                                                class="text-[9px] sm:text-[11px] font-bold text-gray-400 line-through decoration-gray-300">฿<?php echo e(number_format($originalPrice, 2)); ?></span>
                                                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                     </div>
 
                                                     <button type="button"
                                                         <?php if($hasOptions): ?> onclick="window.location='<?php echo e(route('product.show', $product->pd_sp_id)); ?>'" <?php else: ?> onclick="addToCartQuick(this, '<?php echo e(route('cart.add', ['id' => $product->pd_sp_id])); ?>')" <?php endif; ?>
                                                         class="w-full rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 h-9 sm:h-10 min-h-[36px] sm:min-h-[40px]
-                                                        <?php echo e($product->pd_sp_stock > 0 
-                                                            ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 hover:border-red-600 shadow-sm active:scale-95' 
+                                                        <?php echo e($product->pd_sp_stock > 0
+                                                            ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 hover:border-red-600 shadow-sm active:scale-95'
                                                             : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'); ?>"
                                                         <?php echo e($product->pd_sp_stock <= 0 ? 'disabled' : ''); ?>>
-                                                        
+
                                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->pd_sp_stock > 0): ?>
                                                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($hasOptions): ?>
                                                                 <i class="fas fa-list-ul"></i> เลือกตัวเลือก
@@ -291,11 +326,16 @@
                             <div class="swiper-pagination"></div>
                         </div>
                         
-                        <div class="swiper-button-next hidden sm:flex !w-8 !h-8 md:!w-10 md:!h-10 after:!text-xs md:after:!text-sm"></div>
-                        <div class="swiper-button-prev hidden sm:flex !w-8 !h-8 md:!w-10 md:!h-10 after:!text-xs md:after:!text-sm"></div>
+                        <div
+                            class="swiper-button-next product-next flex !w-8 !h-8 md:!w-10 md:!h-10 after:!text-xs md:after:!text-sm">
+                        </div>
+                        <div
+                            class="swiper-button-prev product-prev flex !w-8 !h-8 md:!w-10 md:!h-10 after:!text-xs md:after:!text-sm">
+                        </div>
                     </div>
                 <?php else: ?>
-                    <div class="col-span-full flex flex-col items-center justify-center py-16 sm:py-20 bg-white rounded-2xl border-2 border-dashed border-gray-100">
+                    <div
+                        class="col-span-full flex flex-col items-center justify-center py-16 sm:py-20 bg-white rounded-2xl border-2 border-dashed border-gray-100">
                         <div class="bg-gray-50 p-4 rounded-full mb-3">
                             <i class="fas fa-box-open text-4xl text-gray-300"></i>
                         </div>
@@ -331,18 +371,20 @@
                         prevReview() {
                             this.activeReviewIndex = (this.activeReviewIndex - 1 + this.reviewImages.length) % this.reviewImages.length;
                         }
-                    }" 
-                    @keydown.escape.window="closeReviewModal()"
-                    @keydown.right.window="if(isReviewModalOpen) nextReview()"
-                    @keydown.left.window="if(isReviewModalOpen) prevReview()">
-                        
+                    }"
+                        @keydown.escape.window="closeReviewModal()"
+                        @keydown.right.window="if(isReviewModalOpen) nextReview()"
+                        @keydown.left.window="if(isReviewModalOpen) prevReview()">
+
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 md:mb-8 gap-3">
                             <div>
-                                <div class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-amber-100 text-amber-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm uppercase tracking-wider">
+                                <div
+                                    class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-amber-100 text-amber-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm uppercase tracking-wider">
                                     Customer Reviews
                                 </div>
                                 <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
-                                    รีวิวจาก <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-500">ลูกค้าของเรา</span>
+                                    รีวิวจาก <span
+                                        class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-500">ลูกค้าของเรา</span>
                                 </h2>
                             </div>
                         </div>
@@ -350,52 +392,61 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $reviewImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $img): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <div class="aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer"
-                                     @click="openReviewModal(<?php echo e($index); ?>)">
+                                    @click="openReviewModal(<?php echo e($index); ?>)">
                                     <img src="<?php echo e(Str::startsWith($img->image_url, 'http') ? $img->image_url : asset('storage/' . ltrim($img->image_url, '/'))); ?>"
-                                         alt="Review"
-                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                        alt="Review"
+                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 </div>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </div>
 
                         
                         <template x-teleport="body">
-                            <div x-show="isReviewModalOpen" 
-                                x-transition:enter="transition ease-out duration-300"
-                                x-transition:enter-start="opacity-0"
-                                x-transition:enter-end="opacity-100"
+                            <div x-show="isReviewModalOpen" x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                                 x-transition:leave="transition ease-in duration-200"
-                                x-transition:leave-start="opacity-100"
-                                x-transition:leave-end="opacity-0"
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                                 class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md"
-                                @click="closeReviewModal()"
-                                style="display: none;">
-                                
-                                <button @click.stop="closeReviewModal()" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors duration-200 z-[110]">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                @click="closeReviewModal()" style="display: none;">
+
+                                <button @click.stop="closeReviewModal()"
+                                    class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors duration-200 z-[110]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
 
-                                <div class="relative w-full max-w-5xl aspect-square flex items-center justify-center" @click.stop>
+                                <div class="relative w-full max-w-5xl aspect-square flex items-center justify-center"
+                                    @click.stop>
                                     
-                                    <button x-show="reviewImages.length > 1" @click="prevReview()" class="absolute left-0 lg:-left-20 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    <button x-show="reviewImages.length > 1" @click="prevReview()"
+                                        class="absolute left-0 lg:-left-20 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 19l-7-7 7-7" />
                                         </svg>
                                     </button>
 
-                                    <img :src="reviewImages[activeReviewIndex]" class="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-lg">
+                                    <img :src="reviewImages[activeReviewIndex]"
+                                        class="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-lg">
 
-                                    <button x-show="reviewImages.length > 1" @click="nextReview()" class="absolute right-0 lg:-right-20 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    <button x-show="reviewImages.length > 1" @click="nextReview()"
+                                        class="absolute right-0 lg:-right-20 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7" />
                                         </svg>
                                     </button>
+
                                     
-                                    
-                                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-white/60 font-medium tracking-widest text-sm">
-                                        <span x-text="activeReviewIndex + 1"></span> / <span x-text="reviewImages.length"></span>
+                                    <div
+                                        class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-white/60 font-medium tracking-widest text-sm">
+                                        <span x-text="activeReviewIndex + 1"></span> / <span
+                                            x-text="reviewImages.length"></span>
                                     </div>
                                 </div>
                             </div>
@@ -409,7 +460,8 @@
     
     <div class="w-full pt-6 sm:pt-10 pb-8 sm:pb-12">
         <div class="container mx-auto px-3 sm:px-4 max-w-7xl">
-            <div class="swiper mySwiper2 w-full max-w-[1000px] mx-auto rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg overflow-hidden relative border border-gray-100">
+            <div
+                class="swiper mySwiper2 w-full max-w-[1000px] mx-auto rounded-xl sm:rounded-2xl shadow-sm sm:shadow-lg overflow-hidden relative border border-gray-100">
                 <div class="swiper-wrapper">
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($secSlides) && $secSlides->count() > 0): ?>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $secSlides; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $slide): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
@@ -430,8 +482,9 @@
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
-                <div class="swiper-button-next hidden sm:flex"></div>
-                <div class="swiper-button-prev hidden sm:flex"></div>
+                
+                <div class="swiper-button-next flex"></div>
+                <div class="swiper-button-prev flex"></div>
                 <div class="swiper-pagination"></div>
             </div>
         </div>
@@ -440,31 +493,39 @@
     
     <div class="bg-white/95 backdrop-blur-sm border-t border-gray-100 py-8 sm:py-12 relative">
         <div class="container mx-auto px-4 max-w-7xl">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 text-center divide-x-0 md:divide-x divide-gray-100">
+            <div
+                class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 text-center divide-x-0 md:divide-x divide-gray-100">
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($services) && $services->count() > 0): ?>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $services; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $service): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <div class="flex flex-col items-center gap-3 sm:gap-4 group cursor-default p-2">
-                            <div class="p-3 sm:p-4 bg-white shadow-sm sm:shadow-md rounded-xl sm:rounded-2xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1 sm:group-hover:-translate-y-2 ring-1 ring-gray-100">
+                            <div
+                                class="p-3 sm:p-4 bg-white shadow-sm sm:shadow-md rounded-xl sm:rounded-2xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1 sm:group-hover:-translate-y-2 ring-1 ring-gray-100">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(str_contains($service->icon, '<svg')): ?>
-                                    <div class="w-6 h-6 sm:w-8 sm:h-8 group-hover:text-white text-red-500 transition-colors">
+                                    <div
+                                        class="w-6 h-6 sm:w-8 sm:h-8 group-hover:text-white text-red-500 transition-colors">
                                         <?php echo $service->icon; ?>
 
                                     </div>
                                 <?php else: ?>
-                                    <i class="<?php echo e($service->icon); ?> text-2xl sm:text-3xl text-red-500 group-hover:text-white transition-colors"></i>
+                                    <i
+                                        class="<?php echo e($service->icon); ?> text-2xl sm:text-3xl text-red-500 group-hover:text-white transition-colors"></i>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
-                            <span class="text-xs sm:text-sm md:text-base font-bold text-gray-700 group-hover:text-red-600 transition"><?php echo e($service->title); ?></span>
+                            <span
+                                class="text-xs sm:text-sm md:text-base font-bold text-gray-700 group-hover:text-red-600 transition"><?php echo e($service->title); ?></span>
                         </div>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 <?php else: ?>
                     <?php $serviceBarItems = [['icon' => 'fas fa-utensils', 'text' => 'สูตรเด็ดต้นตำรับ'], ['icon' => 'fas fa-shipping-fast', 'text' => 'ส่งไว ทันใจ'], ['icon' => 'fas fa-shield-alt', 'text' => 'ชำระเงินปลอดภัย'], ['icon' => 'fas fa-heart', 'text' => 'ทำด้วยใจทุกขั้นตอน']]; ?>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $serviceBarItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <div class="flex flex-col items-center gap-3 sm:gap-4 group cursor-default p-2">
-                            <div class="p-3 sm:p-4 bg-white shadow-sm sm:shadow-md rounded-xl sm:rounded-2xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1 sm:group-hover:-translate-y-2 ring-1 ring-gray-100">
-                                <i class="<?php echo e($item['icon']); ?> text-2xl sm:text-3xl text-red-500 group-hover:text-white transition-colors"></i>
+                            <div
+                                class="p-3 sm:p-4 bg-white shadow-sm sm:shadow-md rounded-xl sm:rounded-2xl group-hover:bg-red-500 group-hover:text-white transition-all duration-300 transform group-hover:-translate-y-1 sm:group-hover:-translate-y-2 ring-1 ring-gray-100">
+                                <i
+                                    class="<?php echo e($item['icon']); ?> text-2xl sm:text-3xl text-red-500 group-hover:text-white transition-colors"></i>
                             </div>
-                            <span class="text-xs sm:text-sm md:text-base font-bold text-gray-700 group-hover:text-red-600 transition"><?php echo e($item['text']); ?></span>
+                            <span
+                                class="text-xs sm:text-sm md:text-base font-bold text-gray-700 group-hover:text-red-600 transition"><?php echo e($item['text']); ?></span>
                         </div>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -477,22 +538,27 @@
         <div class="absolute inset-0 opacity-10"
             style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 30px 30px;"></div>
         <div class="container mx-auto px-4 max-w-7xl relative z-10">
-            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-center text-white mb-10 sm:mb-16 drop-shadow-lg">
+            <h2
+                class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-center text-white mb-10 sm:mb-16 drop-shadow-lg">
                 6 เหตุผลทำไมต้องเลือกเรา
             </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 sm:gap-y-12 px-2 sm:px-10 lg:px-20">
+            <div
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 sm:gap-y-12 px-2 sm:px-10 lg:px-20">
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($reasons) && $reasons->count() > 0): ?>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $reasons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reason): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <div class="flex flex-col items-center text-center group">
-                            <div class="mb-4 sm:mb-6 text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20 bg-white/10 p-4 sm:p-5 rounded-2xl backdrop-blur-sm shadow-inner">
+                            <div
+                                class="mb-4 sm:mb-6 text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20 bg-white/10 p-4 sm:p-5 rounded-2xl backdrop-blur-sm shadow-inner">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(str_contains($reason->icon, '<svg')): ?>
                                     <div class="w-8 h-8 sm:w-10 sm:h-10"><?php echo $reason->icon; ?></div>
                                 <?php else: ?>
                                     <i class="<?php echo e($reason->icon); ?> text-3xl sm:text-4xl"></i>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
-                            <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3 drop-shadow-md"><?php echo e($reason->title); ?></h3>
-                            <p class="text-white/80 text-xs sm:text-sm md:text-base leading-relaxed max-w-[250px] sm:max-w-xs">
+                            <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3 drop-shadow-md">
+                                <?php echo e($reason->title); ?></h3>
+                            <p
+                                class="text-white/80 text-xs sm:text-sm md:text-base leading-relaxed max-w-[250px] sm:max-w-xs">
                                 <?php echo e($reason->description); ?>
 
                             </p>
@@ -500,11 +566,13 @@
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 <?php else: ?>
                     <div class="flex flex-col items-center text-center group">
-                        <div class="mb-4 sm:mb-6 bg-white/10 p-4 sm:p-5 rounded-2xl text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20">
+                        <div
+                            class="mb-4 sm:mb-6 bg-white/10 p-4 sm:p-5 rounded-2xl text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-white/20">
                             <i class="fas fa-check-circle text-3xl sm:text-4xl"></i>
                         </div>
                         <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">เรารู้จริง</h3>
-                        <p class="text-white/80 text-xs sm:text-sm leading-relaxed max-w-[250px] sm:max-w-xs">คัดสรรแต่วัตถุดิบคุณภาพดีที่สุดเพื่อคุณ</p>
+                        <p class="text-white/80 text-xs sm:text-sm leading-relaxed max-w-[250px] sm:max-w-xs">
+                            คัดสรรแต่วัตถุดิบคุณภาพดีที่สุดเพื่อคุณ</p>
                     </div>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
@@ -552,8 +620,9 @@
                     clickable: true,
                 },
                 navigation: {
-                    nextEl: ".group .swiper-button-next",
-                    prevEl: ".group .swiper-button-prev",
+                    // เปลี่ยนชื่อคลาสเป้าหมายเพื่อป้องกันไม่ให้ชนกับ Swiper ตัวอื่น
+                    nextEl: ".product-next",
+                    prevEl: ".product-prev",
                 },
                 breakpoints: {
                     0: {
@@ -598,7 +667,9 @@
                     prevEl: ".mySwiper2 .swiper-button-prev"
                 },
                 breakpoints: {
-                    640: { spaceBetween: 20 }
+                    640: {
+                        spaceBetween: 20
+                    }
                 }
             });
         });
@@ -653,4 +724,5 @@
         }
     </script>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\laravel\salepage-demo-1\resources\views/index.blade.php ENDPATH**/ ?>

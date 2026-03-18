@@ -125,6 +125,41 @@
             <div class="space-y-8" x-show="activeTab === 'homepage'" x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
 
+                {{-- 0. PAGE CONTENT (Titles) --}}
+                <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
+                    <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
+                        <div class="p-2.5 bg-amber-500/10 rounded-xl"><i class="fas fa-heading text-amber-400 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-gray-100">หัวข้อหน้าหลัก (Homepage Titles)</h3>
+                    </div>
+                    <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                Badge เมนูแนะนำ (เช่น Recommended)
+                            </label>
+                            <input type="text" name="settings[home_recommended_badge]" 
+                                   value="{{ $settings['home_recommended_badge'] ?? 'Recommended' }}"
+                                   class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                หัวข้อเมนูแนะนำ (รองรับ HTML)
+                            </label>
+                            <input type="text" name="settings[home_recommended_title]" 
+                                   value="{{ $settings['home_recommended_title'] ?? 'เมนูแนะนำ <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500\">ต้องลอง!</span>' }}"
+                                   class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                หัวข้อส่วน "6 เหตุผล"
+                            </label>
+                            <input type="text" name="settings[home_reasons_title]" 
+                                   value="{{ $settings['home_reasons_title'] ?? '6 เหตุผลทำไมต้องเลือกเรา' }}"
+                                   class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
                 {{-- 0. GENERAL SETTINGS (Logo) --}}
                 <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">

@@ -349,7 +349,7 @@ unset($__split);
 
                 
                 <div class="flex flex-col gap-3 lg:col-span-2">
-                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">ศูนย์ช่วยเหลือ</h6>
+                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3"><?php echo e($settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ'); ?></h6>
                     <a href="<?php echo e(route('order.tracking.form')); ?>" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> ติดตามสถานะคำสั่งซื้อ</a>
                     <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> การรับประกันสินค้า</a>
                     <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> การคืนสินค้าและการคืนเงิน</a>

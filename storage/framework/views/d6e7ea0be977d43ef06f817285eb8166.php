@@ -177,12 +177,13 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-6 md:mb-8 gap-3">
                     <div>
                         <div
-                            class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-red-100 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm">
-                            Recommended
+                            class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-red-100 text-red-600 rounded-md sm:rounded-lg text-[10px] sm:text-sm font-bold mb-1.5 sm:mb-2 shadow-sm uppercase tracking-wider">
+                            <?php echo e($settings['home_recommended_badge'] ?? 'Recommended'); ?>
+
                         </div>
                         <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
-                            เมนูแนะนำ <span
-                                class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500">ต้องลอง!</span>
+                            <?php echo $settings['home_recommended_title'] ?? 'เมนูแนะนำ <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500">ต้องลอง!</span>'; ?>
+
                         </h2>
                     </div>
                     <a href="/allproducts"
@@ -540,7 +541,8 @@
         <div class="container mx-auto px-4 max-w-7xl relative z-10">
             <h2
                 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-center text-white mb-10 sm:mb-16 drop-shadow-lg">
-                6 เหตุผลทำไมต้องเลือกเรา
+                <?php echo e($settings['home_reasons_title'] ?? '6 เหตุผลทำไมต้องเลือกเรา'); ?>
+
             </h2>
             <div
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 sm:gap-y-12 px-2 sm:px-10 lg:px-20">

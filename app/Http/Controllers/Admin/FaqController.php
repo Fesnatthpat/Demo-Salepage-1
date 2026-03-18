@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Faq;
 use Illuminate\Http\Request;
 
+use App\Models\SiteSetting;
+
 class FaqController extends Controller
 {
     /**
@@ -14,7 +16,14 @@ class FaqController extends Controller
     public function index()
     {
         $faqs = Faq::orderBy('sort_order', 'asc')->get();
-        return view('admin.faqs.index', compact('faqs'));
+        
+        $settings = [
+            'faq_badge' => SiteSetting::get('faq_badge', 'ศูนย์ช่วยเหลือ'),
+            'faq_title' => SiteSetting::get('faq_title', 'คุณมีคำถาม <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">เรามีคำตอบ</span>'),
+            'faq_subtitle' => SiteSetting::get('faq_subtitle', 'รวมคำถามที่พบบ่อยเกี่ยวกับการใช้งาน การสั่งซื้อ และการชำระเงิน'),
+        ];
+
+        return view('admin.faqs.index', compact('faqs', 'settings'));
     }
 
     /**

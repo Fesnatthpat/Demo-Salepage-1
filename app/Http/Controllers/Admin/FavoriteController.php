@@ -68,6 +68,13 @@ class FavoriteController extends Controller
             }
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'สร้าง "เกี่ยวกับติดใจ" เรียบร้อยแล้ว'
+            ]);
+        }
+
         return redirect()->route('admin.favorites.index')
                          ->with('success', 'สร้าง "เกี่ยวกับติดใจ" เรียบร้อยแล้ว');
     }
@@ -115,6 +122,13 @@ class FavoriteController extends Controller
             }
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดต "เกี่ยวกับติดใจ" เรียบร้อยแล้ว'
+            ]);
+        }
+
         return redirect()->route('admin.favorites.index')
                          ->with('success', 'อัปเดต "เกี่ยวกับติดใจ" เรียบร้อยแล้ว');
     }
@@ -122,7 +136,7 @@ class FavoriteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Favorite $favorite)
+    public function destroy(Request $request, Favorite $favorite)
     {
         // Eager load images to ensure they are available
         $favorite->load('images');
@@ -135,6 +149,13 @@ class FavoriteController extends Controller
         // Deleting the favorite will trigger the 'onDelete('cascade')' 
         // for the favorite_images table records.
         $favorite->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบ "เกี่ยวกับติดใจ" เรียบร้อยแล้ว'
+            ]);
+        }
 
         return redirect()->route('admin.favorites.index')
                          ->with('success', 'ลบ "เกี่ยวกับติดใจ" เรียบร้อยแล้ว');
@@ -188,6 +209,13 @@ class FavoriteController extends Controller
 
         AboutVideo::create($data);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มวิดีโอเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'เพิ่มวิดีโอเรียบร้อยแล้ว');
     }
 
@@ -228,16 +256,40 @@ class FavoriteController extends Controller
 
         $video->update($data);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตวิดีโอเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'อัปเดตวิดีโอเรียบร้อยแล้ว');
     }
 
-    public function destroyVideo(AboutVideo $video)
+    public function destroyVideo(Request $request, AboutVideo $video)
     {
         if ($video->thumbnail_path) {
             Storage::disk('public')->delete($video->thumbnail_path);
         }
         $video->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบวิดีโอเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'ลบวิดีโอเรียบร้อยแล้ว');
+    }
+
+    public function destroyVideoThumbnail(AboutVideo $video)
+    {
+        if ($video->thumbnail_path) {
+            Storage::disk('public')->delete($video->thumbnail_path);
+            $video->update(['thumbnail_path' => null]);
+        }
+        return response()->json(['success' => true]);
     }
 
     // --- Gallery Management ---
@@ -260,6 +312,13 @@ class FavoriteController extends Controller
                 $path = $image->store('about/galleries', 'public');
                 $gallery->images()->create(['image_path' => $path]);
             }
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มอัลบั้มเรียบร้อยแล้ว'
+            ]);
         }
 
         return back()->with('success', 'เพิ่มอัลบั้มเรียบร้อยแล้ว');
@@ -286,15 +345,30 @@ class FavoriteController extends Controller
             }
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตอัลบั้มเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'อัปเดตอัลบั้มเรียบร้อยแล้ว');
     }
 
-    public function destroyGallery(AboutGallery $gallery)
+    public function destroyGallery(Request $request, AboutGallery $gallery)
     {
         foreach ($gallery->images as $image) {
             Storage::disk('public')->delete($image->image_path);
         }
         $gallery->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบอัลบั้มเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'ลบอัลบั้มเรียบร้อยแล้ว');
     }
 
@@ -327,6 +401,13 @@ class FavoriteController extends Controller
         }
 
         AboutSocialLink::create($data);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มโซเชียลมีเดียเรียบร้อยแล้ว'
+            ]);
+        }
 
         return back()->with('success', 'เพิ่มโซเชียลมีเดียเรียบร้อยแล้ว');
     }
@@ -368,15 +449,30 @@ class FavoriteController extends Controller
 
         $socialLink->update($data);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตโซเชียลมีเดียเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'อัปเดตโซเชียลมีเดียเรียบร้อยแล้ว');
     }
 
-    public function destroySocialLink(AboutSocialLink $socialLink)
+    public function destroySocialLink(Request $request, AboutSocialLink $socialLink)
     {
         if ($socialLink->image_path && \Storage::disk('public')->exists($socialLink->image_path)) {
             \Storage::disk('public')->delete($socialLink->image_path);
         }
         $socialLink->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบโซเชียลมีเดียเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'ลบโซเชียลมีเดียเรียบร้อยแล้ว');
     }
 
@@ -396,6 +492,13 @@ class FavoriteController extends Controller
         }
 
         Contact::create($data);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มข้อมูลติดต่อเรียบร้อยแล้ว'
+            ]);
+        }
 
         return back()->with('success', 'เพิ่มข้อมูลติดต่อเรียบร้อยแล้ว');
     }
@@ -419,15 +522,30 @@ class FavoriteController extends Controller
 
         $contact->update($data);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตข้อมูลติดต่อเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'อัปเดตข้อมูลติดต่อเรียบร้อยแล้ว');
     }
 
-    public function destroyContact(Contact $contact)
+    public function destroyContact(Request $request, Contact $contact)
     {
         if ($contact->image_path) {
             Storage::disk('public')->delete($contact->image_path);
         }
         $contact->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบข้อมูลติดต่อเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'ลบข้อมูลติดต่อเรียบร้อยแล้ว');
     }
 }

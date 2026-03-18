@@ -87,95 +87,140 @@
                 <div class="animate-fadeIn space-y-6">
 
                     @foreach ($trackingData as $data)
-                        @if (isset($data['is_external']) && $data['is_external'])
-                            {{-- 📌 แบบที่ 1: ขนส่งภายนอก มีแค่ปุ่มลิงก์ --}}
-                            <div
-                                class="bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden p-8 flex flex-col md:flex-row items-center gap-6">
-                                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fas fa-shipping-fast text-2xl text-red-600"></i>
-                                </div>
-                                <div class="flex-grow text-center md:text-left">
-                                    <h3 class="text-lg font-bold text-slate-800 mb-1">
-                                        {{ $data['carrier_name'] }}
-                                    </h3>
-                                    <p class="text-slate-500 text-sm mb-1">หมายเลขคำสั่งซื้อ: <span
-                                            class="font-bold text-red-600">{{ $data['tracking_number'] }}</span></p>
+                        <div class="bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden p-8 flex flex-col md:flex-row items-center gap-6 transition-all hover:shadow-md">
+                            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center shrink-0">
+                                <i class="fas fa-shipping-fast text-2xl text-red-600"></i>
+                            </div>
+                            <div class="flex-grow text-center md:text-left">
+                                <h3 class="text-lg font-bold text-slate-800 mb-1">
+                                    {{ $data['carrier_name'] }}
+                                </h3>
+                                <p class="text-slate-500 text-sm mb-1">od_ref: <span
+                                        class="font-bold text-red-600">{{ $data['tracking_number'] }}</span></p>
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1">
                                     <p class="text-slate-400 text-xs italic">วันที่สั่งซื้อ: {{ $data['order_date'] }}</p>
+                                    @if(!isset($data['is_external']) || !$data['is_external'])
+                                        <p class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit mx-auto md:mx-0">
+                                            สถานะ: {{ $data['status_text'] }}
+                                        </p>
+                                    @endif
                                 </div>
-                                <div class="shrink-0">
+                            </div>
+                            <div class="shrink-0 flex flex-col gap-2">
+                                @if (isset($data['is_external']) && $data['is_external'])
                                     <a href="{{ $data['external_url'] }}" target="_blank"
-                                        class="btn btn-primary bg-red-600 hover:bg-red-700 border-none text-white px-6 rounded-xl transition-all shadow-md">
+                                        class="btn btn-primary bg-red-600 hover:bg-red-700 border-none text-white px-6 rounded-xl transition-all shadow-md w-full">
                                         ไปที่หน้าติดตามพัสดุ
                                     </a>
-                                </div>
-                            </div>
-                        @else
-                            {{-- 📌 แบบที่ 2: ระบบ Timeline ภายใน --}}
-                            <div class="bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden mb-6">
-                                {{-- Top Status Banner --}}
-                                <div class="bg-red-600 p-6 flex justify-between items-center text-white">
-                                    <div>
-                                        <p class="text-red-100 text-xs font-bold uppercase tracking-wider mb-1">
-                                            สถานะปัจจุบัน</p>
-                                        <h3 class="text-xl font-bold flex items-center gap-2">
-                                            <span class="w-3 h-3 bg-white rounded-full inline-block animate-pulse"></span>
-                                            {{ $data['status_text'] }}
-                                        </h3>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-red-100 text-xs font-bold uppercase tracking-wider mb-1">เลขพัสดุ</p>
-                                        <p class="font-black tracking-widest uppercase">{{ $data['tracking_number'] }}</p>
-                                    </div>
-                                </div>
-
-                                {{-- รายละเอียด Timeline (Events) --}}
-                                @if (!empty($data['timeline_data']) && is_array($data['timeline_data']))
-                                    <div class="p-8">
-                                        <div class="relative border-l-2 border-red-200 ml-4 space-y-8">
-                                            @foreach ($data['timeline_data'] as $index => $timeline)
-                                                <div class="relative pl-8">
-                                                    {{-- วงกลมของแต่ละ Timeline --}}
-                                                    <span
-                                                        class="absolute -left-[11px] top-1 w-5 h-5 rounded-full {{ $index === 0 ? 'bg-red-500 timeline-pulse' : 'bg-red-300' }} border-4 border-white"></span>
-
-                                                    <div
-                                                        class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                                                        <h4 class="text-base font-bold text-slate-800">
-                                                            {{ $timeline['description'] ?? 'อัปเดตสถานะ' }}
-                                                        </h4>
-                                                        <span class="text-sm font-semibold text-slate-500">
-                                                            {{ $timeline['dateTime'] ?? '' }}
-                                                        </span>
-                                                    </div>
-
-                                                    {{-- โชว์สถานที่และข้อความจำลองเพิ่มเติม --}}
-                                                    @if (isset($timeline['is_system_generated']) && $timeline['is_system_generated'])
-                                                        <p class="text-sm text-slate-600 mt-1">
-                                                            ระบบได้รับคำสั่งซื้อของคุณแล้ว
-                                                            และกำลังอยู่ในขั้นตอนการเตรียมพัสดุเพื่อนำส่งให้บริษัทขนส่ง
-                                                        </p>
-                                                    @elseif(!empty($timeline['address']['city']))
-                                                        <p class="text-sm text-slate-600 mt-1">
-                                                            <i class="fas fa-map-marker-alt text-red-400 mr-1"></i>
-                                                            {{ $timeline['address']['city'] }}
-                                                            {{ $timeline['address']['postCode'] ?? '' }}
-                                                        </p>
-                                                    @endif
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
                                 @else
-                                    <div class="p-8 text-center text-slate-500">
-                                        ไม่พบรายละเอียดเส้นทางการจัดส่ง
-                                    </div>
+                                    <button type="button" 
+                                        onclick="showTimelineModal({{ json_encode($data) }})"
+                                        class="btn btn-primary bg-slate-800 hover:bg-slate-900 border-none text-white px-6 rounded-xl transition-all shadow-md w-full">
+                                        ดูรายละเอียดสถานะ
+                                    </button>
                                 @endif
+                                
+                                @auth
+                                    <a href="{{ route('orders.show', $data['order_code']) }}" 
+                                        class="btn btn-outline border-red-600 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white px-6 rounded-xl transition-all w-full text-center py-2 border font-bold text-sm">
+                                        รายละเอียดคำสั่งซื้อ
+                                    </a>
+                                @endauth
                             </div>
-                        @endif
+                        </div>
                     @endforeach
 
                 </div>
             @endif
+        </div>
+    </div>
+
+    {{-- Timeline Modal --}}
+    <div id="timelineModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-red-600 px-6 py-4 flex justify-between items-center text-white">
+                <div>
+                    <h3 class="font-bold text-lg">รายละเอียดสถานะพัสดุ</h3>
+                    <p class="text-red-100 text-xs" id="modalTrackingNumber"></p>
+                </div>
+                <button onclick="closeTimelineModal()" class="text-white/80 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 max-h-[70vh] overflow-y-auto" id="timelineContent">
+                {{-- Timeline items will be injected here --}}
+            </div>
+
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button onclick="closeTimelineModal()" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition-colors">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTimelineModal(data) {
+            const modal = document.getElementById('timelineModal');
+            const modalContent = document.getElementById('timelineContent');
+            const modalTracking = document.getElementById('modalTrackingNumber');
+            
+            modalTracking.innerText = 'od_ref: ' + data.tracking_number;
+            
+            let html = '';
+            if (data.timeline_data && data.timeline_data.length > 0) {
+                html = '<div class="relative border-l-2 border-red-200 ml-3 space-y-8 py-2">';
+                data.timeline_data.forEach((item, index) => {
+                    html += `
+                        <div class="relative pl-8">
+                            <span class="absolute -left-[11px] top-1 w-5 h-5 rounded-full ${index === 0 ? 'bg-red-500 timeline-pulse' : 'bg-red-300'} border-4 border-white"></span>
+                            <div class="flex flex-col gap-1">
+                                <h4 class="text-base font-bold text-slate-800 leading-tight">${item.description || 'อัปเดตสถานะ'}</h4>
+                                <span class="text-xs font-semibold text-slate-500">${item.dateTime || ''}</span>
+                                ${item.is_system_generated ? 
+                                    '<p class="text-xs text-slate-600 mt-1 italic">ระบบได้รับคำสั่งซื้อของคุณแล้วและกำลังเตรียมการจัดส่ง</p>' : 
+                                    (item.address && item.address.city ? `<p class="text-xs text-slate-600 mt-1"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${item.address.city} ${item.address.postCode || ''}</p>` : '')
+                                }
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html = '<div class="text-center py-10 text-slate-500 italic">ไม่พบรายละเอียดเส้นทางการจัดส่ง</div>';
+            }
+            
+            modalContent.innerHTML = html;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTimelineModal() {
+            const modal = document.getElementById('timelineModal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('timelineModal');
+            if (event.target == modal) {
+                closeTimelineModal();
+            }
+        }
+    </script>
         </div>
     </div>
 @endsection

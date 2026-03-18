@@ -187,6 +187,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/about-videos', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeVideo'])->name('about-videos.store');
     Route::put('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateVideo'])->name('about-videos.update');
     Route::delete('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideo'])->name('about-videos.destroy');
+    Route::delete('/about-videos-thumbnail/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideoThumbnail'])->name('about-videos.thumbnail.destroy');
     
     Route::post('/about-galleries', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeGallery'])->name('about-galleries.store');
     Route::put('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateGallery'])->name('about-galleries.update');

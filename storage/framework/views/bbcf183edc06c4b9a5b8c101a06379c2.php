@@ -24,6 +24,9 @@
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 
     <?php echo $__env->yieldContent('styles'); ?>
@@ -83,30 +86,25 @@
 </head>
 
 <body class="bg-gray-900 antialiased text-gray-100">
-    <div x-data="{ 
-            sidebarOpen: window.innerWidth > 1024, 
-            isMobile: window.innerWidth <= 1024 
-         }" 
-         x-init="window.addEventListener('resize', () => { 
-            isMobile = window.innerWidth <= 1024;
-            if (!isMobile) sidebarOpen = true;
-         })"
-         class="flex h-screen overflow-hidden bg-gray-900">
+    <div x-data="{
+        sidebarOpen: window.innerWidth > 1024,
+        isMobile: window.innerWidth <= 1024
+    }" x-init="window.addEventListener('resize', () => {
+        isMobile = window.innerWidth <= 1024;
+        if (!isMobile) sidebarOpen = true;
+    })" class="flex h-screen overflow-hidden bg-gray-900">
 
         
-        <div x-show="isMobile && sidebarOpen" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             @click="sidebarOpen = false"
-             class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden">
+        <div x-show="isMobile && sidebarOpen" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" @click="sidebarOpen = false"
+            class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden">
         </div>
 
         
-        <aside class="fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r border-gray-700 transition-all duration-300 bg-gray-800 lg:static lg:translate-x-0"
+        <aside
+            class="fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r border-gray-700 transition-all duration-300 bg-gray-800 lg:static lg:translate-x-0"
             :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
 
             <div class="h-16 flex items-center justify-between px-6 border-b border-gray-700 bg-gray-800">
@@ -224,13 +222,16 @@
         
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-900">
             
-            <header class="flex justify-between items-center h-16 px-4 sm:px-6 bg-gray-800 border-b border-gray-700 shadow-sm z-20">
+            <header
+                class="flex justify-between items-center h-16 px-4 sm:px-6 bg-gray-800 border-b border-gray-700 shadow-sm z-20">
                 <div class="flex items-center">
                     <button @click="sidebarOpen = !sidebarOpen"
                         class="text-gray-400 focus:outline-none hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700">
                         <i class="fas fa-bars fa-lg"></i>
                     </button>
-                    <h1 class="text-lg sm:text-xl font-semibold ml-2 sm:ml-4 text-gray-100 truncate max-w-[150px] sm:max-w-none"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h1>
+                    <h1
+                        class="text-lg sm:text-xl font-semibold ml-2 sm:ml-4 text-gray-100 truncate max-w-[150px] sm:max-w-none">
+                        <?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h1>
                 </div>
                 <div class="flex items-center space-x-2">
                     <?php if(auth()->guard('admin')->check()): ?>
@@ -240,7 +241,8 @@
                                 <div class="text-right mr-3 hidden md:block">
                                     <div class="text-sm font-semibold text-gray-200">
                                         <?php echo e(Auth::user()->name ?? 'Admin User'); ?></div>
-                                    <div class="text-[10px] text-gray-500 uppercase tracking-tighter">Administrator</div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-tighter">Administrator
+                                    </div>
                                 </div>
                                 <img class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-cover border border-gray-600 shadow-inner"
                                     src="<?php echo e(Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . (Auth::user()->name ?? 'Admin') . '&background=10b981&color=fff'); ?>"

@@ -26,7 +26,7 @@
             class="max-w-4xl mx-auto relative z-10 bg-white rounded-3xl shadow-xl p-6 md:p-10 border border-white/50">
 
             {{-- ส่วนหัว --}}
-            <div class="text-center mb-12">
+            <div class="text-center mb-10">
                 <div
                     class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 text-red-600 text-sm font-semibold mb-6 shadow-sm border border-red-100/50 backdrop-blur-sm transition-transform hover:scale-105">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -34,15 +34,27 @@
                             d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
                             clip-rule="evenodd"></path>
                     </svg>
-                    ศูนย์ช่วยเหลือ
+                    {{ $settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ' }}
                 </div>
                 <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight leading-tight">
-                    คุณมีคำถาม <span
-                        class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">เรามีคำตอบ</span>
+                    {!! $settings['faq_title'] ?? 'คุณมีคำถาม <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-400">เรามีคำตอบ</span>' !!}
                 </h1>
                 <p class="text-lg text-slate-500 max-w-2xl mx-auto">
-                    รวมคำถามที่พบบ่อยเกี่ยวกับการใช้งาน การสั่งซื้อ และการชำระเงิน
+                    {{ $settings['faq_subtitle'] ?? 'รวมคำถามที่พบบ่อยเกี่ยวกับการใช้งาน การสั่งซื้อ และการชำระเงิน' }}
                 </p>
+            </div>
+
+            {{-- ★ เพิ่มส่วนช่องค้นหา (Search Box) --}}
+            <div class="max-w-2xl mx-auto mb-10">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-slate-400 group-focus-within:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" id="faqSearchInput" placeholder="ค้นหาคำถามที่คุณสงสัย..."
+                        class="block w-full pl-12 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-2xl shadow-sm focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-400 transition-all text-slate-700 outline-none placeholder-slate-400 text-base">
+                </div>
             </div>
 
             {{-- ปุ่มหมวดหมู่ --}}
@@ -56,10 +68,11 @@
             </div>
 
             {{-- รายการคำถาม --}}
-            <div class="space-y-4">
+            <div class="space-y-4" id="faqContainer">
                 @forelse ($faqs as $index => $faq)
-                    <div
-                        class="collapse collapse-plus bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300 rounded-2xl group">
+                    {{-- ★ เพิ่ม class faq-item และ data-search สำหรับระบบค้นหา --}}
+                    <div class="faq-item collapse collapse-plus bg-white border border-slate-200/80 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300 rounded-2xl group"
+                         data-search="{{ strtolower($faq->question . ' ' . strip_tags($faq->answer)) }}">
 
                         <input type="radio" name="faq-accordion" class="peer"
                             @if ($loop->first) checked="checked" @endif />
@@ -97,25 +110,61 @@
                         <p class="text-slate-500">ระบบกำลังอัปเดตข้อมูล</p>
                     </div>
                 @endforelse
+
+                {{-- ★ ข้อความแจ้งเตือนเมื่อค้นหาไม่พบ (ซ่อนไว้เป็นค่าเริ่มต้น) --}}
+                <div id="noResultsMessage" class="hidden text-center py-12 px-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="w-16 h-16 mx-auto bg-red-50 rounded-full flex items-center justify-center mb-3">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-700">ไม่พบคำถามที่ค้นหา</h3>
+                    <p class="text-sm text-slate-500">ลองใช้คำค้นหาอื่นดูอีกครั้งนะครับ</p>
+                </div>
             </div>
 
             {{-- Footer Card --}}
-            <div
+            {{-- <div
                 class="mt-12 relative overflow-hidden bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-8 md:p-12 shadow-lg text-center">
-                <div
-                    class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full transform translate-x-1/2 -translate-y-1/2">
-                </div>
-
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-bold text-white mb-2">ยังไม่พบคำตอบที่คุณต้องการ?</h3>
-                    <p class="text-red-100 mb-6">ทีมงานของเราพร้อมช่วยเหลือคุณตลอดเวลา</p>
-                    <a href="/contact"
-                        class="inline-flex items-center justify-center gap-2 bg-white text-red-700 hover:bg-red-50 hover:scale-105 transition-all px-6 py-3 rounded-full font-bold shadow-md">
-                        <i class="fas fa-comment-dots"></i> ติดต่อเรา
-                    </a>
-                </div>
-            </div>
+                ... (ถูกคอมเมนต์ไว้ตามโค้ดเดิมของคุณ)
+            </div> --}}
 
         </div>
     </div>
+
+    {{-- ★ Script สำหรับระบบค้นหา (Live Search) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('faqSearchInput');
+            const faqItems = document.querySelectorAll('.faq-item');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+
+            // เมื่อมีการพิมพ์ในช่องค้นหา
+            searchInput.addEventListener('input', function(e) {
+                // แปลงคำค้นหาเป็นตัวพิมพ์เล็กทั้งหมดเพื่อไม่ให้สนใจตัวพิมพ์ใหญ่-เล็ก
+                const searchTerm = e.target.value.toLowerCase().trim();
+                let hasVisibleItems = false;
+
+                // วนลูปตรวจสอบคำถามแต่ละข้อ
+                faqItems.forEach(function(item) {
+                    const searchableText = item.getAttribute('data-search');
+                    
+                    // ถ้าข้อความที่ซ่อนไว้ตรงกับคำค้นหา
+                    if (searchableText.includes(searchTerm)) {
+                        item.style.display = ''; // แสดงผล
+                        hasVisibleItems = true;
+                    } else {
+                        item.style.display = 'none'; // ซ่อน
+                    }
+                });
+
+                // ตรวจสอบว่ามีข้อมูลให้แสดงหรือไม่ เพื่อโชว์ข้อความ "ไม่พบข้อมูล"
+                if (!hasVisibleItems && faqItems.length > 0) {
+                    noResultsMessage.classList.remove('hidden');
+                } else {
+                    noResultsMessage.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 @endsection

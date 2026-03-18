@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,12 +11,54 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $settings = Setting::pluck('value', 'key');
-        return view('admin.settings.index', compact('settings'));
+        $settings = SiteSetting::all()->pluck('value', 'key')->map(function ($value) {
+            $decoded = json_decode($value, true);
+            return (json_last_error() === JSON_ERROR_NONE) ? $decoded : $value;
+        })->toArray();
+
+        // ดึงข้อมูลสำหรับ Homepage
+        $heroBanners = \App\Models\Banner::location('homepage')->hero()->active()->get();
+        $infoBanner = \App\Models\Banner::location('homepage')->info()->active()->first();
+        $secondaryBanners = \App\Models\Banner::location('homepage')->secondary()->active()->get();
+        $services = \App\Models\Service::where('is_active', true)->orderBy('sort_order')->get();
+        $features = \App\Models\Feature::where('is_active', true)->orderBy('sort_order')->get();
+        $reviewImages = \App\Models\ProductReviewImage::whereNull('product_salepage_id')->orderBy('sort_order', 'asc')->get();
+
+        // ดึงข้อมูลสำหรับ All Products
+        $allProductsHeroBanners = \App\Models\Banner::location('allproducts')->hero()->active()->get();
+        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+
+        return view('admin.settings.index', compact(
+            'settings',
+            'heroBanners',
+            'infoBanner',
+            'secondaryBanners',
+            'services',
+            'features',
+            'reviewImages',
+            'allProductsHeroBanners',
+            'categories'
+        ));
     }
 
     public function update(Request $request)
     {
+        // Support bulk update from settings array
+        if ($request->has('settings') && is_array($request->settings)) {
+            foreach ($request->settings as $key => $value) {
+                SiteSetting::set($key, $value);
+            }
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'บันทึกการตั้งค่าเรียบร้อยแล้ว'
+                ]);
+            }
+            
+            return back()->with('success', 'บันทึกการตั้งค่าเรียบร้อยแล้ว');
+        }
+
         $validated = $request->validate([
             'site_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
             'site_cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
@@ -43,8 +85,8 @@ class SettingController extends Controller
             // Handle file uploads
             if ($request->hasFile($key) && $request->file($key)->isValid()) {
                 // Delete old file if it exists
-                $oldPath = Setting::where('key', $key)->value('value');
-                if ($oldPath) {
+                $oldPath = SiteSetting::get($key);
+                if ($oldPath && !is_array($oldPath)) {
                     Storage::disk('public')->delete($oldPath);
                 }
                 
@@ -57,7 +99,14 @@ class SettingController extends Controller
                 continue;
             }
 
-            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+            SiteSetting::set($key, $value);
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'บันทึกการตั้งค่าเรียบร้อยแล้ว'
+            ]);
         }
 
         return back()->with('success', 'บันทึกการตั้งค่าเรียบร้อยแล้ว');
@@ -65,7 +114,7 @@ class SettingController extends Controller
 
     public function destroy($key)
     {
-        $setting = Setting::where('key', $key)->first();
+        $setting = SiteSetting::where('key', $key)->first();
 
         if ($setting) {
             // If the setting is an image, delete it from storage

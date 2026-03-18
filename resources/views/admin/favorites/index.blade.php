@@ -84,13 +84,13 @@
             {{-- 2. MAIN CONTENT (Favorites) --}}
             <div class="container mx-auto px-4 max-w-5xl -mt-16 relative z-20 pb-10 space-y-12">
                 @forelse($favorites as $index => $fav)
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                    <div id="fav-item-{{ $fav->id }}" class="bg-white rounded-2xl shadow-lg overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                         <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 z-50 flex gap-2 transform group-hover:translate-y-0 -translate-y-2">
                             <a href="{{ route('admin.favorites.edit', $fav->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white p-2.5 rounded-full shadow-lg transition-colors" title="แก้ไข"><i class="fas fa-edit"></i></a>
-                            <form action="{{ route('admin.favorites.destroy', $fav->id) }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบรายการนี้?');">
-                                @csrf @method('DELETE')
-                                <button class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full shadow-lg transition-colors" title="ลบ"><i class="fas fa-trash-alt"></i></button>
-                            </form>
+                            <button type="button" onclick="confirmDelete('{{ route('admin.favorites.destroy', $fav->id) }}', document.getElementById('fav-item-{{ $fav->id }}'))" 
+                                class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full shadow-lg transition-colors" title="ลบ">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
                         <div class="absolute inset-0 border-2 border-transparent group-hover:border-emerald-500 border-dashed rounded-2xl pointer-events-none z-40 transition-colors"></div>
                         <div class="flex flex-col md:flex-row h-full">
@@ -141,7 +141,7 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     @forelse($videos as $video)
-                        <div class="relative rounded-2xl overflow-hidden aspect-[9/16] bg-gray-900 group/item cursor-pointer shadow-lg border-2 border-transparent hover:border-emerald-500 transition-colors"
+                        <div id="video-item-{{ $video->id }}" class="relative rounded-2xl overflow-hidden aspect-[9/16] bg-gray-900 group/item cursor-pointer shadow-lg border-2 border-transparent hover:border-emerald-500 transition-colors"
                             onclick="playVideoPreview({{ $video->toJson() }})">
                             @php
                                 $thumb = $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : ($video->thumbnail_url ?? '');
@@ -154,10 +154,10 @@
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
                             <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity z-50">
                                 <button onclick="event.stopPropagation(); editVideo({{ $video }})" class="bg-yellow-500 text-white p-2 rounded-full text-xs hover:bg-yellow-600"><i class="fas fa-edit"></i></button>
-                                <form action="{{ route('admin.about-videos.destroy', $video->id) }}" method="POST" onsubmit="return confirm('ลบวิดีโอนี้?');" onclick="event.stopPropagation();">
-                                    @csrf @method('DELETE')
-                                    <button class="bg-red-500 text-white p-2 rounded-full text-xs hover:bg-red-600"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button type="button" onclick="event.stopPropagation(); confirmDelete('{{ route('admin.about-videos.destroy', $video->id) }}', document.getElementById('video-item-{{ $video->id }}'))" 
+                                    class="bg-red-500 text-white p-2 rounded-full text-xs hover:bg-red-600" title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div class="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white"><i class="fas fa-play ml-1"></i></div>
@@ -185,13 +185,13 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     @forelse($galleries as $gallery)
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group/gal cursor-pointer relative hover:shadow-lg transition-all">
+                        <div id="gallery-item-{{ $gallery->id }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group/gal cursor-pointer relative hover:shadow-lg transition-all">
                             <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/gal:opacity-100 transition-opacity z-10">
                                 <button onclick="editGallery({{ $gallery->load('images') }})" class="bg-yellow-500 text-white p-2 rounded-full text-xs hover:bg-yellow-600"><i class="fas fa-edit"></i></button>
-                                <form action="{{ route('admin.about-galleries.destroy', $gallery->id) }}" method="POST" onsubmit="return confirm('ลบอัลบั้มนี้?');">
-                                    @csrf @method('DELETE')
-                                    <button class="bg-red-500 text-white p-2 rounded-full text-xs hover:bg-red-600"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('admin.about-galleries.destroy', $gallery->id) }}', document.getElementById('gallery-item-{{ $gallery->id }}'))" 
+                                    class="bg-red-500 text-white p-2 rounded-full text-xs hover:bg-red-600" title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                             <div class="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
                                 @if($gallery->images->count() > 0)
@@ -225,14 +225,14 @@
                     <div class="flex flex-wrap justify-center gap-8 md:gap-12">
                         @forelse($socialLinks as $link)
                             {{-- ส่วนนี้ปรับแต่งให้แสดงแค่ไอคอนและมีปุ่มแก้ไขแสดงเมื่อ Hover เหมือน User side แต่มี Action buttons --}}
-                            <div class="relative group/soc cursor-pointer">
+                            <div id="social-item-{{ $link->id }}" class="relative group/soc cursor-pointer">
                                 {{-- Action Buttons: แสดงเฉพาะเมื่อ Hover ที่ไอคอน --}}
                                 <div class="absolute -top-3 -right-3 flex gap-1 opacity-0 group-hover/soc:opacity-100 transition-opacity z-10">
                                     <button onclick="editSocial({{ $link }})" class="bg-yellow-500 text-white p-1 rounded-full text-[10px] shadow-sm"><i class="fas fa-edit"></i></button>
-                                    <form action="{{ route('admin.about-social-links.destroy', $link->id) }}" method="POST" onsubmit="return confirm('ลบรายการนี้?');">
-                                        @csrf @method('DELETE')
-                                        <button class="bg-red-500 text-white p-1 rounded-full text-[10px] shadow-sm"><i class="fas fa-trash"></i></button>
-                                    </form>
+                                    <button type="button" onclick="confirmDelete('{{ route('admin.about-social-links.destroy', $link->id) }}', document.getElementById('social-item-{{ $link->id }}'))" 
+                                        class="bg-red-500 text-white p-1 rounded-full text-[10px] shadow-sm" title="ลบ">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                                 
                                 {{-- แสดงไอคอนเพียวๆ สีตามแบรนด์ (ดึงค่า bg_color มาใช้เป็นสีตัวอักษร) --}}
@@ -268,13 +268,13 @@
                 <div class="text-center mb-10"><h2 class="text-2xl font-extrabold text-gray-800">🏢 ติดต่อเรา 🏢</h2></div>
                 <div class="space-y-16">
                     @forelse($contacts as $contact)
-                        <div class="flex flex-col md:flex-row items-center gap-8 group/loc relative">
+                        <div id="contact-item-{{ $contact->id }}" class="flex flex-col md:flex-row items-center gap-8 group/loc relative">
                             <div class="absolute top-0 right-0 opacity-0 group-hover/loc:opacity-100 transition-opacity flex gap-1">
                                 <button onclick="editContact({{ $contact }})" class="bg-yellow-500 text-white p-2 rounded-full text-xs shadow-lg hover:bg-yellow-600"><i class="fas fa-edit"></i></button>
-                                <form action="{{ route('admin.about-contacts.destroy', $contact->id) }}" method="POST" onsubmit="return confirm('ลบข้อมูลนี้?');">
-                                    @csrf @method('DELETE')
-                                    <button class="bg-red-500 text-white p-2 rounded-full text-xs shadow-lg hover:bg-red-600"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button type="button" onclick="confirmDelete('{{ route('admin.about-contacts.destroy', $contact->id) }}', document.getElementById('contact-item-{{ $contact->id }}'))" 
+                                    class="bg-red-500 text-white p-2 rounded-full text-xs shadow-lg hover:bg-red-600" title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                             <div class="w-full md:w-1/2 text-center space-y-4 {{ $loop->index % 2 != 0 ? 'md:order-2' : '' }}">
                                 <h3 class="font-bold text-lg text-gray-800 underline decoration-2 underline-offset-8">{{ $contact->title }}</h3>
@@ -310,7 +310,7 @@
                 <h3 class="text-lg font-bold text-white">ตั้งค่าส่วนหัว (Hero)</h3>
                 <button onclick="closeModal('settingsHeroModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-4">
+            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-4" onsubmit="handleAjaxFormSubmit(event, 'settingsHeroModal')">
                 @csrf
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">หัวข้อหลัก</label><input type="text" name="settings[about_title]" value="{{ $aboutTitle }}" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"></div>
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">คำโปรย</label><textarea name="settings[about_subtitle]" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white">{{ $aboutSub }}</textarea></div>
@@ -326,7 +326,7 @@
                 <h3 class="text-lg font-bold text-white">ตั้งค่าข้อความ Life with ติดใจ</h3>
                 <button onclick="closeModal('settingsLifeModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-4">
+            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-4" onsubmit="handleAjaxFormSubmit(event, 'settingsLifeModal')">
                 @csrf
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">หัวข้อ</label><input type="text" name="settings[life_title]" value="{{ $lifeTitle }}" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"></div>
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">คำบรรยาย</label><textarea name="settings[life_subtitle]" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white">{{ $lifeSub }}</textarea></div>
@@ -342,7 +342,7 @@
                 <h3 class="text-lg font-bold text-white" id="videoModalTitle">เพิ่มวิดีโอ</h3>
                 <button onclick="closeModal('videoModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.about-videos.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="videoForm">
+            <form action="{{ route('admin.about-videos.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="videoForm" onsubmit="handleAjaxFormSubmit(event, 'videoModal')">
                 @csrf
                 <div id="videoMethod"></div>
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">ชื่อวิดีโอ</label><input type="text" name="title" id="video_title" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"></div>
@@ -354,7 +354,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1">รูปหน้าปก</label>
                     <input type="file" name="thumbnail" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm">
-                    <div id="video_thumbnail_preview" class="mt-2 hidden"><img src="" class="h-20 rounded border border-gray-600"></div>
+                    <div id="video_thumbnail_preview" class="mt-2 hidden relative w-fit group">
+                        <img src="" class="h-20 rounded border border-gray-600">
+                        <button type="button" id="btn_delete_video_thumbnail" onclick="deleteVideoThumbnail()" 
+                                class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-4"><button type="button" onclick="closeModal('videoModal')" class="px-4 py-2 text-gray-300">ยกเลิก</button><button type="submit" class="px-6 py-2 bg-emerald-600 text-white rounded-lg">บันทึก</button></div>
             </form>
@@ -368,7 +374,7 @@
                 <h3 class="text-lg font-bold text-white" id="galleryModalTitle">เพิ่มอัลบั้ม</h3>
                 <button onclick="closeModal('galleryModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.about-galleries.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="galleryForm">
+            <form action="{{ route('admin.about-galleries.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="galleryForm" onsubmit="handleAjaxFormSubmit(event, 'galleryModal')">
                 @csrf
                 <div id="galleryMethod"></div>
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">ชื่ออัลบั้ม</label><input type="text" name="title" id="gallery_title" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"></div>
@@ -390,7 +396,7 @@
                 <h3 class="text-lg font-bold text-white">ตั้งค่าข้อความส่วนทีม</h3>
                 <button onclick="closeModal('settingsSocialTeamModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-4">
+            <form action="{{ route('admin.settings.update') }}" method="POST" class="p-6 space-y-4" onsubmit="handleAjaxFormSubmit(event, 'settingsSocialTeamModal')">
                 @csrf
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">หัวข้อส่วนโซเชียล</label><input type="text" name="settings[social_title]" value="{{ $socialTitle }}" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-white text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">หัวข้อส่วนทีม</label><input type="text" name="settings[team_title]" value="{{ $teamTitle }}" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-white text-sm"></div>
@@ -409,7 +415,7 @@
                 <h3 class="text-lg font-bold text-white" id="socialModalTitle">เพิ่มโซเชียลมีเดีย</h3>
                 <button onclick="closeModal('socialModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.about-social-links.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="socialForm">
+            <form action="{{ route('admin.about-social-links.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="socialForm" onsubmit="handleAjaxFormSubmit(event, 'socialModal')">
                 @csrf
                 <div id="socialMethod"></div>
                 <div class="grid grid-cols-2 gap-4">
@@ -482,7 +488,7 @@
                 <h3 class="text-lg font-bold text-white" id="contactModalTitle">เพิ่มสาขา/ที่อยู่</h3>
                 <button onclick="closeModal('contactModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <form action="{{ route('admin.about-contacts.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="contactForm">
+            <form action="{{ route('admin.about-contacts.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" id="contactForm" onsubmit="handleAjaxFormSubmit(event, 'contactModal')">
                 @csrf
                 <div id="contactMethod"></div>
                 <div><label class="block text-sm font-medium text-gray-300 mb-1">ชื่อสาขา/หัวข้อ</label><input type="text" name="title" id="contact_title" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white"></div>
@@ -504,6 +510,111 @@
     </div>
 
     <script>
+        let currentVideoId = null;
+
+        // Toast Helper
+        function showToast(title, icon = 'success') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+            Toast.fire({ icon: icon, title: title });
+        }
+
+        // AJAX Form Handler
+        async function handleAjaxFormSubmit(event, modalId) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showToast(result.message || 'บันทึกข้อมูลเรียบร้อยแล้ว');
+                    if (modalId) closeModal(modalId);
+                    
+                    // หน้านี้มีความซับซ้อนในการอัปเดต UI เฉพาะจุดแบบ Real-time 
+                    // จึงขอใช้วิธีโหลดข้อมูลใหม่แบบนุ่มนวล หรือ reload เพื่อให้ข้อมูลถูกต้องที่สุด
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    Swal.fire('ข้อผิดพลาด', result.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        // AJAX Delete Handler
+        async function confirmDelete(url, elementToRemove = null, message = 'คุณแน่ใจหรือไม่ที่จะลบรายการนี้?') {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: message,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก',
+                background: '#1f2937',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showToast(data.message || 'ลบข้อมูลเรียบร้อยแล้ว');
+                        if (elementToRemove) {
+                            elementToRemove.classList.add('scale-95', 'opacity-0');
+                            setTimeout(() => elementToRemove.remove(), 300);
+                        } else {
+                            setTimeout(() => window.location.reload(), 1000);
+                        }
+                    } else {
+                        Swal.fire('ผิดพลาด', data.message || 'ไม่สามารถลบข้อมูลได้', 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+                }
+            }
+        }
+
         function openModal(id) {
             document.getElementById(id).classList.remove('hidden');
             document.getElementById(id).classList.add('flex');
@@ -518,16 +629,29 @@
             const modal = document.getElementById('videoPlayerModal');
             const container = document.getElementById('videoContainer');
             let embedHtml = video.embed_html;
-            if (!embedHtml && video.video_url.includes('tiktok.com')) {
-                embedHtml = `<blockquote class="tiktok-embed" cite="${video.video_url}" data-video-id="${video.video_url.split('/').pop()}" style="max-width: 605px;min-width: 325px;" > <section> </section> </blockquote>`;
+            if (!embedHtml && video.video_url && video.video_url.includes('tiktok.com')) {
+                // ปรับปรุงการดึง Video ID ให้รองรับ URL หลายรูปแบบ
+                let videoId = '';
+                const parts = video.video_url.split('?')[0].split('/');
+                videoId = parts.filter(p => p !== '').pop();
+                
+                embedHtml = `<blockquote class="tiktok-embed" cite="${video.video_url}" data-video-id="${videoId}" style="max-width: 605px;min-width: 325px;" > <section> </section> </blockquote>`;
             }
             if (embedHtml) {
                 container.innerHTML = embedHtml;
-                const script = document.createElement('script');
-                script.src = "https://www.tiktok.com/embed.js";
-                script.async = true;
-                document.body.appendChild(script);
-                if (window.tiktok && window.tiktok.embed) window.tiktok.embed.render();
+                
+                if (window.tiktok && window.tiktok.embed) {
+                    window.tiktok.embed.render();
+                } else {
+                    const script = document.createElement('script');
+                    script.id = 'tiktok-embed-script';
+                    script.src = "https://www.tiktok.com/embed.js";
+                    script.async = true;
+                    script.onload = () => {
+                        if (window.tiktok && window.tiktok.embed) window.tiktok.embed.render();
+                    };
+                    document.body.appendChild(script);
+                }
             } else {
                 container.innerHTML = `<div class="text-white text-center p-10"><i class="fas fa-video-slash text-5xl mb-4"></i><br>ไม่สามารถโหลดวิดีโอได้</div>`;
             }
@@ -542,6 +666,7 @@
 
         // Video Management
         function openAddVideoModal() {
+            currentVideoId = null;
             document.getElementById('videoForm').action = "{{ route('admin.about-videos.store') }}";
             document.getElementById('videoMethod').innerHTML = "";
             document.getElementById('videoModalTitle').innerText = "เพิ่มวิดีโอ";
@@ -550,6 +675,7 @@
             openModal('videoModal');
         }
         function editVideo(video) {
+            currentVideoId = video.id;
             document.getElementById('videoForm').action = "/admin/about-videos/" + video.id;
             document.getElementById('videoMethod').innerHTML = '<input type="hidden" name="_method" value="PUT">';
             document.getElementById('videoModalTitle').innerText = "แก้ไขวิดีโอ";
@@ -564,6 +690,22 @@
                 document.getElementById('video_thumbnail_preview').classList.add('hidden');
             }
             openModal('videoModal');
+        }
+
+        function deleteVideoThumbnail() {
+            if (currentVideoId && confirm('ลบรูปหน้าปกนี้?')) {
+                fetch(`/admin/about-videos-thumbnail/${currentVideoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        document.getElementById('video_thumbnail_preview').classList.add('hidden');
+                        document.getElementById('video_thumbnail_preview').querySelector('img').src = "";
+                    }
+                });
+            }
         }
 
         // --- Social Management with Icon Picker & Image Upload ---

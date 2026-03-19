@@ -39,6 +39,34 @@ class BirthdayController extends Controller
             return redirect(config('app.url'))->with('error', 'ไม่พบแคมเปญวันเกิดที่กำหนด');
         }
 
+        // ✅ ตรวจสอบวันเกิด (ถ้า Login แล้ว)
+        if (auth()->check()) {
+            $user = auth()->user();
+            
+            // 1. ตรวจสอบว่าระบุวันเกิดหรือยัง
+            if (!$user->date_of_birth) {
+                // ถ้ายังไม่ระบุวันเกิด ให้แจ้งเตือนและพาไปหน้า Profile
+                return redirect()->route('profile.edit')->with('warning', 'กรุณาระบุวันเกิดในข้อมูลส่วนตัวเพื่อรับสิทธิ์วันเกิดครับ');
+            }
+
+            // 2. ตรวจสอบว่าเดือนนี้เป็นเดือนเกิดหรือไม่
+            if ($user->date_of_birth->month !== now()->month) {
+                return redirect(config('app.url'))->with('error', 'ขออภัยครับ สิทธิ์นี้เฉพาะลูกค้าที่เกิดในเดือนนี้เท่านั้น');
+            }
+
+            // 3. ตรวจสอบว่าเคยรับของขวัญของแคมเปญนี้ไปหรือยัง (เช็คจาก PromotionUsageLog)
+            if ($campaign->promotion_id) {
+                $alreadyClaimed = \App\Models\PromotionUsageLog::where('promotion_id', $campaign->promotion_id)
+                    ->where('user_id', $user->id)
+                    ->whereHas('order', fn($q) => $q->where('status_id', '!=', 5))
+                    ->exists();
+                
+                if ($alreadyClaimed) {
+                    return redirect(config('app.url'))->with('info', 'คุณเคยรับสิทธิ์ของขวัญวันเกิดในปีนี้ไปเรียบร้อยแล้วครับ');
+                }
+            }
+        }
+
         return view('birthday.claim', compact('campaign'));
     }
 
@@ -52,6 +80,12 @@ class BirthdayController extends Controller
         ]);
 
         $campaign = BirthdayPromotion::findOrFail($request->campaign_id);
+        $user = auth()->user();
+
+        // ✅ ตรวจสอบซ้ำอีกครั้งตอนกด Apply (ความปลอดภัย)
+        if (!$user->date_of_birth || $user->date_of_birth->month !== now()->month) {
+            return redirect(config('app.url'))->with('error', 'ไม่สามารถรับสิทธิ์ได้เนื่องจากข้อมูลวันเกิดไม่ตรงเงื่อนไข');
+        }
 
         try {
             // 1. ใช้รหัสส่วนลด (ถ้ามี)

@@ -498,11 +498,28 @@ class CartService
         if (! $promo) {
             throw new Exception('รหัสส่วนลดไม่ถูกต้อง หรือหมดอายุแล้ว');
         }
+
+        $userId = $this->getUserId();
+
+        // ✅ เพิ่มการตรวจสอบว่า User นี้เคยใช้โค้ดนี้ไปแล้วหรือยัง (เช็คจาก Log การสั่งซื้อจริง)
+        // ยกเว้นออเดอร์ที่ถูกยกเลิก (status_id = 5) เพื่อให้ลูกค้านำรหัสกลับมาใช้ใหม่ได้
+        if (Auth::check()) {
+            $alreadyUsed = \App\Models\PromotionUsageLog::where('promotion_id', $promo->id)
+                ->where('user_id', Auth::id())
+                ->whereHas('order', function($q) {
+                    $q->where('status_id', '!=', 5); // 5 = ยกเลิก (อ้างอิงจาก statusMap ใน view)
+                })
+                ->exists();
+            
+            if ($alreadyUsed) {
+                throw new Exception('คุณเคยใช้รหัสส่วนลดนี้ไปแล้ว ไม่สามารถใช้ซ้ำได้');
+            }
+        }
+
         if ($promo->usage_limit !== null && $promo->used_count >= $promo->usage_limit) {
             throw new Exception('ขออภัย! รหัสส่วนลดนี้ถูกใช้ครบจำนวนสิทธิ์แล้ว');
         }
 
-        $userId = $this->getUserId();
         session(["cart_{$userId}_promo_code" => $code]);
     }
 

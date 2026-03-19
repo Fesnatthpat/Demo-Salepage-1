@@ -300,8 +300,7 @@
                         class="w-24 h-24 sm:w-28 sm:h-28 object-contain bg-white rounded-full p-2 shadow-md hover:scale-105 transition-transform duration-300">
                     <p class="text-red-100 text-sm leading-relaxed mt-2">
                         <span class="font-bold text-white text-lg">{{ $siteName }}</span><br>
-                        ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย<br>
-                        คัดสรรวัตถุดิบคุณภาพเพื่อคุณ
+                        {!! nl2br(e($settings['footer_slogan'] ?? "ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย\nคัดสรรวัตถุดิบคุณภาพเพื่อคุณ")) !!}
                     </p>
                 </div>
 
@@ -343,19 +342,6 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Newsletter --}}
-                    <form class="flex flex-col gap-2 w-full mt-2">
-                        <label class="text-sm text-white font-bold">รับข่าวสารโปรโมชั่น</label>
-                        <p class="text-xs text-red-200 mb-1">กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร</p>
-                        <div class="flex">
-                            <input type="email" placeholder="your-email@example.com" required
-                                class="w-full px-4 py-2.5 rounded-l-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400 border-none" />
-                            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-r-lg font-bold text-sm transition-colors border-none shadow-md">
-                                สมัคร
-                            </button>
-                        </div>
-                    </form>
                 </div>
 
             </div>
@@ -365,11 +351,22 @@
         <div class="bg-red-700 py-4 text-center border-t border-red-800/50">
             <div class="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-3">
                 <p class="text-xs sm:text-sm text-red-200">Copyright © {{ date('Y') }} - All right reserved by {{ $siteName }} Co., Ltd.</p>
+                
+                {{-- ส่วนที่เพิ่ม Icon โซเชียลมีเดีย --}}
+                {{-- ส่วนที่แก้ไข Icon โซเชียลมีเดียให้รองรับ Font Awesome 6 --}}
                 <div class="flex gap-4">
-                    <a href="{{ $socialLinks['facebook'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-facebook-f"></i></a>
-                    <a href="{{ $socialLinks['twitter'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-twitter"></i></a>
-                    <a href="{{ $socialLinks['instagram'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-instagram"></i></a>
-                    <a href="{{ $socialLinks['line'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all"><i class="fab fa-line"></i></a>
+                    <a href="{{ $socialLinks['facebook'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
+                        <i class="fa-brands fa-facebook-f text-lg"></i>
+                    </a>
+                    <a href="{{ $socialLinks['twitter'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
+                        <i class="fa-brands fa-x-twitter text-lg"></i>
+                    </a>
+                    <a href="{{ $socialLinks['instagram'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
+                        <i class="fa-brands fa-instagram text-lg"></i>
+                    </a>
+                    <a href="{{ $socialLinks['line'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
+                        <i class="fa-brands fa-line text-lg"></i>
+                    </a>
                 </div>
             </div>
         </div>

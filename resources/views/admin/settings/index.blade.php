@@ -63,11 +63,159 @@
                         'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'">
                     <i class="fas fa-globe"></i> ตั้งค่าร้านค้า (Site Settings)
                 </button>
+                <button type="button" @click="activeTab = 'footer'"
+                    class="px-5 md:px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2.5 text-sm md:text-base whitespace-nowrap"
+                    :class="activeTab === 'footer' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' :
+                        'text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10'">
+                    <i class="fas fa-shoe-prints"></i> ส่วนท้ายเว็บ (Footer)
+                </button>
             </div>
         </div>
 
         <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="relative">
             @csrf
+
+            {{-- 🟣 TAB: FOOTER --}}
+            <div class="space-y-8" x-show="activeTab === 'footer'"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {{-- 1. Footer Info & Logo --}}
+                    <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
+                        <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
+                            <div class="p-2.5 bg-indigo-500/10 rounded-xl"><i class="fas fa-info-circle text-indigo-400 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-100">ข้อมูลทั่วไปส่วนท้าย (Footer Info)</h3>
+                        </div>
+                        <div class="p-6 md:p-8 space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    ชื่อร้าน (Site Name)
+                                </label>
+                                <input type="text" name="settings[site_name]" 
+                                       value="{{ $settings['site_name'] ?? 'ติดใจ' }}"
+                                       class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    คำโปรย (Footer Slogan)
+                                </label>
+                                <textarea name="settings[footer_slogan]" rows="3"
+                                          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">{{ $settings['footer_slogan'] ?? "ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย\nคัดสรรวัตถุดิบคุณภาพเพื่อคุณ" }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 2. Contact Information --}}
+                    <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
+                        <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
+                            <div class="p-2.5 bg-green-500/10 rounded-xl"><i class="fas fa-address-book text-green-400 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-100">ข้อมูลติดต่อ (Contact Info)</h3>
+                        </div>
+                        <div class="p-6 md:p-8 space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    เบอร์โทรศัพท์
+                                </label>
+                                <input type="text" name="settings[site_phone]" 
+                                       value="{{ $settings['site_phone'] ?? '02-123-4567' }}"
+                                       class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    อีเมล
+                                </label>
+                                <input type="email" name="settings[site_email]" 
+                                       value="{{ $settings['site_email'] ?? 'contact@tidjai.com' }}"
+                                       class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    ที่อยู่
+                                </label>
+                                <textarea name="settings[site_address]" rows="3"
+                                          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">{{ $settings['site_address'] ?? "บริษัท ติดใจ จำกัด\n123 ถนนสุขุมวิท แขวงคลองเตย\nเขตคลองเตย กรุงเทพฯ 10110" }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 3. Social Media Links --}}
+                    <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
+                        <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
+                            <div class="p-2.5 bg-blue-500/10 rounded-xl"><i class="fas fa-share-alt text-blue-400 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-100">โซเชียลมีเดีย (Social Media)</h3>
+                        </div>
+                        <div class="p-6 md:p-8 space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 flex-shrink-0 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl">
+                                    <i class="fab fa-facebook-f"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <input type="text" name="settings[social_facebook]" 
+                                           value="{{ $settings['social_facebook'] ?? '#' }}"
+                                           placeholder="Facebook URL..."
+                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 flex-shrink-0 bg-sky-400 rounded-xl flex items-center justify-center text-white text-xl">
+                                    <i class="fab fa-twitter"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <input type="text" name="settings[social_twitter]" 
+                                           value="{{ $settings['social_twitter'] ?? '#' }}"
+                                           placeholder="Twitter URL..."
+                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-sky-400 outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 flex-shrink-0 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <input type="text" name="settings[social_instagram]" 
+                                           value="{{ $settings['social_instagram'] ?? '#' }}"
+                                           placeholder="Instagram URL..."
+                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-pink-500 outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 flex-shrink-0 bg-green-500 rounded-xl flex items-center justify-center text-white text-xl">
+                                    <i class="fab fa-line"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <input type="text" name="settings[social_line]" 
+                                           value="{{ $settings['social_line'] ?? '#' }}"
+                                           placeholder="Line URL..."
+                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 4. Help Section Badge --}}
+                    <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
+                        <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
+                            <div class="p-2.5 bg-amber-500/10 rounded-xl"><i class="fas fa-question-circle text-amber-400 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-100">หัวข้อศูนย์ช่วยเหลือ (Help Section)</h3>
+                        </div>
+                        <div class="p-6 md:p-8 space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    หัวข้อ (Help Badge)
+                                </label>
+                                <input type="text" name="settings[faq_badge]" 
+                                       value="{{ $settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ' }}"
+                                       class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-amber-500 outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {{-- 🔵 TAB: SITE SETTINGS --}}
             <div class="space-y-8" x-show="activeTab === 'site_settings'"
@@ -666,7 +814,7 @@
 
             {{-- 💾 SAVE BUTTON (Floating on mobile, sticky on desktop) --}}
             <div
-                class="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/90 backdrop-blur-xl border-t border-gray-800 z-40 md:sticky md:bottom-6 md:bg-transparent md:border-none md:p-0 md:pt-10 flex justify-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none">
+                class="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/90 border-t border-gray-800 z-40 md:sticky md:bottom-6 md:bg-transparent md:border-none md:p-0 md:pt-10 flex justify-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none">
                 <button type="submit"
                     class="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 md:py-4 px-8 md:px-12 rounded-2xl md:rounded-full shadow-xl shadow-emerald-900/50 transform transition-all hover:-translate-y-1 hover:scale-105 flex items-center justify-center gap-3 border border-emerald-400/30">
                     <i class="fas fa-save text-xl"></i>

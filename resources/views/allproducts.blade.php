@@ -71,11 +71,17 @@
             }
         }
 
-        /* Category Slider Arrows - ซ่อนบนมือถือเพื่อลดความเกะกะ */
+        /* Category Slider Arrows - ปรับขนาดบนมือถือให้เล็กลงเพื่อไม่ให้บังไอคอน (เอาการซ่อนออก) */
         @media (max-width: 767px) {
             .categorySwiper .swiper-button-next,
             .categorySwiper .swiper-button-prev {
-                display: none !important;
+                width: 24px !important;
+                height: 24px !important;
+                margin-top: -12px !important;
+            }
+            .categorySwiper .swiper-button-next::after,
+            .categorySwiper .swiper-button-prev::after {
+                font-size: 10px !important;
             }
         }
 

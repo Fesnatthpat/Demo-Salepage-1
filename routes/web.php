@@ -42,6 +42,12 @@ Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
 // ==========================================
+// Birthday Promotion (Public)
+// ==========================================
+Route::get('/birthday/claim', [App\Http\Controllers\BirthdayController::class, 'claim'])->name('birthday.claim');
+Route::post('/birthday/apply', [App\Http\Controllers\BirthdayController::class, 'apply'])->name('birthday.apply');
+
+// ==========================================
 // 2. ระบบตะกร้าสินค้า (Cart)
 // ==========================================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

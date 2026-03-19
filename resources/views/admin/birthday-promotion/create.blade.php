@@ -49,7 +49,7 @@
                             {{-- Image Upload --}}
                             <div class="space-y-4">
                                 <label
-                                    class="block text-sm font-bold text-gray-400 uppercase tracking-widest">รูปภาพโปรโมชั่น</label>
+                                    class="block text-sm font-bold text-gray-400 uppercase tracking-widest">รูปภาพโปรโมชั่น (Flex Message)</label>
                                 <div class="relative group">
                                     <div
                                         class="w-full aspect-[20/13] bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative transition-all group-hover:border-pink-500/50">
@@ -127,6 +127,78 @@
                         </div>
                     </div>
 
+                    {{-- เพิ่มรูปการ์ดอวยพร --}}
+                    <div class="mt-12 pt-8 border-t border-gray-700/50">
+                        <div class="flex items-center gap-2 mb-6">
+                            <i class="fas fa-id-card text-emerald-400 text-lg"></i>
+                            <div>
+                                <h3 class="font-bold text-gray-100">รูปการ์ดอวยพร (Greeting Card)</h3>
+                                <p class="text-xs text-gray-500 mt-1">รูปภาพที่จะแสดงหลังลูกค้ากดรับสิทธิ์ (เช่น การ์ดจาก CEO)</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <div class="relative group">
+                                <div
+                                    class="w-full aspect-video bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative transition-all group-hover:border-emerald-500/50">
+                                    <img src="https://placehold.co/800x450/111827/4b5563?text=CEO+Greeting+Card"
+                                        class="w-full h-full object-cover" id="card-image-preview">
+                                    <div
+                                        class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm">
+                                        <i class="fas fa-cloud-upload-alt text-white text-3xl mb-2"></i>
+                                        <span class="text-white text-sm font-medium">คลิกเพื่อเลือกรูปการ์ด</span>
+                                    </div>
+                                    <input type="file" name="card_image" accept="image/*"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        onchange="const file = this.files[0]; if(file) { document.getElementById('card-image-preview').src = window.URL.createObjectURL(file); }">
+                                </div>
+                            </div>
+                            <div class="text-gray-400 text-sm italic">
+                                <p><i class="fas fa-info-circle mr-2"></i> แนะนำขนาด 800x450 px หรืออัตราส่วน 16:9</p>
+                                <p class="mt-2">รูปภาพนี้จะถูกส่งให้ลูกค้าหลังจากที่พวกเขากดรับสิทธิ์ผ่าน LINE เพื่อความรู้สึกประทับใจที่เป็นส่วนตัว</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- การตั้งค่าโปรโมชั่นพิเศษ --}}
+                    <div class="mt-12 pt-8 border-t border-gray-700/50">
+                        <div class="flex items-center gap-2 mb-6">
+                            <i class="fas fa-ticket-alt text-amber-400 text-lg"></i>
+                            <div>
+                                <h3 class="font-bold text-gray-100">การตั้งค่าสิทธิพิเศษ (Privilege Settings)</h3>
+                                <p class="text-xs text-gray-500 mt-1">กำหนดโค้ดส่วนลดและของแถมที่จะได้รับ</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">รหัสโค้ดส่วนลด</label>
+                                <input type="text" name="discount_code" value="{{ old('discount_code') }}"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-amber-500/50 outline-none"
+                                    placeholder="เช่น BDAY89">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">มูลค่าส่วนลด (บาท)</label>
+                                <input type="number" name="discount_value" value="{{ old('discount_value', 0) }}"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-amber-500/50 outline-none"
+                                    placeholder="0">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">เลือกสินค้าของแถม</label>
+                                <select name="gift_product_id"
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-amber-500/50 outline-none">
+                                    <option value="">-- ไม่มีของแถม --</option>
+                                    @foreach ($products as $product)
+                                        <option value="{{ $product->pd_sp_id }}" {{ old('gift_product_id') == $product->pd_sp_id ? 'selected' : '' }}>
+                                            {{ $product->pd_sp_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-[10px] text-gray-500 italic">* หากระบุรหัสโค้ดหรือของแถม ระบบจะสร้างโปรโมชั่นให้โดยอัตโนมัติ</p>
+                    </div>
+
                     {{-- การตั้งค่าล่วงหน้า (Schedule) --}}
                     <div class="mt-12 pt-8 border-t border-gray-700/50">
                         <div class="flex items-center gap-2 mb-6">
@@ -169,10 +241,10 @@
                         {{-- Link to System Promotion --}}
                         <div class="space-y-2">
                             <label
-                                class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ผูกโปรโมชั่นในระบบ</label>
+                                class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ผูกโปรโมชั่นในระบบ (แมนนวล)</label>
                             <select name="promotion_id"
                                 class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-pink-500/50 outline-none">
-                                <option value="">-- ไม่ระบุ (ใช้เฉพาะลิงก์) --</option>
+                                <option value="">-- ไม่ระบุ (หากกรอกด้านบนแล้วไม่ต้องเลือกที่นี่) --</option>
                                 @foreach ($promotions as $promo)
                                     <option value="{{ $promo->id }}"
                                         {{ old('promotion_id') == $promo->id ? 'selected' : '' }}>

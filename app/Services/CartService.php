@@ -545,44 +545,63 @@ class CartService
     {
         $guestCart = Cart::session('_guest_'.$guestSessionKey);
         $guestItems = $guestCart->getContent();
+        
+        // 1. ย้าย Promo Code จาก Guest Session มาที่ User Session
+        $guestPromoCode = session("cart__guest_{$guestSessionKey}_promo_code");
+        if ($guestPromoCode) {
+            session(["cart_{$userId}_promo_code" => $guestPromoCode]);
+            // ลบของเดิมออก
+            session()->forget("cart__guest_{$guestSessionKey}_promo_code");
+        }
+
         if ($guestItems->isEmpty()) {
             return;
         }
 
         $this->restoreCartFromDatabase($userId);
         $userCart = Cart::session($userId);
-        $guestProducts = ProductSalepage::whereIn('pd_sp_id', $guestItems->pluck('id')->toArray())->with('images')->get()->keyBy('pd_sp_id');
+        
+        // รวบรวม ID สินค้าทั้งหมด (รวมทั้งสินค้าปกติและของแถม)
+        $productIds = $guestItems->map(function($item) {
+            return $item->attributes['product_id'] ?? $item->id;
+        })->unique()->toArray();
+        
+        $guestProducts = ProductSalepage::whereIn('pd_sp_id', $productIds)->with('images')->get()->keyBy('pd_sp_id');
 
         foreach ($guestItems as $guestItem) {
             try {
-                $product = $guestProducts->get($guestItem->id);
-                if (! $product || $guestItem->quantity > $product->pd_sp_stock) {
+                $realProductId = $guestItem->attributes['product_id'] ?? $guestItem->id;
+                $product = $guestProducts->get($realProductId);
+                
+                if (!$product) continue;
+
+                // ตรวจสอบสต็อกเฉพาะสินค้าที่ไม่ใช่ของแถม
+                $isFreebie = $guestItem->attributes['is_freebie'] ?? false;
+                if (!$isFreebie && $guestItem->quantity > ($product->pd_sp_stock ?? 0)) {
                     continue;
                 }
 
                 if ($userCart->has($guestItem->id)) {
                     $userCart->update($guestItem->id, ['quantity' => $guestItem->quantity]);
                 } else {
-                    $price = max(0, (float) $product->pd_sp_price - (float) $product->pd_sp_discount);
-                    $img = $product->images->first();
-                    $imgPath = $img ? ($img->img_path ?? $img->image_path) : null;
-                    if ($imgPath && ! filter_var($imgPath, FILTER_VALIDATE_URL)) {
-                        $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
-                    }
+                    // คัดลอก Attributes ทั้งหมดมา (สำคัญมากสำหรับสถานะ is_freebie)
+                    $attributes = $guestItem->attributes->toArray();
+                    
                     $userCart->add([
-                        'id' => $product->pd_sp_id, 'name' => $product->pd_sp_name, 'price' => $price,
+                        'id' => $guestItem->id,
+                        'name' => $guestItem->name,
+                        'price' => $guestItem->price,
                         'quantity' => $guestItem->quantity,
-                        'attributes' => [
-                            'image' => $imgPath, 'original_price' => (float) $product->pd_sp_price,
-                            'discount' => (float) $product->pd_sp_discount, 'pd_code' => $product->pd_code,
-                        ],
+                        'attributes' => $attributes,
                         'associatedModel' => $product,
                     ]);
                 }
             } catch (Exception $e) {
+                Log::error("Merge Cart Item Error: " . $e->getMessage());
                 continue;
             }
         }
+        
         $this->saveCartToDatabase($userId, $userCart->getContent());
         $guestCart->clear();
     }

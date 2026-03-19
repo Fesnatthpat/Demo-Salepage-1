@@ -53,6 +53,7 @@
                         <tr
                             class="bg-gray-900/80 border-b border-gray-700 text-xs uppercase text-gray-400 font-bold tracking-wider">
                             <th class="px-6 py-5">แคมเปญ</th>
+                            <th class="px-6 py-5">สิทธิพิเศษ (Privileges)</th>
                             <th class="px-6 py-5">ระยะเวลา (Schedule)</th>
                             <th class="px-6 py-5 text-center">สถานะใช้งาน</th>
                             <th class="px-6 py-5 text-right">จัดการ</th>
@@ -79,6 +80,37 @@
                                             <p class="text-[11px] text-gray-400 line-clamp-1 max-w-xs"
                                                 title="{{ $bp->message }}">{{ $bp->message }}</p>
                                         </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-5 align-middle text-xs">
+                                    <div class="flex flex-col gap-1.5">
+                                        @if($bp->discount_code)
+                                            <div class="flex items-center gap-2 text-amber-400">
+                                                <i class="fas fa-ticket-alt w-4"></i>
+                                                <span class="font-mono bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">{{ $bp->discount_code }}</span>
+                                                @if($bp->discount_value > 0)
+                                                    <span class="text-gray-500">(ลด {{ number_format($bp->discount_value) }}.-)</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                        @if($bp->gift_product_id)
+                                            <div class="flex items-center gap-2 text-emerald-400">
+                                                <i class="fas fa-gift w-4"></i>
+                                                <span class="truncate max-w-[150px]" title="{{ $bp->giftProduct->pd_sp_name ?? 'สินค้าของแถม' }}">
+                                                    {{ $bp->giftProduct->pd_sp_name ?? 'สินค้าของแถม' }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                        @if($bp->card_image_path)
+                                            <div class="flex items-center gap-2 text-blue-400">
+                                                <i class="fas fa-id-card w-4"></i>
+                                                <span>มีการ์ดอวยพร</span>
+                                            </div>
+                                        @endif
+                                        @if(!$bp->discount_code && !$bp->gift_product_id && !$bp->promotion_id)
+                                            <span class="text-gray-600 italic">ไม่มีสิทธิพิเศษ</span>
+                                        @endif
                                     </div>
                                 </td>
 

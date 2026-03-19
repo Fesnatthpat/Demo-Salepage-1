@@ -82,6 +82,13 @@ class SendBirthdayPromotions extends Command
         }
 
         foreach ($users as $user) {
+            $claimUrl = route('birthday.claim', ['id' => $activeCampaign->id]);
+            
+            // ตรวจสอบว่า URL เป็น HTTPS สำหรับ LINE
+            if (str_starts_with($claimUrl, 'http://')) {
+                $claimUrl = str_replace('http://', 'https://', $claimUrl);
+            }
+
             $flexMessage = [
                 'type' => 'flex',
                 'altText' => "🎂 สุขสันต์วันเกิดครับคุณ {$user->name} มีของขวัญมาให้!",
@@ -131,7 +138,7 @@ class SendBirthdayPromotions extends Command
                                 'action' => [
                                     'type' => 'uri',
                                     'label' => '🎁 กดรับสิทธิ์เลย',
-                                    'uri' => $link,
+                                    'uri' => $claimUrl,
                                 ],
                                 'style' => 'primary',
                                 'color' => '#ff3344',

@@ -226,28 +226,45 @@ class CartService
 
     public function removeItem(string|int $productId): void
     {
+        $this->removeItems([$productId]);
+    }
+
+    public function removeItems(array $productIds): void
+    {
         $userId = $this->getUserId();
         $this->getCartContents();
         $cart = Cart::session($userId);
 
-        $targetKeys = $this->findCartKeys($productId);
-        if (empty($targetKeys)) {
-            return;
-        }
-
-        $firstItem = $cart->get($targetKeys[0]);
-        $promoGroupId = $firstItem->attributes['promo_group_id'] ?? null;
-        $isFreebie = $firstItem->attributes['is_freebie'] ?? false;
-
         $keysToDelete = [];
-        if ($promoGroupId && ! $isFreebie) {
-            foreach ($cart->getContent() as $key => $cartItem) {
-                if (($cartItem->attributes['promo_group_id'] ?? null) === $promoGroupId) {
+
+        foreach ($productIds as $productId) {
+            $targetKeys = $this->findCartKeys($productId);
+            if (empty($targetKeys)) {
+                // Try direct lookup by ID if findCartKeys didn't find it (e.g. for freebies)
+                if ($cart->get($productId)) {
+                    $targetKeys = [$productId];
+                } else {
+                    continue;
+                }
+            }
+
+            foreach ($targetKeys as $key) {
+                $item = $cart->get($key);
+                if (!$item) continue;
+
+                $promoGroupId = $item->attributes['promo_group_id'] ?? null;
+                $isFreebie = $item->attributes['is_freebie'] ?? false;
+
+                if ($promoGroupId && !$isFreebie) {
+                    foreach ($cart->getContent() as $k => $cartItem) {
+                        if (($cartItem->attributes['promo_group_id'] ?? null) === $promoGroupId) {
+                            $keysToDelete[] = $k;
+                        }
+                    }
+                } else {
                     $keysToDelete[] = $key;
                 }
             }
-        } else {
-            $keysToDelete = $targetKeys;
         }
 
         foreach (array_unique($keysToDelete) as $k) {

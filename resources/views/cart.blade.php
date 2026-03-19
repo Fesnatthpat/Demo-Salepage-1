@@ -25,12 +25,18 @@
                         <div class="lg:col-span-8 space-y-4">
 
                             {{-- ปุ่มเลือกทั้งหมด --}}
-                            <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
-                                <input type="checkbox" id="select-all"
-                                    class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer transition-all"
-                                    onclick="toggleAll(this)">
-                                <label for="select-all"
-                                    class="text-sm sm:text-base text-gray-700 font-bold cursor-pointer select-none">เลือกสินค้าทั้งหมด</label>
+                            <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="select-all"
+                                        class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer transition-all"
+                                        onclick="toggleAll(this)">
+                                    <label for="select-all"
+                                        class="text-sm sm:text-base text-gray-700 font-bold cursor-pointer select-none">เลือกสินค้าทั้งหมด</label>
+                                </div>
+
+                                <button type="button" id="remove-selected-btn" class="hidden text-red-500 hover:text-red-700 transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-bold bg-red-50 px-3 py-1.5 rounded-lg border border-red-100" onclick="removeSelectedItems()">
+                                    <i class="fas fa-trash-alt"></i> ลบที่เลือก
+                                </button>
                             </div>
 
                             <div id="cart-items-list" class="space-y-3 sm:space-y-4">
@@ -452,6 +458,64 @@
             window.history.replaceState({}, '', url);
         }
 
+        function removeSelectedItems() {
+            const selectedIds = Array.from(document.querySelectorAll('.item-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedIds.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'คำเตือน',
+                    text: 'กรุณาเลือกสินค้าที่ต้องการลบ',
+                    confirmButtonColor: '#EF4444',
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: `คุณต้องการลบสินค้าที่เลือกจำนวน ${selectedIds.length} รายการใช่หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ route('cart.removeBulk') }}";
+                    form.style.display = 'none';
+
+                    const inputCsrf = document.createElement('input');
+                    inputCsrf.type = 'hidden';
+                    inputCsrf.name = '_token';
+                    inputCsrf.value = csrfToken;
+                    form.appendChild(inputCsrf);
+
+                    const inputMethod = document.createElement('input');
+                    inputMethod.type = 'hidden';
+                    inputMethod.name = '_method';
+                    inputMethod.value = 'DELETE';
+                    form.appendChild(inputMethod);
+
+                    selectedIds.forEach(id => {
+                        const inputId = document.createElement('input');
+                        inputId.type = 'hidden';
+                        inputId.name = 'ids[]';
+                        inputId.value = id;
+                        form.appendChild(inputId);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
         function calculateTotal() {
             const checkboxes = document.querySelectorAll('.item-checkbox');
             const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
@@ -468,6 +532,17 @@
             if (selectAll) {
                 const totalNormalItems = document.querySelectorAll('.item-checkbox').length;
                 selectAll.checked = (totalNormalItems > 0 && totalNormalItems === count);
+            }
+
+            const removeSelectedBtn = document.getElementById('remove-selected-btn');
+            if (removeSelectedBtn) {
+                if (count > 0) {
+                    removeSelectedBtn.classList.remove('hidden');
+                    removeSelectedBtn.classList.add('flex');
+                } else {
+                    removeSelectedBtn.classList.add('hidden');
+                    removeSelectedBtn.classList.remove('flex');
+                }
             }
 
             const selectedCountEl = document.getElementById('selected-count');

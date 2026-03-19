@@ -60,6 +60,7 @@ Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('c
 // Route สำหรับอัปเดตและลบสินค้า
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
+Route::delete('/cart/remove-bulk', [CartController::class, 'removeBulk'])->name('cart.removeBulk');
 
 // ==========================================
 // 3. ระบบสมาชิก (Login/Logout)

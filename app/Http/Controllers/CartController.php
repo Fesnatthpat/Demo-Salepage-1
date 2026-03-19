@@ -159,4 +159,16 @@ class CartController extends Controller
 
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
+
+    public function removeBulk(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids)) {
+            return back()->with('error', 'กรุณาเลือกสินค้าที่ต้องการลบ');
+        }
+
+        $this->cartService->removeItems($ids);
+
+        return back()->with('success', 'ลบสินค้าที่เลือกเรียบร้อยแล้ว');
+    }
 }

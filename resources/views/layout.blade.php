@@ -307,19 +307,29 @@
                 {{-- Column 2: ศูนย์ช่วยเหลือ --}}
                 <div class="flex flex-col gap-3 lg:col-span-2">
                     <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">{{ $settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ' }}</h6>
-                    <a href="{{ route('order.tracking.form') }}" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> ติดตามสถานะคำสั่งซื้อ</a>
-                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> การรับประกันสินค้า</a>
-                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> การคืนสินค้าและการคืนเงิน</a>
-                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> วิธีการสั่งซื้อ</a>
+                    @for($i=1; $i<=4; $i++)
+                        @php
+                            $label = $settings['footer_col2_link'.$i.'_label'] ?? ($i==1?'ติดตามสถานะคำสั่งซื้อ':($i==2?'การรับประกันสินค้า':($i==3?'การคืนสินค้าและการคืนเงิน':'วิธีการสั่งซื้อ')));
+                            $url = $settings['footer_col2_link'.$i.'_url'] ?? ($i==1?route('order.tracking.form'):'#');
+                        @endphp
+                        @if($label)
+                            <a href="{{ $url }}" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> {{ $label }}</a>
+                        @endif
+                    @endfor
                 </div>
 
                 {{-- Column 3: เกี่ยวกับติดใจ --}}
                 <div class="flex flex-col gap-3 lg:col-span-2">
-                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">เกี่ยวกับติดใจ</h6>
-                    <a href="/about" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> เรื่องราวของเรา</a>
-                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> บทความน่ารู้</a>
-                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> นโยบายความเป็นส่วนตัว</a>
-                    <a href="#" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> ข้อกำหนดและเงื่อนไข</a>
+                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">{{ $settings['footer_about_title'] ?? 'เกี่ยวกับติดใจ' }}</h6>
+                    @for($i=1; $i<=4; $i++)
+                        @php
+                            $label = $settings['footer_col3_link'.$i.'_label'] ?? ($i==1?'เรื่องราวของเรา':($i==2?'บทความน่ารู้':($i==3?'นโยบายความเป็นส่วนตัว':'ข้อกำหนดและเงื่อนไข')));
+                            $url = $settings['footer_col3_link'.$i.'_url'] ?? ($i==1?'/about':'#');
+                        @endphp
+                        @if($label)
+                            <a href="{{ $url }}" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> {{ $label }}</a>
+                        @endif
+                    @endfor
                 </div>
 
                 {{-- Column 4: ติดต่อและจดหมายข่าว --}}
@@ -342,6 +352,19 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Newsletter --}}
+                    <form class="flex flex-col gap-2 w-full mt-2">
+                        <label class="text-sm text-white font-bold">{{ $settings['footer_newsletter_title'] ?? 'รับข่าวสารโปรโมชั่น' }}</label>
+                        <p class="text-xs text-red-200 mb-1">{{ $settings['footer_newsletter_subtitle'] ?? 'กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร' }}</p>
+                        <div class="flex">
+                            <input type="email" placeholder="your-email@example.com" required
+                                class="w-full px-4 py-2.5 rounded-l-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400 border-none" />
+                            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-r-lg font-bold text-sm transition-colors border-none shadow-md">
+                                สมัคร
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
             </div>

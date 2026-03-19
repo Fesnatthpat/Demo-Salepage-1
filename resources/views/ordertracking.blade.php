@@ -166,7 +166,7 @@
             const modalContent = document.getElementById('timelineContent');
             const modalTracking = document.getElementById('modalTrackingNumber');
             
-            modalTracking.innerText = 'หมายเลขติดตามพ: ' + data.tracking_number;
+            modalTracking.innerText = 'หมายเลขติดตาม: ' + data.tracking_number;
             
             let html = '';
             if (data.timeline_data && data.timeline_data.length > 0) {

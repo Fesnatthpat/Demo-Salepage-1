@@ -89,6 +89,26 @@
                             <h3 class="font-bold text-lg text-gray-100">ข้อมูลทั่วไปส่วนท้าย (Footer Info)</h3>
                         </div>
                         <div class="p-6 md:p-8 space-y-6">
+                            {{-- Logo Upload for Footer (Same as Site Logo) --}}
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-6 bg-gray-900/50 p-4 rounded-2xl border border-gray-700 mb-6">
+                                <div class="w-20 h-20 bg-gray-900 rounded-xl border-2 border-dashed border-gray-600 overflow-hidden relative group shrink-0 hover:border-indigo-500/50 transition-colors mx-auto sm:mx-0">
+                                    @php
+                                        $currentLogo = \App\Models\SiteSetting::get('site_logo');
+                                        $logoUrl = $currentLogo ? asset('storage/' . $currentLogo) : asset('images/logo/logo1.png');
+                                    @endphp
+                                    <img src="{{ $logoUrl }}" class="w-full h-full object-contain p-2" id="footer-logo-preview">
+                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                        <i class="fas fa-camera text-white text-xl"></i>
+                                    </div>
+                                    <input type="file" name="site_logo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        onchange="document.getElementById('footer-logo-preview').src = window.URL.createObjectURL(this.files[0]); document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0])">
+                                </div>
+                                <div class="space-y-1 text-center sm:text-left">
+                                    <p class="text-sm text-gray-300 font-bold">โลโก้ร้านค้า</p>
+                                    <p class="text-xs text-gray-500">จะแสดงที่ส่วนบนและส่วนท้ายของเว็บไซต์</p>
+                                </div>
+                            </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
@@ -113,33 +133,6 @@
                                 </label>
                                 <textarea name="settings[footer_slogan]" rows="3"
                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">{{ $settings['footer_slogan'] ?? "ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย\nคัดสรรวัตถุดิบคุณภาพเพื่อคุณ" }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- 2. Newsletter Section --}}
-                    <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
-                        <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                            <div class="p-2.5 bg-pink-500/10 rounded-xl"><i class="fas fa-paper-plane text-pink-400 text-xl"></i>
-                            </div>
-                            <h3 class="font-bold text-lg text-gray-100">ส่วนรับข่าวสาร (Newsletter)</h3>
-                        </div>
-                        <div class="p-6 md:p-8 space-y-4">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
-                                    หัวข้อรับข่าวสาร
-                                </label>
-                                <input type="text" name="settings[footer_newsletter_title]" 
-                                       value="{{ $settings['footer_newsletter_title'] ?? 'รับข่าวสารโปรโมชั่น' }}"
-                                       class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-pink-500 outline-none transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
-                                    คำบรรยายรับข่าวสาร
-                                </label>
-                                <input type="text" name="settings[footer_newsletter_subtitle]" 
-                                       value="{{ $settings['footer_newsletter_subtitle'] ?? 'กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร' }}"
-                                       class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-pink-500 outline-none transition-all">
                             </div>
                         </div>
                     </div>

@@ -261,7 +261,7 @@
             </div>
 
             {{-- 6. CONTACT LOCATIONS --}}
-            <div class="container mx-auto px-4 max-w-5xl py-20 border-t border-gray-200 group relative">
+            {{-- <div class="container mx-auto px-4 max-w-5xl py-20 border-t border-gray-200 group relative">
                 <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 z-50">
                     <button onclick="openAddContactModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-colors"><i class="fas fa-plus mr-2"></i> เพิ่มสาขา/ที่อยู่</button>
                 </div>
@@ -297,7 +297,7 @@
                         <div class="text-center py-10 bg-white rounded-2xl border-2 border-dashed border-gray-300 text-gray-400">ยังไม่มีข้อมูลติดต่อสาขา</div>
                     @endforelse
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 

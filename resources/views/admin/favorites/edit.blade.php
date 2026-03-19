@@ -161,7 +161,7 @@
                         </div>
 
                         {{-- Video Upload Card --}}
-                        <div class="bg-gray-900 rounded-xl p-5 border border-gray-700/50 mt-6">
+                        {{-- <div class="bg-gray-900 rounded-xl p-5 border border-gray-700/50 mt-6">
                             <label class="block text-sm font-semibold text-gray-200 mb-3">วิดีโอประกอบ</label>
 
                             @php 
@@ -191,7 +191,7 @@
                             <input type="file" name="video" id="video" accept="video/*"
                                 onchange="previewVideo(event)"
                                 class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
-                        </div>
+                        </div> --}}
 
                     </div>
                 </div>

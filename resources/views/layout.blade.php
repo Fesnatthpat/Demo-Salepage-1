@@ -332,11 +332,11 @@
                     @endfor
                 </div>
 
-                {{-- Column 4: ติดต่อและจดหมายข่าว --}}
-                <div class="flex flex-col gap-6 lg:col-span-4 sm:col-span-2">
+                {{-- Column 4: ติดต่อ --}}
+                <div class="flex flex-col gap-4 lg:col-span-4 sm:col-span-2">
                     {{-- Contact Info --}}
                     <div>
-                        <h6 class="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">ติดต่อ{{ $siteName }}</h6>
+                        <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">ติดต่อ{{ $siteName }}</h6>
                         <div class="flex flex-col gap-3 text-sm text-red-100">
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-map-marker-alt mt-1 flex-shrink-0 w-4 text-center"></i>
@@ -352,19 +352,6 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Newsletter --}}
-                    <form class="flex flex-col gap-2 w-full mt-2">
-                        <label class="text-sm text-white font-bold">{{ $settings['footer_newsletter_title'] ?? 'รับข่าวสารโปรโมชั่น' }}</label>
-                        <p class="text-xs text-red-200 mb-1">{{ $settings['footer_newsletter_subtitle'] ?? 'กรอกอีเมลเพื่อรับสิทธิพิเศษก่อนใคร' }}</p>
-                        <div class="flex">
-                            <input type="email" placeholder="your-email@example.com" required
-                                class="w-full px-4 py-2.5 rounded-l-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400 border-none" />
-                            <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-r-lg font-bold text-sm transition-colors border-none shadow-md">
-                                สมัคร
-                            </button>
-                        </div>
-                    </form>
                 </div>
 
             </div>
@@ -375,7 +362,6 @@
             <div class="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-3">
                 <p class="text-xs sm:text-sm text-red-200">Copyright © {{ date('Y') }} - All right reserved by {{ $siteName }} Co., Ltd.</p>
                 
-                {{-- ส่วนที่เพิ่ม Icon โซเชียลมีเดีย --}}
                 {{-- ส่วนที่แก้ไข Icon โซเชียลมีเดียให้รองรับ Font Awesome 6 --}}
                 <div class="flex gap-4">
                     <a href="{{ $socialLinks['facebook'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">

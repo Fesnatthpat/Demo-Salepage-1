@@ -21,6 +21,13 @@ class BirthdayController extends Controller
      */
     public function claim(Request $request)
     {
+        // หากยังไม่ได้ Login ให้เก็บ URL หน้าใบอวยพรนี้ไว้ เพื่อให้ Login เสร็จแล้ววนกลับมาที่เดิม
+        if (!auth()->check()) {
+            session(['birthday_redirect_url' => $request->fullUrl()]);
+            // สำรองไว้ใน Cookie ด้วย 30 นาที (กัน Session หายระหว่างไป LINE)
+            cookie()->queue('birthday_redirect_backup', $request->fullUrl(), 30);
+        }
+
         $campaignId = $request->query('id');
         
         // ค้นหาแคมเปญตาม ID หรือดึงตัวที่ Active ล่าสุดถ้าไม่ได้ระบุ ID
@@ -29,7 +36,7 @@ class BirthdayController extends Controller
             : BirthdayPromotion::with('giftProduct')->where('is_active', true)->first();
 
         if (!$campaign) {
-            return redirect()->route('home')->with('error', 'ไม่พบแคมเปญวันเกิดที่กำหนด');
+            return redirect(config('app.url'))->with('error', 'ไม่พบแคมเปญวันเกิดที่กำหนด');
         }
 
         return view('birthday.claim', compact('campaign'));
@@ -54,18 +61,12 @@ class BirthdayController extends Controller
 
             // 2. เพิ่มของแถมเข้าตะกร้า (ถ้ามี)
             if ($campaign->gift_product_id) {
-                $product = ProductSalepage::find($campaign->gift_product_id);
-                if ($product) {
-                    // ใช้ addBundle หรือ addOrUpdate เพื่อเพิ่มของแถม (ราคา 0 บาทจัดการโดย CartService อัตโนมัติถ้าเป็น Promotion)
-                    // ในที่นี้เราจะใช้ addFreebies หรือ Logic ที่เหมาะสม
-                    // จาก CartService.php: addFreebies(array $freebieIds)
-                    $this->cartService->addFreebies([$campaign->gift_product_id]);
-                }
+                $this->cartService->addBirthdayGift($campaign->gift_product_id);
             }
 
-            return redirect()->route('home')->with('success', 'ใช้รหัสวันเกิดและเพิ่มของขวัญเรียบร้อยแล้ว! เลือกสินค้าที่ต้องการได้เลยครับ');
+            return redirect(config('app.url'))->with('success', 'ใช้รหัสวันเกิดและเพิ่มของขวัญเรียบร้อยแล้ว! เลือกสินค้าที่ต้องการได้เลยครับ');
         } catch (\Exception $e) {
-            return redirect()->route('home')->with('error', 'เกิดข้อผิดพลาดในการรับสิทธิ์: ' . $e->getMessage());
+            return redirect(config('app.url'))->with('error', 'เกิดข้อผิดพลาดในการรับสิทธิ์: ' . $e->getMessage());
         }
     }
 }

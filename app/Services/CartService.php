@@ -130,7 +130,7 @@ class CartService
         $this->addBundle($productId, 0, $giftIds, $quantity);
     }
 
-    public function addBundle(int $mainProductId, int $secondaryProductId, array $giftIds = [], int $qty = 1): void
+    public function addBundle(int $mainProductId, int $secondaryProductId, array $giftIds = [], int $qty = 1, bool $isBirthday = false): void
     {
         $userId = $this->getUserId();
         $this->getCartContents();
@@ -145,6 +145,7 @@ class CartService
 
         // 1. จัดการสินค้าหลัก
         if ($mainProductId > 0) {
+            // ... (keep existing code for main product)
             $mainProduct = $this->checkStockAndGetProduct($mainProductId, $qty);
             $mainDetails = $this->getProductDetails($mainProductId);
             if ($mainDetails) {
@@ -168,6 +169,7 @@ class CartService
 
         // 2. จัดการสินค้าเงื่อนไขที่สอง (ถ้ามี)
         if ($secondaryProductId > 0) {
+            // ... (keep existing code for secondary product)
             $secProduct = $this->checkStockAndGetProduct($secondaryProductId, 1);
             $secDetails = $this->getProductDetails($secondaryProductId);
             if ($secDetails) {
@@ -204,14 +206,15 @@ class CartService
             }
 
             $cart->add([
-                'id' => $giftProduct->pd_sp_id.'_free',
-                'name' => $giftProduct->pd_sp_name.' (ของแถม)',
+                'id' => $giftProduct->pd_sp_id.($isBirthday ? '_birthday' : '_free'),
+                'name' => $giftProduct->pd_sp_name.($isBirthday ? ' (ของขวัญวันเกิด)' : ' (ของแถม)'),
                 'price' => 0,
                 'quantity' => 1,
                 'attributes' => [
                     'image' => $imgPath,
                     'pd_code' => $giftProduct->pd_sp_code,
                     'is_freebie' => true,
+                    'is_birthday_gift' => $isBirthday,
                     'promo_group_id' => $promoGroupId,
                     'product_id' => $giftProduct->pd_sp_id,
                 ],
@@ -599,9 +602,12 @@ class CartService
                 }
 
                 if ($userCart->has($guestItem->id)) {
-                    $userCart->update($guestItem->id, ['quantity' => $guestItem->quantity]);
+                    $userCart->update($guestItem->id, [
+                        'quantity' => $guestItem->quantity,
+                        'attributes' => $guestItem->attributes->toArray() // Ensure attributes are updated/preserved
+                    ]);
                 } else {
-                    // คัดลอก Attributes ทั้งหมดมา (สำคัญมากสำหรับสถานะ is_freebie)
+                    // คัดลอก Attributes ทั้งหมดมา (สำคัญมากสำหรับสถานะ is_freebie และ is_birthday_gift)
                     $attributes = $guestItem->attributes->toArray();
                     
                     $userCart->add([
@@ -628,7 +634,8 @@ class CartService
         $cart = Cart::session($userId);
         $items = $cart->getContent();
 
-        $freebies = $items->filter(fn ($item) => $item->attributes['is_freebie'] ?? false);
+        // กรองเอาเฉพาะของแถมที่ไม่ใช่ของขวัญวันเกิด
+        $freebies = $items->filter(fn ($item) => ($item->attributes['is_freebie'] ?? false) && !($item->attributes['is_birthday_gift'] ?? false));
         if ($freebies->isEmpty()) {
             return;
         }
@@ -658,6 +665,11 @@ class CartService
                 $cart->remove($id);
             }
         }
+    }
+
+    public function addBirthdayGift(int $productId): void
+    {
+        $this->addBundle(0, 0, [$productId], 1, true);
     }
 
     public function getApplicablePromotions(Collection $cartItems): Collection

@@ -69,14 +69,24 @@
                 </div>
 
                 {{-- ปุ่มกดรับสิทธิ์ --}}
-                <form action="{{ route('birthday.apply') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
-                    <button type="submit" class="w-full py-5 bg-gradient-to-r from-pink-600 to-rose-500 text-white rounded-2xl font-bold text-xl shadow-lg shadow-pink-200 hover:shadow-xl hover:from-pink-500 hover:to-rose-400 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 group">
-                        <span>🎁 กดรับของขวัญและเริ่มช้อป</span>
-                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                    </button>
-                </form>
+                @auth
+                    <form action="{{ route('birthday.apply') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="campaign_id" value="{{ $campaign->id }}">
+                        <button type="submit" class="w-full py-5 bg-gradient-to-r from-pink-600 to-rose-500 text-white rounded-2xl font-bold text-xl shadow-lg shadow-pink-200 hover:shadow-xl hover:from-pink-500 hover:to-rose-400 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 group">
+                            <span>🎁 กดรับของขวัญและเริ่มช้อป</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="w-full py-5 bg-gradient-to-r from-gray-700 to-gray-900 text-white rounded-2xl font-bold text-xl shadow-lg shadow-gray-200 hover:shadow-xl hover:from-gray-600 hover:to-gray-800 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 group">
+                        <span>🔑 เข้าสู่ระบบเพื่อรับของขวัญ</span>
+                        <i class="fas fa-sign-in-alt group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <p class="mt-4 text-sm text-pink-600 font-bold animate-pulse">
+                        <i class="fas fa-info-circle mr-1"></i> กรุณาเข้าสู่ระบบเพื่อยืนยันสิทธิ์วันเกิดของคุณ
+                    </p>
+                @endauth
                 
                 <p class="mt-6 text-xs text-gray-400 italic">
                     * ระบบจะนำรหัสส่วนลดและของขวัญไปใส่ในตะกร้าสินค้าให้คุณโดยอัตโนมัติ

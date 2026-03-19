@@ -11,6 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             'profile.completed' => \App\Http\Middleware\CheckUserProfileCompletion::class,
             'is.superadmin' => \App\Http\Middleware\IsSuperadmin::class,

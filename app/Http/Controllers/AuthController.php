@@ -29,6 +29,12 @@ class AuthController extends Controller
 
     public function redirectToLine()
     {
+        // บันทึก Session ID ปัจจุบันไว้ใน Cookie เพื่อกัน Session หายระหว่างทาง (Merge ตะกร้า)
+        cookie()->queue('guest_cart_id', session()->getId(), 60);
+        
+        // บังคับ Save Session ก่อน Redirect
+        session()->save();
+
         return Socialite::driver('line')
             ->with(['scope' => 'profile openid email'])
             ->redirect();
@@ -40,8 +46,8 @@ class AuthController extends Controller
             // 💡 เติม ->stateless() เพื่อปิดการตรวจสอบ State ตอนทดสอบใน Local (แก้ปัญหา Session เด้ง)
             $lineUser = Socialite::driver('line')->stateless()->user();
 
-            // 1. เก็บ Session ตะกร้าสินค้าของ Guest ก่อนที่ Session จะเปลี่ยนหลัง Login
-            $guestSessionId = session()->getId();
+            // 1. เก็บ Session ตะกร้าสินค้าของ Guest (ดึงจาก Cookie ถ้า Session ปกติหายไป)
+            $guestSessionId = request()->cookie('guest_cart_id') ?: session()->getId();
 
             // 2. ค้นหาผู้ใช้ด้วย line_id หรือสร้างผู้ใช้ใหม่หากยังไม่เคยสมัคร
             $user = User::updateOrCreate(
@@ -57,14 +63,40 @@ class AuthController extends Controller
                 ]
             );
 
+            // 💡 ดึง URL ที่ต้องการไปหลัง Login (ตรวจสอบทั้ง Session และ Cookie สำรอง)
+            $intendedUrl = session()->pull('birthday_redirect_url');
+            if (!$intendedUrl) {
+                $intendedUrl = request()->cookie('birthday_redirect_backup');
+            }
+            if (!$intendedUrl) {
+                $intendedUrl = session()->pull('url.intended');
+            }
+
+            // แก้ไขปัญหา ngrok/proxy: บังคับให้ใช้ APP_URL ที่ตั้งค่าไว้ หาก URL เดิมเป็น localhost หรือ 127.0.0.1
+            if ($intendedUrl) {
+                $parsed = parse_url($intendedUrl);
+                $appParsed = parse_url(config('app.url'));
+                
+                if (isset($parsed['host']) && ($parsed['host'] === '127.0.0.1' || $parsed['host'] === 'localhost')) {
+                    $intendedUrl = config('app.url') . ($parsed['path'] ?? '') . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
+                }
+            }
+
+            // ล้าง Cookie สำรองทั้งหมด
+            cookie()->queue(cookie()->forget('birthday_redirect_backup'));
+            cookie()->queue(cookie()->forget('guest_cart_id'));
+
             // 3. ทำการล็อกอินเข้าสู่ระบบของ Laravel
             Auth::login($user);
 
             // 4. รวมตะกร้าสินค้าจากตอนที่ยังไม่ได้ล็อกอิน เข้ากับบัญชีของผู้ใช้
             $this->cartService->mergeGuestCart($guestSessionId, $user->id);
 
-            // กลับไปยังหน้าแรก หรือหน้าที่ลูกค้าตั้งใจจะไปก่อนถูกบังคับล็อกอิน
-            return redirect()->intended('/');
+            // บังคับบันทึก Session ก่อน Redirect
+            session()->save();
+
+            // กลับไปยังหน้าที่ลูกค้าตั้งใจจะไป
+            return redirect($intendedUrl ?: config('app.url'));
 
         } catch (\Exception $e) {
             // เก็บ Log เผื่อระบบพัง จะได้ตามไปดูใน storage/logs/laravel.log ได้

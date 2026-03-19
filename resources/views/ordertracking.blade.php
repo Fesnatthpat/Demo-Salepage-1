@@ -95,7 +95,7 @@
                                 <h3 class="text-lg font-bold text-slate-800 mb-1">
                                     {{ $data['carrier_name'] }}
                                 </h3>
-                                <p class="text-slate-500 text-sm mb-1">od_ref: <span
+                                <p class="text-slate-500 text-sm mb-1">หมายเลขติดตาม: <span
                                         class="font-bold text-red-600">{{ $data['tracking_number'] }}</span></p>
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1">
                                     <p class="text-slate-400 text-xs italic">วันที่สั่งซื้อ: {{ $data['order_date'] }}</p>
@@ -166,7 +166,7 @@
             const modalContent = document.getElementById('timelineContent');
             const modalTracking = document.getElementById('modalTrackingNumber');
             
-            modalTracking.innerText = 'od_ref: ' + data.tracking_number;
+            modalTracking.innerText = 'หมายเลขติดตามพ: ' + data.tracking_number;
             
             let html = '';
             if (data.timeline_data && data.timeline_data.length > 0) {

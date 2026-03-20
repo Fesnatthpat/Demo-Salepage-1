@@ -1,0 +1,115 @@
+@extends('layouts.admin')
+
+@section('title', 'แก้ไข Popup')
+
+@section('content')
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+            <a href="{{ route('admin.popups.index') }}" class="text-gray-500 hover:text-white transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            แก้ไข Popup: {{ $popup->name }}
+        </h1>
+    </div>
+
+    @if ($errors->any())
+        <div class="px-6 py-4 bg-red-500/20 border border-red-500 text-red-300 rounded-2xl flex flex-col gap-1 mb-6 shadow-lg shadow-red-500/10">
+            <div class="flex items-center gap-2 font-bold text-sm mb-2">
+                <i class="fas fa-exclamation-triangle text-red-400"></i> ไม่สามารถบันทึกได้เนื่องจาก:
+            </div>
+            <ul class="text-xs list-disc list-inside opacity-90 space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li class="pl-2">{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.popups.update', $popup->id) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+        @csrf
+        @method('PUT')
+        <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-2xl">
+            <div class="p-8 space-y-8">
+                {{-- Name & Basic Info --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ชื่อเรียก Popup (สำหรับ Admin)</label>
+                        <input type="text" name="name" value="{{ old('name', $popup->name) }}" required
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                            placeholder="เช่น โปรโมชั่นสงกรานต์ 2026">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ประเภทการแสดงผล</label>
+                        <select name="display_type" required
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none">
+                            <option value="once_per_session" {{ old('display_type', $popup->display_type) == 'once_per_session' ? 'selected' : '' }}>แสดงครั้งเดียวต่อเซสชัน (แนะนำ)</option>
+                            <option value="always" {{ old('display_type', $popup->display_type) == 'always' ? 'selected' : '' }}>แสดงทุกครั้งที่โหลดหน้าแรก</option>
+                            <option value="once_per_day" {{ old('display_type', $popup->display_type) == 'once_per_day' ? 'selected' : '' }}>แสดงวันละครั้ง</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Image Upload & Preview --}}
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">รูปภาพโฆษณา</label>
+                    <div class="relative group">
+                        <div class="w-full max-w-md mx-auto aspect-square md:aspect-video bg-gray-900 rounded-2xl border-2 border-dashed border-gray-700 overflow-hidden relative transition-all group-hover:border-indigo-500/50">
+                            <img src="{{ asset('storage/' . $popup->image_path) }}"
+                                class="w-full h-full object-contain" id="popup-image-preview">
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm">
+                                <i class="fas fa-cloud-upload-alt text-white text-3xl mb-2"></i>
+                                <span class="text-white text-sm font-medium">คลิกเพื่อเปลี่ยนรูปภาพ</span>
+                            </div>
+                            <input type="file" name="image" accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                onchange="const file = this.files[0]; if(file) { document.getElementById('popup-image-preview').src = window.URL.createObjectURL(file); }">
+                        </div>
+                        <p class="mt-2 text-[10px] text-gray-500 italic text-center">* เลือกรูปภาพใหม่หากต้องการเปลี่ยน (รองรับ JPG, PNG, WEBP)</p>
+                    </div>
+                </div>
+
+                {{-- Link URL --}}
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ลิงก์เมื่อคลิกที่รูป (URL)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-link text-gray-600"></i>
+                        </div>
+                        <input type="url" name="link_url" value="{{ old('link_url', $popup->link_url) }}"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                            placeholder="https://your-store.com/special-offer">
+                    </div>
+                </div>
+
+                {{-- Schedule --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-700/50">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">เริ่มแสดงผลตั้งแต่วันที่/เวลา</label>
+                        <input type="datetime-local" name="start_date" value="{{ old('start_date', $popup->start_date ? $popup->start_date->format('Y-m-d\TH:i') : '') }}"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">สิ้นสุดวันที่/เวลา</label>
+                        <input type="datetime-local" name="end_date" value="{{ old('end_date', $popup->end_date ? $popup->end_date->format('Y-m-d\TH:i') : '') }}"
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 pt-4">
+                    <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $popup->is_active) ? 'checked' : '' }}
+                        class="w-5 h-5 rounded border-gray-700 bg-gray-900 text-indigo-600 focus:ring-indigo-500/50">
+                    <label for="is_active" class="text-sm font-bold text-gray-300 uppercase tracking-widest cursor-pointer">เปิดใช้งาน</label>
+                </div>
+            </div>
+
+            <div class="px-8 py-6 bg-gray-900/50 border-t border-gray-700 flex justify-end gap-4">
+                <a href="{{ route('admin.popups.index') }}" class="px-8 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl transition-all">ยกเลิก</a>
+                <button type="submit" class="px-10 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95">
+                    <i class="fas fa-save mr-2"></i> บันทึกการเปลี่ยนแปลง
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+@endsection

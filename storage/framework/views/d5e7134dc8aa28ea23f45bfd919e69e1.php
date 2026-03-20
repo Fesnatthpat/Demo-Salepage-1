@@ -454,6 +454,99 @@ unset($__split);
     <?php echo $__env->yieldContent('scripts'); ?>
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
+
+    
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($activePopup) && $activePopup): ?>
+    <div x-data="{ 
+            showPopup: false,
+            popupId: '<?php echo e($activePopup->id); ?>',
+            displayType: '<?php echo e($activePopup->display_type); ?>',
+            init() {
+                // Logic การตรวจสอบความถี่การแสดงผล
+                const lastShow = localStorage.getItem('popup_show_' + this.popupId);
+                const now = new Date().getTime();
+                
+                if (this.displayType === 'always') {
+                    this.showPopup = true;
+                } else if (this.displayType === 'once_per_day') {
+                    // แสดงวันละครั้ง (24 ชั่วโมง)
+                    if (!lastShow || (now - lastShow > 24 * 60 * 60 * 1000)) {
+                        this.showPopup = true;
+                    }
+                } else {
+                    // default: once_per_session (ใช้ sessionStorage แทนถ้าต้องการปิดแท็บแล้วหาย)
+                    // หรือใช้ localStorage แบบล้างเมื่อเวลาผ่านไป (เช่น 2 ชม.)
+                    const sessionShow = sessionStorage.getItem('popup_session_' + this.popupId);
+                    if (!sessionShow) {
+                        this.showPopup = true;
+                    }
+                }
+
+                if (this.showPopup) {
+                    // หน่วงเวลาเล็กน้อยเพื่อให้หน้าเว็บโหลดเสร็จก่อนแสดง
+                    setTimeout(() => {
+                        this.showPopup = true;
+                    }, 1000);
+                }
+            },
+            closePopup() {
+                this.showPopup = false;
+                localStorage.setItem('popup_show_' + this.popupId, new Date().getTime());
+                sessionStorage.setItem('popup_session_' + this.popupId, 'true');
+            }
+         }" 
+         x-show="showPopup" 
+         x-cloak
+         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95">
+        
+        <div class="relative w-full max-w-lg bg-transparent rounded-2xl overflow-visible animate-pop-in">
+            
+            <button @click="closePopup()" 
+                class="absolute -top-4 -right-4 w-10 h-10 bg-white text-gray-800 rounded-full shadow-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all z-10 border-2 border-white">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+
+            
+            <div class="overflow-hidden rounded-2xl shadow-2xl border-4 border-white/20">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($activePopup->link_url): ?>
+                    <a href="<?php echo e($activePopup->link_url); ?>" class="block group">
+                        <img src="<?php echo e(asset('storage/' . $activePopup->image_path)); ?>" 
+                            class="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105" 
+                            alt="<?php echo e($activePopup->name); ?>">
+                    </a>
+                <?php else: ?>
+                    <img src="<?php echo e(asset('storage/' . $activePopup->image_path)); ?>" 
+                        class="w-full h-auto object-contain" 
+                        alt="<?php echo e($activePopup->name); ?>">
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </div>
+
+            
+            <div class="mt-4 text-center">
+                <button @click="closePopup()" class="text-white/60 hover:text-white text-sm underline underline-offset-4">
+                    ปิดหน้าต่างนี้
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        @keyframes pop-in {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+            animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 </body>
 
 </html><?php /**PATH D:\laravel\salepage-demo-1\resources\views/layout.blade.php ENDPATH**/ ?>

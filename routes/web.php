@@ -234,6 +234,10 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
         Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
         Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
 
+        // Homepage Popup Management
+        Route::post('/popups/{popup}/toggle-status', [App\Http\Controllers\Admin\HomepagePopupController::class, 'toggleStatus'])->name('popups.toggle-status');
+        Route::resource('popups', App\Http\Controllers\Admin\HomepagePopupController::class);
+
         // Birthday Promotion Management
         Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
         Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');

@@ -159,6 +159,8 @@ php artisan schedule:work
 
 php artisan view:clear
 php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
 
 run test ส่ง Flex Message Line
 php artisan botnoi:send-birthday
@@ -167,7 +169,9 @@ run ngrok
 ngrok http 8000
 
 URL web
-https://ostracizable-mellisa-nontenurially.ngrok-free.dev
+https://wider-configurations-interference-philosophy.trycloudflare.com
+
+
 }
 
 ---

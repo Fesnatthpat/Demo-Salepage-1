@@ -215,18 +215,28 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // Contact Management (จัดการติดต่อเรา)
     Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);
 
-    // Admin Management (จัดการผู้ดูแลระบบ)
-    Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class)->middleware('is.superadmin');
+    // ==========================================
+    // 🔒 Super Admin Only (ส่วนที่เฉพาะ Super Admin เท่านั้น)
+    // ==========================================
+    Route::middleware(['is.superadmin'])->group(function () {
+        // Admin Management (จัดการผู้ดูแลระบบ)
+        Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class);
 
-    // Activity Log
-    Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
+        // Activity Log
+        Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
 
-    // Settings
-    Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
+        // Homepage Content Management
+        Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
+        Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');
+        Route::resource('homepage-content', App\Http\Controllers\Admin\HomepageContentController::class);
 
-    // Birthday Promotion Management
-    Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
-    Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
+        // Settings (การตั้งค่าระบบและ Banner)
+        Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
+
+        // Birthday Promotion Management
+        Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
+        Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
+    });
 
 });

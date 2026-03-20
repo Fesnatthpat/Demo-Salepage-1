@@ -117,14 +117,66 @@
                                 <td class="px-6 py-5 align-middle">
                                     @if ($bp->start_date || $bp->end_date)
                                         <div class="inline-flex flex-col">
-                                            <span
-                                                class="px-3 py-1 rounded-md text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-1">
-                                                <i class="fas fa-calendar-alt mr-1"></i> พิเศษเฉพาะช่วง
-                                            </span>
+                                            @php
+                                                $now = now();
+                                                $isUpcoming = $bp->start_date && $bp->start_date > $now;
+                                                $isExpired = $bp->end_date && $bp->end_date < $now;
+                                            @endphp
+
+                                            @if($isUpcoming)
+                                                <span class="px-3 py-1 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1">
+                                                    <i class="fas fa-clock mr-1"></i> เตรียมเริ่มใช้งาน
+                                                </span>
+                                            @elseif($isExpired)
+                                                <span class="px-3 py-1 rounded-md text-[11px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 mb-1">
+                                                    <i class="fas fa-calendar-times mr-1"></i> สิ้นสุดแล้ว
+                                                </span>
+                                            @else
+                                                <span class="px-3 py-1 rounded-md text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-1">
+                                                    <i class="fas fa-calendar-alt mr-1"></i> พิเศษเฉพาะช่วง
+                                                </span>
+                                            @endif
+
                                             <span class="text-xs text-gray-400">
-                                                {{ $bp->start_date ? $bp->start_date->format('d M Y') : 'ตลอดมา' }} -
-                                                {{ $bp->end_date ? $bp->end_date->format('d M Y') : 'ไม่มีกำหนด' }}
+                                                {{ $bp->start_date ? $bp->start_date->format('d M Y H:i:s') : 'ตลอดมา' }} -
+                                                {{ $bp->end_date ? $bp->end_date->format('d M Y H:i:s') : 'ไม่มีกำหนด' }}
                                             </span>
+
+                                            {{-- Countdown Timer if active and has end date --}}
+                                            @if(!$isUpcoming && !$isExpired && $bp->end_date)
+                                                <div class="mt-2 flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-lg border transition-all duration-500"
+                                                     :class="isUrgent ? 'text-red-400 animate-pulse bg-red-500/10 border-red-500/20' : 'text-pink-400/80 bg-pink-500/5 border-pink-500/10'"
+                                                     x-data="{
+                                                        remaining: '',
+                                                        isUrgent: false,
+                                                        target: '{{ $bp->end_date->format('Y-m-d H:i:s') }}',
+                                                        updateTimer() {
+                                                            const diff = new Date(this.target) - new Date();
+                                                            if (diff <= 0) {
+                                                                this.remaining = 'แคมเปญสิ้นสุดลงแล้ว';
+                                                                this.isUrgent = false;
+                                                                return;
+                                                            }
+                                                            
+                                                            // เช็คว่าเหลือน้อยกว่า 1 ชั่วโมง (3600000 ms) หรือไม่
+                                                            this.isUrgent = diff < 3600000;
+
+                                                            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                                            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                                            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                                            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                                                            
+                                                            let str = '';
+                                                            if (days > 0) str += `${days} วัน `;
+                                                            str += `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} ชม.`;
+                                                            this.remaining = `เหลืออีก ${str}`;
+                                                        }
+                                                     }"
+                                                     x-init="updateTimer(); setInterval(() => updateTimer(), 1000)">
+                                                    <i class="fas" :class="isUrgent ? 'fa-exclamation-circle' : 'fa-hourglass-half'"></i>
+                                                    <span x-text="remaining"></span>
+                                                </div>
+                                            @endif
                                         </div>
                                     @else
                                         <span class="px-3 py-1 rounded-md text-[11px] font-bold bg-gray-700 text-gray-400">

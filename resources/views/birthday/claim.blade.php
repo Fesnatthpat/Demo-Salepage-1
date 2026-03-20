@@ -68,6 +68,43 @@
                     @endif
                 </div>
 
+                {{-- เวลานับถอยหลัง --}}
+                @if($campaign->end_date)
+                <div class="mb-8 p-4 rounded-2xl border transition-all duration-500 flex flex-col items-center justify-center gap-2"
+                     :class="isUrgent ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' : 'bg-pink-50 border-pink-100 text-pink-600'"
+                     x-data="{
+                        remaining: '',
+                        isUrgent: false,
+                        target: '{{ $campaign->end_date->format('Y-m-d H:i:s') }}',
+                        updateTimer() {
+                            const diff = new Date(this.target) - new Date();
+                            if (diff <= 0) {
+                                this.remaining = 'หมดเวลารับสิทธิ์แล้ว';
+                                this.isUrgent = false;
+                                return;
+                            }
+                            
+                            this.isUrgent = diff < 3600000;
+
+                            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                            
+                            let str = '';
+                            if (days > 0) str += `${days} วัน `;
+                            str += `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                            this.remaining = str;
+                        }
+                     }"
+                     x-init="updateTimer(); setInterval(() => updateTimer(), 1000)">
+                    <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">
+                        <i class="fas fa-hourglass-half mr-1"></i> สิทธิ์นี้จะหมดอายุในอีก
+                    </p>
+                    <p class="text-3xl font-mono font-black tracking-tighter" x-text="remaining"></p>
+                </div>
+                @endif
+
                 {{-- ปุ่มกดรับสิทธิ์ --}}
                 @auth
                     <form action="{{ route('birthday.apply') }}" method="POST">

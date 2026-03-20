@@ -215,14 +215,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-2">
                                 <label
-                                    class="block text-xs font-bold text-gray-400 uppercase tracking-widest">เริ่มใช้งานวันที่</label>
-                                <input type="date" name="start_date" value="{{ old('start_date') }}"
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-widest">เริ่มใช้งานตั้งแต่วันที่/เวลา</label>
+                                <input type="datetime-local" name="start_date" value="{{ old('start_date') }}"
                                     class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-blue-500/50 outline-none">
                             </div>
                             <div class="space-y-2">
-                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">ถึงวันที่
-                                    (สิ้นสุด)</label>
-                                <input type="date" name="end_date" value="{{ old('end_date') }}"
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest">สิ้นสุดวันที่/เวลา</label>
+                                <input type="datetime-local" name="end_date" value="{{ old('end_date') }}"
                                     class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-blue-500/50 outline-none">
                             </div>
                         </div>

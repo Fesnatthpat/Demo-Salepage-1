@@ -19,8 +19,8 @@ class SendBirthdayPromotions extends Command
         $today = now();
         $this->info("🔍 กำลังค้นหาลูกค้าที่เกิดวันที่: {$today->format('d/m')}");
 
-        // 1. ดึงแคมเปญที่เปิดใช้งานอยู่
-        $activeCampaign = BirthdayPromotion::where('is_active', true)->first();
+        // 1. ดึงแคมเปญที่เปิดใช้งานและอยู่ในช่วงวันที่ (Dated Priority > Default)
+        $activeCampaign = BirthdayPromotion::activeForToday()->first();
 
         if (! $activeCampaign) {
             $this->error('❌ ไม่พบแคมเปญวันเกิดที่เปิดใช้งานอยู่ในระบบ');

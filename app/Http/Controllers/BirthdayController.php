@@ -30,10 +30,10 @@ class BirthdayController extends Controller
 
         $campaignId = $request->query('id');
         
-        // ค้นหาแคมเปญตาม ID หรือดึงตัวที่ Active ล่าสุดถ้าไม่ได้ระบุ ID
+        // ค้นหาแคมเปญตาม ID หรือดึงตัวที่ Active และอยู่ในช่วงวันที่ใช้งาน (Priority: Dated -> Default)
         $campaign = $campaignId 
             ? BirthdayPromotion::with('giftProduct')->find($campaignId)
-            : BirthdayPromotion::with('giftProduct')->where('is_active', true)->first();
+            : BirthdayPromotion::with('giftProduct')->activeForToday()->first();
 
         if (!$campaign) {
             return redirect(config('app.url'))->with('error', 'ไม่พบแคมเปญวันเกิดที่กำหนด');

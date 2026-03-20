@@ -40,6 +40,32 @@
                             placeholder="เช่น โปรโมชั่นสงกรานต์ 2026">
                     </div>
                     <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ลำดับการแสดงผล</label>
+                        <input type="number" name="sort_order" value="{{ old('sort_order', $popup->sort_order) }}" required
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                            placeholder="0">
+                        <p class="text-[10px] text-gray-500 italic">* ตัวเลขน้อยจะแสดงก่อน</p>
+                    </div>
+                </div>
+
+                {{-- Display Pages & Type --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-700/50">
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">หน้าที่ต้องการให้แสดง</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            @php $dPages = $popup->display_pages ?? []; @endphp
+                            <label class="flex items-center gap-3 p-3 bg-gray-900 border border-gray-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
+                                <input type="checkbox" name="display_pages[]" value="home" {{ in_array('home', $dPages) ? 'checked' : '' }} class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-500/50">
+                                <span class="text-sm text-gray-300 font-medium">หน้าแรก</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-gray-900 border border-gray-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
+                                <input type="checkbox" name="display_pages[]" value="product.show" {{ in_array('product.show', $dPages) ? 'checked' : '' }} class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-500/50">
+                                <span class="text-sm text-gray-300 font-medium">หน้าสินค้า</span>
+                            </label>
+                        </div>
+                        <p class="text-[10px] text-gray-500 italic text-left">* หากไม่เลือกเลยจะแสดงทุกหน้า</p>
+                    </div>
+                    <div class="space-y-2">
                         <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ประเภทการแสดงผล</label>
                         <select name="display_type" required
                             class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none">
@@ -69,16 +95,53 @@
                     </div>
                 </div>
 
-                {{-- Link URL --}}
-                <div class="space-y-2">
-                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ลิงก์เมื่อคลิกที่รูป (URL)</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-link text-gray-600"></i>
+                {{-- Link Selection Logic --}}
+                <div class="space-y-6 pt-4 border-t border-gray-700/50" x-data="{ linkType: '{{ $popup->product_id ? 'product' : ($popup->link_url ? 'url' : 'none') }}' }">
+                    <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">การเชื่อมโยงลิงก์ (Link Action)</label>
+                    
+                    <div class="grid grid-cols-3 gap-4">
+                        <button type="button" @click="linkType = 'none'" 
+                            class="py-3 px-4 rounded-xl border-2 transition-all font-bold text-sm"
+                            :class="linkType === 'none' ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                            <i class="fas fa-unlink mr-2"></i> ไม่ระบุลิงก์
+                        </button>
+                        <button type="button" @click="linkType = 'product'" 
+                            class="py-3 px-4 rounded-xl border-2 transition-all font-bold text-sm"
+                            :class="linkType === 'product' ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                            <i class="fas fa-box mr-2"></i> เลือกสินค้า
+                        </button>
+                        <button type="button" @click="linkType = 'url'" 
+                            class="py-3 px-4 rounded-xl border-2 transition-all font-bold text-sm"
+                            :class="linkType === 'url' ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400' : 'border-gray-700 text-gray-500 hover:border-gray-600'">
+                            <i class="fas fa-link mr-2"></i> ระบุ URL เอง
+                        </button>
+                    </div>
+
+                    {{-- Product Select --}}
+                    <div x-show="linkType === 'product'" x-transition class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest">เลือกสินค้าที่ต้องการเชื่อมโยง</label>
+                        <select name="product_id" id="product_id" 
+                            class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none">
+                            <option value="">-- กรุณาเลือกสินค้า --</option>
+                            @foreach($products as $product)
+                                <option value="{{ $product->pd_sp_id }}" {{ old('product_id', $popup->product_id) == $product->pd_sp_id ? 'selected' : '' }}>
+                                    {{ $product->pd_sp_name }} (฿{{ number_format($product->pd_sp_price) }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Custom URL --}}
+                    <div x-show="linkType === 'url'" x-transition class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest">ระบุ URL ปลายทาง</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-link text-gray-600"></i>
+                            </div>
+                            <input type="url" name="link_url" value="{{ old('link_url', $popup->link_url) }}"
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                                placeholder="https://your-store.com/special-offer">
                         </div>
-                        <input type="url" name="link_url" value="{{ old('link_url', $popup->link_url) }}"
-                            class="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-gray-100 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
-                            placeholder="https://your-store.com/special-offer">
                     </div>
                 </div>
 

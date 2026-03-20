@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\HomepagePopup;
+use App\Models\ProductSalepage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,13 +12,14 @@ class HomepagePopupController extends Controller
 {
     public function index()
     {
-        $popups = HomepagePopup::orderBy('created_at', 'desc')->paginate(10);
+        $popups = HomepagePopup::with('product')->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.popups.index', compact('popups'));
     }
 
     public function create()
     {
-        return view('admin.popups.create');
+        $products = ProductSalepage::where('pd_sp_active', true)->orderBy('pd_sp_name')->get();
+        return view('admin.popups.create', compact('products'));
     }
 
     public function store(Request $request)
@@ -25,14 +27,17 @@ class HomepagePopupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'product_id' => 'nullable|exists:product_salepage,pd_sp_id',
             'link_url' => 'nullable|url',
             'is_active' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'display_type' => 'required|in:once_per_session,always,once_per_day',
+            'display_pages' => 'nullable|array',
+            'sort_order' => 'nullable|integer',
         ]);
 
-        $data = $request->only(['name', 'link_url', 'is_active', 'start_date', 'end_date', 'display_type']);
+        $data = $request->only(['name', 'product_id', 'link_url', 'is_active', 'start_date', 'end_date', 'display_type', 'display_pages', 'sort_order']);
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('image')) {
@@ -46,7 +51,8 @@ class HomepagePopupController extends Controller
 
     public function edit(HomepagePopup $popup)
     {
-        return view('admin.popups.edit', compact('popup'));
+        $products = ProductSalepage::where('pd_sp_active', true)->orderBy('pd_sp_name')->get();
+        return view('admin.popups.edit', compact('popup', 'products'));
     }
 
     public function update(Request $request, HomepagePopup $popup)
@@ -54,14 +60,17 @@ class HomepagePopupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'product_id' => 'nullable|exists:product_salepage,pd_sp_id',
             'link_url' => 'nullable|url',
             'is_active' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'display_type' => 'required|in:once_per_session,always,once_per_day',
+            'display_pages' => 'nullable|array',
+            'sort_order' => 'nullable|integer',
         ]);
 
-        $data = $request->only(['name', 'link_url', 'is_active', 'start_date', 'end_date', 'display_type']);
+        $data = $request->only(['name', 'product_id', 'link_url', 'is_active', 'start_date', 'end_date', 'display_type', 'display_pages', 'sort_order']);
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('image')) {

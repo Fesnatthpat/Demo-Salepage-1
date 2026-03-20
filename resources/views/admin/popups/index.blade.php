@@ -35,6 +35,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-900/80 border-b border-gray-700 text-xs uppercase text-gray-400 font-bold tracking-wider">
+                        <th class="px-6 py-5 text-center">Sort</th>
                         <th class="px-6 py-5">Popup Info</th>
                         <th class="px-6 py-5">Display Logic</th>
                         <th class="px-6 py-5">Schedule</th>
@@ -45,18 +46,29 @@
                 <tbody class="divide-y divide-gray-700/50">
                     @forelse ($popups as $popup)
                         <tr class="hover:bg-gray-700/30 transition-colors duration-150 group">
+                            <td class="px-6 py-5 text-center align-middle">
+                                <span class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-gray-900 border border-gray-700 text-indigo-400 font-bold text-xs shadow-inner shadow-black/20">
+                                    {{ $popup->sort_order }}
+                                </span>
+                            </td>
                             <td class="px-6 py-5 align-top">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-24 h-16 rounded-lg bg-gray-900 overflow-hidden border border-gray-700 flex-shrink-0">
+                                    <div class="w-24 h-16 rounded-lg bg-gray-900 overflow-hidden border border-gray-700 flex-shrink-0 relative group-hover:border-indigo-500/50 transition-colors">
                                         <img src="{{ asset('storage/' . $popup->image_path) }}" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-base font-bold text-white group-hover:text-indigo-400 transition-colors mb-1">{{ $popup->name }}</span>
-                                        @if($popup->link_url)
-                                            <a href="{{ $popup->link_url }}" target="_blank" class="text-[10px] text-gray-500 hover:text-indigo-400 transition-colors flex items-center gap-1">
-                                                <i class="fas fa-link"></i> {{ Str::limit($popup->link_url, 30) }}
-                                            </a>
-                                        @endif
+                                        <div class="flex flex-wrap gap-1 mt-0.5">
+                                            @if(empty($popup->display_pages))
+                                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-gray-700 text-gray-400 border border-gray-600">แสดงทุกหน้า</span>
+                                            @else
+                                                @foreach($popup->display_pages as $page)
+                                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                                        @if($page == 'home') หน้าแรก @elseif($page == 'product.show') หน้าสินค้า @else {{ $page }} @endif
+                                                    </span>
+                                                @endforeach
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </td>

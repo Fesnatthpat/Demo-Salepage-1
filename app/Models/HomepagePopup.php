@@ -12,11 +12,14 @@ class HomepagePopup extends Model
     protected $fillable = [
         'name',
         'image_path',
+        'product_id',
         'link_url',
         'is_active',
         'start_date',
         'end_date',
         'display_type',
+        'display_pages',
+        'sort_order',
         'display_count',
     ];
 
@@ -24,7 +27,27 @@ class HomepagePopup extends Model
         'is_active' => 'boolean',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'display_pages' => 'array',
     ];
+
+    /**
+     * Relationship to Product
+     */
+    public function product()
+    {
+        return $this->belongsTo(ProductSalepage::class, 'product_id', 'pd_sp_id');
+    }
+
+    /**
+     * Get the final URL for the popup
+     */
+    public function getFinalUrlAttribute()
+    {
+        if ($this->product_id && $this->product) {
+            return route('product.show', $this->product_id);
+        }
+        return $this->link_url;
+    }
 
     /**
      * Scope for active popups today.

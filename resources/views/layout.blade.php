@@ -411,85 +411,122 @@
     @yield('scripts')
     @livewireScripts
 
-    {{-- ★★★ [เพิ่มใหม่] Homepage Popup Modal ★★★ --}}
-    @if(isset($activePopup) && $activePopup)
+    {{-- ★★★ [แก้ไขใหม่] Sequential Homepage Popup Modals ★★★ --}}
+    @if(isset($activePopups) && $activePopups->count() > 0)
     <div x-data="{ 
+            popups: {{ $activePopups->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'image' => asset('storage/' . $p->image_path),
+                'url' => $p->final_url,
+                'displayType' => $p->display_type
+            ])->toJson() }},
+            currentIndex: -1, // เริ่มที่ -1 เพื่อให้ init จัดการหาอันแรกที่จะแสดง
             showPopup: false,
-            popupId: '{{ $activePopup->id }}',
-            displayType: '{{ $activePopup->display_type }}',
+            
             init() {
-                // Logic การตรวจสอบความถี่การแสดงผล
-                const lastShow = localStorage.getItem('popup_show_' + this.popupId);
+                this.findNextPopup();
+            },
+
+            findNextPopup() {
                 const now = new Date().getTime();
-                
-                if (this.displayType === 'always') {
-                    this.showPopup = true;
-                } else if (this.displayType === 'once_per_day') {
-                    // แสดงวันละครั้ง (24 ชั่วโมง)
-                    if (!lastShow || (now - lastShow > 24 * 60 * 60 * 1000)) {
-                        this.showPopup = true;
+                let foundIndex = -1;
+
+                // วนหา popup อันถัดไปที่ยังไม่เคยแสดง (ตามเงื่อนไข Session/Day)
+                for (let i = this.currentIndex + 1; i < this.popups.length; i++) {
+                    const popup = this.popups[i];
+                    let shouldShow = false;
+
+                    if (popup.displayType === 'always') {
+                        shouldShow = true;
+                    } else if (popup.displayType === 'once_per_day') {
+                        const lastShow = localStorage.getItem('popup_day_show_' + popup.id);
+                        if (!lastShow || (now - parseInt(lastShow) > 24 * 60 * 60 * 1000)) {
+                            shouldShow = true;
+                        }
+                    } else {
+                        // default: once_per_session
+                        const sessionShow = sessionStorage.getItem('popup_session_show_' + popup.id);
+                        if (!sessionShow) {
+                            shouldShow = true;
+                        }
                     }
-                } else {
-                    // default: once_per_session (ใช้ sessionStorage แทนถ้าต้องการปิดแท็บแล้วหาย)
-                    // หรือใช้ localStorage แบบล้างเมื่อเวลาผ่านไป (เช่น 2 ชม.)
-                    const sessionShow = sessionStorage.getItem('popup_session_' + this.popupId);
-                    if (!sessionShow) {
-                        this.showPopup = true;
+
+                    if (shouldShow) {
+                        foundIndex = i;
+                        break;
                     }
                 }
 
-                if (this.showPopup) {
-                    // หน่วงเวลาเล็กน้อยเพื่อให้หน้าเว็บโหลดเสร็จก่อนแสดง
+                if (foundIndex !== -1) {
+                    this.currentIndex = foundIndex;
                     setTimeout(() => {
                         this.showPopup = true;
-                    }, 1000);
+                        this.recordShown(this.popups[foundIndex].id);
+                    }, foundIndex === 0 ? 1500 : 300); // อันแรกหน่วงนานหน่อย อันต่อๆ มาเด้งทันที
+                } else {
+                    this.showPopup = false;
+                    this.currentIndex = this.popups.length; // จบการทำงาน
                 }
             },
+
+            recordShown(id) {
+                const now = new Date().getTime();
+                localStorage.setItem('popup_day_show_' + id, now);
+                sessionStorage.setItem('popup_session_show_' + id, 'true');
+            },
+
             closePopup() {
                 this.showPopup = false;
-                localStorage.setItem('popup_show_' + this.popupId, new Date().getTime());
-                sessionStorage.setItem('popup_session_' + this.popupId, 'true');
+                // หลังจากปิดอันนี้ ให้หน่วงเวลาเล็กน้อยแล้วหาอันถัดไปแสดงต่อทันที
+                setTimeout(() => {
+                    this.findNextPopup();
+                }, 400);
             }
          }" 
          x-show="showPopup" 
          x-cloak
          class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-95"
+         @keydown.escape.window="closePopup()"
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="opacity-0 scale-90"
          x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave="transition ease-in duration-300"
          x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95">
+         x-transition:leave-end="opacity-0 scale-90">
         
-        <div class="relative w-full max-w-lg bg-transparent rounded-2xl overflow-visible animate-pop-in">
-            {{-- Close Button --}}
-            <button @click="closePopup()" 
-                class="absolute -top-4 -right-4 w-10 h-10 bg-white text-gray-800 rounded-full shadow-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all z-10 border-2 border-white">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-
-            {{-- Popup Content --}}
-            <div class="overflow-hidden rounded-2xl shadow-2xl border-4 border-white/20">
-                @if($activePopup->link_url)
-                    <a href="{{ $activePopup->link_url }}" class="block group">
-                        <img src="{{ asset('storage/' . $activePopup->image_path) }}" 
-                            class="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105" 
-                            alt="{{ $activePopup->name }}">
-                    </a>
-                @else
-                    <img src="{{ asset('storage/' . $activePopup->image_path) }}" 
-                        class="w-full h-auto object-contain" 
-                        alt="{{ $activePopup->name }}">
-                @endif
-            </div>
-
-            {{-- Optional: Footer if needed --}}
-            <div class="mt-4 text-center">
-                <button @click="closePopup()" class="text-white/60 hover:text-white text-sm underline underline-offset-4">
-                    ปิดหน้าต่างนี้
+        <template x-if="currentIndex >= 0 && currentIndex < popups.length">
+            <div class="relative w-full max-w-lg" @click.away="closePopup()">
+                {{-- Close Button --}}
+                <button @click="closePopup()" 
+                    class="absolute -top-3 -right-3 w-10 h-10 bg-white text-gray-800 rounded-full shadow-2xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all z-20 border-2 border-white group">
+                    <i class="fas fa-times text-lg group-hover:rotate-90 transition-transform"></i>
                 </button>
+
+                {{-- Popup Content --}}
+                <div class="overflow-hidden rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border-4 border-white/10 bg-gray-900">
+                    <template x-if="popups[currentIndex].url">
+                        <a :href="popups[currentIndex].url" @click="recordShown(popups[currentIndex].id)" class="block group">
+                            <img :src="popups[currentIndex].image" 
+                                class="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105" 
+                                :alt="popups[currentIndex].name">
+                        </a>
+                    </template>
+                    <template x-if="!popups[currentIndex].url">
+                        <img :src="popups[currentIndex].image" 
+                            class="w-full h-auto object-contain" 
+                            :alt="popups[currentIndex].name">
+                    </template>
+                </div>
+
+                {{-- Optional: Footer text --}}
+                <div class="mt-4 flex justify-center">
+                    <button @click="closePopup()" class="px-4 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white/80 text-xs transition-colors border border-white/10">
+                        <i class="fas fa-times mr-1"></i> ปิดหน้าต่างนี้ (<span x-text="currentIndex + 1"></span>/<span x-text="popups.length"></span>)
+                    </button>
+                </div>
             </div>
-        </div>
+        </template>
     </div>
 
     <style>

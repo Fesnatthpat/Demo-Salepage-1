@@ -72,16 +72,6 @@ class AuthController extends Controller
                 $intendedUrl = session()->pull('url.intended');
             }
 
-            // แก้ไขปัญหา ngrok/proxy: บังคับให้ใช้ APP_URL ที่ตั้งค่าไว้ หาก URL เดิมเป็น localhost หรือ 127.0.0.1
-            if ($intendedUrl) {
-                $parsed = parse_url($intendedUrl);
-                $appParsed = parse_url(config('app.url'));
-                
-                if (isset($parsed['host']) && ($parsed['host'] === '127.0.0.1' || $parsed['host'] === 'localhost')) {
-                    $intendedUrl = config('app.url') . ($parsed['path'] ?? '') . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
-                }
-            }
-
             // ล้าง Cookie สำรองทั้งหมด
             cookie()->queue(cookie()->forget('birthday_redirect_backup'));
             cookie()->queue(cookie()->forget('guest_cart_id'));

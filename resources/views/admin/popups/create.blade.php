@@ -51,17 +51,21 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-700/50">
                     <div class="space-y-4">
                         <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">หน้าที่ต้องการให้แสดง</label>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <label class="flex items-center gap-3 p-3 bg-gray-900 border border-gray-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
                                 <input type="checkbox" name="display_pages[]" value="home" checked class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-500/50">
-                                <span class="text-sm text-gray-300 font-medium">หน้าแรก</span>
+                                <span class="text-sm text-gray-300 font-medium">หน้าหลัก</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 bg-gray-900 border border-gray-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
+                                <input type="checkbox" name="display_pages[]" value="allproducts" class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-500/50">
+                                <span class="text-sm text-gray-300 font-medium">หน้าสินค้าทั้งหมด</span>
                             </label>
                             <label class="flex items-center gap-3 p-3 bg-gray-900 border border-gray-700 rounded-xl cursor-pointer hover:border-indigo-500/50 transition-colors">
                                 <input type="checkbox" name="display_pages[]" value="product.show" class="w-5 h-5 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-500/50">
-                                <span class="text-sm text-gray-300 font-medium">หน้าสินค้า</span>
+                                <span class="text-sm text-gray-300 font-medium">หน้าสินค้า (เฉพาะสินค้านั้นๆ)</span>
                             </label>
                         </div>
-                        <p class="text-[10px] text-gray-500 italic text-left">* หากไม่เลือกเลยจะแสดงทุกหน้า</p>
+                        <p class="text-[10px] text-gray-500 italic text-left">* "หน้าสินค้า (เฉพาะสินค้านั้นๆ)" จะอ้างอิงจากสินค้าที่คุณเลือกในส่วน Link Action ด้านล่าง</p>
                     </div>
                     <div class="space-y-2">
                         <label class="block text-sm font-bold text-gray-400 uppercase tracking-widest">ประเภทการแสดงผล</label>

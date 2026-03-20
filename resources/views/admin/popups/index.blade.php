@@ -64,7 +64,10 @@
                                             @else
                                                 @foreach($popup->display_pages as $page)
                                                     <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                                        @if($page == 'home') หน้าแรก @elseif($page == 'product.show') หน้าสินค้า @else {{ $page }} @endif
+                                                        @if($page == 'home') หน้าหลัก 
+                                                        @elseif($page == 'allproducts') หน้าสินค้าทั้งหมด 
+                                                        @elseif($page == 'product.show') หน้าสินค้าเฉพาะอัน 
+                                                        @else {{ $page }} @endif
                                                     </span>
                                                 @endforeach
                                             @endif

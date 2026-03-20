@@ -506,11 +506,10 @@ unset($__split);
                     this.currentIndex = foundIndex;
                     setTimeout(() => {
                         this.showPopup = true;
-                        this.recordShown(this.popups[foundIndex].id);
-                    }, foundIndex === 0 ? 1500 : 300); // อันแรกหน่วงนานหน่อย อันต่อๆ มาเด้งทันที
+                    }, foundIndex === 0 ? 500 : 50); // อันแรกหน่วง 0.5 วิ อันต่อๆ มาเด้งเกือบทันที
                 } else {
                     this.showPopup = false;
-                    this.currentIndex = this.popups.length; // จบการทำงาน
+                    this.currentIndex = this.popups.length;
                 }
             },
 
@@ -521,23 +520,26 @@ unset($__split);
             },
 
             closePopup() {
+                if (this.currentIndex >= 0 && this.currentIndex < this.popups.length) {
+                    this.recordShown(this.popups[this.currentIndex].id);
+                }
                 this.showPopup = false;
-                // หลังจากปิดอันนี้ ให้หน่วงเวลาเล็กน้อยแล้วหาอันถัดไปแสดงต่อทันที
+                // หลังจากปิดอันนี้ ให้หาอันถัดไปแสดงต่อแทบทันที
                 setTimeout(() => {
                     this.findNextPopup();
-                }, 400);
+                }, 100);
             }
          }" 
          x-show="showPopup" 
          x-cloak
          class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
          @keydown.escape.window="closePopup()"
-         x-transition:enter="transition ease-out duration-500"
-         x-transition:enter-start="opacity-0 scale-90"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-90">
+         x-transition:leave-end="opacity-0 scale-95">
         
         <template x-if="currentIndex >= 0 && currentIndex < popups.length">
             <div class="relative w-full max-w-lg" @click.away="closePopup()">

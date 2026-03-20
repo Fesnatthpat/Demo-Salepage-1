@@ -59,7 +59,9 @@
                                 class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                 <div class="flex items-center gap-4">
                                     @php
-                                        $displayImage = $detail->productSalepage->cover_image_url ?? 'https://via.placeholder.com/150?text=No+Image';
+                                        $displayImage =
+                                            $detail->productSalepage->cover_image_url ??
+                                            'https://via.placeholder.com/150?text=No+Image';
                                     @endphp
                                     <div
                                         class="w-20 h-20 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0 relative">
@@ -71,44 +73,45 @@
                                         <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-2">
                                             {{ $detail->productSalepage->pd_sp_name ?? 'ไม่พบข้อมูลสินค้า' }}
                                         </p>
-                                        
-                                        @if($detail->productOption || $detail->option_name)
+
+                                        @if ($detail->productOption || $detail->option_name)
                                             <p class="text-xs text-emerald-600 font-medium mt-1">
                                                 ตัวเลือก: {{ $detail->productOption->option_name ?? $detail->option_name }}
                                             </p>
                                         @endif
 
-                                        {{-- ========== ส่วนที่แก้ไข: ราคาต่อชิ้น ========== --}}
-                                        <p class="text-sm text-gray-500">ราคาต่อชิ้น:
+                                        {{-- ราคาต่อชิ้น --}}
+                                        <p class="text-sm text-gray-500 mt-1">ราคาต่อชิ้น:
                                             @if ((float) $detail->ordd_price <= 0)
-                                                {{-- กรณีเป็นของแถม --}}
                                                 <span class="font-bold text-red-500 ml-1">ฟรี (0 บาท)</span>
                                             @elseif ($detail->ordd_original_price > $detail->ordd_price)
-                                                {{-- กรณีมีส่วนลด --}}
                                                 <s
                                                     class="text-gray-400">฿{{ number_format($detail->ordd_original_price, 2) }}</s>
                                                 <span
                                                     class="font-semibold text-red-600 ml-1">฿{{ number_format($detail->ordd_price, 2) }}</span>
                                             @else
-                                                {{-- กรณีราคาปกติ --}}
                                                 <span
                                                     class="text-gray-800">฿{{ number_format($detail->ordd_price, 2) }}</span>
                                             @endif
                                         </p>
-                                        {{-- ========================================== --}}
 
                                     </div>
                                 </div>
                                 <div class="text-right flex-shrink-0">
-                                    {{-- ========== ส่วนที่แก้ไข: ราคารวม (ขวาสุด) ========== --}}
+                                    {{-- ========== ส่วนที่เพิ่มใหม่: แสดงจำนวนชิ้น ========== --}}
+                                    <p class="text-sm text-gray-600 mb-1">
+                                        จำนวน: <span class="font-semibold">{{ $detail->ordd_count }}</span> ชิ้น
+                                    </p>
+                                    {{-- =============================================== --}}
+
+                                    {{-- ราคารวม --}}
                                     @if ((float) $detail->ordd_price <= 0)
                                         <p class="font-bold text-red-500">ฟรี</p>
                                     @else
-                                        <p class="font-bold text-emerald-600">
+                                        <p class="font-bold text-emerald-600 text-lg">
                                             ฿{{ number_format($detail->ordd_price * $detail->ordd_count, 2) }}
                                         </p>
                                     @endif
-                                    {{-- ================================================= --}}
                                 </div>
                             </div>
                         @endforeach
@@ -172,15 +175,16 @@
                         </div>
 
                         {{-- [New] ปุ่มชำระเงินต่อ และ ปุ่มยกเลิก --}}
-                        @if((int)$order->status_id === 1)
+                        @if ((int) $order->status_id === 1)
                             <div class="mt-6 flex flex-col gap-2">
-                                <a href="{{ route('payment.qr', ['orderId' => $order->ord_code]) }}" 
-                                   class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full shadow-md flex items-center justify-center gap-2">
+                                <a href="{{ route('payment.qr', ['orderId' => $order->ord_code]) }}"
+                                    class="btn bg-red-600 hover:bg-red-700 text-white border-none w-full shadow-md flex items-center justify-center gap-2">
                                     <i class="fas fa-qrcode"></i>
                                     ชำระเงินต่อ
                                 </a>
 
-                                <form action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}" method="POST" onsubmit="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
+                                <form action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}"
+                                    method="POST" onsubmit="return confirm('ยืนยันการยกเลิกคำสั่งซื้อ?')">
                                     @csrf
                                     <button type="submit" class="btn btn-outline btn-error w-full">
                                         ยกเลิกคำสั่งซื้อ

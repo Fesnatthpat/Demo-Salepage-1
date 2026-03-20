@@ -686,6 +686,17 @@ class CartService
 
     public function addBirthdayGift(int $productId): void
     {
+        // 1. ตรวจสอบว่ามี "ของขวัญวันเกิด" อยู่ในตะกร้าแล้วหรือยัง (ป้องกันการเพิ่มซ้ำหากกดลิงก์ซ้ำ)
+        $items = $this->getCartContents();
+        $hasBirthdayGift = $items->contains(function ($item) {
+            return $item->attributes['is_birthday_gift'] ?? false;
+        });
+
+        if ($hasBirthdayGift) {
+            return; // ถ้ามีของขวัญวันเกิดในตะกร้าแล้ว ให้ข้ามการเพิ่มใหม่
+        }
+
+        // 2. ถ้ายังไม่มี จึงค่อยเพิ่มเข้าตะกร้า
         $this->addBundle(0, 0, [$productId], 1, true);
     }
 

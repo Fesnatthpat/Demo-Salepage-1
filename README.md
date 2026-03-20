@@ -46,6 +46,7 @@
     - `laravel/socialite`: สำหรับ LINE Login
 
 ---
+
 <br>
 
 # README: Salepage Demo 1 - Code & Security Review
@@ -64,42 +65,42 @@
 
 ### 1. การตั้งค่าและความปลอดภัยพื้นฐาน (`.gitignore`)
 
-*   [✔] **ดีมาก:** ไฟล์ `.gitignore` ได้รับการตั้งค่าอย่างถูกต้อง มีการละเว้นไฟล์ที่ละเอียดอ่อนและไม่ควรอยู่ใน Repository เช่น `.env`
+- [✔] **ดีมาก:** ไฟล์ `.gitignore` ได้รับการตั้งค่าอย่างถูกต้อง มีการละเว้นไฟล์ที่ละเอียดอ่อนและไม่ควรอยู่ใน Repository เช่น `.env`
 
 ### 2. Dependencies (`composer.json`)
 
-*   [✔] **ดี:** โปรเจคใช้ Laravel 12 ซึ่งเป็นเวอร์ชันล่าสุด และมีการเลือกใช้ Dependencies ที่เหมาะสมกับงาน (เช่น `darryldecode/cart`, `laravel/socialite`)
+- [✔] **ดี:** โปรเจคใช้ Laravel 12 ซึ่งเป็นเวอร์ชันล่าสุด และมีการเลือกใช้ Dependencies ที่เหมาะสมกับงาน (เช่น `darryldecode/cart`, `laravel/socialite`)
 
 ### 3. การจัดการเส้นทาง (`routes/web.php`)
 
-*   [✔] **ดี:** มีการจัดระเบียบ Route ที่ดีและเข้าใจง่าย มีการใช้ `auth` middleware เพื่อป้องกันส่วนที่ต้องมีการยืนยันตัวตนอย่างถูกต้อง
-*   [✔] **ดำเนินการแล้ว:** ลบ Route สำหรับการทดสอบ และลบกลุ่ม Middleware ที่ซ้ำซ้อนออกแล้ว
+- [✔] **ดี:** มีการจัดระเบียบ Route ที่ดีและเข้าใจง่าย มีการใช้ `auth` middleware เพื่อป้องกันส่วนที่ต้องมีการยืนยันตัวตนอย่างถูกต้อง
+- [✔] **ดำเนินการแล้ว:** ลบ Route สำหรับการทดสอบ และลบกลุ่ม Middleware ที่ซ้ำซ้อนออกแล้ว
 
 ### 4. Controller Logic (`PaymentController.php`)
 
-*   [✔] **ดีมาก (ด้านความปลอดภัย):**
-    *   **Authorization:** มีการตรวจสอบสิทธิ์ของผู้ใช้ (`where('user_id', Auth::id())`) ในทุก Query ทำให้ผู้ใช้ไม่สามารถเข้าถึงข้อมูลออเดอร์ของคนอื่นได้
-    *   **Data Integrity:** การใช้ Database Transaction (`DB::beginTransaction`) ช่วยให้ข้อมูลไม่เสียหายหากเกิดข้อผิดพลาดระหว่างการสร้างออเดอร์
-    *   **File Uploads:** การอัปโหลดสลิปมีการตรวจสอบประเภทและขนาดของไฟล์ และใช้คำสั่ง `store()` ซึ่งเป็นวิธีที่ปลอดภัยตามมาตรฐานของ Laravel
+- [✔] **ดีมาก (ด้านความปลอดภัย):**
+    - **Authorization:** มีการตรวจสอบสิทธิ์ของผู้ใช้ (`where('user_id', Auth::id())`) ในทุก Query ทำให้ผู้ใช้ไม่สามารถเข้าถึงข้อมูลออเดอร์ของคนอื่นได้
+    - **Data Integrity:** การใช้ Database Transaction (`DB::beginTransaction`) ช่วยให้ข้อมูลไม่เสียหายหากเกิดข้อผิดพลาดระหว่างการสร้างออเดอร์
+    - **File Uploads:** การอัปโหลดสลิปมีการตรวจสอบประเภทและขนาดของไฟล์ และใช้คำสั่ง `store()` ซึ่งเป็นวิธีที่ปลอดภัยตามมาตรฐานของ Laravel
 
-*   [✔] **ดำเนินการแล้ว:**
-    *   **Hardcoded Values:** ย้ายเบอร์โทรศัพท์ PromptPay ไปเก็บในไฟล์ `.env.example` และปรับโค้ดให้เรียกใช้จาก `env('PROMPTPAY_ACCOUNT')`
-    *   **Refactoring Business Logic:** แยกโค้ด Logic การสร้าง PromptPay Payload ไปยัง Service Class ใหม่ (`app/Services/PromptPayService.php`) และปรับ Controller ให้เรียกใช้ Service นี้แทน ทำให้โค้ดสะอาดและง่ายต่อการบำรุงรักษา
-    *   **Unnecessary Database Query:** ลบการ Query ฐานข้อมูลที่ไม่จำเป็นออกไปแล้ว
+- [✔] **ดำเนินการแล้ว:**
+    - **Hardcoded Values:** ย้ายเบอร์โทรศัพท์ PromptPay ไปเก็บในไฟล์ `.env.example` และปรับโค้ดให้เรียกใช้จาก `env('PROMPTPAY_ACCOUNT')`
+    - **Refactoring Business Logic:** แยกโค้ด Logic การสร้าง PromptPay Payload ไปยัง Service Class ใหม่ (`app/Services/PromptPayService.php`) และปรับ Controller ให้เรียกใช้ Service นี้แทน ทำให้โค้ดสะอาดและง่ายต่อการบำรุงรักษา
+    - **Unnecessary Database Query:** ลบการ Query ฐานข้อมูลที่ไม่จำเป็นออกไปแล้ว
 
 ### 5. View & Frontend (`qr.blade.php`)
 
-*   [✔] **ดี:** มีการใช้ syntax `{{ $variable }}` ของ Blade ในการแสดงผลข้อมูล ซึ่งช่วยป้องกันการโจมตีแบบ XSS (Cross-Site Scripting) ได้โดยอัตโนมัติ
-*   [⚠️] **ข้อเสนอแนะ:** โค้ด JavaScript (ส่วนของ Timer, Popup) ในไฟล์ View มีปริมาณค่อนข้างเยอะ หากในอนาคตมีความซับซ้อนมากขึ้น ควรพิจารณาแยกออกไปเป็นไฟล์ `.js` ต่างหากเพื่อให้ง่ายต่อการจัดการ
+- [✔] **ดี:** มีการใช้ syntax `{{ $variable }}` ของ Blade ในการแสดงผลข้อมูล ซึ่งช่วยป้องกันการโจมตีแบบ XSS (Cross-Site Scripting) ได้โดยอัตโนมัติ
+- [⚠️] **ข้อเสนอแนะ:** โค้ด JavaScript (ส่วนของ Timer, Popup) ในไฟล์ View มีปริมาณค่อนข้างเยอะ หากในอนาคตมีความซับซ้อนมากขึ้น ควรพิจารณาแยกออกไปเป็นไฟล์ `.js` ต่างหากเพื่อให้ง่ายต่อการจัดการ
 
 ---
 
 ## สถานะปัจจุบัน
 
-*   โปรเจคได้รับการปรับปรุงตามคำแนะนำหลักๆ เพื่อเพิ่มความสะอาดของโค้ดและโครงสร้างแล้ว
-*   ส่วนของ `.env` ได้รับการตั้งค่าตัวแปร `PROMPTPAY_ACCOUNT` ใน `.env.example` แล้ว
-*   Route ที่ไม่จำเป็นถูกลบออกแล้ว
-*   `PaymentController` ได้รับการ Refactor เพื่อลดความซับซ้อนและใช้ Service Class สำหรับ Logic การสร้าง PromptPay
+- โปรเจคได้รับการปรับปรุงตามคำแนะนำหลักๆ เพื่อเพิ่มความสะอาดของโค้ดและโครงสร้างแล้ว
+- ส่วนของ `.env` ได้รับการตั้งค่าตัวแปร `PROMPTPAY_ACCOUNT` ใน `.env.example` แล้ว
+- Route ที่ไม่จำเป็นถูกลบออกแล้ว
+- `PaymentController` ได้รับการ Refactor เพื่อลดความซับซ้อนและใช้ Service Class สำหรับ Logic การสร้าง PromptPay
 
 ---
 
@@ -116,11 +117,11 @@
 ### การแก้ไข
 
 1.  **`app/Http/Controllers/AuthController.php`:**
-    -   แก้ไขฟังก์ชัน `logout` ให้เรียกใช้ `Auth::guard('web')->logout()` เพื่อระบุให้เป็นการออกจากระบบของ `web` Guard โดยเฉพาะ
-    -   ลบคำสั่ง `$request->session()->invalidate()` และ `$request->session()->regenerateToken()` ออก เพื่อไม่ให้กระทบต่อ Session ของ Guard อื่น
+    - แก้ไขฟังก์ชัน `logout` ให้เรียกใช้ `Auth::guard('web')->logout()` เพื่อระบุให้เป็นการออกจากระบบของ `web` Guard โดยเฉพาะ
+    - ลบคำสั่ง `$request->session()->invalidate()` และ `$request->session()->regenerateToken()` ออก เพื่อไม่ให้กระทบต่อ Session ของ Guard อื่น
 
 2.  **`app/Http/Controllers/Admin/AdminController.php`:**
-    -   แก้ไขฟังก์ชัน `logout` โดยลบคำสั่ง `$request->session()->invalidate()` และ `$request->session()->regenerateToken()` ออกเช่นกัน คงเหลือไว้เพียง `Auth::guard('admin')->logout()` ซึ่งเป็นการออกจากระบบที่ถูกต้องสำหรับ Admin อยู่แล้ว
+    - แก้ไขฟังก์ชัน `logout` โดยลบคำสั่ง `$request->session()->invalidate()` และ `$request->session()->regenerateToken()` ออกเช่นกัน คงเหลือไว้เพียง `Auth::guard('admin')->logout()` ซึ่งเป็นการออกจากระบบที่ถูกต้องสำหรับ Admin อยู่แล้ว
 
 ### ผลลัพธ์
 
@@ -132,24 +133,23 @@
 
 ### การแก้ไข Navbar สำหรับหน้าเฉพาะ
 
--   **ปัญหา:** Navbar หายไปในหน้า `qr` และ `contact` ตามคำขอเดิม
--   **สาเหตุ:** มีการใช้ตัวแปร `$hideNavbar = true;` ในไฟล์ `qr.blade.php` และ `contact.blade.php` ซึ่งไปซ่อน Navbar ทั้งหมดตามเงื่อนไขใน `layout.blade.php`
--   **การแก้ไข:** ลบคำสั่ง `@php $hideNavbar = true; @endphp` ออกจาก `qr.blade.php` และ `contact.blade.php` เพื่อให้ Navbar กลับมาแสดงผลตามปกติในทุกหน้า
+- **ปัญหา:** Navbar หายไปในหน้า `qr` และ `contact` ตามคำขอเดิม
+- **สาเหตุ:** มีการใช้ตัวแปร `$hideNavbar = true;` ในไฟล์ `qr.blade.php` และ `contact.blade.php` ซึ่งไปซ่อน Navbar ทั้งหมดตามเงื่อนไขใน `layout.blade.php`
+- **การแก้ไข:** ลบคำสั่ง `@php $hideNavbar = true; @endphp` ออกจาก `qr.blade.php` และ `contact.blade.php` เพื่อให้ Navbar กลับมาแสดงผลตามปกติในทุกหน้า
 
 ### การซ่อน Search Bar ใน Navbar
 
--   **ความต้องการ:** ซ่อนช่องค้นหาที่อยู่ใน Navbar
--   **การแก้ไข:**
+- **ความต้องการ:** ซ่อนช่องค้นหาที่อยู่ใน Navbar
+- **การแก้ไข:**
     1.  เพิ่มเงื่อนไข `@unless(isset($hideSearchBar) && $hideSearchBar)` ครอบส่วนของช่องค้นหาในไฟล์ `layout.blade.php`
     2.  หากต้องการซ่อนช่องค้นหาในหน้าใดๆ ให้เพิ่ม `@php $hideSearchBar = true; @endphp` ในไฟล์ Blade ของหน้านั้นๆ
 
 ### ผลลัพธ์
 
--   Navbar กลับมาแสดงผลตามปกติในทุกหน้า รวมถึงหน้า `qr` และ `contact`
--   ช่องค้นหาใน Navbar จะถูกซ่อนไว้เป็นค่าเริ่มต้น และสามารถเปิดใช้งานได้ตามต้องการโดยการกำหนดตัวแปร `$hideSearchBar = false;` ในหน้า Blade ที่ต้องการแสดงช่องค้นหา
+- Navbar กลับมาแสดงผลตามปกติในทุกหน้า รวมถึงหน้า `qr` และ `contact`
+- ช่องค้นหาใน Navbar จะถูกซ่อนไว้เป็นค่าเริ่มต้น และสามารถเปิดใช้งานได้ตามต้องการโดยการกำหนดตัวแปร `$hideSearchBar = false;` ในหน้า Blade ที่ต้องการแสดงช่องค้นหา
 
-
-
+{
 php artisan serve
 
 npm run dev
@@ -163,7 +163,15 @@ php artisan config:clear
 run test ส่ง Flex Message Line
 php artisan botnoi:send-birthday
 
---------------------------
-Admin Login              
+run ngrok
+ngrok http 8000
+
+URL web
+https://ostracizable-mellisa-nontenurially.ngrok-free.dev
+}
+
+---
+
+Admin Login  
 username: superadmin
 password: password

@@ -683,11 +683,19 @@
             document.getElementById('video_url').value = video.video_url;
             document.getElementById('video_duration').value = video.duration || '';
             document.getElementById('video_sort').value = video.sort_order;
+            
+            const thumbPreview = document.getElementById('video_thumbnail_preview');
+            const thumbImg = thumbPreview.querySelector('img');
+            
             if(video.thumbnail_path) {
-                document.getElementById('video_thumbnail_preview').classList.remove('hidden');
-                document.getElementById('video_thumbnail_preview').querySelector('img').src = "/storage/" + video.thumbnail_path;
+                thumbPreview.classList.remove('hidden');
+                thumbImg.src = "/storage/" + video.thumbnail_path;
+            } else if(video.thumbnail_url) {
+                thumbPreview.classList.remove('hidden');
+                thumbImg.src = video.thumbnail_url;
             } else {
-                document.getElementById('video_thumbnail_preview').classList.add('hidden');
+                thumbPreview.classList.add('hidden');
+                thumbImg.src = "";
             }
             openModal('videoModal');
         }

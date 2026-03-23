@@ -197,6 +197,16 @@ class FavoriteController extends Controller
                     if (empty($data['title'])) $data['title'] = $tiktokData['title'] ?? null;
                     $data['thumbnail_url'] = $tiktokData['thumbnail_url'] ?? null;
                     $data['embed_html'] = $tiktokData['html'] ?? null;
+
+                    // ดาวน์โหลดและเก็บรูป Thumbnail ไว้ในเครื่อง (ป้องกัน URL จาก TikTok หมดอายุ)
+                    if (!empty($data['thumbnail_url']) && !$request->hasFile('thumbnail')) {
+                        $imgResponse = \Illuminate\Support\Facades\Http::get($data['thumbnail_url']);
+                        if ($imgResponse->successful()) {
+                            $filename = 'about/videos/tiktok_thumb_' . uniqid() . '.jpg';
+                            Storage::disk('public')->put($filename, $imgResponse->body());
+                            $data['thumbnail_path'] = $filename;
+                        }
+                    }
                 }
             } catch (\Exception $e) {
                 // ข้ามหากดึงข้อมูลไม่ได้
@@ -241,6 +251,21 @@ class FavoriteController extends Controller
                     if (empty($data['title'])) $data['title'] = $tiktokData['title'] ?? null;
                     $data['thumbnail_url'] = $tiktokData['thumbnail_url'] ?? null;
                     $data['embed_html'] = $tiktokData['html'] ?? null;
+
+                    // ดาวน์โหลดและเก็บรูป Thumbnail ไว้ในเครื่องใหม่
+                    if (!empty($data['thumbnail_url']) && !$request->hasFile('thumbnail')) {
+                        // ลบรูปเก่าถ้ามี
+                        if ($video->thumbnail_path) {
+                            Storage::disk('public')->delete($video->thumbnail_path);
+                        }
+
+                        $imgResponse = \Illuminate\Support\Facades\Http::get($data['thumbnail_url']);
+                        if ($imgResponse->successful()) {
+                            $filename = 'about/videos/tiktok_thumb_' . uniqid() . '.jpg';
+                            Storage::disk('public')->put($filename, $imgResponse->body());
+                            $data['thumbnail_path'] = $filename;
+                        }
+                    }
                 }
             } catch (\Exception $e) {
                 // ข้ามหากดึงข้อมูลไม่ได้

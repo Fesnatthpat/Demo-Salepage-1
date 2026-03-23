@@ -199,13 +199,33 @@
                         <div class="container mx-auto px-1 sm:px-2 relative">
                             <div class="swiper categorySwiper w-full pb-1 sm:pb-2">
                                 <div class="swiper-wrapper items-start">
+                                    {{-- เพิ่มปุ่มแสดงทั้งหมด --}}
+                                    <div class="swiper-slide !h-auto">
+                                        <a href="{{ route('allproducts', request()->except(['category', 'page'])) }}"
+                                            class="flex flex-col items-center group w-full transition-transform duration-300 active:scale-95 px-1 sm:px-2 md:px-4">
+                                            <div
+                                                class="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 {{ !request('category') ? 'bg-white' : 'bg-gray-50' }} rounded-full flex items-center justify-center p-1.5 sm:p-2 mb-1.5 sm:mb-2 shadow-sm transition-colors overflow-hidden border {{ !request('category') ? 'border-white ring-2 ring-white/50' : 'border-red-500/30' }}">
+                                                <i class="fas fa-th-large text-red-600 text-lg sm:text-xl md:text-2xl"></i>
+                                            </div>
+                                            <span
+                                                class="text-[9px] sm:text-[10px] md:text-xs font-bold {{ !request('category') ? 'text-white underline decoration-2 underline-offset-4' : 'text-white' }} text-center leading-tight select-none">
+                                                ทั้งหมด
+                                            </span>
+                                        </a>
+                                    </div>
+
                                     @if (isset($dbCategories) && $dbCategories->count() > 0)
                                         @foreach ($dbCategories as $menu)
+                                            @php
+                                                $currentCategory = request('category');
+                                                $menuValue = $menu->slug ?: $menu->name;
+                                                $isActive = ($currentCategory == $menuValue);
+                                            @endphp
                                             <div class="swiper-slide !h-auto">
-                                                <a href="/allproducts?category={{ $menu->name }}"
+                                                <a href="{{ route('allproducts', array_merge(request()->except('page'), ['category' => $menuValue])) }}"
                                                     class="flex flex-col items-center group w-full transition-transform duration-300 active:scale-95 px-1 sm:px-2 md:px-4">
                                                     <div
-                                                        class="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-gray-50 rounded-full flex items-center justify-center p-1.5 sm:p-2 mb-1.5 sm:mb-2 shadow-sm transition-colors overflow-hidden border border-red-500/30">
+                                                        class="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 {{ $isActive ? 'bg-white' : 'bg-gray-50' }} rounded-full flex items-center justify-center p-1.5 sm:p-2 mb-1.5 sm:mb-2 shadow-sm transition-colors overflow-hidden border {{ $isActive ? 'border-white ring-2 ring-white/50' : 'border-red-500/30' }}">
                                                         @if ($menu->image_path)
                                                             <img src="{{ Storage::url($menu->image_path) }}"
                                                                 alt="{{ $menu->name }}"
@@ -217,7 +237,7 @@
                                                         @endif
                                                     </div>
                                                     <span
-                                                        class="text-[9px] sm:text-[10px] md:text-xs font-bold text-white text-center leading-tight select-none">
+                                                        class="text-[9px] sm:text-[10px] md:text-xs font-bold {{ $isActive ? 'text-white underline decoration-2 underline-offset-4' : 'text-white' }} text-center leading-tight select-none">
                                                         {!! nl2br(e($menu->name)) !!}
                                                     </span>
                                                 </a>
@@ -456,8 +476,20 @@
             });
 
             // ★★★ Category Responsive Breakpoints ★★★
+            @php
+                $activeIndex = 0;
+                if (isset($dbCategories) && request('category')) {
+                    foreach ($dbCategories as $index => $cat) {
+                        if (($cat->slug ?: $cat->name) == request('category')) {
+                            $activeIndex = $index;
+                            break;
+                        }
+                    }
+                }
+            @endphp
             new Swiper(".categorySwiper", {
-                loop: true,
+                initialSlide: {{ $activeIndex }},
+                loop: false, // ปิด loop เพื่อให้ initialSlide ทำงานถูกต้องและแสดงผลลัพธ์ที่คาดหวังได้ง่ายขึ้น
                 autoplay: {
                     delay: 3500,
                     disableOnInteraction: false,

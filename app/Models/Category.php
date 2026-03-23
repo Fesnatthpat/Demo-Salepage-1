@@ -10,12 +10,22 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'icon', 'image_path', 'link_url', 'linked_product_id', 'sort_order', 'is_active'
+        'name', 'slug', 'parent_id', 'icon', 'image_path', 'link_url', 'linked_product_id', 'sort_order', 'is_active'
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id')->orderBy('sort_order');
+    }
 
     public function products()
     {
-        return $this->hasMany(ProductSalepage::class, 'category_id', 'pd_sp_id');
+        return $this->hasMany(ProductSalepage::class, 'category_id', 'id');
     }
 
     public function linkedProduct()

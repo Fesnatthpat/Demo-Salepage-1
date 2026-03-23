@@ -21,10 +21,16 @@ class AllProductController extends Controller
         }
 
         // 3. ระบบกรองหมวดหมู่ (Category Filter)
-        // หมายเหตุ: ตรวจสอบให้แน่ใจว่าในตาราง database ของคุณมีคอลัมน์ชื่อ 'pd_sp_category'
-        // หรือเปลี่ยนเป็นชื่อคอลัมน์ที่คุณใช้เก็บหมวดหมู่จริง
         if ($request->filled('category')) {
-            $query->where('pd_sp_category', $request->category);
+            $categoryValue = trim($request->category);
+            \Illuminate\Support\Facades\Log::info('Filtering by category: ' . $categoryValue);
+            
+            $query->whereHas('category', function($q) use ($categoryValue) {
+                $q->where('name', $categoryValue)
+                  ->orWhere('slug', $categoryValue);
+            });
+            
+            \Illuminate\Support\Facades\Log::info('SQL: ' . $query->toSql());
         }
 
         // 4. ระบบเรียงลำดับ (Sorting)

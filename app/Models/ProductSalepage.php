@@ -15,6 +15,7 @@ class ProductSalepage extends Model
 
     // ✅ เพิ่มฟิลด์ทั้งหมดที่สามารถบันทึกข้อมูลได้
     protected $fillable = [
+        'category_id',
         'pd_sp_price2',
         'pd_sp_code',
         'pd_sp_SKU',
@@ -93,6 +94,11 @@ class ProductSalepage extends Model
 
         // ถ้าสินค้า "ไม่มี" ตัวเลือก ให้ดึงราคาจากตารางหลักมาแสดง
         return (int)$this->pd_sp_price;
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     public function images()

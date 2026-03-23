@@ -61,10 +61,12 @@ class ProductController extends Controller
     public function create()
     {
         $products = ProductSalepage::orderBy('pd_sp_name')->get();
+        $categories = \App\Models\Category::orderBy('sort_order')->get();
 
         return view('admin.products.create', [
             'productSalepage' => new ProductSalepage,
             'products' => $products,
+            'categories' => $categories,
         ]);
     }
 
@@ -80,6 +82,7 @@ class ProductController extends Controller
 
             $salePage = ProductSalepage::create([
                 'pd_sp_code' => $generatedCode,
+                'category_id' => $request->category_id,
                 'pd_sp_SKU' => $request->pd_sp_SKU,
                 'pd_sp_name' => $request->pd_sp_name,
                 'pd_sp_description' => $request->pd_sp_details,
@@ -163,10 +166,12 @@ class ProductController extends Controller
     {
         $productSalepage = ProductSalepage::with(['images', 'options.stock', 'stock'])->where('pd_sp_id', $id)->firstOrFail();
         $products = ProductSalepage::where('pd_sp_id', '!=', $id)->orderBy('pd_sp_name')->get();
+        $categories = \App\Models\Category::orderBy('sort_order')->get();
 
         return view('admin.products.edit', [
             'productSalepage' => $productSalepage,
             'products' => $products,
+            'categories' => $categories,
         ]);
     }
 
@@ -179,6 +184,7 @@ class ProductController extends Controller
             $originalData = $productSalepage->toArray();
 
             $productSalepage->update([
+                'category_id' => $request->category_id,
                 'pd_sp_name' => $request->pd_sp_name,
                 'pd_sp_SKU' => $request->pd_sp_SKU,
                 'pd_sp_price' => $request->pd_sp_price,
@@ -345,6 +351,7 @@ class ProductController extends Controller
     {
         return $request->validate([
             'pd_sp_name' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
             'pd_sp_SKU' => 'nullable|string|max:255',
             'pd_sp_price' => 'required|numeric|min:0',
             'pd_sp_price2' => 'nullable|numeric|min:0',

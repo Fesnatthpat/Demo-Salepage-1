@@ -75,7 +75,7 @@
         </div>
 
         <div class="p-6 md:p-8 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="form-control w-full">
                     <label class="label text-xs font-bold text-gray-400 uppercase tracking-wider">ชื่อสินค้า <span
                             class="text-red-500">*</span></label>
@@ -83,6 +83,19 @@
                         value="{{ old('pd_sp_name', $productSalepage->pd_sp_name ?? '') }}"
                         class="input w-full bg-gray-900 border border-gray-600 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl h-12"
                         required />
+                </div>
+                <div class="form-control w-full">
+                    <label class="label text-xs font-bold text-gray-400 uppercase tracking-wider">หมวดหมู่สินค้า</label>
+                    <select name="category_id"
+                        class="select w-full bg-gray-900 border border-gray-600 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl h-12">
+                        <option value="">-- ไม่ระบุ --</option>
+                        @foreach ($categories ?? [] as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('category_id', $productSalepage->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="form-control w-full">
                     <label class="label text-xs font-bold text-gray-400 uppercase tracking-wider">รหัส SKU

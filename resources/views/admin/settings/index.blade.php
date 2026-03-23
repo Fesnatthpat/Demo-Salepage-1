@@ -76,31 +76,39 @@
             @csrf
 
             {{-- 🟣 TAB: FOOTER --}}
-            <div class="space-y-8" x-show="activeTab === 'footer'"
-                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
-                x-transition:enter-end="opacity-100 translate-y-0" style="display: none;">
+            <div class="space-y-8" x-show="activeTab === 'footer'" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                style="display: none;">
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {{-- 1. Footer Info & Logo --}}
                     <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                            <div class="p-2.5 bg-indigo-500/10 rounded-xl"><i class="fas fa-info-circle text-indigo-400 text-xl"></i>
+                            <div class="p-2.5 bg-indigo-500/10 rounded-xl"><i
+                                    class="fas fa-info-circle text-indigo-400 text-xl"></i>
                             </div>
                             <h3 class="font-bold text-lg text-gray-100">ข้อมูลทั่วไปส่วนท้าย (Footer Info)</h3>
                         </div>
                         <div class="p-6 md:p-8 space-y-6">
                             {{-- Logo Upload for Footer (Same as Site Logo) --}}
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-6 bg-gray-900/50 p-4 rounded-2xl border border-gray-700 mb-6">
-                                <div class="w-20 h-20 bg-gray-900 rounded-xl border-2 border-dashed border-gray-600 overflow-hidden relative group shrink-0 hover:border-indigo-500/50 transition-colors mx-auto sm:mx-0">
+                            <div
+                                class="flex flex-col sm:flex-row sm:items-center gap-6 bg-gray-900/50 p-4 rounded-2xl border border-gray-700 mb-6">
+                                <div
+                                    class="w-20 h-20 bg-gray-900 rounded-xl border-2 border-dashed border-gray-600 overflow-hidden relative group shrink-0 hover:border-indigo-500/50 transition-colors mx-auto sm:mx-0">
                                     @php
                                         $currentLogo = \App\Models\SiteSetting::get('site_logo');
-                                        $logoUrl = $currentLogo ? asset('storage/' . $currentLogo) : asset('images/logo/logo1.png');
+                                        $logoUrl = $currentLogo
+                                            ? asset('storage/' . $currentLogo)
+                                            : asset('images/logo/logo1.png');
                                     @endphp
-                                    <img src="{{ $logoUrl }}" class="w-full h-full object-contain p-2" id="footer-logo-preview">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                    <img src="{{ $logoUrl }}" class="w-full h-full object-contain p-2"
+                                        id="footer-logo-preview">
+                                    <div
+                                        class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                         <i class="fas fa-camera text-white text-xl"></i>
                                     </div>
-                                    <input type="file" name="site_logo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    <input type="file" name="site_logo" accept="image/*"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         onchange="document.getElementById('footer-logo-preview').src = window.URL.createObjectURL(this.files[0]); document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0])">
                                 </div>
                                 <div class="space-y-1 text-center sm:text-left">
@@ -114,17 +122,17 @@
                                     <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                         ชื่อร้าน (Site Name)
                                     </label>
-                                    <input type="text" name="settings[site_name]" 
-                                           value="{{ $settings['site_name'] ?? 'ติดใจ' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                                    <input type="text" name="settings[site_name]"
+                                        value="{{ $settings['site_name'] ?? 'ติดใจ' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                         ข้อความ Copyright
                                     </label>
-                                    <input type="text" name="settings[footer_copyright]" 
-                                           value="{{ $settings['footer_copyright'] ?? 'All right reserved by Tidjai Co., Ltd.' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                                    <input type="text" name="settings[footer_copyright]"
+                                        value="{{ $settings['footer_copyright'] ?? 'All right reserved by Tidjai Co., Ltd.' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                                 </div>
                             </div>
                             <div>
@@ -132,7 +140,7 @@
                                     คำโปรย (Footer Slogan)
                                 </label>
                                 <textarea name="settings[footer_slogan]" rows="3"
-                                          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">{{ $settings['footer_slogan'] ?? "ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย\nคัดสรรวัตถุดิบคุณภาพเพื่อคุณ" }}</textarea>
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">{{ $settings['footer_slogan'] ?? "ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย\nคัดสรรวัตถุดิบคุณภาพเพื่อคุณ" }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -140,7 +148,8 @@
                     {{-- 3. Contact Information --}}
                     <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                            <div class="p-2.5 bg-green-500/10 rounded-xl"><i class="fas fa-address-book text-green-400 text-xl"></i>
+                            <div class="p-2.5 bg-green-500/10 rounded-xl"><i
+                                    class="fas fa-address-book text-green-400 text-xl"></i>
                             </div>
                             <h3 class="font-bold text-lg text-gray-100">ข้อมูลติดต่อ (Contact Info)</h3>
                         </div>
@@ -150,17 +159,17 @@
                                     <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                         เบอร์โทรศัพท์
                                     </label>
-                                    <input type="text" name="settings[site_phone]" 
-                                           value="{{ $settings['site_phone'] ?? '02-123-4567' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                                    <input type="text" name="settings[site_phone]"
+                                        value="{{ $settings['site_phone'] ?? '02-123-4567' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                         อีเมล
                                     </label>
-                                    <input type="email" name="settings[site_email]" 
-                                           value="{{ $settings['site_email'] ?? 'contact@tidjai.com' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                                    <input type="email" name="settings[site_email]"
+                                        value="{{ $settings['site_email'] ?? 'contact@tidjai.com' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
                                 </div>
                             </div>
                             <div>
@@ -168,7 +177,7 @@
                                     ที่อยู่
                                 </label>
                                 <textarea name="settings[site_address]" rows="3"
-                                          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">{{ $settings['site_address'] ?? "บริษัท ติดใจ จำกัด\n123 ถนนสุขุมวิท แขวงคลองเตย\nเขตคลองเตย กรุงเทพฯ 10110" }}</textarea>
+                                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">{{ $settings['site_address'] ?? "บริษัท ติดใจ จำกัด\n123 ถนนสุขุมวิท แขวงคลองเตย\nเขตคลองเตย กรุงเทพฯ 10110" }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -176,43 +185,48 @@
                     {{-- 4. Social Media Links --}}
                     <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                            <div class="p-2.5 bg-blue-500/10 rounded-xl"><i class="fas fa-share-alt text-blue-400 text-xl"></i>
+                            <div class="p-2.5 bg-blue-500/10 rounded-xl"><i
+                                    class="fas fa-share-alt text-blue-400 text-xl"></i>
                             </div>
                             <h3 class="font-bold text-lg text-gray-100">โซเชียลมีเดีย (Social Media)</h3>
                         </div>
                         <div class="p-6 md:p-8 space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 flex-shrink-0 bg-blue-600 rounded-lg flex items-center justify-center text-white text-lg">
+                                    <div
+                                        class="w-10 h-10 flex-shrink-0 bg-blue-600 rounded-lg flex items-center justify-center text-white text-lg">
                                         <i class="fab fa-facebook-f"></i>
                                     </div>
-                                    <input type="text" name="settings[social_facebook]" 
-                                           value="{{ $settings['social_facebook'] ?? '#' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                    <input type="text" name="settings[social_facebook]"
+                                        value="{{ $settings['social_facebook'] ?? '#' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 flex-shrink-0 bg-sky-400 rounded-lg flex items-center justify-center text-white text-lg">
+                                    <div
+                                        class="w-10 h-10 flex-shrink-0 bg-sky-400 rounded-lg flex items-center justify-center text-white text-lg">
                                         <i class="fab fa-twitter"></i>
                                     </div>
-                                    <input type="text" name="settings[social_twitter]" 
-                                           value="{{ $settings['social_twitter'] ?? '#' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-sky-400 outline-none transition-all">
+                                    <input type="text" name="settings[social_twitter]"
+                                        value="{{ $settings['social_twitter'] ?? '#' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-sky-400 outline-none transition-all">
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 flex-shrink-0 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-lg">
+                                    <div
+                                        class="w-10 h-10 flex-shrink-0 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-lg">
                                         <i class="fab fa-instagram"></i>
                                     </div>
-                                    <input type="text" name="settings[social_instagram]" 
-                                           value="{{ $settings['social_instagram'] ?? '#' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none transition-all">
+                                    <input type="text" name="settings[social_instagram]"
+                                        value="{{ $settings['social_instagram'] ?? '#' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-pink-500 outline-none transition-all">
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 flex-shrink-0 bg-green-500 rounded-lg flex items-center justify-center text-white text-lg">
+                                    <div
+                                        class="w-10 h-10 flex-shrink-0 bg-green-500 rounded-lg flex items-center justify-center text-white text-lg">
                                         <i class="fab fa-line"></i>
                                     </div>
-                                    <input type="text" name="settings[social_line]" 
-                                           value="{{ $settings['social_line'] ?? '#' }}"
-                                           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                                    <input type="text" name="settings[social_line]"
+                                        value="{{ $settings['social_line'] ?? '#' }}"
+                                        class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-green-500 outline-none transition-all">
                                 </div>
                             </div>
                         </div>
@@ -221,7 +235,8 @@
                     {{-- 5. Footer Columns Links --}}
                     <div class="lg:col-span-2 bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                            <div class="p-2.5 bg-amber-500/10 rounded-xl"><i class="fas fa-link text-amber-400 text-xl"></i>
+                            <div class="p-2.5 bg-amber-500/10 rounded-xl"><i
+                                    class="fas fa-link text-amber-400 text-xl"></i>
                             </div>
                             <h3 class="font-bold text-lg text-gray-100">จัดการลิงก์เมนูส่วนท้าย (Footer Menu Links)</h3>
                         </div>
@@ -231,22 +246,24 @@
                                 <div class="space-y-6">
                                     <div class="flex items-center gap-2 pb-2 border-b border-gray-700">
                                         <i class="fas fa-question-circle text-amber-400"></i>
-                                        <input type="text" name="settings[faq_badge]" 
-                                               value="{{ $settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ' }}"
-                                               class="bg-transparent border-none text-gray-100 font-bold text-lg focus:ring-0 w-full p-0">
+                                        <input type="text" name="settings[faq_badge]"
+                                            value="{{ $settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ' }}"
+                                            class="bg-transparent border-none text-gray-100 font-bold text-lg focus:ring-0 w-full p-0">
                                     </div>
                                     <div class="space-y-4">
-                                        @for($i=1; $i<=4; $i++)
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <input type="text" name="settings[footer_col2_link{{$i}}_label]" 
-                                                   value="{{ $settings['footer_col2_link'.$i.'_label'] ?? ($i==1?'ติดตามสถานะคำสั่งซื้อ':($i==2?'การรับประกันสินค้า':($i==3?'การคืนสินค้าและการคืนเงิน':'วิธีการสั่งซื้อ'))) }}"
-                                                   placeholder="ชื่อลิงก์"
-                                                   class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
-                                            <input type="text" name="settings[footer_col2_link{{$i}}_url]" 
-                                                   value="{{ $settings['footer_col2_link'.$i.'_url'] ?? ($i==1?route('order.tracking.form'):'#') }}"
-                                                   placeholder="URL (เช่น /about หรือ http://...)"
-                                                   class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
-                                        </div>
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <input type="text"
+                                                    name="settings[footer_col2_link{{ $i }}_label]"
+                                                    value="{{ $settings['footer_col2_link' . $i . '_label'] ?? ($i == 1 ? 'ติดตามสถานะคำสั่งซื้อ' : ($i == 2 ? 'การรับประกันสินค้า' : ($i == 3 ? 'การคืนสินค้าและการคืนเงิน' : 'วิธีการสั่งซื้อ'))) }}"
+                                                    placeholder="ชื่อลิงก์"
+                                                    class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                                <input type="text"
+                                                    name="settings[footer_col2_link{{ $i }}_url]"
+                                                    value="{{ $settings['footer_col2_link' . $i . '_url'] ?? ($i == 1 ? route('order.tracking.form') : '#') }}"
+                                                    placeholder="URL (เช่น /about หรือ http://...)"
+                                                    class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                            </div>
                                         @endfor
                                     </div>
                                 </div>
@@ -255,22 +272,24 @@
                                 <div class="space-y-6">
                                     <div class="flex items-center gap-2 pb-2 border-b border-gray-700">
                                         <i class="fas fa-info-circle text-indigo-400"></i>
-                                        <input type="text" name="settings[footer_about_title]" 
-                                               value="{{ $settings['footer_about_title'] ?? 'เกี่ยวกับติดใจ' }}"
-                                               class="bg-transparent border-none text-gray-100 font-bold text-lg focus:ring-0 w-full p-0">
+                                        <input type="text" name="settings[footer_about_title]"
+                                            value="{{ $settings['footer_about_title'] ?? 'เกี่ยวกับติดใจ' }}"
+                                            class="bg-transparent border-none text-gray-100 font-bold text-lg focus:ring-0 w-full p-0">
                                     </div>
                                     <div class="space-y-4">
-                                        @for($i=1; $i<=4; $i++)
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <input type="text" name="settings[footer_col3_link{{$i}}_label]" 
-                                                   value="{{ $settings['footer_col3_link'.$i.'_label'] ?? ($i==1?'เรื่องราวของเรา':($i==2?'บทความน่ารู้':($i==3?'นโยบายความเป็นส่วนตัว':'ข้อกำหนดและเงื่อนไข'))) }}"
-                                                   placeholder="ชื่อลิงก์"
-                                                   class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
-                                            <input type="text" name="settings[footer_col3_link{{$i}}_url]" 
-                                                   value="{{ $settings['footer_col3_link'.$i.'_url'] ?? ($i==1?'/about':'#') }}"
-                                                   placeholder="URL"
-                                                   class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
-                                        </div>
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <input type="text"
+                                                    name="settings[footer_col3_link{{ $i }}_label]"
+                                                    value="{{ $settings['footer_col3_link' . $i . '_label'] ?? ($i == 1 ? 'เรื่องราวของเรา' : ($i == 2 ? 'บทความน่ารู้' : ($i == 3 ? 'นโยบายความเป็นส่วนตัว' : 'ข้อกำหนดและเงื่อนไข'))) }}"
+                                                    placeholder="ชื่อลิงก์"
+                                                    class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                                <input type="text"
+                                                    name="settings[footer_col3_link{{ $i }}_url]"
+                                                    value="{{ $settings['footer_col3_link' . $i . '_url'] ?? ($i == 1 ? '/about' : '#') }}"
+                                                    placeholder="URL"
+                                                    class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                            </div>
                                         @endfor
                                     </div>
                                 </div>
@@ -289,7 +308,8 @@
                     {{-- 1. Logo & Background --}}
                     <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                         <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                            <div class="p-2.5 bg-blue-500/10 rounded-xl"><i class="fas fa-image text-blue-400 text-xl"></i>
+                            <div class="p-2.5 bg-blue-500/10 rounded-xl"><i
+                                    class="fas fa-image text-blue-400 text-xl"></i>
                             </div>
                             <h3 class="font-bold text-lg text-gray-100">รูปภาพเว็บไซต์ Background</h3>
                         </div>
@@ -333,13 +353,15 @@
             </div>
 
             {{-- 🟢 TAB: HOMEPAGE --}}
-            <div class="space-y-8" x-show="activeTab === 'homepage'" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="space-y-8" x-show="activeTab === 'homepage'"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0">
 
                 {{-- 0. PAGE CONTENT (Titles) --}}
                 <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                        <div class="p-2.5 bg-amber-500/10 rounded-xl"><i class="fas fa-heading text-amber-400 text-xl"></i>
+                        <div class="p-2.5 bg-amber-500/10 rounded-xl"><i
+                                class="fas fa-heading text-amber-400 text-xl"></i>
                         </div>
                         <h3 class="font-bold text-lg text-gray-100">หัวข้อหน้าหลัก (Homepage Titles)</h3>
                     </div>
@@ -348,25 +370,25 @@
                             <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                 Badge เมนูแนะนำ (เช่น Recommended)
                             </label>
-                            <input type="text" name="settings[home_recommended_badge]" 
-                                   value="{{ $settings['home_recommended_badge'] ?? 'Recommended' }}"
-                                   class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                            <input type="text" name="settings[home_recommended_badge]"
+                                value="{{ $settings['home_recommended_badge'] ?? 'Recommended' }}"
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                 หัวข้อเมนูแนะนำ (รองรับ HTML)
                             </label>
-                            <input type="text" name="settings[home_recommended_title]" 
-                                   value="{{ $settings['home_recommended_title'] ?? 'เมนูแนะนำ <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500\">ต้องลอง!</span>' }}"
-                                   class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                            <input type="text" name="settings[home_recommended_title]"
+                                value="{{ $settings['home_recommended_title'] ?? 'เมนูแนะนำ <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-500\">ต้องลอง!</span>' }}"
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
                                 หัวข้อส่วน "6 เหตุผล"
                             </label>
-                            <input type="text" name="settings[home_reasons_title]" 
-                                   value="{{ $settings['home_reasons_title'] ?? '6 เหตุผลทำไมต้องเลือกเรา' }}"
-                                   class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                            <input type="text" name="settings[home_reasons_title]"
+                                value="{{ $settings['home_reasons_title'] ?? '6 เหตุผลทำไมต้องเลือกเรา' }}"
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                         </div>
                     </div>
                 </div>
@@ -374,7 +396,8 @@
                 {{-- 0. GENERAL SETTINGS (Logo) --}}
                 <div class="bg-gray-800 rounded-3xl border border-gray-700 overflow-hidden shadow-xl">
                     <div class="px-6 py-5 bg-gray-900/80 border-b border-gray-700 flex items-center gap-3">
-                        <div class="p-2.5 bg-emerald-500/10 rounded-xl"><i class="fas fa-cog text-emerald-400 text-xl"></i>
+                        <div class="p-2.5 bg-emerald-500/10 rounded-xl"><i
+                                class="fas fa-cog text-emerald-400 text-xl"></i>
                         </div>
                         <h3 class="font-bold text-lg text-gray-100">ตั้งค่าทั่วไป (General Settings)</h3>
                     </div>
@@ -470,8 +493,8 @@
                                                 class="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                                                 <i class="fas fa-camera text-white text-2xl"></i>
                                             </div>
-                                            <input type="file" :name="`hero_banners[${index}][image]`" accept="image/*"
-                                                @change="previewImage($event, 'hero_slides', index)"
+                                            <input type="file" :name="`hero_banners[${index}][image]`"
+                                                accept="image/*" @change="previewImage($event, 'hero_slides', index)"
                                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                         </div>
                                         <div class="relative">
@@ -857,25 +880,51 @@
                                         </div>
 
                                         <div class="w-full text-center space-y-2">
-                                            <input type="text" :name="`categories[${index}][name]`" x-model="cat.name"
-                                                placeholder="ชื่อหมวดหมู่..."
-                                                class="w-full bg-gray-800 border border-gray-600 rounded-xl text-sm text-center font-bold text-gray-200 px-3 py-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+                                            <div class="space-y-1">
+                                                <input type="text" :name="`categories[${index}][name]`" x-model="cat.name"
+                                                    placeholder="ชื่อหมวดหมู่..."
+                                                    class="w-full bg-gray-800 border border-gray-600 rounded-xl text-sm text-center font-bold text-gray-200 px-3 py-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+                                                
+                                                <input type="text" :name="`categories[${index}][slug]`" x-model="cat.slug"
+                                                    placeholder="slug-url-path..."
+                                                    class="w-full bg-gray-800/50 border border-gray-700 rounded-lg text-[11px] text-center text-gray-400 px-3 py-1.5 focus:border-emerald-500 focus:ring-0 transition-colors">
+                                            </div>
 
-                                            <div class="space-y-2 text-left bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
+                                            <div
+                                                class="space-y-2 text-left bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
                                                 <div class="space-y-1">
-                                                    <label class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">ผูกกับสินค้า</label>
-                                                    <select :name="`categories[${index}][linked_product_id]`" x-model="cat.linked_product_id"
+                                                    <label
+                                                        class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">หมวดหมู่หลัก</label>
+                                                    <select :name="`categories[${index}][parent_id]`"
+                                                        x-model="cat.parent_id"
                                                         class="w-full bg-gray-900 border-gray-700 rounded-lg text-[11px] text-gray-300 px-2 py-1.5 focus:border-emerald-500 focus:ring-0">
-                                                        <option value="">-- ไม่เลือก --</option>
-                                                        @foreach($products as $p)
-                                                            <option value="{{ $p->pd_sp_id }}">{{ $p->pd_sp_name }}</option>
+                                                        <option value="">-- เป็นหมวดหมู่หลัก --</option>
+                                                        @foreach ($categories ?? [] as $c)
+                                                            <template x-if="cat.id != {{ $c->id }}">
+                                                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                                            </template>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="space-y-1">
-                                                    <label class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">ลิงก์แบบกำหนดเอง</label>
-                                                    <input type="text" :name="`categories[${index}][link_url]`" x-model="cat.link_url"
-                                                        placeholder="https://..."
+                                                    <label
+                                                        class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">ผูกกับสินค้า</label>
+                                                    <select :name="`categories[${index}][linked_product_id]`"
+                                                        x-model="cat.linked_product_id"
+                                                        class="w-full bg-gray-900 border-gray-700 rounded-lg text-[11px] text-gray-300 px-2 py-1.5 focus:border-emerald-500 focus:ring-0">
+                                                        <option value="">-- ไม่เลือก --</option>
+                                                        {{-- ✅ เพิ่ม ?? [] เพื่อป้องกันหน้าขาวหากไม่ได้ส่งตัวแปรมา --}}
+                                                        @foreach ($products ?? [] as $p)
+                                                            <option value="{{ $p->pd_sp_id }}">{{ $p->pd_sp_name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="space-y-1">
+                                                    <label
+                                                        class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">ลิงก์แบบกำหนดเอง</label>
+                                                    <input type="text" :name="`categories[${index}][link_url]`"
+                                                        x-model="cat.link_url" placeholder="https://..."
                                                         class="w-full bg-gray-900 border-gray-700 rounded-lg text-[11px] text-gray-300 px-2 py-1.5 focus:border-emerald-500 focus:ring-0">
                                                 </div>
                                             </div>
@@ -1102,13 +1151,16 @@
                 categories: [
                     @foreach ($categories ?? [] as $cat)
                         {
-                            id: "{{ $cat->id }}",
-                            name: "{{ $cat->name }}",
-                            icon: "{{ $cat->icon }}",
-                            image: "{{ $cat->image_path ? Storage::url($cat->image_path) : 'https://via.placeholder.com/300x300?text=Category' }}",
-                            existing_path: "{{ $cat->image_path }}",
-                            link_url: "{{ $cat->link_url }}",
-                            linked_product_id: "{{ $cat->linked_product_id }}"
+                            
+                            id: @json($cat->id ?? null),
+                            name: @json($cat->name ?? ''),
+                            slug: @json($cat->slug ?? ''),
+                            parent_id: @json($cat->parent_id ?? ''),
+                            icon: @json($cat->icon ?? 'fas fa-th'),
+                            image: @json(!empty($cat->image_path) ? Storage::url($cat->image_path) : 'https://via.placeholder.com/300x300?text=Category'),
+                            existing_path: @json($cat->image_path ?? ''),
+                            link_url: @json($cat->link_url ?? ''),
+                            linked_product_id: @json($cat->linked_product_id ?? '')
                         },
                     @endforeach
                 ],
@@ -1116,6 +1168,8 @@
                     this.categories.push({
                         id: null,
                         name: '',
+                        slug: '',
+                        parent_id: '',
                         icon: 'fas fa-th',
                         image: 'https://via.placeholder.com/300x300?text=Upload+Category',
                         existing_path: '',

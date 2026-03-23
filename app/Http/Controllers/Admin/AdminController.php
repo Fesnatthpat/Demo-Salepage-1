@@ -191,6 +191,8 @@ class AdminController extends Controller
                 $id = !empty($catData['id']) ? $catData['id'] : null;
                 $updateData = [
                     'name' => $catData['name'] ?? 'Untitled Category',
+                    'slug' => !empty($catData['slug']) ? $catData['slug'] : \Illuminate\Support\Str::slug($catData['name'] ?? 'untitled-category'),
+                    'parent_id' => !empty($catData['parent_id']) ? $catData['parent_id'] : null,
                     'icon' => $catData['icon'] ?? 'fas fa-th',
                     'link_url' => $catData['link_url'] ?? null,
                     'linked_product_id' => $catData['linked_product_id'] ?? null,

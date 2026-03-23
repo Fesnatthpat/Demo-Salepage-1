@@ -64,7 +64,8 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                <form action="{{ route('admin.products.index') }}" method="GET" class="w-full sm:w-72 relative group">
+                <form action="{{ route('admin.products.index') }}" method="GET"
+                    class="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
                     @if (request('status') !== null)
                         <input type="hidden" name="status" value="{{ request('status') }}">
                     @endif
@@ -72,12 +73,33 @@
                         <input type="hidden" name="type" value="{{ request('type') }}">
                     @endif
 
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-500 group-focus-within:text-emerald-400 transition-colors"></i>
+                    {{-- Dropdown หมวดหมู่ --}}
+                    <div class="relative group w-full sm:w-48">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i
+                                class="fas fa-th-large text-gray-500 group-focus-within:text-emerald-400 transition-colors text-sm"></i>
+                        </div>
+                        <select name="category_id" onchange="this.form.submit()"
+                            class="select w-full pl-11 pr-4 bg-gray-900/50 border border-gray-600 text-gray-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl h-12 transition-all appearance-none">
+                            <option value="">ทุกหมวดหมู่</option>
+                            @foreach ($categories as $cat)
+                                <option value="{{ $cat->id }}"
+                                    {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-                    <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
-                        class="input w-full pl-11 pr-4 bg-gray-900/50 border border-gray-600 text-gray-200 placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl h-12 transition-all"
-                        value="{{ request('search') }}">
+
+                    {{-- Search Input --}}
+                    <div class="relative group w-full sm:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-500 group-focus-within:text-emerald-400 transition-colors"></i>
+                        </div>
+                        <input type="text" name="search" placeholder="ค้นหาชื่อ หรือรหัสสินค้า..."
+                            class="input w-full pl-11 pr-4 bg-gray-900/50 border border-gray-600 text-gray-200 placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl h-12 transition-all"
+                            value="{{ request('search') }}">
+                    </div>
                 </form>
 
                 <a href="{{ route('admin.products.create') }}"
@@ -173,10 +195,17 @@
                                             class="font-bold text-gray-100 text-base whitespace-normal line-clamp-2 leading-tight group-hover:text-emerald-400 transition-colors">
                                             {{ $product->pd_sp_name ?? 'ไม่พบสินค้าหลัก' }}
                                         </div>
-                                        <div class="flex items-center gap-2 mt-2">
+                                        <div class="flex flex-wrap items-center gap-2 mt-2">
                                             <span
                                                 class="text-[10px] font-mono text-gray-400 bg-gray-900 px-2 py-0.5 rounded border border-gray-700">SKU:
                                                 {{ $product->pd_sp_code }}</span>
+
+                                            @if ($product->category)
+                                                <span
+                                                    class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                                    <i class="fas fa-folder-open mr-1"></i> {{ $product->category->name }}
+                                                </span>
+                                            @endif
 
                                             <button type="button"
                                                 class="toggle-recommended-btn outline-none transition-transform active:scale-95"

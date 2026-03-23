@@ -17,7 +17,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = ProductSalepage::with(['images', 'stock'])->orderBy('pd_sp_id', 'desc');
+        $query = ProductSalepage::with(['images', 'stock', 'category'])->orderBy('pd_sp_id', 'desc');
 
         if ($request->filled('search')) {
             $searchTerm = '%'.$request->search.'%';
@@ -26,6 +26,10 @@ class ProductController extends Controller
                     ->orWhere('pd_sp_code', 'like', $searchTerm)
                     ->orWhere('pd_sp_SKU', 'like', $searchTerm);
             });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
 
         if ($request->has('status') && in_array($request->status, ['0', '1'])) {
@@ -54,8 +58,9 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(10);
+        $categories = \App\Models\Category::active()->get();
 
-        return view('admin.products.index', compact('products'));
+        return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()

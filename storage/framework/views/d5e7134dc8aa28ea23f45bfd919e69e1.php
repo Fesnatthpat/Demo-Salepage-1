@@ -504,6 +504,7 @@ unset($__split);
 
                 if (foundIndex !== -1) {
                     this.currentIndex = foundIndex;
+                    this.recordDisplay(this.popups[foundIndex].id);
                     setTimeout(() => {
                         this.showPopup = true;
                     }, foundIndex === 0 ? 500 : 50); // อันแรกหน่วง 0.5 วิ อันต่อๆ มาเด้งเกือบทันที
@@ -511,6 +512,27 @@ unset($__split);
                     this.showPopup = false;
                     this.currentIndex = this.popups.length;
                 }
+            },
+
+            recordDisplay(id) {
+                // ตรวจสอบว่า Browser นี้เคยนับไปแล้วหรือยัง (Unique User)
+                if (localStorage.getItem('popup_recorded_' + id)) return;
+
+                fetch(`/popups/${id}/record-display`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => {
+                    if (res.ok) {
+                        // บันทึกลง localStorage ว่านับไปแล้ว
+                        localStorage.setItem('popup_recorded_' + id, 'true');
+                    }
+                })
+                .catch(err => console.error('Error recording popup display:', err));
             },
 
             recordShown(id) {

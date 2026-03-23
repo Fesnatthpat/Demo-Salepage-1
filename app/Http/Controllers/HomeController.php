@@ -75,4 +75,20 @@ class HomeController extends Controller
 
         return view('about', compact('favorites', 'videos', 'galleries', 'socialLinks', 'contacts', 'settings'));
     }
+
+    /**
+     * Record a popup display by incrementing its display_count (Unique Views).
+     */
+    public function recordPopupDisplay(\App\Models\HomepagePopup $popup)
+    {
+        $viewedKey = 'popup_viewed_' . $popup->id;
+        
+        // ถ้ายังไม่ได้นับใน Session นี้
+        if (!session()->has($viewedKey)) {
+            $popup->increment('display_count');
+            session()->put($viewedKey, true); // มาร์กไว้ว่านับแล้ว
+        }
+        
+        return response()->json(['success' => true]);
+    }
 }

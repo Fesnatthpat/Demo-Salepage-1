@@ -37,6 +37,7 @@
                     <tr class="bg-gray-900/80 border-b border-gray-700 text-xs uppercase text-gray-400 font-bold tracking-wider">
                         <th class="px-6 py-5 text-center">Sort</th>
                         <th class="px-6 py-5">Popup Info</th>
+                        <th class="px-6 py-5 text-center">Unique Users</th>
                         <th class="px-6 py-5">Display Logic</th>
                         <th class="px-6 py-5">Schedule</th>
                         <th class="px-6 py-5 text-center">Status</th>
@@ -73,6 +74,13 @@
                                             @endif
                                         </div>
                                     </div>
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-5 text-center align-middle">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-lg font-black text-indigo-400 leading-none">{{ number_format($popup->display_count) }}</span>
+                                    <span class="text-[9px] uppercase tracking-widest text-gray-500 font-bold mt-1">ครั้ง</span>
                                 </div>
                             </td>
 

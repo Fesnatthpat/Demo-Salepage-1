@@ -166,10 +166,24 @@ run test ส่ง Flex Message Line
 php artisan botnoi:send-birthday
 
 run ngrok
-ngrok http 8000
+ngrok http 8000 ไม่ได้ใช้ Ngrok 
 
+##################################################################
+
+วิธีใช้งานหลังจากโหลดเสร็จ (ห้ามดับเบิลคลิกเปิดไฟล์!)
+ไฟล์ที่คุณได้มาจะเป็นชื่อ cloudflared-windows-amd64.exe (หรือใกล้เคียง) ให้ทำตามนี้ครับ:
+ย้ายไฟล์: เอาไปวางในโฟลเดอร์ที่หาง่ายๆ เช่น C:\cloudflared\
+เปิด Terminal: กดปุ่ม Windows + R พิมพ์ cmd แล้วกด Enter
+ไปที่โฟลเดอร์นั้น: พิมพ์คำสั่ง cd C:\cloudflared (เปลี่ยนตามที่วางไฟล์ไว้)
+เริ่มใช้งาน: พิมพ์คำสั่งนี้เพื่อทำให้เว็บออนไลน์ทันที
+
+run cloudflared
+cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
+
+#### เปลี่ยน URL ทุกครั้งที่ Run ใหม่ ####
+#### และต้องไปแก้ไข URL ที่ไฟล์ .env ด้วย อย่าลืม ###
 URL web
-https://wider-configurations-interference-philosophy.trycloudflare.com
+https://warning-denied-jets-hotels.trycloudflare.com/
 
 
 }

@@ -40,6 +40,7 @@ Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.s
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+Route::post('/popups/{popup}/record-display', [HomeController::class, 'recordPopupDisplay'])->name('popups.record-display');
 
 // ==========================================
 // Birthday Promotion

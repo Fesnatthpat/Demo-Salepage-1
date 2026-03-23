@@ -40,6 +40,9 @@
                             'created' => ['color' => 'green', 'icon' => 'fas fa-plus-circle', 'label' => 'สร้างใหม่'],
                             'updated' => ['color' => 'amber', 'icon' => 'fas fa-edit', 'label' => 'แก้ไขข้อมูล'],
                             'deleted' => ['color' => 'red', 'icon' => 'fas fa-trash-alt', 'label' => 'ลบข้อมูล'],
+                            'updated_settings' => ['color' => 'indigo', 'icon' => 'fas fa-cogs', 'label' => 'ตั้งค่าเว็บไซต์'],
+                            'toggle_status' => ['color' => 'blue', 'icon' => 'fas fa-toggle-on', 'label' => 'เปลี่ยนสถานะ'],
+                            'logged_in' => ['color' => 'emerald', 'icon' => 'fas fa-sign-in-alt', 'label' => 'เข้าสู่ระบบ'],
                             default => ['color' => 'gray', 'icon' => 'fas fa-info-circle', 'label' => $activity->action],
                         };
                         $color = $config['color'];
@@ -89,18 +92,30 @@
                             <div class="mb-5 flex flex-wrap items-center gap-3 p-3 rounded-xl bg-gray-900/30 border border-gray-700/30">
                                 <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">เป้าหมาย:</span>
                                 <span class="text-sm font-semibold text-gray-200">
-                                    {{ $activity->loggable->pd_sp_name ?? ($activity->loggable->name ?? 'ID: ' . $activity->loggable_id) }}
+                                    @if($activity->loggable)
+                                        {{ $activity->loggable->pd_sp_name ?? ($activity->loggable->name ?? ($activity->loggable->title ?? 'ID: ' . $activity->loggable_id)) }}
+                                    @else
+                                        ID: {{ $activity->loggable_id }} (ข้อมูลถูกลบ)
+                                    @endif
                                 </span>
                                 
-                                @if ($activity->loggable && in_array($activity->loggable_type, ['App\Models\ProductSalepage', 'App\Models\Promotion']))
+                                @if ($activity->loggable && in_array($activity->loggable_type, ['App\Models\ProductSalepage', 'App\Models\Promotion', 'App\Models\HomepagePopup', 'App\Models\BirthdayPromotion']))
                                     @php
-                                        $route = $activity->loggable_type === 'App\Models\ProductSalepage' ? 'admin.products.edit' : 'admin.promotions.edit';
+                                        $route = match($activity->loggable_type) {
+                                            'App\Models\ProductSalepage' => 'admin.products.edit',
+                                            'App\Models\Promotion' => 'admin.promotions.edit',
+                                            'App\Models\HomepagePopup' => 'admin.popups.edit',
+                                            'App\Models\BirthdayPromotion' => 'admin.birthday-promotion.edit',
+                                            default => null
+                                        };
                                     @endphp
-                                    <a href="{{ route($route, $activity->loggable_id) }}"
-                                        class="inline-flex items-center gap-1.5 ml-auto px-3 py-1 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded-lg transition-colors">
-                                        <i class="fas fa-external-link-alt"></i> ดูข้อมูลต้นทาง
-                                    </a>
-                                @elseif (!$activity->loggable)
+                                    @if($route)
+                                        <a href="{{ route($route, $activity->loggable_id) }}"
+                                            class="inline-flex items-center gap-1.5 ml-auto px-3 py-1 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded-lg transition-colors">
+                                            <i class="fas fa-external-link-alt"></i> ดูข้อมูลต้นทาง
+                                        </a>
+                                    @endif
+                                @elseif (!$activity->loggable && $activity->action !== 'deleted')
                                     <span class="ml-auto flex items-center gap-1 text-[11px] font-medium text-red-400/80 italic">
                                         <i class="fas fa-exclamation-triangle"></i> ข้อมูลนี้ถูกลบออกจากระบบแล้ว
                                     </span>

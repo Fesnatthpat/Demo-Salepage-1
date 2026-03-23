@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class AdminManagementController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Display a listing of the resource.
      */
@@ -38,6 +41,7 @@ class AdminManagementController extends Controller
             'username' => ['required', 'string', 'max:255', Rule::unique('admins')->whereNull('deleted_at')],
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,superadmin',
+            'is_active' => 'required|boolean',
         ]);
 
         // Generate unique 6-digit code
@@ -45,13 +49,16 @@ class AdminManagementController extends Controller
             $code = rand(100000, 999999);
         } while (Admin::where('admin_code', $code)->exists());
 
-        Admin::create([
+        $newAdmin = Admin::create([
             'name' => $request->name,
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'admin_code' => $code,
+            'is_active' => $request->is_active,
         ]);
+
+        $this->logActivity($newAdmin, 'created');
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin created successfully.');
     }
@@ -82,9 +89,11 @@ class AdminManagementController extends Controller
             'username' => ['required', 'string', 'max:255', Rule::unique('admins')->ignore($admin->id)->whereNull('deleted_at')],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:admin,superadmin',
+            'is_active' => 'required|boolean',
         ]);
 
-        $data = $request->only('name', 'username', 'role');
+        $originalData = $admin->toArray();
+        $data = $request->only('name', 'username', 'role', 'is_active');
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
@@ -95,6 +104,8 @@ class AdminManagementController extends Controller
         }
 
         $admin->update($data);
+
+        $this->logActivity($admin, 'updated', $originalData, $admin->toArray());
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin updated successfully.');
     }
@@ -114,6 +125,7 @@ class AdminManagementController extends Controller
             return redirect()->route('admin.admins.index')->with('error', 'Cannot delete the last superadmin.');
         }
 
+        $this->logActivity($admin, 'deleted');
         $admin->delete();
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin deleted successfully.');

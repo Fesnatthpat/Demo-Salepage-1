@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HomepageContent;
 use App\Models\ProductSalepage;
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; // Add this line
 use Illuminate\Validation\ValidationException;
 
 class HomepageContentController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Display a listing of the resource.
      */
@@ -74,7 +77,8 @@ class HomepageContentController extends Controller
             }
         }
 
-        HomepageContent::create($validatedData);
+        $content = HomepageContent::create($validatedData);
+        $this->logActivity($content, 'created');
 
         return redirect()->route('admin.homepage-content.index')->with('success', 'Homepage content created successfully.');
     }
@@ -110,6 +114,8 @@ class HomepageContentController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $originalData = $homepageContent->toArray();
+
         if (isset($validatedData['data'])) {
             $validatedData['data'] = json_decode($validatedData['data'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -118,6 +124,7 @@ class HomepageContentController extends Controller
         }
 
         $homepageContent->update($validatedData);
+        $this->logActivity($homepageContent, 'updated', $originalData, $homepageContent->toArray());
 
         return redirect()->route('admin.homepage-content.index')->with('success', 'Homepage content updated successfully.');
     }
@@ -127,6 +134,7 @@ class HomepageContentController extends Controller
      */
     public function destroy(HomepageContent $homepageContent)
     {
+        $this->logActivity($homepageContent, 'deleted');
         $homepageContent->delete();
 
         return redirect()->route('admin.homepage-content.index')->with('success', 'Homepage content deleted successfully.');
@@ -143,6 +151,7 @@ class HomepageContentController extends Controller
             'image_file' => 'nullable|image|max:2048', // For image uploads
         ]);
 
+        $originalData = $homepageContent->toArray();
         $field = $validatedData['field'];
         $newValue = $validatedData['new_value'];
         $imageFile = $request->file('image_file');
@@ -161,6 +170,7 @@ class HomepageContentController extends Controller
             }
             
             $homepageContent->save();
+            $this->logActivity($homepageContent, 'updated', $originalData, $homepageContent->toArray());
             return response()->json(['success' => true, 'message' => 'Image updated successfully.', 'new_image_url' => $newValue]);
         }
 
@@ -183,6 +193,7 @@ class HomepageContentController extends Controller
         }
 
         $homepageContent->save();
+        $this->logActivity($homepageContent, 'updated', $originalData, $homepageContent->toArray());
 
         return response()->json(['success' => true, 'message' => 'Content updated successfully.']);
     }

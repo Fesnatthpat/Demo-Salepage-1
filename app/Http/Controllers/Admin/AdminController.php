@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
+    use LogsActivity;
+
     public function showLoginForm()
     {
         return view('admin.auth.login');
@@ -18,17 +21,35 @@ class AdminController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('username', 'password');
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
+        $credentials = $request->only('username', 'password');
+        $credentials['is_active'] = true; // บังคับว่าต้องสถานะ Active เท่านั้น
+        $remember = $request->filled('remember');
+
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/admin');
+            // บันทึกเวลาที่เข้าระบบล่าสุด
+            $admin = Auth::guard('admin')->user();
+            $admin->update([
+                'last_login_at' => now(),
+                'last_login_ip' => $request->ip(),
+            ]);
+
+            // บันทึก Log กิจกรรม
+            $this->logActivity($admin, 'logged_in', null, ['ip' => $request->ip()]);
+
+            return redirect()->intended(route('admin.dashboard'));
         }
 
-        return back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
-        ]);
+        return back()->withInput($request->only('username'))
+            ->withErrors([
+                'username' => 'ชื่อผู้ใช้งาน รหัสผ่านไม่ถูกต้อง หรือบัญชีของคุณถูกระงับ',
+            ]);
     }
 
     public function logout(Request $request)
@@ -44,6 +65,10 @@ class AdminController extends Controller
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
             'site_cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
         ]);
+
+        // บันทึก Log การแก้ไขตั้งค่า
+        $logModel = SiteSetting::first() ?? new SiteSetting();
+        $this->logActivity($logModel, 'updated_settings', null, ['inputs' => $request->except(['_token', 'site_logo', 'site_cover_image'])]);
 
         // --- 1 & 2. Logo & Cover Image (SiteSetting) ---
         if ($request->hasFile('site_logo')) {

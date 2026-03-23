@@ -7,12 +7,15 @@ use App\Models\BirthdayPromotion;
 use App\Models\ProductSalepage;
 use App\Models\Promotion;
 use App\Models\PromotionAction;
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BirthdayPromotionController extends Controller
 {
+    use LogsActivity;
+
     public function index()
     {
         $birthdayPromotions = BirthdayPromotion::with('promotion')->orderBy('created_at', 'desc')->paginate(10);
@@ -46,6 +49,7 @@ class BirthdayPromotionController extends Controller
 
         DB::beginTransaction();
         try {
+            $originalData = isset($birthdayPromotion) ? $birthdayPromotion->toArray() : null;
             $data = $request->only(['title', 'message', 'link_url', 'discount_code', 'gift_product_id', 'discount_value', 'promotion_id', 'start_date', 'end_date']);
 
             if ($request->hasFile('image')) {
@@ -84,7 +88,8 @@ class BirthdayPromotionController extends Controller
                 $data['promotion_id'] = $promotion->id;
             }
 
-            BirthdayPromotion::create($data);
+            $birthdayPromotion = BirthdayPromotion::create($data);
+            $this->logActivity($birthdayPromotion, 'created');
             DB::commit();
 
             return redirect()->route('admin.birthday-promotion.index')->with('success', 'สร้างโปรโมชั่นวันเกิดเรียบร้อยแล้ว');
@@ -123,6 +128,7 @@ class BirthdayPromotionController extends Controller
 
         DB::beginTransaction();
         try {
+            $originalData = isset($birthdayPromotion) ? $birthdayPromotion->toArray() : null;
             $data = $request->only(['title', 'message', 'link_url', 'discount_code', 'gift_product_id', 'discount_value', 'promotion_id', 'start_date', 'end_date']);
 
             if ($request->hasFile('image')) {
@@ -192,6 +198,7 @@ class BirthdayPromotionController extends Controller
             }
 
             $birthdayPromotion->update($data);
+            $this->logActivity($birthdayPromotion, 'updated', $originalData, $birthdayPromotion->toArray());
             DB::commit();
 
             return redirect()->route('admin.birthday-promotion.index')->with('success', 'อัปเดตโปรโมชั่นวันเกิดเรียบร้อยแล้ว');
@@ -205,6 +212,7 @@ class BirthdayPromotionController extends Controller
     {
         $birthdayPromotion = BirthdayPromotion::findOrFail($id);
 
+        $this->logActivity($birthdayPromotion, 'deleted');
         if ($birthdayPromotion->image_path) {
             Storage::disk('public')->delete($birthdayPromotion->image_path);
         }
@@ -225,9 +233,12 @@ class BirthdayPromotionController extends Controller
 
     public function toggleStatus(BirthdayPromotion $birthdayPromotion)
     {
+        $originalData = $birthdayPromotion->toArray();
         // สลับสถานะแค่ตัวที่กดเท่านั้น (อนุญาตให้เปิดพร้อมกันได้)
         $birthdayPromotion->is_active = ! $birthdayPromotion->is_active;
         $birthdayPromotion->save();
+
+        $this->logActivity($birthdayPromotion, 'updated', $originalData, $birthdayPromotion->toArray());
 
         return response()->json([
             'success' => true,

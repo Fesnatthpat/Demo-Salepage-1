@@ -42,13 +42,19 @@ trait LogsActivity
         // 2. ใช้ฟังก์ชัน filterSensitiveData กรองข้อมูลก่อนเก็บลงตัวแปร $changes
         if ($action === 'created') {
             $changes = ['new' => $this->filterSensitiveData($model->toArray())];
-        } elseif ($action === 'updated') {
+        } elseif ($action === 'updated' || $action === 'updated_settings') {
             $changes = [
                 'original' => $this->filterSensitiveData($originalData ?? []),
                 'new' => $this->filterSensitiveData($newData ?? []),
             ];
         } elseif ($action === 'deleted') {
             $changes = ['original' => $this->filterSensitiveData($model->toArray())];
+        } else {
+            // สำหรับ Action อื่นๆ ที่ไม่ใช่มาตรฐาน
+            $changes = [
+                'original' => $this->filterSensitiveData($originalData ?? []),
+                'new' => $this->filterSensitiveData($newData ?? []),
+            ];
         }
 
         ActivityLog::create([

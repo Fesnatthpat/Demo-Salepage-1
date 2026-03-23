@@ -152,48 +152,67 @@
                     <i class="fas fa-history mr-3 w-5 text-center"></i>
                     ประวัติการใช้โปรโมชั่น
                 </a>
-                
-                <div x-data="{ open: <?php echo e(request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') ? 'true' : 'false'); ?> }" class="space-y-1">
-                    <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
-                        <span class="flex items-center">
-                            <i class="fas fa-file-alt mr-3 w-5 text-center"></i>
-                            จัดการเนื้อหา
-                        </span>
-                        <i class="fas fa-chevron-down transform transition-transform duration-200"
-                            :class="{ 'rotate-180': open }"></i>
-                    </button>
-                    <div x-show="open" x-transition class="pl-8 pr-4 space-y-1">
-                        <a href="<?php echo e(route('admin.faqs.index')); ?>"
-                            class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.faqs.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
-                            - จัดการคำถามที่พบบ่อย
-                        </a>
-                        <a href="<?php echo e(route('admin.favorites.index')); ?>"
-                            class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.favorites.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
-                            - จัดการเกี่ยวกับติดใจ
-                        </a>
-                        <a href="<?php echo e(route('admin.contacts.index')); ?>"
-                            class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.contacts.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
-                            - จัดการติดต่อเรา
-                        </a>
-                    </div>
-                </div>
 
                 
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin'): ?>
                     <div class="pt-4 pb-2">
                         <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
                     </div>
-                    <a href="<?php echo e(route('admin.activity-log.index')); ?>"
-                        class="flex items-center px-4 py-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.activity-log.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white'); ?>">
-                        <i class="fas fa-history mr-3 w-5 text-center"></i>
-                        ประวัติกิจกรรม
-                    </a>
-                    <a href="<?php echo e(route('admin.admins.index')); ?>"
-                        class="flex items-center px-4 py-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.admins.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white'); ?>">
-                        <i class="fas fa-user-shield mr-3 w-5 text-center"></i>
-                        จัดการแอดมิน
-                    </a>
+
+                    
+                    <div x-data="{ open: <?php echo e(request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') || request()->routeIs('admin.homepage-content.*') ? 'true' : 'false'); ?> }" class="space-y-1">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
+                            <span class="flex items-center">
+                                <i class="fas fa-file-alt mr-3 w-5 text-center"></i>
+                                จัดการเนื้อหา
+                            </span>
+                            <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" x-transition class="pl-8 pr-4 space-y-1">
+                            <a href="<?php echo e(route('admin.homepage-content.index')); ?>"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.homepage-content.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
+                                - จัดการเนื้อหาหน้าแรก
+                            </a>
+                            <a href="<?php echo e(route('admin.faqs.index')); ?>"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.faqs.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
+                                - จัดการคำถามที่พบบ่อย
+                            </a>
+                            <a href="<?php echo e(route('admin.favorites.index')); ?>"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.favorites.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
+                                - จัดการเกี่ยวกับติดใจ
+                            </a>
+                            <a href="<?php echo e(route('admin.contacts.index')); ?>"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.contacts.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
+                                - จัดการติดต่อเรา
+                            </a>
+                        </div>
+                    </div>
+
+                    
+                    <div x-data="{ open: <?php echo e(request()->routeIs('admin.admins.*') || request()->routeIs('admin.activity-log.*') ? 'true' : 'false'); ?> }" class="space-y-1">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
+                            <span class="flex items-center">
+                                <i class="fas fa-server mr-3 w-5 text-center"></i>
+                                จัดการระบบ
+                            </span>
+                            <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" x-transition class="pl-8 pr-4 space-y-1">
+                            <a href="<?php echo e(route('admin.admins.index')); ?>"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.admins.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
+                                - จัดการแอดมิน
+                            </a>
+                            <a href="<?php echo e(route('admin.activity-log.index')); ?>"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.activity-log.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
+                                - ประวัติกิจกรรม
+                            </a>
+                        </div>
+                    </div>
+
                     <a href="<?php echo e(route('admin.popups.index')); ?>"
                         class="flex items-center px-4 py-3 rounded-lg transition-colors <?php echo e(request()->routeIs('admin.popups.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white'); ?>">
                         <i class="fas fa-window-restore mr-3 w-5 text-center"></i>

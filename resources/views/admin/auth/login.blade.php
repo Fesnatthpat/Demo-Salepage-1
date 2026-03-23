@@ -15,7 +15,7 @@
                     @csrf
                     <div class="mb-4 text-left">
                         <label class="text-gray-300 text-xs mb-1 ml-1 block">Username</label>
-                        <input type="text" name="username" id="username" placeholder="Enter username"
+                        <input type="text" name="username" id="username" placeholder="Enter username" value="{{ old('username') }}"
                             class="w-full px-4 py-3 rounded-xl bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                             required autofocus>
                         @error('username')
@@ -23,15 +23,22 @@
                         @enderror
                     </div>
 
-                    <div class="mb-6 text-left">
+                    <div class="mb-4 text-left">
                         <label class="text-gray-300 text-xs mb-1 ml-1 block">Password</label>
                         <input type="password" name="password" id="password" placeholder="••••••••"
                             class="w-full px-4 py-3 rounded-xl bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                             required>
                     </div>
 
+                    <div class="flex items-center justify-between mb-6">
+                        <label class="flex items-center text-xs text-gray-400 cursor-pointer select-none group">
+                            <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-gray-800 transition-all">
+                            <span class="ml-2 group-hover:text-gray-300">Remember Me</span>
+                        </label>
+                    </div>
+
                     <button type="submit"
-                        class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/20">
+                        class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
                         Sign In
                     </button>
                 </form>

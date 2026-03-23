@@ -63,6 +63,33 @@
                                 @enderror
                             </div>
 
+                            {{-- Status --}}
+                            <div class="col-span-2">
+                                <label class="block text-sm font-semibold text-gray-300 mb-3">สถานะการใช้งาน</label>
+                                <div class="flex items-center space-x-6">
+                                    <label class="inline-flex items-center cursor-pointer group">
+                                        <input type="radio" name="is_active" value="1" class="hidden" {{ old('is_active', '1') == '1' ? 'checked' : '' }}>
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center transition-all group-hover:border-emerald-500 radio-checked:border-emerald-500 radio-checked:bg-emerald-500">
+                                            <div class="w-2 h-2 rounded-full bg-white opacity-0 radio-checked:opacity-100"></div>
+                                        </div>
+                                        <span class="ml-2 text-gray-300 group-hover:text-white transition-colors">Active (เปิดใช้งาน)</span>
+                                    </label>
+                                    <label class="inline-flex items-center cursor-pointer group">
+                                        <input type="radio" name="is_active" value="0" class="hidden" {{ old('is_active') == '0' ? 'checked' : '' }}>
+                                        <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center transition-all group-hover:border-red-500 radio-checked:border-red-500 radio-checked:bg-red-500">
+                                            <div class="w-2 h-2 rounded-full bg-white opacity-0 radio-checked:opacity-100"></div>
+                                        </div>
+                                        <span class="ml-2 text-gray-300 group-hover:text-white transition-colors">No Active (ปิดการใช้งาน)</span>
+                                    </label>
+                                </div>
+                                <style>
+                                    input[type="radio"]:checked + div { border-color: inherit; background-color: currentColor; }
+                                    input[value="1"]:checked + div { border-color: #10b981; background-color: #10b981; }
+                                    input[value="0"]:checked + div { border-color: #ef4444; background-color: #ef4444; }
+                                    input[type="radio"]:checked + div + span { color: white; font-weight: 600; }
+                                </style>
+                            </div>
+
                             {{-- Username --}}
                             <div class="col-span-2">
                                 <label for="username" class="block text-sm font-semibold text-gray-300 mb-2">ชื่อผู้ใช้

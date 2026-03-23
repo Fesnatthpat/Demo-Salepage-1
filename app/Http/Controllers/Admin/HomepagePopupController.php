@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HomepagePopup;
 use App\Models\ProductSalepage;
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class HomepagePopupController extends Controller
 {
+    use LogsActivity;
+
     public function index()
     {
         $popups = HomepagePopup::with('product')->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc')->paginate(10);
@@ -44,7 +47,8 @@ class HomepagePopupController extends Controller
             $data['image_path'] = $request->file('image')->store('popups', 'public');
         }
 
-        HomepagePopup::create($data);
+        $popup = HomepagePopup::create($data);
+        $this->logActivity($popup, 'created');
 
         return redirect()->route('admin.popups.index')->with('success', 'สร้าง Popup เรียบร้อยแล้ว');
     }
@@ -70,6 +74,7 @@ class HomepagePopupController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
+        $originalData = $popup->toArray();
         $data = $request->only(['name', 'product_id', 'link_url', 'is_active', 'start_date', 'end_date', 'display_type', 'display_pages', 'sort_order']);
         $data['is_active'] = $request->has('is_active');
 
@@ -82,11 +87,14 @@ class HomepagePopupController extends Controller
 
         $popup->update($data);
 
+        $this->logActivity($popup, 'updated', $originalData, $popup->toArray());
+
         return redirect()->route('admin.popups.index')->with('success', 'อัปเดต Popup เรียบร้อยแล้ว');
     }
 
     public function destroy(HomepagePopup $popup)
     {
+        $this->logActivity($popup, 'deleted');
         if ($popup->image_path) {
             Storage::disk('public')->delete($popup->image_path);
         }
@@ -97,8 +105,11 @@ class HomepagePopupController extends Controller
 
     public function toggleStatus(HomepagePopup $popup)
     {
+        $originalData = $popup->toArray();
         $popup->is_active = !$popup->is_active;
         $popup->save();
+
+        $this->logActivity($popup, 'updated', $originalData, $popup->toArray());
 
         return response()->json([
             'success' => true,

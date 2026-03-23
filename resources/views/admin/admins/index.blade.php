@@ -53,9 +53,9 @@
                             class="bg-gray-900/50 border-b border-gray-700 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                             <th class="px-5 py-3">ชื่อ - นามสกุล</th>
                             <th class="px-5 py-3">ชื่อผู้ใช้ (Username)</th>
-                            <th class="px-5 py-3">รหัสประจำตัว</th>
                             <th class="px-5 py-3 text-center">ระดับสิทธิ์ (Role)</th>
-                            <th class="px-5 py-3">วันที่สร้าง</th>
+                            <th class="px-5 py-3 text-center">สถานะ (Status)</th>
+                            <th class="px-5 py-3">ข้อมูลการเข้าระบบ</th>
                             <th class="px-5 py-3 text-center">จัดการ</th>
                         </tr>
                     </thead>
@@ -74,14 +74,12 @@
                                             <p class="text-gray-100 font-medium whitespace-no-wrap">
                                                 {{ $admin->name }}
                                             </p>
+                                            <p class="text-[10px] text-gray-500 font-mono">CODE: {{ $admin->admin_code }}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-5 py-4 text-sm text-gray-300">
                                     {{ $admin->username }}
-                                </td>
-                                <td class="px-5 py-4 text-sm text-gray-400 font-mono">
-                                    {{ $admin->admin_code }}
                                 </td>
                                 <td class="px-5 py-4 text-sm text-center">
                                     @if ($admin->role === 'superadmin')
@@ -96,8 +94,26 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-5 py-4 text-sm text-gray-500">
-                                    {{ $admin->created_at->format('d M Y') }}
+                                <td class="px-5 py-4 text-sm text-center">
+                                    @if($admin->is_active)
+                                        <span class="px-3 py-1 inline-flex text-[10px] font-black uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            <i class="fas fa-check-circle mr-1 mt-0.5"></i> Active
+                                        </span>
+                                    @else
+                                        <span class="px-3 py-1 inline-flex text-[10px] font-black uppercase rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                                            <i class="fas fa-times-circle mr-1 mt-0.5"></i> No Active
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 text-[11px] text-gray-400 leading-relaxed">
+                                    @if($admin->last_login_at)
+                                        <div class="flex flex-col">
+                                            <span class="text-indigo-400 font-bold"><i class="far fa-clock mr-1"></i> {{ $admin->last_login_at->format('d/m/Y H:i') }}</span>
+                                            <span class="text-gray-500 opacity-70"><i class="fas fa-network-wired mr-1"></i> {{ $admin->last_login_ip }}</span>
+                                        </div>
+                                    @else
+                                        <span class="italic opacity-30 text-xs">ไม่เคยเข้าระบบ</span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-4 text-sm text-center">
                                     <div class="flex justify-center space-x-3">

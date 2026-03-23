@@ -131,9 +131,12 @@ Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistric
 // ==========================================
 // 7. Admin Panel (ระบบหลังบ้าน)
 // ==========================================
-Route::get('admin/login', [App\Http\Controllers\Admin\AdminController::class, 'showLoginForm'])->name('admin.login');
-Route::post('admin/login', [App\Http\Controllers\Admin\AdminController::class, 'login']);
-Route::post('admin/logout', [App\Http\Controllers\Admin\AdminController::class, 'logout'])->name('admin.logout');
+Route::middleware(['guest:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('login', [AdminController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [AdminController::class, 'login']);
+});
+
+Route::post('admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
 
 Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
@@ -186,11 +189,6 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // FAQ Management (จัดการคำถามที่พบบ่อย)
     Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
 
-    // Homepage Content Management
-    Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
-    Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');
-    Route::resource('homepage-content', App\Http\Controllers\Admin\HomepageContentController::class);
-
     // Favorite Management (จัดการเกี่ยวกับติดใจ)
     Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);
     
@@ -216,6 +214,10 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     // Contact Management (จัดการติดต่อเรา)
     Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);
 
+    // Birthday Promotion Management
+    Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
+    Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
+
     // ==========================================
     // 🔒 Super Admin Only (ส่วนที่เฉพาะ Super Admin เท่านั้น)
     // ==========================================
@@ -238,10 +240,6 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
         // Homepage Popup Management
         Route::post('/popups/{popup}/toggle-status', [App\Http\Controllers\Admin\HomepagePopupController::class, 'toggleStatus'])->name('popups.toggle-status');
         Route::resource('popups', App\Http\Controllers\Admin\HomepagePopupController::class);
-
-        // Birthday Promotion Management
-        Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
-        Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
     });
 
 });

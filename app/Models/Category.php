@@ -10,12 +10,17 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'icon', 'image_path', 'sort_order', 'is_active'
+        'name', 'icon', 'image_path', 'link_url', 'linked_product_id', 'sort_order', 'is_active'
     ];
 
     public function products()
     {
         return $this->hasMany(ProductSalepage::class, 'category_id', 'pd_sp_id');
+    }
+
+    public function linkedProduct()
+    {
+        return $this->belongsTo(ProductSalepage::class, 'linked_product_id', 'pd_sp_id');
     }
 
     public function scopeActive($query)

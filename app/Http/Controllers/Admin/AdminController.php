@@ -192,6 +192,8 @@ class AdminController extends Controller
                 $updateData = [
                     'name' => $catData['name'] ?? 'Untitled Category',
                     'icon' => $catData['icon'] ?? 'fas fa-th',
+                    'link_url' => $catData['link_url'] ?? null,
+                    'linked_product_id' => $catData['linked_product_id'] ?? null,
                     'sort_order' => $index,
                     'is_active' => true,
                 ];
@@ -300,6 +302,7 @@ class AdminController extends Controller
         // All Products Page Content
         $allProductsHeroBanners = \App\Models\Banner::location('all_products')->hero()->get();
         $categories = \App\Models\Category::orderBy('sort_order')->get();
+        $products = \App\Models\ProductSalepage::where('pd_sp_active', 1)->orderBy('pd_sp_name')->get();
 
         $services = \App\Models\Service::orderBy('sort_order')->get();
         $features = \App\Models\Feature::orderBy('sort_order')->get();
@@ -312,6 +315,7 @@ class AdminController extends Controller
             'infoBanner', 
             'allProductsHeroBanners',
             'categories',
+            'products',
             'services', 
             'features',
             'reviewImages'

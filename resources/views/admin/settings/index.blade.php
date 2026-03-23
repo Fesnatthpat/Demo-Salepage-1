@@ -861,6 +861,25 @@
                                                 placeholder="ชื่อหมวดหมู่..."
                                                 class="w-full bg-gray-800 border border-gray-600 rounded-xl text-sm text-center font-bold text-gray-200 px-3 py-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
 
+                                            <div class="space-y-2 text-left bg-gray-800/50 p-3 rounded-xl border border-gray-700/50">
+                                                <div class="space-y-1">
+                                                    <label class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">ผูกกับสินค้า</label>
+                                                    <select :name="`categories[${index}][linked_product_id]`" x-model="cat.linked_product_id"
+                                                        class="w-full bg-gray-900 border-gray-700 rounded-lg text-[11px] text-gray-300 px-2 py-1.5 focus:border-emerald-500 focus:ring-0">
+                                                        <option value="">-- ไม่เลือก --</option>
+                                                        @foreach($products as $p)
+                                                            <option value="{{ $p->pd_sp_id }}">{{ $p->pd_sp_name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="space-y-1">
+                                                    <label class="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">ลิงก์แบบกำหนดเอง</label>
+                                                    <input type="text" :name="`categories[${index}][link_url]`" x-model="cat.link_url"
+                                                        placeholder="https://..."
+                                                        class="w-full bg-gray-900 border-gray-700 rounded-lg text-[11px] text-gray-300 px-2 py-1.5 focus:border-emerald-500 focus:ring-0">
+                                                </div>
+                                            </div>
+
                                             <div
                                                 class="inline-block px-3 py-1 bg-gray-800 rounded-full border border-gray-700 text-xs text-gray-400">
                                                 <i class="fas fa-sort mr-1"></i> ลำดับที่: <span x-text="index+1"
@@ -1087,7 +1106,9 @@
                             name: "{{ $cat->name }}",
                             icon: "{{ $cat->icon }}",
                             image: "{{ $cat->image_path ? Storage::url($cat->image_path) : 'https://via.placeholder.com/300x300?text=Category' }}",
-                            existing_path: "{{ $cat->image_path }}"
+                            existing_path: "{{ $cat->image_path }}",
+                            link_url: "{{ $cat->link_url }}",
+                            linked_product_id: "{{ $cat->linked_product_id }}"
                         },
                     @endforeach
                 ],
@@ -1097,7 +1118,9 @@
                         name: '',
                         icon: 'fas fa-th',
                         image: 'https://via.placeholder.com/300x300?text=Upload+Category',
-                        existing_path: ''
+                        existing_path: '',
+                        link_url: '',
+                        linked_product_id: ''
                     });
                 },
                 removeCategory(index) {

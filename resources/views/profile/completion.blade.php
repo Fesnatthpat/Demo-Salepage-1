@@ -21,18 +21,17 @@
                     {{-- 1. Date of Birth --}}
                     <div>
                         <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-1">
-                            วันเดือนปีเกิด (Date of Birth)
+                            วันเดือนปีเกิด (Date of Birth) <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            @php
-                                $dob = auth()->user()->date_of_birth;
-                                $dobValue = $dob ? \Carbon\Carbon::parse($dob)->format('Y-m-d') : '';
-                            @endphp
                             <input type="date" name="date_of_birth" id="date_of_birth" required max="{{ date('Y-m-d') }}"
-                                value="{{ old('date_of_birth', $dobValue) }}"
+                                value="{{ old('date_of_birth') }}"
                                 class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="Select date">
                         </div>
+                        @error('date_of_birth')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     {{-- 2. Gender --}}

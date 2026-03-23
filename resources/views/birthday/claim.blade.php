@@ -43,12 +43,12 @@
                     @if($campaign->discount_code)
                     <div class="bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-6">
                         <p class="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2">รหัสส่วนลดพิเศษ</p>
-                        <div class="flex items-center justify-center gap-3">
+                        {{-- <div class="flex items-center justify-center gap-3">
                             <span class="text-2xl font-mono font-bold text-amber-700">{{ $campaign->discount_code }}</span>
                             <button onclick="copyToClipboard('{{ $campaign->discount_code }}')" class="text-amber-500 hover:text-amber-700 transition-colors">
                                 <i class="fas fa-copy"></i>
                             </button>
-                        </div>
+                        </div> --}}
                         @if($campaign->discount_value > 0)
                             <p class="mt-2 text-sm text-amber-600 font-medium">ลดทันที {{ number_format($campaign->discount_value) }} บาท</p>
                         @endif

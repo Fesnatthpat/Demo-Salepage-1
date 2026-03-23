@@ -29,7 +29,7 @@
                     @csrf
                     @method('PUT')
 
-                    {{-- 0. Name (ดึงจาก auth()->user()->name) --}}
+                    {{-- 0. Name --}}
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
                             ชื่อ-นามสกุล (Full Name)
@@ -44,18 +44,27 @@
 
                     {{-- 1. Date of Birth --}}
                     <div>
+                        {{-- ย้าย @php ขึ้นมาด้านบนสุดของ Div นี้ --}}
+                        @php
+                            $dob = auth()->user()->date_of_birth;
+                            // ตรวจสอบว่า $dob เป็น Object (Carbon) หรือ String แล้วแปลงให้เป็น Y-m-d
+                            $dobValue = $dob ? \Carbon\Carbon::parse($dob)->format('Y-m-d') : '';
+                            $isLocked = !empty($dob);
+                        @endphp
+
                         <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-1">
                             วันเดือนปีเกิด (Date of Birth)
+                            @if ($dob)
+                                <span
+                                    class="text-[10px] text-red-500 font-normal ml-1 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 italic">
+                                    <i class="fas fa-lock mr-0.5"></i> บันทึกแล้ว ไม่สามารถแก้ไขได้
+                                </span>
+                            @endif
                         </label>
                         <div class="relative">
-                            @php
-                                $dob = auth()->user()->date_of_birth;
-                                // ตรวจสอบว่า $dob เป็น Object (Carbon) หรือ String แล้วแปลงให้เป็น Y-m-d
-                                $dobValue = $dob ? \Carbon\Carbon::parse($dob)->format('Y-m-d') : '';
-                            @endphp
                             <input type="date" name="date_of_birth" id="date_of_birth" max="{{ date('Y-m-d') }}"
-                                value="{{ old('date_of_birth', $dobValue) }}"
-                                class="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition duration-200 ease-in-out"
+                                value="{{ old('date_of_birth', $dobValue) }}" {{ $isLocked ? 'readonly' : '' }}
+                                class="block w-full px-4 py-3 rounded-lg border {{ $isLocked ? 'border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed shadow-none' : 'border-gray-300 shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500' }} sm:text-sm transition duration-200 ease-in-out"
                                 placeholder="Select date">
                         </div>
                     </div>
@@ -74,7 +83,8 @@
                             <option value="female"
                                 {{ old('gender', auth()->user()->gender) == 'female' ? 'selected' : '' }}>หญิง (Female)
                             </option>
-                            <option value="other" {{ old('gender', auth()->user()->gender) == 'other' ? 'selected' : '' }}>
+                            <option value="other"
+                                {{ old('gender', auth()->user()->gender) == 'other' ? 'selected' : '' }}>
                                 อื่นๆ (Other)</option>
                         </select>
                     </div>

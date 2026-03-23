@@ -21,20 +21,22 @@ class ProfileController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'date_of_birth' => 'required|date',
+            'date_of_birth' => 'required|date|before:today',
             'gender' => 'required|string|in:male,female,other',
             'age' => 'required|integer|min:1',
             'phone' => 'required|string|max:20',
         ]);
 
         $user = Auth::user();
+        
+        // อัปเดตเฉพาะที่ยังไม่มี (หรือบังคับอัปเดตตามฟอร์ม)
         $user->date_of_birth = $request->date_of_birth;
         $user->gender = $request->gender;
         $user->age = $request->age;
         $user->phone = $request->phone;
         $user->save();
 
-        return redirect('/')->with('success', 'Profile updated successfully!');
+        return redirect('/')->with('success', 'ข้อมูลส่วนตัวของคุณได้รับการบันทึกเรียบร้อยแล้ว!');
     }
 
     /**
@@ -52,19 +54,26 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
+        $user = Auth::user();
+        $isDobLocked = !empty($user->date_of_birth);
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'date_of_birth' => 'nullable|date',
+            'date_of_birth' => $isDobLocked ? 'nullable' : 'required|date',
             'gender' => 'nullable|string|in:male,female,other',
             'age' => 'nullable|integer|min:1',
             'phone' => 'required|string|max:20',
         ]);
 
-        $user = Auth::user();
         $user->name = $request->name;
-        $user->date_of_birth = $request->date_of_birth;
+        
+        // ให้แก้ไขได้เฉพาะกรณีที่ยังไม่มีข้อมูลวันเกิดเท่านั้น
+        if (!$isDobLocked) {
+            $user->date_of_birth = $request->date_of_birth;
+            $user->age = $request->age;
+        }
+        
         $user->gender = $request->gender;
-        $user->age = $request->age;
         $user->phone = $request->phone;
         $user->save();
 

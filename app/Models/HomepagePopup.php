@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class HomepagePopup extends Model
 {
@@ -41,12 +42,14 @@ class HomepagePopup extends Model
     /**
      * Get the final URL for the popup
      */
-    public function getFinalUrlAttribute()
+    protected function finalUrl(): Attribute
     {
-        if ($this->product_id && $this->product) {
-            return route('product.show', $this->product_id);
-        }
-        return $this->link_url;
+        return Attribute::get(function () {
+            if ($this->product_id && $this->product) {
+                return route('product.show', $this->product_id);
+            }
+            return $this->link_url;
+        });
     }
 
     /**

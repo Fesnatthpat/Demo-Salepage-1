@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Promotion extends Model
 {
@@ -63,17 +64,17 @@ class Promotion extends Model
     /**
      * จำนวนครั้งที่ใช้ (จาก Log จริง)
      */
-    public function getUsageCountAttribute(): int
+    protected function usageCount(): Attribute
     {
-        return $this->usageLogs()->count();
+        return Attribute::get(fn () => $this->usageLogs()->count());
     }
 
     /**
      * จำนวนคนที่ใช้ (นับ User แบบไม่ซ้ำ)
      */
-    public function getUniqueUsersCountAttribute(): int
+    protected function uniqueUsersCount(): Attribute
     {
-        return $this->usageLogs()->distinct('user_id')->count('user_id');
+        return Attribute::get(fn () => $this->usageLogs()->distinct('user_id')->count('user_id'));
     }
 
     /**
@@ -91,22 +92,24 @@ class Promotion extends Model
     /**
      * ดึงข้อความสถานะเวลา (เช่น "เหลืออีก 2 วัน", "สิ้นสุดแล้ว")
      */
-    public function getTimeRemainingAttribute(): string
+    protected function timeRemaining(): Attribute
     {
-        $now = now();
+        return Attribute::get(function () {
+            $now = now();
 
-        if ($this->start_date && $this->start_date > $now) {
-            return 'เริ่มในอีก ' . $now->diffForHumans($this->start_date, true);
-        }
-
-        if ($this->end_date) {
-            if ($this->end_date < $now) {
-                return 'สิ้นสุดแล้ว';
+            if ($this->start_date && $this->start_date > $now) {
+                return 'เริ่มในอีก ' . $now->diffForHumans($this->start_date, true);
             }
-            return 'เหลืออีก ' . $now->diffForHumans($this->end_date, true);
-        }
 
-        return 'ใช้งานได้เรื่อยๆ';
+            if ($this->end_date) {
+                if ($this->end_date < $now) {
+                    return 'สิ้นสุดแล้ว';
+                }
+                return 'เหลืออีก ' . $now->diffForHumans($this->end_date, true);
+            }
+
+            return 'ใช้งานได้เรื่อยๆ';
+        });
     }
 
     /**
@@ -115,21 +118,23 @@ class Promotion extends Model
     /**
      * ดึงข้อความสถานะเวลาแบบละเอียด (เช่น "เหลืออีก 2 ชม. 15 นาที")
      */
-    public function getTimeRemainingDetailedAttribute(): string
+    protected function timeRemainingDetailed(): Attribute
     {
-        $now = now();
-        if (!$this->end_date || $this->end_date < $now) return 'สิ้นสุดแล้ว';
+        return Attribute::get(function () {
+            $now = now();
+            if (!$this->end_date || $this->end_date < $now) return 'สิ้นสุดแล้ว';
 
-        $diff = $this->end_date->diff($now);
-        
-        if ($diff->days > 0) {
-            return 'เหลืออีก ' . $diff->days . ' วัน ' . $diff->h . ' ชม.';
-        }
-        
-        if ($diff->h > 0) {
-            return 'เหลืออีก ' . $diff->h . ' ชม. ' . $diff->i . ' นาที';
-        }
+            $diff = $this->end_date->diff($now);
 
-        return 'เหลือเพียง ' . $diff->i . ' นาที ' . $diff->s . ' วินาที';
+            if ($diff->days > 0) {
+                return 'เหลืออีก ' . $diff->days . ' วัน ' . $diff->h . ' ชม.';
+            }
+
+            if ($diff->h > 0) {
+                return 'เหลืออีก ' . $diff->h . ' ชม. ' . $diff->i . ' นาที';
+            }
+
+            return 'เหลือเพียง ' . $diff->i . ' นาที ' . $diff->s . ' วินาที';
+        });
     }
 }

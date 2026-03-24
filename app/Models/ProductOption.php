@@ -33,39 +33,44 @@ class ProductOption extends Model
     {
         return $this->belongsTo(ProductSalepage::class, 'parent_id', 'pd_sp_id');
     }
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-    public function image()
-    {
-        return $this->belongsTo(ProductImage::class, 'options_img_id', 'img_id');
-    }
-
+class ProductOption extends Model
+{
+...
     public function stock()
     {
         return $this->hasOne(StockProduct::class, 'option_id', 'option_id');
     }
 
-    public function getOptionStockAttribute()
+    protected function optionStock(): Attribute
     {
-        return $this->stock ? (int) $this->stock->quantity : 0;
+        return Attribute::get(fn (): int => $this->stock ? (int) $this->stock->quantity : 0);
     }
 
-    public function getOptionImageUrlAttribute()
+    protected function optionImageUrl(): Attribute
     {
-        if ($this->image && $this->image->img_path) {
-            $rawPath = $this->image->img_path;
+        return Attribute::get(function () {
+            if ($this->image && $this->image->img_path) {
+                $rawPath = $this->image->img_path;
 
-            return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/'.ltrim($rawPath, '/'));
-        }
+                return filter_var($rawPath, FILTER_VALIDATE_URL) ? $rawPath : asset('storage/'.ltrim($rawPath, '/'));
+            }
 
-        // ถ้าไม่มีรูปประจำ Option ให้ใช้รูปหลักของสินค้าแทน
-        return $this->product ? $this->product->cover_image_url : null;
+            // ถ้าไม่มีรูปประจำ Option ให้ใช้รูปหลักของสินค้าแทน
+            return $this->product ? $this->product->cover_image_url : null;
+        });
     }
 
-    public function getFinalPriceAttribute(): float
+    protected function finalPrice(): Attribute
     {
-        // The 'product' relationship should be loaded before calling this.
-        $parentDiscount = $this->product ? (float) $this->product->pd_sp_discount : 0;
+        return Attribute::get(function (): float {
+            // The 'product' relationship should be loaded before calling this.
+            $parentDiscount = $this->product ? (float) $this->product->pd_sp_discount : 0;
 
-        return max(0, (float) $this->option_price - $parentDiscount);
+            return max(0, (float) $this->option_price - $parentDiscount);
+        });
     }
 }

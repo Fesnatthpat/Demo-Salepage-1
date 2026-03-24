@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,58 +39,62 @@ class ProductSalepage extends Model
     // ✅ เพิ่ม 'display_price' เข้าไปเพื่อให้เรียกใช้งานในหน้า Blade ได้ง่ายๆ (เช่น {{ $product->display_price }})
     protected $appends = ['cover_image_url', 'pd_sp_stock', 'display_price'];
 
-    public function getCoverImageUrlAttribute()
+    protected function coverImageUrl(): Attribute
     {
-        // 1. ตรวจสอบข้อมูลรูปจาก collection ที่โหลดมาแล้ว (เพื่อลดการ Query ใหม่)
-        $image = $this->relationLoaded('images')
-            ? $this->images->sortBy('img_sort')->first()
-            : $this->images()->orderBy('img_sort', 'asc')->first();
+        return Attribute::get(function () {
+            // 1. ตรวจสอบข้อมูลรูปจาก collection ที่โหลดมาแล้ว (เพื่อลดการ Query ใหม่)
+            $image = $this->relationLoaded('images')
+                ? $this->images->sortBy('img_sort')->first()
+                : $this->images()->orderBy('img_sort', 'asc')->first();
 
-        if (! $image || ! $image->img_path) {
-            $fallbackId = ($this->pd_sp_id % 8) + 1;
-            return asset("images/pd-{$fallbackId}.png");
-        }
+            if (! $image || ! $image->img_path) {
+                $fallbackId = ($this->pd_sp_id % 8) + 1;
+                return asset("images/pd-{$fallbackId}.png");
+            }
 
-        $rawPath = $image->img_path;
+            $rawPath = $image->img_path;
 
-        // 2. ถ้าเป็น URL สมบูรณ์ ให้ใช้ทันที
-        if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
-            return $rawPath;
-        }
+            // 2. ถ้าเป็น URL สมบูรณ์ ให้ใช้ทันที
+            if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
+                return $rawPath;
+            }
 
-        // 3. แสดงผลจาก Storage (ลดการใช้ file_exists บน Production เพื่อความเร็ว)
-        return asset('storage/'.ltrim($rawPath, '/'));
+            // 3. แสดงผลจาก Storage (ลดการใช้ file_exists บน Production เพื่อความเร็ว)
+            return asset('storage/'.ltrim($rawPath, '/'));
+        });
     }
 
-    public function getFinalPriceAttribute(): float
+    protected function finalPrice(): Attribute
     {
-        return max(0, (float) $this->pd_sp_price - (float) $this->pd_sp_discount);
+        return Attribute::get(fn (): float => max(0, (float) $this->pd_sp_price - (float) $this->pd_sp_discount));
     }
 
     // ✅ Logic ดึงราคาสำหรับแสดงผล (Optimize: ใช้ Collection ถ้าโหลดมาแล้ว)
-    public function getDisplayPriceAttribute()
+    protected function displayPrice(): Attribute
     {
-        if ($this->relationLoaded('options')) {
-            if ($this->options->isEmpty()) {
-                return (int)$this->pd_sp_price;
+        return Attribute::get(function () {
+            if ($this->relationLoaded('options')) {
+                if ($this->options->isEmpty()) {
+                    return (int)$this->pd_sp_price;
+                }
+
+                $prices = $this->options->pluck('option_price');
+                $minPrice = $prices->min();
+                $maxPrice = $prices->max();
+
+                return ($minPrice != $maxPrice) ? (int)$minPrice . '-' . (int)$maxPrice : (int)$minPrice;
             }
 
-            $prices = $this->options->pluck('option_price');
-            $minPrice = $prices->min();
-            $maxPrice = $prices->max();
+            // Fallback: กรณีไม่ได้ Eager Load มา (อาจเกิด N+1 ได้)
+            if ($this->options()->exists()) {
+                $minPrice = $this->options()->min('option_price');
+                $maxPrice = $this->options()->max('option_price');
 
-            return ($minPrice != $maxPrice) ? (int)$minPrice . '-' . (int)$maxPrice : (int)$minPrice;
-        }
+                return ($minPrice != $maxPrice) ? (int)$minPrice . '-' . (int)$maxPrice : (int)$minPrice;
+            }
 
-        // Fallback: กรณีไม่ได้ Eager Load มา (อาจเกิด N+1 ได้)
-        if ($this->options()->exists()) {
-            $minPrice = $this->options()->min('option_price');
-            $maxPrice = $this->options()->max('option_price');
-
-            return ($minPrice != $maxPrice) ? (int)$minPrice . '-' . (int)$maxPrice : (int)$minPrice;
-        }
-
-        return (int)$this->pd_sp_price;
+            return (int)$this->pd_sp_price;
+        });
     }
 
     public function category()
@@ -119,24 +124,26 @@ class ProductSalepage extends Model
     }
 
     // ✅ Logic ดึงจำนวนสต็อกที่ถูกต้อง (Optimize: ใช้ Collection ถ้าโหลดมาแล้ว)
-    public function getPdSpStockAttribute()
+    protected function pdSpStock(): Attribute
     {
-        if ($this->relationLoaded('options') && $this->options->isNotEmpty()) {
-            return (int) $this->options->sum('option_stock');
-        }
+        return Attribute::get(function (): int {
+            if ($this->relationLoaded('options') && $this->options->isNotEmpty()) {
+                return (int) $this->options->sum('option_stock');
+            }
 
-        if ($this->relationLoaded('stock')) {
+            if ($this->relationLoaded('stock')) {
+                return (int) ($this->stock ? $this->stock->quantity : 0);
+            }
+
+            // Fallback: Query (เพื่อความเข้ากันได้ย้อนหลัง แต่แนะนำให้ใช้ with() ใน Controller)
+            if ($this->options()->exists()) {
+                return (int) \App\Models\StockProduct::where('pd_sp_id', $this->pd_sp_id)
+                    ->whereNotNull('option_id')
+                    ->sum('quantity');
+            }
+
             return (int) ($this->stock ? $this->stock->quantity : 0);
-        }
-
-        // Fallback: Query (เพื่อความเข้ากันได้ย้อนหลัง แต่แนะนำให้ใช้ with() ใน Controller)
-        if ($this->options()->exists()) {
-            return (int) \App\Models\StockProduct::where('pd_sp_id', $this->pd_sp_id)
-                ->whereNotNull('option_id')
-                ->sum('quantity');
-        }
-
-        return (int) ($this->stock ? $this->stock->quantity : 0);
+        });
     }
 
     public function reviewImages()

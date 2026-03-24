@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ProductImage extends Model
 {
@@ -32,17 +33,19 @@ class ProductImage extends Model
 
     protected $appends = ['image_url'];
 
-    public function getImageUrlAttribute()
+    protected function imageUrl(): Attribute
     {
-        if (! $this->img_path) {
-            return 'https://via.placeholder.com/150?text=No+Image';
-        }
+        return Attribute::get(function () {
+            if (! $this->img_path) {
+                return 'https://via.placeholder.com/150?text=No+Image';
+            }
 
-        if (filter_var($this->img_path, FILTER_VALIDATE_URL)) {
-            return $this->img_path;
-        }
+            if (filter_var($this->img_path, FILTER_VALIDATE_URL)) {
+                return $this->img_path;
+            }
 
-        return asset('storage/'.ltrim($this->img_path, '/'));
+            return asset('storage/'.ltrim($this->img_path, '/'));
+        });
     }
 
     // (ทางเลือก) หรือถ้าไม่อยากเก็บเวลาเลย ให้ใช้: public $timestamps = false;

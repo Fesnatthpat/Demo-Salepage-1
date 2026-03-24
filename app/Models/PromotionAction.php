@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class PromotionAction extends Model
 {
@@ -12,16 +13,20 @@ class PromotionAction extends Model
         'actions' => 'array',
     ];
 
-    // --- Accessor: ช่วยดึง ID สินค้าของแถม ($action->product_id) ---
-    public function getProductIdAttribute()
+    /**
+     * Accessor: ช่วยดึง ID สินค้าของแถม ($action->product_id)
+     */
+    protected function productId(): Attribute
     {
-        return $this->actions['product_id_to_get'] ?? null;
+        return Attribute::get(fn () => $this->actions['product_id_to_get'] ?? null);
     }
 
-    // --- Accessor: ช่วยดึงจำนวนของแถม ($action->quantity) ---
-    public function getQuantityAttribute()
+    /**
+     * Accessor: ช่วยดึงจำนวนของแถม ($action->quantity)
+     */
+    protected function quantity(): Attribute
     {
-        return $this->actions['quantity_to_get'] ?? 0;
+        return Attribute::get(fn () => $this->actions['quantity_to_get'] ?? 0);
     }
 
     // --- Relation: ดึงข้อมูลสินค้าของแถม (กรณีระบุเจาะจง) ---

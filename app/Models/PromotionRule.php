@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class PromotionRule extends Model
 {
@@ -12,16 +13,20 @@ class PromotionRule extends Model
         'rules' => 'array',
     ];
 
-    // Accessors: ช่วยดึงค่า product_id จาก JSON
-    public function getProductIdAttribute()
+    /**
+     * Accessors: ช่วยดึงค่า product_id จาก JSON
+     */
+    protected function productId(): Attribute
     {
-        return $this->rules['product_id'] ?? null;
+        return Attribute::get(fn () => $this->rules['product_id'] ?? null);
     }
 
-    // Accessors: ช่วยดึงค่า quantity จาก JSON
-    public function getQuantityAttribute()
+    /**
+     * Accessors: ช่วยดึงค่า quantity จาก JSON
+     */
+    protected function quantity(): Attribute
     {
-        return $this->rules['quantity_to_buy'] ?? 0;
+        return Attribute::get(fn () => $this->rules['quantity_to_buy'] ?? 0);
     }
 
     // Relation: เชื่อมไปยังสินค้า

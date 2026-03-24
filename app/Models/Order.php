@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -71,8 +72,8 @@ class Order extends Model
     }
 
     // Helper: จัดรูปแบบวันที่
-    public function getFormattedOrdDateAttribute()
+    protected function formattedOrdDate(): Attribute
     {
-        return $this->ord_date ? Carbon::parse($this->ord_date)->format('d/m/Y H:i') : '-';
+        return Attribute::get(fn () => $this->ord_date ? Carbon::parse($this->ord_date)->format('d/m/Y H:i') : '-');
     }
 }

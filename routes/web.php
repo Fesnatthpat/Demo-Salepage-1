@@ -62,6 +62,7 @@ Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('ca
 // ✅ Route สำหรับเพิ่มสินค้าแบบ Bundle (ซื้อคู่)
 Route::post('/cart/bundle', [CartController::class, 'addBundleToCart'])->name('cart.addBundle');
 // Route สำหรับอัปเดตและลบสินค้า
+Route::get('/cart/totals', [CartController::class, 'getTotals'])->name('cart.totals');
 Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 Route::delete('/cart/remove-bulk', [CartController::class, 'removeBulk'])->name('cart.removeBulk');
@@ -131,115 +132,121 @@ Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistric
 // ==========================================
 // 7. Admin Panel (ระบบหลังบ้าน)
 // ==========================================
-Route::middleware(['guest:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('login', [AdminController::class, 'showLoginForm'])->name('login');
-    Route::post('login', [AdminController::class, 'login']);
-});
-
-Route::post('admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
-
-Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+// ✅ แก้ไข: เปลี่ยน 'name' => 'admin' เป็น 'as' => 'admin.'
+Route::group(['prefix' => 'admin', 'as' => 'admin.'], function() {
     Route::get('/', function () {
-        return redirect()->route('admin.dashboard');
+        if (auth()->guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        // ✅ แก้ไข: ให้ Redirect ไปที่หน้า login ของ admin
+        return redirect()->route('admin.login');
+    })->name('index');
+
+    Route::middleware(['guest:admin'])->group(function () {
+        Route::get('login', [AdminController::class, 'showLoginForm'])->name('login');
+        Route::post('login', [AdminController::class, 'login']);
     });
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
+    Route::post('logout', [AdminController::class, 'logout'])->name('logout');
 
-    // Order Management (จัดการออเดอร์)
-    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::middleware(['auth:admin'])->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
 
-    // Customer Management (จัดการลูกค้า)
-    Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
-    Route::resource('customers', CustomerController::class);
+        // Order Management (จัดการออเดอร์)
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
-    // Product Management (จัดการสินค้า)
-    Route::resource('products', AdminProductController::class)->parameters([
-        'products' => 'product',
-    ]);
+        // Customer Management (จัดการลูกค้า)
+        Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
+        Route::resource('customers', CustomerController::class);
 
-    // Route สำหรับลบรูปสินค้า (Ajax)
-    Route::delete('/products/image/{product_image}', [AdminProductController::class, 'destroyImage'])->name('products.image.destroy');
+        // Product Management (จัดการสินค้า)
+        Route::resource('products', AdminProductController::class)->parameters([
+            'products' => 'product',
+        ]);
 
-    // Favorite Image Deletion (Ajax)
-    Route::delete('/favorite-images/{image}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyImage'])->name('favorites.image.destroy');
+        // Route สำหรับลบรูปสินค้า (Ajax)
+        Route::delete('/products/image/{product_image}', [AdminProductController::class, 'destroyImage'])->name('products.image.destroy');
 
-    // Review Images
-    Route::get('/products/{product}/review-images', [AdminProductController::class, 'showReviewImages'])->name('products.review-images.show');
-    Route::post('/products/{product}/review-images', [AdminProductController::class, 'storeReviewImage'])->name('products.review-images.store');
-    Route::delete('/products/review-images/{review_image}', [AdminProductController::class, 'destroyReviewImage'])->name('products.review-images.destroy');
+        // Favorite Image Deletion (Ajax)
+        Route::delete('/favorite-images/{image}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyImage'])->name('favorites.image.destroy');
 
-    // Route สำหรับตั้งค่ารูปหลัก
-    Route::post('/products/image/{image}/set-main', [AdminProductController::class, 'setMainImage'])->name('products.setMainImage');
+        // Review Images
+        Route::get('/products/{product}/review-images', [AdminProductController::class, 'showReviewImages'])->name('products.review-images.show');
+        Route::post('/products/{product}/review-images', [AdminProductController::class, 'storeReviewImage'])->name('products.review-images.store');
+        Route::delete('/products/review-images/{review_image}', [AdminProductController::class, 'destroyReviewImage'])->name('products.review-images.destroy');
 
-    // Route สำหรับ Toggle สินค้าแนะนำ
-    Route::post('/products/{product}/toggle-recommended', [AdminProductController::class, 'toggleRecommended'])->name('products.toggleRecommended');
+        // Route สำหรับตั้งค่ารูปหลัก
+        Route::post('/products/image/{image}/set-main', [AdminProductController::class, 'setMainImage'])->name('products.setMainImage');
 
-    // ✅ เพิ่ม Route สำหรับกดเปลี่ยนสถานะเปิด/ปิดสินค้า
-    Route::post('/products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus'])->name('products.toggleStatus');
+        // Route สำหรับ Toggle สินค้าแนะนำ
+        Route::post('/products/{product}/toggle-recommended', [AdminProductController::class, 'toggleRecommended'])->name('products.toggleRecommended');
 
-    // Promotion Management (จัดการโปรโมชั่น)
-    Route::get('/promotions/logs', [App\Http\Controllers\Admin\PromotionLogController::class, 'index'])->name('promotions.logs');
-    Route::post('/promotions/{promotion}/toggle-status', [PromotionController::class, 'toggleStatus'])->name('promotions.toggle-status');
-    Route::resource('promotions', PromotionController::class);
+        // ✅ เพิ่ม Route สำหรับกดเปลี่ยนสถานะเปิด/ปิดสินค้า
+        Route::post('/products/{product}/toggle-status', [AdminProductController::class, 'toggleStatus'])->name('products.toggleStatus');
 
-    // FAQ Management (จัดการคำถามที่พบบ่อย)
-    Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
+        // Promotion Management (จัดการโปรโมชั่น)
+        Route::get('/promotions/logs', [App\Http\Controllers\Admin\PromotionLogController::class, 'index'])->name('promotions.logs');
+        Route::post('/promotions/{promotion}/toggle-status', [PromotionController::class, 'toggleStatus'])->name('promotions.toggle-status');
+        Route::resource('promotions', PromotionController::class);
 
-    // Favorite Management (จัดการเกี่ยวกับติดใจ)
-    Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);
-    
-    // About Page Additional Sections (จัดการส่วนอื่นๆ ของหน้าเกี่ยวกับติดใจ)
-    Route::post('/about-videos', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeVideo'])->name('about-videos.store');
-    Route::put('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateVideo'])->name('about-videos.update');
-    Route::delete('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideo'])->name('about-videos.destroy');
-    Route::delete('/about-videos-thumbnail/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideoThumbnail'])->name('about-videos.thumbnail.destroy');
-    
-    Route::post('/about-galleries', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeGallery'])->name('about-galleries.store');
-    Route::put('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateGallery'])->name('about-galleries.update');
-    Route::delete('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGallery'])->name('about-galleries.destroy');
-    Route::delete('/about-gallery-images/{image}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGalleryImage'])->name('about-gallery-images.destroy');
-    
-    Route::post('/about-social-links', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeSocialLink'])->name('about-social-links.store');
-    Route::put('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateSocialLink'])->name('about-social-links.update');
-    Route::delete('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroySocialLink'])->name('about-social-links.destroy');
+        // FAQ Management (จัดการคำถามที่พบบ่อย)
+        Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class);
 
-    Route::post('/about-contacts', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeContact'])->name('about-contacts.store');
-    Route::put('/about-contacts/{contact}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateContact'])->name('about-contacts.update');
-    Route::delete('/about-contacts/{contact}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyContact'])->name('about-contacts.destroy');
+        // Favorite Management (จัดการเกี่ยวกับติดใจ)
+        Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);
+        
+        // About Page Additional Sections (จัดการส่วนอื่นๆ ของหน้าเกี่ยวกับติดใจ)
+        Route::post('/about-videos', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeVideo'])->name('about-videos.store');
+        Route::put('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateVideo'])->name('about-videos.update');
+        Route::delete('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideo'])->name('about-videos.destroy');
+        Route::delete('/about-videos-thumbnail/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideoThumbnail'])->name('about-videos.thumbnail.destroy');
+        
+        Route::post('/about-galleries', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeGallery'])->name('about-galleries.store');
+        Route::put('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateGallery'])->name('about-galleries.update');
+        Route::delete('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGallery'])->name('about-galleries.destroy');
+        Route::delete('/about-gallery-images/{image}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGalleryImage'])->name('about-gallery-images.destroy');
+        
+        Route::post('/about-social-links', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeSocialLink'])->name('about-social-links.store');
+        Route::put('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateSocialLink'])->name('about-social-links.update');
+        Route::delete('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroySocialLink'])->name('about-social-links.destroy');
 
-    // Contact Management (จัดการติดต่อเรา)
-    Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);
+        Route::post('/about-contacts', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeContact'])->name('about-contacts.store');
+        Route::put('/about-contacts/{contact}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateContact'])->name('about-contacts.update');
+        Route::delete('/about-contacts/{contact}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyContact'])->name('about-contacts.destroy');
 
-    // Birthday Promotion Management
-    Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
-    Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
+        // Contact Management (จัดการติดต่อเรา)
+        Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class);
 
-    // ==========================================
-    // 🔒 Super Admin Only (ส่วนที่เฉพาะ Super Admin เท่านั้น)
-    // ==========================================
-    Route::middleware(['is.superadmin'])->group(function () {
-        // Admin Management (จัดการผู้ดูแลระบบ)
-        Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class);
+        // Birthday Promotion Management
+        Route::post('/birthday-promotion/{birthdayPromotion}/toggle-status', [App\Http\Controllers\Admin\BirthdayPromotionController::class, 'toggleStatus'])->name('birthday-promotion.toggle-status');
+        Route::resource('birthday-promotion', App\Http\Controllers\Admin\BirthdayPromotionController::class)->names('birthday-promotion');
 
-        // Activity Log
-        Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
+        // ==========================================
+        // 🔒 Super Admin Only (ส่วนที่เฉพาะ Super Admin เท่านั้น)
+        // ==========================================
+        Route::middleware(['is.superadmin'])->group(function () {
+            // Admin Management (จัดการผู้ดูแลระบบ)
+            Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class);
 
-        // Homepage Content Management
-        Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
-        Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');
-        Route::resource('homepage-content', App\Http\Controllers\Admin\HomepageContentController::class);
+            // Activity Log
+            Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
 
-        // Settings (การตั้งค่าระบบและ Banner)
-        Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
-        Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
+            // Homepage Content Management
+            Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
+            Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');
+            Route::resource('homepage-content', App\Http\Controllers\Admin\HomepageContentController::class);
 
-        // Homepage Popup Management
-        Route::post('/popups/{popup}/toggle-status', [App\Http\Controllers\Admin\HomepagePopupController::class, 'toggleStatus'])->name('popups.toggle-status');
-        Route::resource('popups', App\Http\Controllers\Admin\HomepagePopupController::class);
+            // Settings (การตั้งค่าระบบและ Banner)
+            Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');
+
+            // Homepage Popup Management
+            Route::post('/popups/{popup}/toggle-status', [App\Http\Controllers\Admin\HomepagePopupController::class, 'toggleStatus'])->name('popups.toggle-status');
+            Route::resource('popups', App\Http\Controllers\Admin\HomepagePopupController::class);
+        });
     });
-
 });

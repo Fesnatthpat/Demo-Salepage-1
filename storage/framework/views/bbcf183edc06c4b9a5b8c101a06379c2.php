@@ -109,7 +109,7 @@
 
             <div class="h-16 flex items-center justify-between px-6 border-b border-gray-700 bg-gray-800">
                 <h1 class="text-xl font-bold text-emerald-400 tracking-wider flex items-center">
-                    <i class="fas fa-rocket mr-2"></i> CRM ADMIN
+                    TidJai ADMIN
                 </h1>
                 <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-white">
                     <i class="fas fa-times text-xl"></i>

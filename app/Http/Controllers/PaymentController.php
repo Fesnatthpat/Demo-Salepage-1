@@ -176,7 +176,8 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
-        $expireTime = $order->updated_at->addMinutes(1);
+        // ขยายเวลาหมดอายุเป็น 10 นาที
+        $expireTime = $order->updated_at->addMinutes(10);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
         if ($secondsRemaining < 0) {
             $secondsRemaining = 0;
@@ -197,7 +198,8 @@ class PaymentController extends Controller
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถสร้าง QR Code ใหม่ได้');
         }
 
-        if (now()->greaterThan($order->created_at->addMinutes(1))) {
+        // อนุญาตให้รีเฟรชได้ภายใน 30 นาทีหลังจากสร้างออเดอร์
+        if (now()->greaterThan($order->created_at->addMinutes(30))) {
             $this->orderService->cancelOrder($order);
             return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
         }
@@ -340,7 +342,8 @@ class PaymentController extends Controller
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกเนื่องจากชำระเงินเกินเวลาที่กำหนด');
         }
 
-        if (now()->greaterThan($order->updated_at->addMinutes(15))) {
+        // ขยายเวลาแนบสลิปเป็น 30 นาที
+        if (now()->greaterThan($order->updated_at->addMinutes(30))) {
             return back()->with('error', 'หมดเวลาชำระเงิน กรุณากดปุ่มรีเฟรช');
         }
 

@@ -22,7 +22,8 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 if ($guard === 'admin') {
-                    return redirect('/admin');
+                    // ✅ แก้ไข: ให้ Redirect ไปที่หน้า Dashboard ของ Admin 
+                    return redirect()->route('admin.dashboard');
                 }
 
                 return redirect(RouteServiceProvider::HOME);

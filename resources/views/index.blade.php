@@ -148,25 +148,7 @@
         </div>
     </div>
 
-    {{-- ★★★ ข้อมูลแพ้อาหาร ★★★ --}}
-    @if (isset($infoBanner) && $infoBanner->is_active)
-        <div class="w-full py-4 sm:py-6">
-            <div class="container mx-auto px-3 sm:px-4">
-                <img src="{{ Storage::url($infoBanner->image_path) }}"
-                    alt="{{ $infoBanner->title ?? 'ข้อมูลสำหรับผู้แพ้อาหาร' }}"
-                    class="w-full md:max-w-3xl mx-auto h-auto block rounded-xl sm:rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border-2 sm:border-4 border-white"
-                    onerror="this.onerror=null;this.style.display='none';" />
-            </div>
-        </div>
-    @elseif(!isset($infoBanner))
-        <div class="w-full py-2 sm:py-4">
-            <div class="container mx-auto px-3 sm:px-4">
-                <img src="{{ asset('images/image_27e610.png') }}" alt="ข้อมูลสำหรับผู้แพ้อาหาร"
-                    class="w-full md:max-w-3xl mx-auto h-auto block rounded-xl sm:rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border-2 sm:border-4 border-white"
-                    onerror="this.onerror=null;this.style.display='none';" />
-            </div>
-        </div>
-    @endif
+    
 
     {{-- ★★★ PRODUCTS SECTION ★★★ --}}
     <div class="w-full pb-10 sm:pb-16 pt-6 sm:pt-10">

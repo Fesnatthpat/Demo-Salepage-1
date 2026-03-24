@@ -87,7 +87,7 @@ class AddressController extends Controller
             'zipcode' => 'required',
         ]);
 
-        DeliveryAddress::create([
+        $address = DeliveryAddress::create([
             'user_id' => Auth::id(),
             'fullname' => $request->fullname,
             'phone' => $request->phone,
@@ -99,6 +99,14 @@ class AddressController extends Controller
             'zipcode' => $request->zipcode,
             'note' => $request->note,
         ]);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'บันทึกที่อยู่จัดส่งเรียบร้อยแล้ว!',
+                'address' => $address->load(['province', 'amphure', 'district'])
+            ]);
+        }
 
         return back()->with('success', 'บันทึกที่อยู่จัดส่งเรียบร้อยแล้ว!');
     }
@@ -129,6 +137,14 @@ class AddressController extends Controller
             'note' => $request->note,
         ]);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'แก้ไขที่อยู่เรียบร้อยแล้ว!',
+                'address' => $address->load(['province', 'amphure', 'district'])
+            ]);
+        }
+
         return back()->with('success', 'แก้ไขที่อยู่เรียบร้อยแล้ว!');
     }
 
@@ -136,6 +152,13 @@ class AddressController extends Controller
     {
         $address = DeliveryAddress::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         $address->delete();
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบที่อยู่เรียบร้อยแล้ว!'
+            ]);
+        }
 
         return back()->with('success', 'ลบที่อยู่เรียบร้อยแล้ว!');
     }

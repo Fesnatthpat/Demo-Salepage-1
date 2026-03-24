@@ -59,128 +59,239 @@
 
                         <div x-data="{
                             activeAddress: null,
+                            addresses: @js($addresses->load(['province', 'amphure', 'district'])),
                             init() {
                                 let stored = localStorage.getItem('selected_address_id');
-                                let defaultId = {{ $addresses->count() > 0 ? $addresses->first()->id : 'null' }};
+                                let defaultId = this.addresses.length > 0 ? this.addresses[0].id : null;
                                 this.activeAddress = stored ? parseInt(stored) : defaultId;
                             },
                             selectAddress(id) {
                                 this.activeAddress = id;
                                 localStorage.setItem('selected_address_id', id);
+                            },
+                            async deleteAddress(id) {
+                                const result = await Swal.fire({
+                                    title: 'ลบที่อยู่นี้?',
+                                    text: 'คุณไม่สามารถกู้คืนข้อมูลนี้ได้',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonColor: '#6b7280',
+                                    confirmButtonText: 'ใช่, ลบเลย',
+                                    cancelButtonText: 'ยกเลิก'
+                                });
+
+                                if (result.isConfirmed) {
+                                    showLoading();
+                                    try {
+                                        const response = await fetch(`/address/${id}`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                            }
+                                        });
+                                        const data = await response.json();
+                                        if (data.success) {
+                                            this.addresses = this.addresses.filter(a => a.id !== id);
+                                            if (this.activeAddress === id) {
+                                                this.activeAddress = this.addresses.length > 0 ? this.addresses[0].id : null;
+                                            }
+                                            Swal.fire('สำเร็จ', data.message, 'success');
+                                        }
+                                    } catch (e) {
+                                        Swal.fire('ผิดพลาด', 'ไม่สามารถลบข้อมูลได้', 'error');
+                                    } finally {
+                                        document.getElementById('loading-overlay').classList.add('hidden');
+                                    }
+                                }
+                            },
+                            async submitAddressForm(e, mode, id = null) {
+                                e.preventDefault();
+                                const form = e.target;
+                                const formData = new FormData(form);
+                                showLoading();
+
+                                try {
+                                    const url = mode === 'add' ? '{{ route('address.save') }}' : `/address/${id}`;
+                                    const method = mode === 'add' ? 'POST' : 'PUT';
+                                    
+                                    // สำหรับ PUT ใน Laravel FormData ต้องใส่ _method
+                                    if (mode === 'edit') formData.append('_method', 'PUT');
+
+                                    const response = await fetch(url, {
+                                        method: 'POST', // ใช้ POST เสมอเมื่อส่ง FormData
+                                        body: formData,
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                        }
+                                    });
+
+                                    const data = await response.json();
+                                    if (data.success) {
+                                        if (mode === 'add') {
+                                            this.addresses.unshift(data.address);
+                                            this.selectAddress(data.address.id);
+                                            modal_add_new.close();
+                                        } else {
+                                            const index = this.addresses.findIndex(a => a.id === id);
+                                            this.addresses[index] = data.address;
+                                            document.getElementById(`modal_edit_${id}`).close();
+                                        }
+                                        form.reset();
+                                        Swal.fire('สำเร็จ', data.message, 'success');
+                                    }
+                                } catch (e) {
+                                    Swal.fire('ผิดพลาด', 'กรุณาตรวจสอบข้อมูลอีกครั้ง', 'error');
+                                } finally {
+                                    document.getElementById('loading-overlay').classList.add('hidden');
+                                }
                             }
                         }" x-init="init()" class="space-y-4">
 
-                            @if ($addresses->count() > 0)
+                            <template x-if="addresses.length > 0">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    @foreach ($addresses as $index => $address)
-                                        @php $modalEditId = 'modal_edit_' . $address->id; @endphp
-
+                                    <template x-for="(address, index) in addresses" :key="address.id">
                                         <div class="relative border-2 rounded-2xl p-4 sm:p-5 transition-all duration-200 cursor-pointer overflow-hidden group flex flex-col h-full"
-                                            :class="activeAddress === {{ $address->id }} ? 'border-red-500 bg-red-50/50 shadow-md ring-1 ring-red-100' : 'border-gray-100 hover:border-red-200 hover:bg-gray-50'"
-                                            @click="selectAddress({{ $address->id }})">
+                                            :class="activeAddress === address.id ? 'border-red-500 bg-red-50/50 shadow-md ring-1 ring-red-100' : 'border-gray-100 hover:border-red-200 hover:bg-gray-50'"
+                                            @click="selectAddress(address.id)">
                                             
-                                            {{-- Radio Indicator --}}
                                             <div class="absolute top-4 sm:top-5 right-4 sm:right-5">
                                                 <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
-                                                    :class="activeAddress === {{ $address->id }} ? 'border-red-500' : 'border-gray-300'">
+                                                    :class="activeAddress === address.id ? 'border-red-500' : 'border-gray-300'">
                                                     <div class="w-2.5 h-2.5 rounded-full bg-red-500 transition-transform duration-200"
-                                                        :class="activeAddress === {{ $address->id }} ? 'scale-100' : 'scale-0'"></div>
+                                                        :class="activeAddress === address.id ? 'scale-100' : 'scale-0'"></div>
                                                 </div>
                                             </div>
 
                                             <div class="pr-8 flex-grow">
                                                 <div class="flex items-center gap-2 mb-2 sm:mb-3">
-                                                    <h3 class="font-bold text-gray-900 text-sm sm:text-base">{{ $address->fullname }}</h3>
-                                                    @if ($index === 0)
-                                                        <span class="text-[9px] bg-gray-800 text-white px-2 py-0.5 rounded uppercase font-bold tracking-wider">Default</span>
-                                                    @endif
+                                                    <h3 class="font-bold text-gray-900 text-sm sm:text-base" x-text="address.fullname"></h3>
+                                                    <span x-show="index === 0" class="text-[9px] bg-gray-800 text-white px-2 py-0.5 rounded uppercase font-bold tracking-wider">ล่าสุด</span>
                                                 </div>
 
                                                 <div class="text-xs sm:text-sm text-gray-600 space-y-1.5 leading-relaxed">
-                                                    <p class="flex items-start gap-2"><i class="fas fa-phone-alt mt-1 w-3 sm:w-4 text-gray-400"></i> {{ $address->phone }}</p>
+                                                    <p class="flex items-start gap-2"><i class="fas fa-phone-alt mt-1 w-3 sm:w-4 text-gray-400"></i> <span x-text="address.phone"></span></p>
                                                     <p class="flex items-start gap-2"><i class="fas fa-map-pin mt-1 w-3 sm:w-4 text-gray-400"></i> 
                                                         <span>
-                                                            {{ $address->address_line1 }} {{ $address->address_line2 ? ' ' . $address->address_line2 : '' }}<br>
-                                                            {{ $address->district->name_th ?? '' }}, {{ $address->amphure->name_th ?? '' }}<br>
-                                                            {{ $address->province->name_th ?? '' }} {{ $address->zipcode }}
+                                                            <span x-text="address.address_line1"></span> <span x-text="address.address_line2 || ''"></span><br>
+                                                            <span x-text="address.district.name_th"></span>, <span x-text="address.amphure.name_th"></span><br>
+                                                            <span x-text="address.province.name_th"></span> <span x-text="address.zipcode"></span>
                                                         </span>
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {{-- Actions Overlay --}}
-                                            <div class="mt-4 flex justify-end gap-2 transition-opacity opacity-100 lg:opacity-0 lg:group-hover:opacity-100" :class="activeAddress === {{ $address->id }} ? 'lg:opacity-100' : ''">
-                                                <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
+                                            <div class="mt-4 flex justify-end gap-2 transition-opacity opacity-100 lg:opacity-0 lg:group-hover:opacity-100" :class="activeAddress === address.id ? 'lg:opacity-100' : ''">
+                                                <button type="button" @click.stop="document.getElementById(`modal_edit_${address.id}`).showModal()"
                                                     class="w-8 h-8 rounded-full bg-white shadow border border-gray-200 text-gray-600 hover:text-blue-600 flex items-center justify-center transition-colors" title="แก้ไข">
                                                     <i class="fas fa-pen text-xs"></i>
                                                 </button>
-                                                <form id="delete-form-{{ $address->id }}" action="{{ route('address.destroy', $address->id) }}" method="POST" @click.stop>
-                                                    @csrf @method('DELETE')
-                                                    <button type="button" onclick="confirmDelete('delete-form-{{ $address->id }}')"
-                                                        class="w-8 h-8 rounded-full bg-white shadow border border-gray-200 text-gray-600 hover:text-red-600 flex items-center justify-center transition-colors" title="ลบ">
-                                                        <i class="fas fa-trash text-xs"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" @click.stop="deleteAddress(address.id)"
+                                                    class="w-8 h-8 rounded-full bg-white shadow border border-gray-200 text-gray-600 hover:text-red-600 flex items-center justify-center transition-colors" title="ลบ">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
                                             </div>
-                                        </div>
 
-                                        {{-- Edit Modal --}}
-                                        <dialog id="{{ $modalEditId }}" class="modal modal-bottom sm:modal-middle" x-data="addressDropdown()" x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
-                                            <div class="modal-box w-full sm:w-11/12 max-w-4xl p-0 bg-white sm:rounded-3xl shadow-2xl overflow-hidden cursor-default" @click.stop>
-                                                <div class="px-5 py-4 sm:px-8 sm:py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                                    <h3 class="font-bold text-lg sm:text-xl text-gray-900 flex items-center gap-2"><i class="fas fa-edit text-red-500"></i> แก้ไขที่อยู่จัดส่ง</h3>
-                                                    <form method="dialog"><button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"><i class="fas fa-times"></i></button></form>
-                                                </div>
-                                                <div class="p-5 sm:p-8 max-h-[80vh] overflow-y-auto">
-                                                    <form action="{{ route('address.update', $address->id) }}" method="POST" id="form_edit_{{ $address->id }}" onsubmit="showLoading()">
-                                                        @csrf @method('PUT')
-                                                        
-                                                        <div class="mb-6 sm:mb-8">
-                                                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ข้อมูลผู้รับ</h4>
-                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input type="text" name="fullname" value="{{ $address->fullname }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
-                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label><input type="tel" name="phone" value="{{ $address->phone }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                            {{-- Edit Modal (Generated dynamically for each address in the loop) --}}
+                                            <dialog :id="`modal_edit_${address.id}`" class="modal modal-bottom sm:modal-middle" x-data="addressDropdown()" x-init="loadEditData(address.province_id, address.amphure_id, address.district_id)" @click.stop>
+                                                <div class="modal-box w-full sm:w-11/12 max-w-4xl p-0 bg-white sm:rounded-3xl shadow-2xl overflow-hidden cursor-default">
+                                                    <div class="px-5 py-4 sm:px-8 sm:py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                                        <h3 class="font-bold text-lg sm:text-xl text-gray-900 flex items-center gap-2"><i class="fas fa-edit text-red-500"></i> แก้ไขที่อยู่จัดส่ง</h3>
+                                                        <button @click="document.getElementById(`modal_edit_${address.id}`).close()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"><i class="fas fa-times"></i></button>
+                                                    </div>
+                                                    <div class="p-5 sm:p-8 max-h-[80vh] overflow-y-auto text-left">
+                                                        <form @submit.prevent="submitAddressForm($event, 'edit', address.id)">
+                                                            <div class="mb-6 sm:mb-8">
+                                                                <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ข้อมูลผู้รับ</h4>
+                                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input type="text" name="fullname" :value="address.fullname" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label><input type="tel" name="phone" :value="address.phone" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-
-                                                        <div class="mb-4">
-                                                            <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ที่อยู่จัดส่ง</h4>
-                                                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4 sm:mb-5">
-                                                                <div class="sm:col-span-3 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">บ้านเลขที่ / อาคาร / ถนน <span class="text-red-500">*</span></label><input type="text" name="address_line1" value="{{ $address->address_line1 }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
-                                                                <div class="sm:col-span-1 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมู่ที่</label><input type="text" name="address_line2" value="{{ $address->address_line2 }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" /></div>
+                                                            <div class="mb-4">
+                                                                <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ที่อยู่จัดส่ง</h4>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                                    <div class="sm:col-span-3 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">บ้านเลขที่ / อาคาร / ถนน <span class="text-red-500">*</span></label><input type="text" name="address_line1" :value="address.address_line1" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                                    <div class="sm:col-span-1 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมู่ที่</label><input type="text" name="address_line2" :value="address.address_line2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" /></div>
+                                                                </div>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">จังหวัด <span class="text-red-500">*</span></label><select name="province_id" x-model="selectedProvince" @change="fetchAmphures()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required><option value="">-- เลือกจังหวัด --</option>@foreach ($provinces as $province)<option value="{{ $province->id }}">{{ $province->name_th }}</option>@endforeach</select></div>
+                                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">อำเภอ/เขต <span class="text-red-500">*</span></label><select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()" :disabled="!selectedProvince" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกอำเภอ --</option><template x-for="amphure in amphures" :key="amphure.id"><option :value="amphure.id" x-text="amphure.name_th"></option></template></select></div>
+                                                                </div>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ตำบล/แขวง <span class="text-red-500">*</span></label><select name="district_id" x-model="selectedDistrict" :disabled="!selectedAmphure" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกตำบล --</option><template x-for="district in districts" :key="district.id"><option :value="district.id" x-text="district.name_th"></option></template></select></div>
+                                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">รหัสไปรษณีย์ <span class="text-red-500">*</span></label><input type="text" name="zipcode" :value="getZipCode()" readonly class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-bold focus:outline-none" required/></div>
+                                                                </div>
+                                                                <div class="form-control mt-4 sm:mt-6"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมายเหตุการจัดส่ง (ไม่บังคับ)</label><textarea name="note" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all h-20 sm:h-24" placeholder="เช่น ฝากไว้ที่ป้อมยาม..." :value="address.note"></textarea></div>
                                                             </div>
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
-                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">จังหวัด <span class="text-red-500">*</span></label><select name="province_id" x-model="selectedProvince" @change="fetchAmphures()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required><option value="">-- เลือกจังหวัด --</option>@foreach ($provinces as $province)<option value="{{ $province->id }}">{{ $province->name_th }}</option>@endforeach</select></div>
-                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">อำเภอ/เขต <span class="text-red-500">*</span></label><select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()" :disabled="!selectedProvince" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกอำเภอ --</option><template x-for="amphure in amphures" :key="amphure.id"><option :value="amphure.id" x-text="amphure.name_th"></option></template></select></div>
+                                                            <div class="pt-6 sm:pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6">
+                                                                <button type="button" @click="document.getElementById(`modal_edit_${address.id}`).close()" class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">ยกเลิก</button>
+                                                                <button type="submit" class="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all transform active:scale-95">บันทึกการแก้ไข</button>
                                                             </div>
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
-                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ตำบล/แขวง <span class="text-red-500">*</span></label><select name="district_id" x-model="selectedDistrict" :disabled="!selectedAmphure" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกตำบล --</option><template x-for="district in districts" :key="district.id"><option :value="district.id" x-text="district.name_th"></option></template></select></div>
-                                                                <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">รหัสไปรษณีย์ <span class="text-red-500">*</span></label><input type="text" name="zipcode" :value="getZipCode()" readonly class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-bold focus:outline-none" required/></div>
-                                                            </div>
-                                                            <div class="form-control mt-4 sm:mt-6"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมายเหตุการจัดส่ง (ไม่บังคับ)</label><textarea name="note" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all h-20 sm:h-24" placeholder="เช่น ฝากไว้ที่ป้อมยาม...">{{ $address->note }}</textarea></div>
-                                                        </div>
-                                                    </form>
-                                                    <div class="pt-6 sm:pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6">
-                                                        <form method="dialog" class="w-full sm:w-auto"><button class="w-full px-6 py-3 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">ยกเลิก</button></form>
-                                                        <button onclick="document.getElementById('form_edit_{{ $address->id }}').submit()" class="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all transform active:scale-95">บันทึกการแก้ไข</button>
+                                                        </form>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </dialog>
-                                    @endforeach
+                                            </dialog>
+                                        </div>
+                                    </template>
                                 </div>
-                            @else
+                            </template>
+
+                            <template x-if="addresses.length === 0">
                                 <div class="text-center py-10 sm:py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 px-4">
                                     <div class="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-gray-400">
                                         <i class="fas fa-home text-xl sm:text-2xl"></i>
                                     </div>
                                     <h3 class="font-bold text-gray-900 mb-1 text-base sm:text-lg">ยังไม่มีข้อมูลที่อยู่จัดส่ง</h3>
                                     <p class="text-xs sm:text-sm text-gray-500 mb-6">กรุณาเพิ่มที่อยู่เพื่อทำการจัดส่งสินค้า</p>
-                                    <button onclick="modal_add_new.showModal()" class="w-full sm:w-auto btn bg-red-600 hover:bg-red-700 text-white border-none rounded-full px-8 shadow-lg shadow-red-500/30">
+                                    <button @click="modal_add_new.showModal()" class="w-full sm:w-auto btn bg-red-600 hover:bg-red-700 text-white border-none rounded-full px-8 shadow-lg shadow-red-500/30">
                                         <i class="fas fa-plus mr-2"></i> เพิ่มที่อยู่จัดส่ง
                                     </button>
                                 </div>
-                            @endif
+                            </template>
+
+                            {{-- Modal Add New (Adjusted to use Alpine) --}}
+                            <dialog id="modal_add_new" class="modal modal-bottom sm:modal-middle" x-data="addressDropdown()">
+                                <div class="modal-box w-full sm:w-11/12 max-w-4xl p-0 bg-white sm:rounded-3xl shadow-2xl overflow-hidden">
+                                    <div class="px-5 py-4 sm:px-8 sm:py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                        <h3 class="font-bold text-lg sm:text-xl text-gray-900 flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> เพิ่มที่อยู่จัดส่งใหม่</h3>
+                                        <button @click="modal_add_new.close()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"><i class="fas fa-times"></i></button>
+                                    </div>
+                                    <div class="p-5 sm:p-8 max-h-[80vh] overflow-y-auto">
+                                        <form @submit.prevent="submitAddressForm($event, 'add')">
+                                            <div class="mb-6 sm:mb-8">
+                                                <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ข้อมูลผู้รับ</h4>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input type="text" name="fullname" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label><input type="tel" name="phone" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4">
+                                                <h4 class="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4 border-b pb-2">ที่อยู่จัดส่ง</h4>
+                                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                    <div class="sm:col-span-3 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">บ้านเลขที่ / อาคาร / ถนน <span class="text-red-500">*</span></label><input type="text" name="address_line1" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required/></div>
+                                                    <div class="sm:col-span-1 form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมู่ที่</label><input type="text" name="address_line2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" /></div>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">จังหวัด <span class="text-red-500">*</span></label><select name="province_id" x-model="selectedProvince" @change="fetchAmphures()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all" required><option value="">-- เลือกจังหวัด --</option>@foreach ($provinces as $province)<option value="{{ $province->id }}">{{ $province->name_th }}</option>@endforeach</select></div>
+                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">อำเภอ/เขต <span class="text-red-500">*</span></label><select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()" :disabled="!selectedProvince" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกอำเภอ --</option><template x-for="amphure in amphures" :key="amphure.id"><option :value="amphure.id" x-text="amphure.name_th"></option></template></select></div>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">ตำบล/แขวง <span class="text-red-500">*</span></label><select name="district_id" x-model="selectedDistrict" :disabled="!selectedAmphure" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all disabled:opacity-50" required><option value="">-- เลือกตำบล --</option><template x-for="district in districts" :key="district.id"><option :value="district.id" x-text="district.name_th"></option></template></select></div>
+                                                    <div class="form-control"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">รหัสไปรษณีย์ <span class="text-red-500">*</span></label><input type="text" name="zipcode" :value="getZipCode()" readonly class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-bold focus:outline-none" required/></div>
+                                                </div>
+                                                <div class="form-control mt-4 sm:mt-6"><label class="text-xs sm:text-sm font-bold text-gray-700 mb-2">หมายเหตุการจัดส่ง (ไม่บังคับ)</label><textarea name="note" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all h-20 sm:h-24" placeholder="เช่น ฝากไว้ที่ป้อมยาม..."></textarea></div>
+                                            </div>
+                                            <div class="pt-6 sm:pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6">
+                                                <button type="button" @click="modal_add_new.close()" class="w-full px-6 py-3 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">ยกเลิก</button>
+                                                <button type="submit" class="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/30 transition-all transform active:scale-95">บันทึกที่อยู่</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </dialog>
                         </div>
                     </div>
 

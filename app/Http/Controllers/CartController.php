@@ -27,6 +27,30 @@ class CartController extends Controller
     }
 
     /**
+     * สำหรับดึงข้อมูลยอดรวมรายไอเทมผ่าน AJAX (ลดการ Reload)
+     */
+    public function getTotals(Request $request)
+    {
+        $selectedIds = $request->input('selected_items');
+        if (is_string($selectedIds)) {
+            $selectedIds = explode(',', $selectedIds);
+        }
+        
+        $data = $this->cartService->getCartDataForView($selectedIds);
+        
+        return response()->json([
+            'success' => true,
+            'subTotal' => (float)$data['subTotal'],
+            'totalDiscount' => (float)$data['totalDiscount'],
+            'total' => (float)$data['total'],
+            'itemCount' => count($data['items']),
+            'selectedCount' => is_array($selectedIds) ? count($selectedIds) : 0,
+            // เพิ่มเติม: ข้อมูลของแถมถ้ามี (เพื่อใช้ Update UI ฝั่งของแถม)
+            'freebieLimit' => (int)$data['freebieLimit'],
+        ]);
+    }
+
+    /**
      * สำหรับเพิ่มสินค้าปกติ
      */
     public function addToCart(Request $request, $productId)
@@ -148,7 +172,24 @@ class CartController extends Controller
 
     public function updateQuantity($productId, $action)
     {
-        $this->cartService->updateQuantity($productId, $action);
+        try {
+            $this->cartService->updateQuantity($productId, $action);
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'อัปเดตจำนวนสินค้าเรียบร้อยแล้ว'
+                ]);
+            }
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+            return back()->with('error', $e->getMessage());
+        }
 
         return back();
     }
@@ -157,6 +198,13 @@ class CartController extends Controller
     {
         $this->cartService->removeItem($productId);
 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบสินค้าเรียบร้อยแล้ว'
+            ]);
+        }
+
         return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 
@@ -164,10 +212,20 @@ class CartController extends Controller
     {
         $ids = $request->input('ids');
         if (empty($ids)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'กรุณาเลือกสินค้าที่ต้องการลบ'], 422);
+            }
             return back()->with('error', 'กรุณาเลือกสินค้าที่ต้องการลบ');
         }
 
         $this->cartService->removeItems($ids);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบสินค้าที่เลือกเรียบร้อยแล้ว'
+            ]);
+        }
 
         return back()->with('success', 'ลบสินค้าที่เลือกเรียบร้อยแล้ว');
     }

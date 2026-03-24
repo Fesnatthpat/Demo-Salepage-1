@@ -326,32 +326,81 @@
         }
 
         function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return x.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
+        // ตัวแปรเก็บสถานะการโหลดเพื่อป้องกันการส่งซ้ำซ้อน
+        let isUpdatingTotals = false;
+
         function onItemSelectionChange() {
-            const selectedIds = Array.from(document.querySelectorAll('.item-checkbox:checked'))
-                .map(cb => cb.value);
+            if (isUpdatingTotals) return;
 
-            const autoFreeIds = Array.from(document.querySelectorAll('.free-item-checkbox')).map(cb => cb.value);
-            const url = new URL(window.location.href);
-            url.searchParams.set('selected_items', selectedIds.join(','));
+            const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+            
+            // แสดง Loading UI เล็กน้อยที่ตัวเลขรวม
+            const totalDisplay = document.getElementById('total-display');
+            if (totalDisplay) totalDisplay.classList.add('opacity-50', 'animate-pulse');
 
-            let allFreebies = [];
+            isUpdatingTotals = true;
+
+            // สร้าง URL สำหรับดึง Totals
+            const url = new URL("{{ route('cart.totals') }}");
             if (selectedIds.length > 0) {
-                allFreebies = [...autoFreeIds, ...selectedFreebiesArray];
-            } else {
-                allFreebies = [...selectedFreebiesArray];
+                url.searchParams.set('selected_items', selectedIds.join(','));
             }
 
-            allFreebies = allFreebies.filter(id => id && id.trim() !== '');
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // 1. อัปเดตตัวเลขรวมในหน้าเว็บ
+                    document.getElementById('subtotal-display').innerText = numberWithCommas(data.subTotal);
+                    document.getElementById('discount-display').innerText = numberWithCommas(data.totalDiscount);
+                    document.getElementById('total-display').innerText = numberWithCommas(data.total);
+                    document.getElementById('selected-count').innerText = data.selectedCount;
 
-            if (allFreebies.length > 0) {
-                url.searchParams.set('selected_freebies', [...new Set(allFreebies)].join(','));
-            } else {
-                url.searchParams.delete('selected_freebies');
-            }
-            window.location.href = url.toString();
+                    // 2. อัปเดต URL ใน Browser (เพื่อให้ Refresh แล้วคงสถานะเดิม)
+                    const currentUrl = new URL(window.location.href);
+                    if (selectedIds.length > 0) {
+                        currentUrl.searchParams.set('selected_items', selectedIds.join(','));
+                    } else {
+                        currentUrl.searchParams.delete('selected_items');
+                    }
+                    window.history.replaceState({}, '', currentUrl);
+
+                    // 3. ปรับสถานะปุ่ม Checkout
+                    const checkoutBtn = document.getElementById('checkout-btn');
+                    if (checkoutBtn) {
+                        checkoutBtn.disabled = (data.selectedCount === 0);
+                    }
+
+                    // 4. (Optional) ถ้ามีระบบของแถม ให้ Update โควตาของแถมด้วย
+                    const giftLimitDisplay = document.getElementById('gift-limit-display');
+                    if (giftLimitDisplay) {
+                        const oldLimit = parseInt(giftLimitDisplay.innerText);
+                        giftLimitDisplay.innerText = data.freebieLimit;
+                        
+                        // ถ้า Limit เปลี่ยน (เช่น ลดลงจนเกินที่เลือกไว้) ให้แจ้งเตือนและล้างของแถมที่เกิน
+                        if (data.freebieLimit < selectedFreebiesArray.length) {
+                            selectedFreebiesArray = selectedFreebiesArray.slice(0, data.freebieLimit);
+                            updateCartGiftUI();
+                        }
+                    }
+                }
+            })
+            .catch(err => console.error('Failed to update totals:', err))
+            .finally(() => {
+                isUpdatingTotals = false;
+                if (totalDisplay) totalDisplay.classList.remove('opacity-50', 'animate-pulse');
+                calculateTotal(); // เรียกเพื่อ Update สถานะปุ่มลบทิ้งและ Select All
+            });
         }
 
         function addCartGift(giftId) {
@@ -595,28 +644,68 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
             document.querySelectorAll('.cart-action-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', async function(e) {
                     e.preventDefault();
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = this.dataset.url;
-                    form.style.display = 'none';
+                    
+                    const url = this.dataset.url;
+                    const method = this.dataset.method;
+                    const btnElement = this;
+                    
+                    // ป้องกันการกดซ้ำซ้อน
+                    if (btnElement.disabled) return;
+                    btnElement.disabled = true;
 
-                    const inputCsrf = document.createElement('input');
-                    inputCsrf.type = 'hidden';
-                    inputCsrf.name = '_token';
-                    inputCsrf.value = csrfToken;
-                    form.appendChild(inputCsrf);
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken
+                            }
+                        });
 
-                    if (this.dataset.method !== 'POST') {
-                        const inputMethod = document.createElement('input');
-                        inputMethod.type = 'hidden';
-                        inputMethod.name = '_method';
-                        inputMethod.value = this.dataset.method;
-                        form.appendChild(inputMethod);
+                        const data = await response.json();
+
+                        if (data.success) {
+                            if (method === 'PATCH') {
+                                // 1. กรณีอัปเดตจำนวนสินค้า (+/-)
+                                const quantitySpan = btnElement.parentElement.querySelector('span');
+                                let currentQty = parseInt(quantitySpan.innerText);
+                                if (url.includes('increase')) {
+                                    quantitySpan.innerText = currentQty + 1;
+                                } else if (currentQty > 1) {
+                                    quantitySpan.innerText = currentQty - 1;
+                                }
+                                // เรียกฟังก์ชันคำนวณราคาใหม่
+                                onItemSelectionChange();
+                            } else if (method === 'DELETE') {
+                                // 2. กรณีลบสินค้า
+                                const cartRow = btnElement.closest('.bg-white');
+                                cartRow.classList.add('opacity-0', 'scale-95');
+                                setTimeout(() => {
+                                    cartRow.remove();
+                                    // ถ้าสินค้าในตะกร้าหมด ให้โหลดหน้าเพื่อแสดง Empty State
+                                    if (document.querySelectorAll('.bg-white.p-3.sm\\:p-5').length === 0) {
+                                        window.location.reload();
+                                    } else {
+                                        onItemSelectionChange();
+                                    }
+                                }, 300);
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ไม่สำเร็จ',
+                                text: data.message || 'เกิดข้อผิดพลาดในการทำรายการ',
+                                confirmButtonColor: '#dc2626',
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Cart Action Error:', err);
+                    } finally {
+                        btnElement.disabled = false;
                     }
-                    document.body.appendChild(form);
-                    form.submit();
                 });
             });
 

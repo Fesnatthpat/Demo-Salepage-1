@@ -377,7 +377,9 @@ class ProductController extends Controller
             'product_options.*.option_price2' => 'nullable|numeric|min:0',
             'product_options.*.option_stock' => 'nullable|integer|min:0',
             'product_options.*.options_img_id' => 'nullable|integer',
-            'product_options.*.image' => 'nullable|image|max:2048', // ✅ ตรวจสอบไฟล์รูปภาพตัวเลือก
+            'product_options.*.image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // ✅ ตรวจสอบไฟล์รูปภาพตัวเลือก
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:5120', // ✅ ตรวจสอบไฟล์รูปภาพหลัก
         ]);
     }
 

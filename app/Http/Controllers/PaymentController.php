@@ -356,7 +356,9 @@ class PaymentController extends Controller
 
     public function uploadSlip(Request $request, $orderCode)
     {
-        $request->validate(['slip_image' => 'required|image|max:5120']);
+        $request->validate([
+            'slip_image' => 'required|image|mimes:jpeg,png,jpg|max:5120'
+        ]);
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 

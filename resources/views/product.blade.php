@@ -783,7 +783,7 @@
                 async handleAddToCartClick(isBuyNow) {
                     if (this.currentStock <= 0) return;
                     if (this.options.length > 0 && !this.selectedOption) {
-                        Swal.fire('กรุณาเลือกตัวเลือก', 'เลือกสินค้าก่อนหยิบใส่ตะกร้า', 'warning');
+                        showNotification('warning', 'กรุณาเลือกตัวเลือก', 'เลือกสินค้าก่อนหยิบใส่ตะกร้า');
                         return;
                     }
 
@@ -796,7 +796,17 @@
                             showCancelButton: true,
                             confirmButtonText: 'เลือกของแถม',
                             cancelButtonText: 'ไม่เป็นไร (สละสิทธิ์)',
-                            confirmButtonColor: '#d33',
+                            confirmButtonColor: '#dc2626',
+                            position: 'center',
+                            padding: '1.5rem',
+                            borderRadius: '1.25rem',
+                            customClass: {
+                                popup: 'rounded-3xl shadow-2xl border border-gray-100',
+                                title: 'text-xl font-black text-gray-800',
+                                htmlContainer: 'text-sm font-medium text-gray-500',
+                                confirmButton: 'px-6 py-2.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95',
+                                cancelButton: 'px-6 py-2.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95'
+                            }
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 document.querySelector('.bg-gradient-to-br')
@@ -844,17 +854,12 @@
                         if (data.success) {
                             if (isBuyNow) window.location.href = config.cartUrl;
                             else {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'เพิ่มสินค้าแล้ว',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                });
+                                showNotification('success', 'เพิ่มสินค้าแล้ว', '', 1500);
                                 Livewire.dispatch('cartUpdated');
                             }
                         } else throw new Error(data.message);
                     } catch (e) {
-                        Swal.fire('ข้อผิดพลาด', e.message, 'error');
+                        showNotification('error', 'ข้อผิดพลาด', e.message);
                     } finally {
                         this.isLoading = false;
                     }

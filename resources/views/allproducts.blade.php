@@ -554,12 +554,7 @@
                             if (data.success) {
                                 if (typeof window.flyToCart === 'function') window.flyToCart(
                                     submitBtn);
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'เพิ่มลงตะกร้าแล้ว',
-                                    showConfirmButton: false,
-                                    timer: 1000
-                                });
+                                showNotification('success', 'เพิ่มลงตะกร้าแล้ว', '', 1500);
                                 setTimeout(() => {
                                     Livewire.dispatch('cartUpdated');
                                 }, 50);
@@ -569,12 +564,7 @@
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: error.message || 'ไม่สามารถเพิ่มสินค้าได้',
-                                confirmButtonColor: '#dc2626'
-                            });
+                            showNotification('error', 'เกิดข้อผิดพลาด', error.message || 'ไม่สามารถเพิ่มสินค้าได้');
                         })
                         .finally(() => {
                             submitBtn.disabled = false;

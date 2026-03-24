@@ -61,6 +61,16 @@ class Promotion extends Model
         return $this->hasMany(PromotionUsageLog::class);
     }
 
+    public function birthdayPromotion()
+    {
+        return $this->hasOne(BirthdayPromotion::class);
+    }
+
+    protected function isBirthday(): Attribute
+    {
+        return Attribute::get(fn () => $this->birthdayPromotion()->exists());
+    }
+
     /**
      * จำนวนครั้งที่ใช้ (จาก Log จริง)
      */

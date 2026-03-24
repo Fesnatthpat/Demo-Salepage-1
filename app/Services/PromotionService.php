@@ -25,6 +25,7 @@ class PromotionService
         if (is_null(self::$activePromotionsCache)) {
             self::$activePromotionsCache = Promotion::with(['rules', 'actions.giftableProducts'])
                 ->where('is_active', true)
+                ->whereDoesntHave('birthdayPromotion') // ❌ ไม่รวมโปรวันเกิดในหน้ารายการสินค้า
                 ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
                 ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
                 ->get();
@@ -192,8 +193,10 @@ class PromotionService
 
         $appliedCode = $this->getAppliedPromoCode();
         
+        // 1. ดึงโปรโมชั่นทั่วไปที่มีเงื่อนไขสินค้า
         $validPromotionIds = Promotion::whereIn('id', $potentialPromotionIds)
             ->where('is_active', true)
+            ->whereDoesntHave('birthdayPromotion') // ❌ ไม่รวมโปรวันเกิดที่นี่
             ->where(function ($q) use ($appliedCode) {
                 $q->where('is_discount_code', false);
                 if (!empty($appliedCode)) {
@@ -205,8 +208,10 @@ class PromotionService
             })
             ->pluck('id');
 
+        // 2. ดึงโปรโมชั่นทั่วไปที่ไม่มีเงื่อนไขสินค้า (เช่น ลดทั้งตะกร้า)
         $noRulePromoIds = Promotion::where('is_active', true)
             ->whereDoesntHave('rules')
+            ->whereDoesntHave('birthdayPromotion') // ❌ ไม่รวมโปรวันเกิดที่นี่
             ->where(function ($q) use ($appliedCode) {
                 $q->where('is_discount_code', false);
                 if (!empty($appliedCode)) {
@@ -218,7 +223,20 @@ class PromotionService
             })
             ->pluck('id');
 
-        $allPromoIds = $validPromotionIds->merge($noRulePromoIds)->unique();
+        // 3. ดึงโปรโมชั่นวันเกิดเฉพาะกรณีที่มีการใช้โค้ดวันเกิด
+        $birthdayPromoIds = collect();
+        if (!empty($appliedCode)) {
+            $isBirthdayCode = \App\Models\BirthdayPromotion::where('discount_code', $appliedCode)->exists();
+            if ($isBirthdayCode) {
+                $birthdayPromoIds = Promotion::where('is_active', true)
+                    ->whereHas('birthdayPromotion', function($q) use ($appliedCode) {
+                        $q->where('discount_code', $appliedCode);
+                    })
+                    ->pluck('id');
+            }
+        }
+
+        $allPromoIds = $validPromotionIds->merge($noRulePromoIds)->merge($birthdayPromoIds)->unique();
 
         return Promotion::with(['rules', 'actions.giftableProducts'])
             ->whereIn('id', $allPromoIds)

@@ -385,25 +385,40 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
+        /**
+         * ฟังก์ชันกลางสำหรับแสดง Notification (SweetAlert2)
+         * ปรับแต่งให้แสดงตรงกลางและสวยงามเหมือนกันทั้งเว็บ
+         */
+        window.showNotification = function(type, title, message = '', timer = 2000) {
+            const config = {
+                icon: type,
+                title: title,
+                text: message,
+                showConfirmButton: (type === 'error' || type === 'warning'), // ถ้าเป็น Error ให้กดปิดเอง
+                confirmButtonColor: '#dc2626',
+                timer: (type === 'success' || type === 'info') ? timer : null,
+                timerProgressBar: (type === 'success' || type === 'info'),
+                position: 'center', // บังคับให้อยู่ตรงกลาง
+                padding: '1.5rem',
+                borderRadius: '1.25rem',
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-100',
+                    title: 'text-xl font-black text-gray-800',
+                    htmlContainer: 'text-sm font-medium text-gray-500',
+                    confirmButton: 'px-8 py-2.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95'
+                }
+            };
+
+            return Swal.fire(config);
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             @if (session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ!',
-                    text: "{{ session('success') }}",
-                    confirmButtonColor: '#dc2626',
-                    borderRadius: '1rem'
-                });
+                showNotification('success', 'สำเร็จ!', "{{ session('success') }}");
             @endif
 
             @if (session('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ขออภัย!',
-                    text: "{{ session('error') }}",
-                    confirmButtonColor: '#dc2626',
-                    borderRadius: '1rem'
-                });
+                showNotification('error', 'ขออภัย!', "{{ session('error') }}");
             @endif
         });
     </script>

@@ -690,24 +690,12 @@
                 .then(data => {
                     if (data.success) {
                         if (typeof window.flyToCart === 'function') window.flyToCart(btnElement);
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'เพิ่มเรียบร้อย!',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            toast: true,
-                            position: 'top-end'
-                        });
+                        showNotification('success', 'เพิ่มเรียบร้อย!', '', 1500);
                         setTimeout(() => {
                             Livewire.dispatch('cartUpdated');
                         }, 50);
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'แจ้งเตือน',
-                            text: data.message || 'เพิ่มสินค้าไม่ได้',
-                            confirmButtonColor: '#DC2626'
-                        });
+                        showNotification('error', 'แจ้งเตือน', data.message || 'เพิ่มสินค้าไม่ได้');
                     }
                 })
                 .catch(err => console.error(err))

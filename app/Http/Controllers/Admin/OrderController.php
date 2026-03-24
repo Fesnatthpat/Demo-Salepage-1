@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    public function __construct(protected OrderService $orderService) {}
+
     /**
      * Display a listing of the resource.
      *
@@ -63,13 +66,38 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status_id' => 'required|integer|in:1,2,3,4,5',
+            'status_id' => 'required|integer|in:1,2,3,4,5,6',
             'tracking_number' => 'nullable|string|max:255',
         ]);
 
-        $order->status_id = $request->input('status_id');
+        $newStatusId = (int) $request->input('status_id');
+        $oldStatusId = $order->status_id;
+
+        if ($newStatusId == Order::STATUS_CANCELLED && $oldStatusId != Order::STATUS_CANCELLED) {
+            // ใช้ OrderService เพื่อยกเลิกและคืนสต็อก
+            $this->orderService->cancelOrder($order);
+        } else {
+            $order->status_id = $newStatusId;
+        }
+
         $order->tracking_number = $request->input('tracking_number');
         $order->save();
+
+        // บันทึก Log การเปลี่ยนแปลงสถานะ
+        if ($oldStatusId != $newStatusId) {
+            \App\Models\ActivityLog::create([
+                'admin_id' => auth()->id(),
+                'loggable_id' => $order->id,
+                'loggable_type' => get_class($order),
+                'action' => 'status_changed',
+                'changes' => [
+                    'old' => $oldStatusId,
+                    'new' => $newStatusId,
+                    'order_code' => $order->ord_code
+                ],
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         return back()->with('success', 'อัปเดตสถานะและเลขพัสดุเรียบร้อยแล้ว');
     }

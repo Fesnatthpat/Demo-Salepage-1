@@ -16,7 +16,7 @@ class CancelExpiredOrders extends Command
     // คำอธิบายคำสั่ง
     protected $description = 'ยกเลิกคำสั่งซื้อที่หมดเวลา 15 นาที และคืนค่า reserved_qty กลับสู่ระบบ';
 
-    public function handle()
+    public function handle(\App\Services\OrderService $orderService)
     {
         // 1. หาเวลาที่ผ่านมาแล้ว 15 นาที
         $expireTime = now()->subMinutes(1);
@@ -36,33 +36,12 @@ class CancelExpiredOrders extends Command
         $count = 0;
 
         foreach ($expiredOrders as $order) {
-            DB::beginTransaction();
             try {
-                // 3. เปลี่ยนสถานะออเดอร์เป็น STATUS_CANCELLED (ยกเลิก)
-                $order->status_id = Order::STATUS_CANCELLED;
-                $order->save();
-
-                // 4. วนลูปคืนค่าสต็อก
-                foreach ($order->details as $detail) {
-                    $stockRecord = StockProduct::where('pd_sp_id', $detail->pd_id)
-                        ->where('option_id', $detail->option_id)
-                        ->lockForUpdate() // ล็อคป้องกันการชนกันตอนคืนสต็อก
-                        ->first();
-
-                    if ($stockRecord) {
-                        // ลดยอดจอง (reserved_qty) คืนระบบ
-                        // เช็คไม่ให้ยอดจองติดลบ (ป้องกันข้อผิดพลาด)
-                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
-                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
-                    }
-                }
-
-                DB::commit();
+                $orderService->cancelOrder($order);
                 $count++;
                 $this->info("ยกเลิกออเดอร์ {$order->ord_code} และคืนสต็อกสำเร็จ");
 
             } catch (\Exception $e) {
-                DB::rollBack();
                 Log::error("เกิดข้อผิดพลาดในการยกเลิกออเดอร์ {$order->ord_code}: ".$e->getMessage());
                 $this->error("ข้อผิดพลาดออเดอร์ {$order->ord_code}: ".$e->getMessage());
             }

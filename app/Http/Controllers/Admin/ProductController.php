@@ -219,16 +219,12 @@ class ProductController extends Controller
                 }
             }
 
-            // ล้างสต็อกและตัวเลือกเดิมทิ้งเพื่อสร้างใหม่ (Clean data logic)
-            $productSalepage->options()->delete();
-            StockProduct::where('pd_sp_id', $productSalepage->pd_sp_id)->delete();
-
-            $hasOptions = false;
+            // จัดการตัวเลือกสินค้า (Options) และ สต็อก (รักษา reserved_qty)
+            $keepOptionIds = [];
+            
             if ($request->has('product_options')) {
                 foreach ($request->product_options as $index => $optionData) {
                     if (! empty($optionData['option_name'])) {
-                        $hasOptions = true;
-
                         // ✅ ตรวจสอบรูปภาพ: ใช้รูปเดิมที่มี ID หรืออัปโหลดใหม่
                         $optionImgId = $optionData['options_img_id'] ?? null;
                         if ($request->hasFile("product_options.{$index}.image")) {
@@ -241,23 +237,35 @@ class ProductController extends Controller
                             $optionImgId = $newImage->img_id;
                         }
 
-                        $newOption = $productSalepage->options()->create([
-                            'option_name' => $optionData['option_name'],
-                            'option_SKU' => $optionData['option_SKU'] ?? null,
-                            'option_price' => $optionData['option_price'] ?? $productSalepage->pd_sp_price,
-                            'option_price2' => $optionData['option_price2'] ?? null,
-                            'options_img_id' => $optionImgId,
-                            'option_active' => 1,
-                        ]);
+                        $option = $productSalepage->options()->updateOrCreate(
+                            ['option_id' => $optionData['option_id'] ?? null],
+                            [
+                                'option_name' => $optionData['option_name'],
+                                'option_SKU' => $optionData['option_SKU'] ?? null,
+                                'option_price' => $optionData['option_price'] ?? $productSalepage->pd_sp_price,
+                                'option_price2' => $optionData['option_price2'] ?? null,
+                                'options_img_id' => $optionImgId,
+                                'option_active' => 1,
+                            ]
+                        );
 
-                        StockProduct::create([
-                            'pd_sp_id' => $productSalepage->pd_sp_id,
-                            'option_id' => $newOption->option_id,
-                            'quantity' => $optionData['option_stock'] ?? 0,
-                        ]);
+                        $keepOptionIds[] = $option->option_id;
+
+                        // อัปเดตสต็อกโดยรักษา reserved_qty
+                        StockProduct::updateOrCreate(
+                            ['pd_sp_id' => $productSalepage->pd_sp_id, 'option_id' => $option->option_id],
+                            ['quantity' => $optionData['option_stock'] ?? 0]
+                        );
                     }
                 }
             }
+
+            // ลบตัวเลือกและสต็อกที่ไม่ได้อยู่ในรายการที่ส่งมา
+            $productSalepage->options()->whereNotIn('option_id', $keepOptionIds)->delete();
+            StockProduct::where('pd_sp_id', $productSalepage->pd_sp_id)
+                ->whereNotNull('option_id')
+                ->whereNotIn('option_id', $keepOptionIds)
+                ->delete();
 
             // บันทึกสต็อกหลักเสมอ (เพื่อให้ OrderService ทำงานได้ราบรื่น)
             StockProduct::updateOrCreate(

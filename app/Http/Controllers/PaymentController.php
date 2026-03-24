@@ -195,22 +195,7 @@ class PaymentController extends Controller
         }
 
         if (now()->greaterThan($order->created_at->addMinutes(1))) {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
-                $order->status_id = Order::STATUS_CANCELLED;
-                $order->save();
-
-                foreach ($order->details as $detail) {
-                    $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
-                        ->where('option_id', $detail->option_id)
-                        ->lockForUpdate()
-                        ->first();
-                    if ($stockRecord) {
-                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
-                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
-                    }
-                }
-            });
-
+            $this->orderService->cancelOrder($order);
             return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
         }
 
@@ -231,21 +216,7 @@ class PaymentController extends Controller
             ->firstOrFail();
 
         try {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
-                $order->status_id = Order::STATUS_CANCELLED;
-                $order->save();
-
-                foreach ($order->details as $detail) {
-                    $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
-                        ->where('option_id', $detail->option_id)
-                        ->lockForUpdate()
-                        ->first();
-                    if ($stockRecord) {
-                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
-                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
-                    }
-                }
-            });
+            $this->orderService->cancelOrder($order);
 
             return redirect()->route('orders.index')->with('success', 'ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
         } catch (\Exception $e) {

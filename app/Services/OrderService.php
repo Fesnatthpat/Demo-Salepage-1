@@ -316,4 +316,39 @@ class OrderService
             $this->incrementSoldCount($order);
         });
     }
+
+    /**
+     * ยกเลิกออเดอร์และคืนสต็อก
+     */
+    public function cancelOrder(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            // ป้องกันการยกเลิกซ้ำ
+            if ($order->status_id == Order::STATUS_CANCELLED) {
+                return;
+            }
+
+            $oldStatus = $order->status_id;
+            $order->status_id = Order::STATUS_CANCELLED;
+            $order->save();
+
+            foreach ($order->details as $detail) {
+                $stockRecord = StockProduct::where('pd_sp_id', $detail->pd_id)
+                    ->where('option_id', $detail->option_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stockRecord) {
+                    if ($oldStatus == Order::STATUS_PENDING) {
+                        // ถ้ายังไม่จ่ายเงิน (แค่จองไว้) -> ลด reserved_qty
+                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
+                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
+                    } elseif ($oldStatus >= Order::STATUS_PAID) {
+                        // ถ้าจ่ายเงินแล้ว (ตัดสต็อกจริงไปแล้ว) -> เพิ่ม quantity กลับคืนมา
+                        $stockRecord->increment('quantity', $detail->ordd_count);
+                    }
+                }
+            }
+        });
+    }
 }

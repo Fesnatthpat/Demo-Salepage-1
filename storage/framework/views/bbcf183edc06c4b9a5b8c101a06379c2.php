@@ -321,6 +321,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/hint/html-hint.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/hint/html-hint.js"></script>
 
+    <script>
+        /**
+         * ฟังก์ชันกลางสำหรับแสดง Notification (SweetAlert2)
+         * ปรับแต่งให้แสดงตรงกลางและสวยงามเหมือนกันทั้งเว็บ
+         */
+        window.showNotification = function(type, title, message = '', timer = 2000) {
+            const config = {
+                icon: type,
+                title: title,
+                text: message,
+                showConfirmButton: (type === 'error' || type === 'warning'),
+                confirmButtonColor: '#10b981', // ใช้สี emerald ให้เข้ากับ Admin
+                timer: (type === 'success' || type === 'info') ? timer : null,
+                timerProgressBar: (type === 'success' || type === 'info'),
+                position: 'center',
+                padding: '1.5rem',
+                borderRadius: '1.25rem',
+                customClass: {
+                    popup: 'rounded-3xl shadow-2xl border border-gray-700 bg-gray-800 text-white',
+                    title: 'text-xl font-black text-gray-100',
+                    htmlContainer: 'text-sm font-medium text-gray-400',
+                    confirmButton: 'px-8 py-2.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95'
+                }
+            };
+
+            return Swal.fire(config);
+        };
+    </script>
+
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 

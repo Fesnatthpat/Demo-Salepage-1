@@ -269,12 +269,10 @@
                                                 if(res.ok) {
                                                     const data = await res.json();
                                                     isActive = data.is_active;
-                                                    if(typeof Swal !== 'undefined') {
-                                                        Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'อัปเดตสถานะสำเร็จ' });
-                                                    }
+                                                    showNotification('success', 'อัปเดตสถานะสำเร็จ');
                                                 } else throw new Error('Server error');
                                             } catch(e) {
-                                                if(typeof Swal !== 'undefined') Swal.fire('ข้อผิดพลาด', 'อัปเดตสถานะไม่สำเร็จ', 'error');
+                                                showNotification('error', 'ข้อผิดพลาด', 'อัปเดตสถานะไม่สำเร็จ');
                                             } finally {
                                                 isToggling = false;
                                             }
@@ -471,9 +469,9 @@
                                         'inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-800 px-2 py-0.5 rounded border border-gray-600 hover:text-white';
                                     badge.innerHTML = '<i class="far fa-star"></i> ทั่วไป';
                                 }
+                                showNotification('success', 'อัปเดตสถานะแนะนำสำเร็จ');
                             } else {
-                                if (typeof Swal !== 'undefined') Swal.fire('Error',
-                                    'เกิดข้อผิดพลาด', 'error');
+                                showNotification('error', 'ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้');
                             }
                         })
                         .catch(error => console.error('Error:', error))

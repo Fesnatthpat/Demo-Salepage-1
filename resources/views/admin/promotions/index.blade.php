@@ -269,16 +269,12 @@
                                                 if(res.ok) {
                                                     const data = await res.json();
                                                     isActive = data.is_active;
-                                                    if(typeof Swal !== 'undefined') {
-                                                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
-                                                        Toast.fire({ icon: 'success', title: 'อัปเดตสถานะสำเร็จ' });
-                                                    }
+                                                    showNotification('success', 'อัปเดตสถานะสำเร็จ');
                                                 } else {
                                                     throw new Error('Server error');
                                                 }
                                             } catch(e) {
-                                                if(typeof Swal !== 'undefined') Swal.fire('ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้', 'error');
-                                                else alert('ไม่สามารถอัปเดตสถานะได้');
+                                                showNotification('error', 'ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้');
                                             } finally {
                                                 isToggling = false;
                                             }

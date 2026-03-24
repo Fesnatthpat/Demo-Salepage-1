@@ -15,12 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    protected CartService $cartService;
-
-    public function __construct(CartService $cartService)
-    {
-        $this->cartService = $cartService;
-    }
+    public function __construct(protected CartService $cartService, protected PromotionService $promotionService) {}
 
     public function getCartService(): CartService
     {
@@ -90,7 +85,7 @@ class OrderService
                 'ord_code' => $ord_code,
                 'user_id' => $user->id,
                 'ord_date' => now(),
-                'status_id' => 1,
+                'status_id' => Order::STATUS_PENDING,
                 'total_price' => 0,
                 'shipping_cost' => 0,
                 'total_discount' => 0,
@@ -184,10 +179,10 @@ class OrderService
                 ]);
             }
 
-            // ✅ 🌟 แก้ไข: บันทึกส่วนลดลง Database ตามการรองรับทั้ง Auto-Discount และ Coupon Code
-            $promos = $this->cartService->getApplicablePromotions($cartItems);
+            // ✅ บันทึกส่วนลดลง Database โดยใช้ PromotionService
+            $promos = $this->promotionService->getApplicablePromotions($cartItems);
             $additionalDiscount = 0;
-            $appliedCode = $this->cartService->getAppliedPromoCode();
+            $appliedCode = $this->promotionService->getAppliedPromoCode();
 
             foreach ($promos as $promo) {
                 if ($promo->usage_limit !== null && $promo->used_count >= $promo->usage_limit) {

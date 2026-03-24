@@ -190,13 +190,13 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
-        if ($order->status_id == 5) {
+        if ($order->status_id == Order::STATUS_CANCELLED) {
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถสร้าง QR Code ใหม่ได้');
         }
 
         if (now()->greaterThan($order->created_at->addMinutes(1))) {
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
-                $order->status_id = 5;
+                $order->status_id = Order::STATUS_CANCELLED;
                 $order->save();
 
                 foreach ($order->details as $detail) {
@@ -214,7 +214,7 @@ class PaymentController extends Controller
             return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
         }
 
-        if ($order->status_id == 1) {
+        if ($order->status_id == Order::STATUS_PENDING) {
             $order->touch();
 
             return redirect()->route('payment.qr', ['orderId' => $orderCode])->with('success', 'รีเฟรช QR Code แล้ว');
@@ -227,12 +227,12 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderCode)
             ->where('user_id', Auth::id())
-            ->where('status_id', 1)
+            ->where('status_id', Order::STATUS_PENDING)
             ->firstOrFail();
 
         try {
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
-                $order->status_id = 5;
+                $order->status_id = Order::STATUS_CANCELLED;
                 $order->save();
 
                 foreach ($order->details as $detail) {
@@ -360,7 +360,7 @@ class PaymentController extends Controller
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
 
-        if ($order->status_id == 5) {
+        if ($order->status_id == Order::STATUS_CANCELLED) {
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกเนื่องจากชำระเงินเกินเวลาที่กำหนด');
         }
 
@@ -370,7 +370,7 @@ class PaymentController extends Controller
 
         if ($request->hasFile('slip_image')) {
             $order->slip_path = $path = $request->file('slip_image')->store('slips', 'public');
-            $order->status_id = 2;
+            $order->status_id = Order::STATUS_PAID;
 
             \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
                 foreach ($order->details as $detail) {

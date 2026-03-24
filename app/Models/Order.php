@@ -10,6 +10,14 @@ class Order extends Model
 {
     use HasFactory;
 
+    // สถานะออเดอร์ (Order Statuses)
+    public const STATUS_PENDING = 1;      // รอชำระเงิน
+    public const STATUS_PAID = 2;         // ชำระเงินแล้ว / เตรียมจัดส่ง
+    public const STATUS_SHIPPED = 3;      // จัดส่งแล้ว
+    public const STATUS_COMPLETED = 4;    // สำเร็จ
+    public const STATUS_CANCELLED = 5;    // ยกเลิก
+    public const STATUS_REFUNDED = 6;     // คืนเงิน
+
     // ชื่อตารางในฐานข้อมูล
     protected $table = 'orders';
 

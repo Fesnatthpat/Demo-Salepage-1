@@ -140,18 +140,18 @@ class OrderController extends Controller
         $order = Order::where('ord_code', $ord_code)->firstOrFail();
 
         try {
-            if ($request->hasFile('slip_image')) {
+            'status_id' => Order::STATUS_PENDING, // STATUS_PENDING = รอชำระเงิน
+            ]);
+            ...
+            $alreadyPaid = ($order->status_id >= Order::STATUS_PAID);
 
-                $alreadyPaid = ($order->status_id >= 2);
+            // 2. บันทึกไฟล์
+            $path = $request->file('slip_image')->store('slips', 'public');
 
-                // 2. บันทึกไฟล์
-                $path = $request->file('slip_image')->store('slips', 'public');
-
-                // 3. อัปเดตออเดอร์
-                $order->slip_path = $path;
-                $order->status_id = 2; // 2 = ชำระเงินแล้ว/รอตรวจสอบ
-                $order->save();
-
+            // 3. อัปเดตออเดอร์
+            $order->slip_path = $path;
+            $order->status_id = Order::STATUS_PAID; // STATUS_PAID = ชำระเงินแล้ว/รอตรวจสอบ
+            $order->save();
                 // ★★★ 4. ถ้าเป็นการจ่ายครั้งแรก ให้ตัดสต็อกและเพิ่มยอดขาย ★★★
                 if (! $alreadyPaid) {
 

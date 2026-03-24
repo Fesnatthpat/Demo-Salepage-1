@@ -23,14 +23,14 @@ class AllProductController extends Controller
         // 3. ระบบกรองหมวดหมู่ (Category Filter)
         if ($request->filled('category')) {
             $categoryValue = trim($request->category);
-            \Illuminate\Support\Facades\Log::info('Filtering by category: ' . $categoryValue);
-            
-            $query->whereHas('category', function($q) use ($categoryValue) {
+            \Illuminate\Support\Facades\Log::info('Filtering by category: '.$categoryValue);
+
+            $query->whereHas('category', function ($q) use ($categoryValue) {
                 $q->where('name', $categoryValue)
-                  ->orWhere('slug', $categoryValue);
+                    ->orWhere('slug', $categoryValue);
             });
-            
-            \Illuminate\Support\Facades\Log::info('SQL: ' . $query->toSql());
+
+            \Illuminate\Support\Facades\Log::info('SQL: '.$query->toSql());
         }
 
         // 4. ระบบเรียงลำดับ (Sorting)

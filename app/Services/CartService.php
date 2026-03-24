@@ -90,6 +90,15 @@ class CartService
             }
 
         } else {
+            $product = ProductSalepage::with('options')->find($productId);
+            if (! $product) {
+                throw new Exception("ไม่พบสินค้า ID: {$productId}");
+            }
+
+            if ($product->options->isNotEmpty()) {
+                throw new Exception("กรุณาเลือกตัวเลือกสำหรับสินค้า '{$product->pd_sp_name}'");
+            }
+
             $existingItem = $cart->get($productId);
             $newQuantity = $existingItem ? $existingItem->quantity + $quantity : $quantity;
 

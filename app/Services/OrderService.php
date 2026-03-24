@@ -116,20 +116,6 @@ class OrderService
                     ->lockForUpdate()
                     ->first();
 
-                if (is_null($optionId) && (! $stockRecord || ($stockRecord->quantity - $stockRecord->reserved_qty) < $item->quantity)) {
-                    $fallbackStock = StockProduct::where('pd_sp_id', $productId)
-                        ->where('quantity', '>', 0)
-                        ->whereColumn('quantity', '>', 'reserved_qty')
-                        ->orderBy('quantity', 'desc')
-                        ->lockForUpdate()
-                        ->first();
-
-                    if ($fallbackStock) {
-                        $stockRecord = $fallbackStock;
-                        $optionId = $stockRecord->option_id;
-                    }
-                }
-
                 if (! $stockRecord) {
                     $productExists = \App\Models\ProductSalepage::find($productId);
                     if ($productExists) {

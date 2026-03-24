@@ -21,9 +21,9 @@ class CancelExpiredOrders extends Command
         // 1. หาเวลาที่ผ่านมาแล้ว 1 นาที
         $expireTime = now()->subMinutes(1);
 
-        // 2. ดึงออเดอร์ที่สถานะ 1 (รอชำระเงิน) และเวลา created_at เก่ากว่า 1 นาที
+        // 2. ดึงออเดอร์ที่สถานะ STATUS_PENDING (รอชำระเงิน) และเวลา created_at เก่ากว่า 1 นาที
         $expiredOrders = Order::with('details')
-            ->where('status_id', 1)
+            ->where('status_id', Order::STATUS_PENDING)
             ->where('created_at', '<=', $expireTime)
             ->get();
 
@@ -38,8 +38,8 @@ class CancelExpiredOrders extends Command
         foreach ($expiredOrders as $order) {
             DB::beginTransaction();
             try {
-                // 3. เปลี่ยนสถานะออเดอร์เป็น "ยกเลิก" (Status 5)
-                $order->status_id = 5;
+                // 3. เปลี่ยนสถานะออเดอร์เป็น STATUS_CANCELLED (ยกเลิก)
+                $order->status_id = Order::STATUS_CANCELLED;
                 $order->save();
 
                 // 4. วนลูปคืนค่าสต็อก

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log; // นำเข้า Carbon สำหรับจัดการวันที่
 
-class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่วคราวเพื่อให้ dd() แสดงผลบนหน้าเว็บได้
+class SendOrderToApiJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -76,17 +76,13 @@ class SendOrderToApiJob // 👈 ลบ implements ShouldQueue ออกชั่
                 $productSku = $product->pd_sp_SKU ?? $product->pd_sp_code ?? 'UNKNOWN';
             }
 
-            // 🌟 บังคับเติม [1] ต่อท้าย SKU เสมอ เพื่อให้เหมือน Postman ที่เทสผ่าน!
-            $productSku .= '[1]';
-
             $apiItems[] = [
-                // ส่งรหัสที่เติม [1] แล้วไปให้ CRM
                 'product_sku' => (string) $productSku,
 
                 'price_per_item' => (float) $detail->ordd_price,
 
-                // 🌟 บังคับจำนวนสินค้าเป็น 1 เสมอ เพื่อทดสอบโดยไม่ต้องสนหน้าเว็บ
-                'quantity' => 1,
+                // ใช้จำนวนจริงจากออเดอร์
+                'quantity' => (int) $detail->ordd_count,
             ];
         }
 

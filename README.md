@@ -183,7 +183,7 @@ cloudflared-windows-amd64.exe tunnel --url http://localhost:8000
 #### เปลี่ยน URL ทุกครั้งที่ Run ใหม่ ####
 #### และต้องไปแก้ไข URL ที่ไฟล์ .env ด้วย อย่าลืม ###
 URL web
-https://warning-denied-jets-hotels.trycloudflare.com/
+https://itunes-mustang-proceedings-disks.trycloudflare.com
 
 
 }

@@ -40,33 +40,25 @@ class ProductSalepage extends Model
 
     public function getCoverImageUrlAttribute()
     {
-        // 1. ถ้าไม่มีข้อมูลรูปในฐานข้อมูลเลย ให้แสดง Placeholder
-        if ($this->images->isEmpty()) {
-            return asset('images/pd-1.png'); // ใช้รูปสำรองที่มีอยู่จริงใน public/images
-        }
+        // 1. ตรวจสอบข้อมูลรูปจาก collection ที่โหลดมาแล้ว (เพื่อลดการ Query ใหม่)
+        $image = $this->relationLoaded('images')
+            ? $this->images->sortBy('img_sort')->first()
+            : $this->images()->orderBy('img_sort', 'asc')->first();
 
-        $image = $this->images->sortBy('img_sort')->first();
         if (! $image || ! $image->img_path) {
-            return asset('images/pd-1.png');
+            $fallbackId = ($this->pd_sp_id % 8) + 1;
+            return asset("images/pd-{$fallbackId}.png");
         }
 
         $rawPath = $image->img_path;
 
-        // 2. ถ้าเป็น URL สมบูรณ์ (เช่น http...) ให้ใช้ URL นั้นเลย
+        // 2. ถ้าเป็น URL สมบูรณ์ ให้ใช้ทันที
         if (filter_var($rawPath, FILTER_VALIDATE_URL)) {
             return $rawPath;
         }
 
-        // 3. ตรวจสอบการมีอยู่ของไฟล์ใน storage/app/public/...
-        $filePath = storage_path('app/public/'.ltrim($rawPath, '/'));
-        if (file_exists($filePath)) {
-            return asset('storage/'.ltrim($rawPath, '/'));
-        }
-
-        // 4. ถ้าไฟล์หายไปจาก Disk ให้ใช้รูปสำรองใน public/images แทน
-        // พยายามสุ่มเลือก pd-1.png ถึง pd-8.png ตาม ID สินค้าเพื่อให้ดูหลากหลาย
-        $fallbackId = ($this->pd_sp_id % 8) + 1;
-        return asset("images/pd-{$fallbackId}.png");
+        // 3. แสดงผลจาก Storage (ลดการใช้ file_exists บน Production เพื่อความเร็ว)
+        return asset('storage/'.ltrim($rawPath, '/'));
     }
 
     public function getFinalPriceAttribute(): float
@@ -74,25 +66,29 @@ class ProductSalepage extends Model
         return max(0, (float) $this->pd_sp_price - (float) $this->pd_sp_discount);
     }
 
-    // ✅ Logic ดึงราคาสำหรับแสดงผล (อิงตามตัวเลือกสินค้า)
+    // ✅ Logic ดึงราคาสำหรับแสดงผล (Optimize: ใช้ Collection ถ้าโหลดมาแล้ว)
     public function getDisplayPriceAttribute()
     {
-        // ถ้าสินค้ามีตัวเลือก (Options)
+        if ($this->relationLoaded('options')) {
+            if ($this->options->isEmpty()) {
+                return (int)$this->pd_sp_price;
+            }
+
+            $prices = $this->options->pluck('option_price');
+            $minPrice = $prices->min();
+            $maxPrice = $prices->max();
+
+            return ($minPrice != $maxPrice) ? (int)$minPrice . '-' . (int)$maxPrice : (int)$minPrice;
+        }
+
+        // Fallback: กรณีไม่ได้ Eager Load มา (อาจเกิด N+1 ได้)
         if ($this->options()->exists()) {
-            // ดึงราคาน้อยสุด และ มากสุด
             $minPrice = $this->options()->min('option_price');
             $maxPrice = $this->options()->max('option_price');
 
-            // ถ้าราคาไม่เท่ากัน ให้แสดงช่วงราคา (เช่น 199-299)
-            if ($minPrice != $maxPrice) {
-                return (int)$minPrice . '-' . (int)$maxPrice;
-            }
-
-            // ถ้าราคาเท่ากันทุกตัวเลือก ให้แสดงราคาเดียว
-            return (int)$minPrice;
+            return ($minPrice != $maxPrice) ? (int)$minPrice . '-' . (int)$maxPrice : (int)$minPrice;
         }
 
-        // ถ้าสินค้า "ไม่มี" ตัวเลือก ให้ดึงราคาจากตารางหลักมาแสดง
         return (int)$this->pd_sp_price;
     }
 
@@ -122,18 +118,24 @@ class ProductSalepage extends Model
         return $this->hasOne(StockProduct::class, 'pd_sp_id', 'pd_sp_id')->whereNull('option_id');
     }
 
-    // ✅ Logic ดึงจำนวนสต็อกที่ถูกต้อง
+    // ✅ Logic ดึงจำนวนสต็อกที่ถูกต้อง (Optimize: ใช้ Collection ถ้าโหลดมาแล้ว)
     public function getPdSpStockAttribute()
     {
-        // เช็คว่าสินค้านี้มีตัวเลือกย่อยหรือไม่
+        if ($this->relationLoaded('options') && $this->options->isNotEmpty()) {
+            return (int) $this->options->sum('option_stock');
+        }
+
+        if ($this->relationLoaded('stock')) {
+            return (int) ($this->stock ? $this->stock->quantity : 0);
+        }
+
+        // Fallback: Query (เพื่อความเข้ากันได้ย้อนหลัง แต่แนะนำให้ใช้ with() ใน Controller)
         if ($this->options()->exists()) {
-            // ถ้า "มี" ตัวเลือก: ให้หาผลรวมสต็อกเฉพาะของตัวเลือกย่อยทั้งหมด (ข้ามสต็อกของสินค้าหลัก)
             return (int) \App\Models\StockProduct::where('pd_sp_id', $this->pd_sp_id)
                 ->whereNotNull('option_id')
                 ->sum('quantity');
         }
 
-        // ถ้า "ไม่มี" ตัวเลือก: ให้ดึงสต็อกของสินค้าหลักมาแสดง
         return (int) ($this->stock ? $this->stock->quantity : 0);
     }
 

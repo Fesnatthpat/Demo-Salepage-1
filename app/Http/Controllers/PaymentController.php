@@ -368,32 +368,39 @@ class PaymentController extends Controller
             return back()->with('error', 'หมดเวลาชำระเงิน กรุณากดปุ่มรีเฟรช');
         }
 
-        if ($request->hasFile('slip_image')) {
-            $order->slip_path = $path = $request->file('slip_image')->store('slips', 'public');
-            $order->status_id = Order::STATUS_PAID;
+        try {
+            if ($request->hasFile('slip_image')) {
+                DB::beginTransaction();
 
-            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
-                foreach ($order->details as $detail) {
-                    $stockRecord = \App\Models\StockProduct::where('pd_sp_id', $detail->pd_id)
-                        ->where('option_id', $detail->option_id)
-                        ->lockForUpdate()
-                        ->first();
-                    if ($stockRecord) {
-                        $stockRecord->decrement('quantity', $detail->ordd_count);
-                        $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
-                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
-                    }
-                }
+                $extension = $request->file('slip_image')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::uuid() . '.' . $extension;
+                $path = $request->file('slip_image')->storeAs('slips', $filename, 'public');
+
+                $alreadyPaid = ($order->status_id >= Order::STATUS_PAID);
+
+                $order->slip_path = $path;
+                $order->status_id = Order::STATUS_PAID;
                 $order->save();
-            });
 
-            $order->refresh();
-            \App\Jobs\SendOrderToApiJob::dispatchSync($order);
+                if (! $alreadyPaid) {
+                    $this->orderService->finalizeOrder($order);
+                }
 
-            return redirect()->route('orders.show', ['orderCode' => $order->ord_code])
-                ->with('success', 'แนบสลิปเรียบร้อยแล้ว!');
+                DB::commit();
+
+                $order->refresh();
+                \App\Jobs\SendOrderToApiJob::dispatchSync($order);
+
+                return redirect()->route('orders.show', ['orderCode' => $order->ord_code])
+                    ->with('success', 'แนบสลิปเรียบร้อยแล้ว!');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Slip Upload Failed (PaymentController): '.$e->getMessage());
+
+            return back()->with('error', 'เกิดข้อผิดพลาดในการอัปโหลดสลิป: '.$e->getMessage());
         }
 
-        return back()->with('error', 'อัปโหลดไม่สำเร็จ');
+        return back()->with('error', 'กรุณาเลือกไฟล์รูปภาพ');
     }
 }

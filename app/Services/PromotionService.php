@@ -12,29 +12,40 @@ use Exception;
 
 class PromotionService
 {
+    protected static ?Collection $activePromotionsCache = null;
+
     /**
      * Get promotions applicable to a specific product.
      */
     public function getPromotionsForProduct(int $productId): Collection
     {
         $now = now();
-        $promotionIds = PromotionRule::where(function ($q) use ($productId) {
-            $q->where('rules->product_id', (string) $productId)
-                ->orWhere('rules->product_id', (int) $productId)
-                ->orWhereJsonContains('rules->product_id', (string) $productId)
-                ->orWhereJsonContains('rules->product_id', (int) $productId);
-        })->pluck('promotion_id')->unique();
 
-        if ($promotionIds->isEmpty()) {
-            return collect();
+        // 💡 ใช้ Internal Cache เพื่อดึงโปรโมชั่นที่ Active ทั้งหมดมาทีเดียวในรอบการทำงานนี้
+        if (is_null(self::$activePromotionsCache)) {
+            self::$activePromotionsCache = Promotion::with(['rules', 'actions.giftableProducts'])
+                ->where('is_active', true)
+                ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
+                ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
+                ->get();
         }
 
-        return Promotion::with(['rules', 'actions.giftableProducts'])
-            ->whereIn('id', $promotionIds)
-            ->where('is_active', true)
-            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
-            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
-            ->get();
+        return self::$activePromotionsCache->filter(function ($promo) use ($productId) {
+            // ถ้าไม่มีกฎเลย (No Rules) ให้ถือว่าใช้กับสินค้าทุกตัวได้ (ตาม Logic ของ GetApplicablePromotions)
+            if ($promo->rules->isEmpty()) {
+                return true;
+            }
+
+            // ตรวจสอบกฎของแต่ละโปรโมชั่นว่ามี Product ID นี้หรือไม่
+            foreach ($promo->rules as $rule) {
+                $pids = (array) ($rule->rules['product_id'] ?? []);
+                if (in_array((string) $productId, array_map('strval', $pids))) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
     }
 
     /**

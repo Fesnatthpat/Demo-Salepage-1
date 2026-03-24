@@ -22,9 +22,10 @@ class OrderService
         return $this->cartService;
     }
 
-    public function createOrder(array $data, User $user, array $selectedItems = [], array $selectedFreebies = []): Order
+    public function createOrder(array $data, ?User $user = null, array $selectedItems = [], array $selectedFreebies = []): Order
     {
         return DB::transaction(function () use ($data, $user, $selectedItems, $selectedFreebies) {
+            $userId = $user ? $user->id : 0;
             $allCartItems = $this->cartService->getCartContents();
 
             $cartItems = $allCartItems->filter(function ($item) use ($selectedItems) {
@@ -74,32 +75,61 @@ class OrderService
                 }
             }
 
-            $deliveryAddress = DeliveryAddress::with(['province', 'amphure', 'district'])
-                ->where('user_id', $user->id)
-                ->where('id', $data['delivery_address_id'])
-                ->firstOrFail();
+            $shippingName = '';
+            $shippingPhone = '';
+            $shippingDetails = [
+                'name' => 'ลูกค้าทั่วไป',
+                'phone' => '',
+                'address' => '',
+                'province' => '',
+                'amphure' => '',
+                'district' => '',
+                'zipcode' => '',
+            ];
+
+            if (isset($data['delivery_address_id'])) {
+                $deliveryAddress = DeliveryAddress::with(['province', 'amphure', 'district'])
+                    ->where('id', $data['delivery_address_id'])
+                    ->firstOrFail();
+
+                $shippingDetails['name'] = $deliveryAddress->fullname;
+                $shippingDetails['phone'] = $deliveryAddress->phone;
+                $shippingDetails['province'] = $deliveryAddress->province->name_th ?? '';
+                $shippingDetails['amphure'] = $deliveryAddress->amphure->name_th ?? '';
+                $shippingDetails['district'] = $deliveryAddress->district->name_th ?? '';
+                $shippingDetails['zipcode'] = $deliveryAddress->zipcode;
+                $shippingDetails['address'] = sprintf(
+                    '%s, %s, %s, %s, %s',
+                    $deliveryAddress->address_line1,
+                    $shippingDetails['district'],
+                    $shippingDetails['amphure'],
+                    $shippingDetails['province'],
+                    $shippingDetails['zipcode']
+                );
+            } else {
+                $shippingDetails['name'] = $data['shipping_name'] ?? $data['customer_name'] ?? 'ลูกค้าทั่วไป';
+                $shippingDetails['phone'] = $data['shipping_phone'] ?? $data['phone'] ?? '';
+                $shippingDetails['address'] = $data['shipping_address'] ?? $data['address'] ?? '';
+                $shippingDetails['province'] = $data['province'] ?? '';
+                $shippingDetails['amphure'] = $data['amphure'] ?? '';
+                $shippingDetails['district'] = $data['district'] ?? '';
+                $shippingDetails['zipcode'] = $data['zipcode'] ?? $data['postal_code'] ?? '';
+            }
 
             $ord_code = 'ORD-'.now()->format('YmdHis').'-'.str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
 
             $order = Order::create([
                 'ord_code' => $ord_code,
-                'user_id' => $user->id,
+                'user_id' => $userId,
                 'ord_date' => now(),
                 'status_id' => Order::STATUS_PENDING,
                 'total_price' => 0,
                 'shipping_cost' => 0,
                 'total_discount' => 0,
                 'net_amount' => 0,
-                'shipping_name' => $deliveryAddress->fullname,
-                'shipping_phone' => $deliveryAddress->phone,
-                'shipping_address' => sprintf(
-                    '%s, %s, %s, %s, %s',
-                    $deliveryAddress->address_line1,
-                    optional($deliveryAddress->district)->name_th,
-                    optional($deliveryAddress->amphure)->name_th,
-                    optional($deliveryAddress->province)->name_th,
-                    $deliveryAddress->zipcode
-                ),
+                'shipping_name' => $shippingDetails['name'],
+                'shipping_phone' => $shippingDetails['phone'],
+                'shipping_address' => $shippingDetails['address'],
             ]);
 
             $totalPrice = 0;
@@ -161,7 +191,7 @@ class OrderService
                     'ordd_count' => $item->quantity,
                     'ordd_discount' => ($originalPrice - $finalItemPrice),
                     'ordd_create_date' => now(),
-                    'user_id' => $user->id,
+                    'user_id' => $userId,
                 ]);
             }
 
@@ -198,7 +228,7 @@ class OrderService
                     \App\Models\PromotionUsageLog::create([
                         'promotion_id' => $promo->id,
                         'order_id' => $order->id,
-                        'user_id' => $user->id,
+                        'user_id' => $userId,
                         // ถ้าเป็นโปรอัตโนมัติ จะบันทึกโค้ดเป็น null, ถ้าใช้โค้ดก็บันทึกรหัสลงไป
                         'code_used' => $promo->is_discount_code ? $promo->code : null, 
                         'discount_amount' => $thisPromoDiscount, 
@@ -217,20 +247,20 @@ class OrderService
             $this->cartService->removePromoCode();
 
             foreach ($cartItems as $item) {
-                Cart::session($user->id)->remove($item->id);
+                Cart::session($userId)->remove($item->id);
             }
 
             CartStorage::updateOrCreate(
-                ['user_id' => $user->id],
-                ['cart_data' => Cart::session($user->id)->getContent()->toJson()]
+                ['user_id' => $userId],
+                ['cart_data' => Cart::session($userId)->getContent()->toJson()]
             );
 
             $addressData = [
-                'province' => $deliveryAddress->province->name_th ?? '',
-                'amphure' => $deliveryAddress->amphure->name_th ?? '',
-                'district' => $deliveryAddress->district->name_th ?? '',
-                'postal_code' => $deliveryAddress->zipcode ?? '',
-                'customer_name' => $deliveryAddress->fullname ?? $user->name ?? 'ลูกค้าทั่วไป',
+                'province' => $shippingDetails['province'],
+                'amphure' => $shippingDetails['amphure'],
+                'district' => $shippingDetails['district'],
+                'postal_code' => $shippingDetails['zipcode'],
+                'customer_name' => $shippingDetails['name'],
                 'payment_method' => $data['payment_method'] ?? 'PromptPay',
                 'shipping_method' => 'Standard Delivery',
             ];
@@ -244,5 +274,46 @@ class OrderService
     public function getPaymentQrCodeData(Order $order): string
     {
         return 'PromptPay QR Code Data for Order #'.$order->id.' Amount: '.$order->total_amount;
+    }
+
+    public function deductStock(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            foreach ($order->details as $detail) {
+                $stockRecord = StockProduct::where('pd_sp_id', $detail->pd_id)
+                    ->where('option_id', $detail->option_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stockRecord) {
+                    // ลดจำนวนสต็อกจริง
+                    $stockRecord->decrement('quantity', $detail->ordd_count);
+                    
+                    // ลดจำนวนที่จองไว้ (ถ้ามี)
+                    $reserveToSubtract = min($stockRecord->reserved_qty, $detail->ordd_count);
+                    if ($reserveToSubtract > 0) {
+                        $stockRecord->decrement('reserved_qty', $reserveToSubtract);
+                    }
+                }
+            }
+        });
+    }
+
+    public function incrementSoldCount(Order $order): void
+    {
+        foreach ($order->details as $detail) {
+            $product = ProductSalepage::find($detail->pd_id);
+            if ($product) {
+                $product->increment('pd_sp_sold', $detail->ordd_count);
+            }
+        }
+    }
+
+    public function finalizeOrder(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $this->deductStock($order);
+            $this->incrementSoldCount($order);
+        });
     }
 }

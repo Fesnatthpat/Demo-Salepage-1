@@ -59,68 +59,20 @@ class OrderController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
+            $selectedItems = array_map(function($item) {
+                return $item['attributes']['product_id'] ?? $item['id'];
+            }, $request->cart_items);
 
-            $order = Order::create([
-                'user_id' => Auth::id() ?? 0,
-                'ord_date' => now(),
-                'ord_code' => 'ORD-'.strtoupper(uniqid()),
-                'shipping_name' => $request->customer_name ?? 'ลูกค้าทั่วไป',
-                'shipping_phone' => $request->phone,
-                'shipping_address' => $request->address,
-                'total_price' => $request->total_price ?? 0,
-                'net_amount' => $request->total_price ?? 0,
-                'status_id' => 1, // 1 = รอชำระเงิน
-            ]);
-
-            foreach ($request->cart_items as $item) {
-                $item = (object) $item;
-                $attributes = (object) ($item->attributes ?? []);
-
-                $optionName = null;
-                if (str_contains($item->name, '(') && str_contains($item->name, ')')) {
-                    preg_match('/\((.*?)\)/', $item->name, $matches);
-                    $optionName = $matches[1] ?? null;
-                }
-
-                $productId = $attributes->product_id ?? $item->id;
-                $optionId = $attributes->option_id ?? null;
-
-                OrderDetail::create([
-                    'ord_id' => $order->id,
-                    'pd_id' => $productId,
-                    'option_id' => $optionId,
-                    'option_name' => $optionName,
-                    'ordd_price' => $item->price,
-                    'ordd_original_price' => $attributes->original_price ?? $item->price,
-                    'ordd_count' => $item->quantity,
-                    'ordd_discount' => $attributes->discount ?? 0,
-                    'ordd_create_date' => now(),
-                ]);
-            }
-
-            DB::commit();
-
-            // ข้อมูลสำหรับส่ง CRM
-            $addressData = [
-                'province' => $request->province ?? '',
-                'amphure' => $request->amphure ?? '',
-                'district' => $request->district ?? '',
-                'postal_code' => $request->postal_code ?? '',
-                'customer_name' => $request->customer_name ?? 'ลูกค้าทั่วไป',
-                'payment_method' => $request->payment_method ?? 'Prepaid',
-                'shipping_method' => $request->shipping_method ?? 'Shopee SPX Express',
-            ];
-
-            if (class_exists(\App\Jobs\SendOrderToApiJob::class)) {
-                \App\Jobs\SendOrderToApiJob::dispatchSync($order, $addressData);
-            }
+            $order = $this->orderService->createOrder(
+                $request->all(),
+                Auth::user(),
+                $selectedItems
+            );
 
             return redirect()->route('orders.show', $order->ord_code)
                 ->with('success', 'สร้างคำสั่งซื้อเรียบร้อยแล้ว กรุณาแนบสลิปเพื่อยืนยัน');
 
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Order Creation Failed: '.$e->getMessage());
 
             return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());
@@ -140,37 +92,27 @@ class OrderController extends Controller
         $order = Order::where('ord_code', $ord_code)->firstOrFail();
 
         try {
-            'status_id' => Order::STATUS_PENDING, // STATUS_PENDING = รอชำระเงิน
-            ]);
-            ...
-            $alreadyPaid = ($order->status_id >= Order::STATUS_PAID);
+            DB::beginTransaction();
+            // เช็คสถานะก่อนอัปเดต ว่าเคยจ่ายเงินแล้วหรือยัง (เพื่อป้องกันการตัดสต็อก/เพิ่มยอดซ้ำ)
+            $alreadyPaid = ($order->status_id >= Order::STATUS_PAID); 
 
-            // 2. บันทึกไฟล์
-            $path = $request->file('slip_image')->store('slips', 'public');
+            if ($request->hasFile('slip_image')) {
+                // 2. บันทึกไฟล์ (UUID เพื่อความปลอดภัย)
+                $extension = $request->file('slip_image')->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::uuid() . '.' . $extension;
+                $path = $request->file('slip_image')->storeAs('slips', $filename, 'public');
 
-            // 3. อัปเดตออเดอร์
-            $order->slip_path = $path;
-            $order->status_id = Order::STATUS_PAID; // STATUS_PAID = ชำระเงินแล้ว/รอตรวจสอบ
-            $order->save();
+                // 3. อัปเดตออเดอร์
+                $order->slip_path = $path;
+                $order->status_id = Order::STATUS_PAID; 
+                $order->save();
+
                 // ★★★ 4. ถ้าเป็นการจ่ายครั้งแรก ให้ตัดสต็อกและเพิ่มยอดขาย ★★★
                 if (! $alreadyPaid) {
-
-                    // A. ตัดสต็อก
-                    if (method_exists($this->orderService, 'deductStock')) {
-                        $this->orderService->deductStock($order);
-                    }
-
-                    // B. เพิ่มยอดขาย (Sold Count)
-                    $orderDetails = OrderDetail::where('ord_id', $order->id)->get();
-
-                    foreach ($orderDetails as $detail) {
-                        $product = ProductSalepage::find($detail->pd_id);
-
-                        if ($product) {
-                            $product->increment('pd_sp_sold', $detail->ordd_count);
-                        }
-                    }
+                    $this->orderService->finalizeOrder($order);
                 }
+
+                DB::commit();
 
                 // 5. ส่งข้อมูลเข้า CRM
                 if (class_exists(\App\Jobs\SendOrderToApiJob::class)) {
@@ -180,6 +122,7 @@ class OrderController extends Controller
                 return back()->with('success', 'อัปโหลดสลิปและบันทึกยอดขายเรียบร้อยแล้ว!');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Slip Upload Failed: '.$e->getMessage());
 
             return back()->with('error', 'เกิดข้อผิดพลาด: '.$e->getMessage());

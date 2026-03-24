@@ -27,9 +27,7 @@ class FavoriteController extends Controller
         $socialLinks = AboutSocialLink::orderBy('sort_order', 'asc')->get();
         $contacts = Contact::orderBy('sort_order', 'asc')->get();
         
-        $settings = SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
-            return [$key => SiteSetting::get($key)];
-        })->toArray();
+        $settings = SiteSetting::getAllSettings();
 
         return view('admin.favorites.index', compact('favorites', 'videos', 'galleries', 'socialLinks', 'contacts', 'settings'));
     }

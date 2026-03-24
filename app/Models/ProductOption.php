@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,23 +34,20 @@ class ProductOption extends Model
     {
         return $this->belongsTo(ProductSalepage::class, 'parent_id', 'pd_sp_id');
     }
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class ProductOption extends Model
-{
-...
+    // Relationship to the stock
     public function stock()
     {
         return $this->hasOne(StockProduct::class, 'option_id', 'option_id');
     }
 
+    // Attribute สำหรับดึงจำนวน Stock
     protected function optionStock(): Attribute
     {
         return Attribute::get(fn (): int => $this->stock ? (int) $this->stock->quantity : 0);
     }
 
+    // Attribute สำหรับจัดการ URL ของรูปภาพ
     protected function optionImageUrl(): Attribute
     {
         return Attribute::get(function () {
@@ -64,6 +62,7 @@ class ProductOption extends Model
         });
     }
 
+    // Attribute สำหรับคำนวณราคาสุทธิ
     protected function finalPrice(): Attribute
     {
         return Attribute::get(function (): float {

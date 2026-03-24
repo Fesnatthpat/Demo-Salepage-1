@@ -33,9 +33,7 @@ class HomeController extends Controller
         $reasons = \App\Models\Feature::where('is_active', true)->orderBy('sort_order')->get();
         $reviewImages = \App\Models\ProductReviewImage::whereNull('product_salepage_id')->orderBy('sort_order', 'asc')->get();
 
-        $settings = SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
-            return [$key => SiteSetting::get($key)];
-        })->toArray();
+        $settings = SiteSetting::getAllSettings();
 
         return view('index', compact(
             'recommendedProducts', 
@@ -69,9 +67,7 @@ class HomeController extends Controller
         // 5. ดึงข้อมูลติดต่อ
         $contacts = \App\Models\Contact::where('is_active', 1)->orderBy('sort_order', 'asc')->get();
 
-        $settings = SiteSetting::all()->pluck('key')->mapWithKeys(function ($key) {
-            return [$key => SiteSetting::get($key)];
-        })->toArray();
+        $settings = SiteSetting::getAllSettings();
 
         return view('about', compact('favorites', 'videos', 'galleries', 'socialLinks', 'contacts', 'settings'));
     }

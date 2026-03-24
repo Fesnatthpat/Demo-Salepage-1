@@ -57,4 +57,20 @@ class SiteSetting extends Model
             ['value' => $value]
         );
     }
+
+    /**
+     * ดึงค่าการตั้งค่าทั้งหมดมาเป็น Array ในรูปแบบ ['key' => 'value']
+     * ช่วยลดปัญหา N+1 Query และจัดการ JSON decoding ให้อัตโนมัติ
+     */
+    public static function getAllSettings(): array
+    {
+        return self::all()->mapWithKeys(function ($setting) {
+            $value = $setting->value;
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $value = $decoded;
+            }
+            return [$setting->key => $value];
+        })->toArray();
+    }
 }

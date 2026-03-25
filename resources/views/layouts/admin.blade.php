@@ -210,6 +210,10 @@
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.activity-log.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - ประวัติกิจกรรม
                             </a>
+                            <a href="{{ route('admin.shipping.index') }}"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.shipping.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
+                                - ตั้งค่าการจัดส่ง
+                            </a>
                         </div>
                     </div>
 

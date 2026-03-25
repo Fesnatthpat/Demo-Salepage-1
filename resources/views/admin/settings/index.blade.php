@@ -72,7 +72,8 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="relative">
+        <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="relative"
+            @submit="isSaving = true">
             @csrf
 
             {{-- 🟣 TAB: FOOTER --}}
@@ -107,9 +108,9 @@
                                         class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                         <i class="fas fa-camera text-white text-xl"></i>
                                     </div>
-                                    <input type="file" name="site_logo" accept="image/*"
+                                    <input type="file" accept="image/*"
                                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        onchange="document.getElementById('footer-logo-preview').src = window.URL.createObjectURL(this.files[0]); document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0])">
+                                        onchange="document.getElementById('footer-logo-preview').src = window.URL.createObjectURL(this.files[0]); document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0]); const dataTransfer = new DataTransfer(); dataTransfer.items.add(this.files[0]); document.getElementById('site-logo-main').files = dataTransfer.files;">
                                 </div>
                                 <div class="space-y-1 text-center sm:text-left">
                                     <p class="text-sm text-gray-300 font-bold">โลโก้ร้านค้า</p>
@@ -423,9 +424,9 @@
                                         class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                                         <i class="fas fa-camera text-white text-2xl"></i>
                                     </div>
-                                    <input type="file" name="site_logo" accept="image/*"
+                                    <input type="file" name="site_logo" id="site-logo-main" accept="image/*"
                                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        onchange="document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0])">
+                                        onchange="document.getElementById('logo-preview').src = window.URL.createObjectURL(this.files[0]); document.getElementById('footer-logo-preview').src = window.URL.createObjectURL(this.files[0])">
                                 </div>
                                 <div class="space-y-2 text-center sm:text-left">
                                     <p class="text-sm text-gray-300 font-medium">อัปโหลดโลโก้ร้านค้าของคุณ</p>
@@ -581,6 +582,7 @@
                                             </div>
 
                                             <div class="flex-grow">
+                                                <input type="hidden" :name="`services[${index}][id]`" x-model="svc.id">
                                                 <input type="text" :name="`services[${index}][title]`"
                                                     x-model="svc.title" placeholder="กรอกข้อความบริการ..."
                                                     class="w-full bg-transparent border-b border-gray-600 text-sm text-gray-200 py-2 focus:ring-0 focus:border-purple-500 transition-colors px-1">
@@ -690,6 +692,7 @@
                                             </div>
 
                                             <div class="flex-grow space-y-2">
+                                                <input type="hidden" :name="`reasons[${index}][id]`" x-model="reason.id">
                                                 <input type="text" :name="`reasons[${index}][title]`"
                                                     x-model="reason.title" placeholder="หัวข้อ"
                                                     class="w-full bg-transparent border-b border-gray-600 text-sm font-bold text-emerald-400 px-1 py-1 focus:ring-0 focus:border-emerald-500 transition-colors">
@@ -900,9 +903,7 @@
                                                         class="w-full bg-gray-900 border-gray-700 rounded-lg text-[11px] text-gray-300 px-2 py-1.5 focus:border-emerald-500 focus:ring-0">
                                                         <option value="">-- เป็นหมวดหมู่หลัก --</option>
                                                         @foreach ($categories ?? [] as $c)
-                                                            <template x-if="cat.id != {{ $c->id }}">
-                                                                <option value="{{ $c->id }}">{{ $c->name }}</option>
-                                                            </template>
+                                                            <option x-show="cat.id != {{ $c->id }}" value="{{ $c->id }}">{{ $c->name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -946,10 +947,20 @@
             {{-- 💾 SAVE BUTTON (Floating on mobile, sticky on desktop) --}}
             <div
                 class="fixed bottom-0 left-0 right-0 p-4 bg-gray-900/90 border-t border-gray-800 z-40 md:sticky md:bottom-6 md:bg-transparent md:border-none md:p-0 md:pt-10 flex justify-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none">
-                <button type="submit"
-                    class="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 md:py-4 px-8 md:px-12 rounded-2xl md:rounded-full shadow-xl shadow-emerald-900/50 transform transition-all hover:-translate-y-1 hover:scale-105 flex items-center justify-center gap-3 border border-emerald-400/30">
-                    <i class="fas fa-save text-xl"></i>
-                    <span class="text-lg">บันทึกการตั้งค่าทั้งหมด</span>
+                <button type="submit" :disabled="isSaving"
+                    class="w-full md:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 md:py-4 px-8 md:px-12 rounded-2xl md:rounded-full shadow-xl shadow-emerald-900/50 transform transition-all hover:-translate-y-1 hover:scale-105 flex items-center justify-center gap-3 border border-emerald-400/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <template x-if="!isSaving">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-save text-xl"></i>
+                            <span class="text-lg">บันทึกการตั้งค่าทั้งหมด</span>
+                        </div>
+                    </template>
+                    <template x-if="isSaving">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-spinner fa-spin text-xl"></i>
+                            <span class="text-lg">กำลังบันทึกข้อมูล...</span>
+                        </div>
+                    </template>
                 </button>
             </div>
         </form>
@@ -994,6 +1005,7 @@
         function siteSettings() {
             return {
                 activeTab: 'homepage',
+                isSaving: false,
                 showIconPicker: false,
                 activeIconIndex: 0,
                 activeIconType: 'service',
@@ -1070,6 +1082,7 @@
                 services: [
                     @foreach ($services ?? [] as $svc)
                         {
+                            id: "{{ $svc->id }}",
                             icon: "{{ $svc->icon }}",
                             title: "{{ $svc->title }}"
                         },
@@ -1077,6 +1090,7 @@
                 ],
                 addService() {
                     this.services.push({
+                        id: null,
                         icon: 'fas fa-star',
                         title: ''
                     });
@@ -1088,6 +1102,7 @@
                 reasons: [
                     @foreach ($features ?? [] as $feature)
                         {
+                            id: "{{ $feature->id }}",
                             icon: "{{ $feature->icon }}",
                             title: "{{ $feature->title }}",
                             description: "{{ $feature->description }}"
@@ -1096,6 +1111,7 @@
                 ],
                 addReason() {
                     this.reasons.push({
+                        id: null,
                         icon: 'fas fa-check',
                         title: '',
                         description: ''

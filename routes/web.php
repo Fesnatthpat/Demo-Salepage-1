@@ -235,6 +235,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function() {
             // Activity Log
             Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
 
+            // Shipping Settings
+            Route::get('/shipping-settings', [App\Http\Controllers\Admin\ShippingSettingController::class, 'index'])->name('shipping.index');
+            Route::post('/shipping-settings', [App\Http\Controllers\Admin\ShippingSettingController::class, 'update'])->name('shipping.update');
+
             // Homepage Content Management
             Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
             Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');

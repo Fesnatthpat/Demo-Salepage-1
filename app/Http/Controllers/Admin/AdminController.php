@@ -64,6 +64,11 @@ class AdminController extends Controller
         $request->validate([
             'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
             'site_cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
+            'hero_banners.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
+            'secondary_banners.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
+            'all_products_hero_banners.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
+            'categories.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
+            'review_images.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096',
         ]);
 
         // บันทึก Log การแก้ไขตั้งค่า
@@ -214,36 +219,39 @@ class AdminController extends Controller
 
         // --- 6. Service Bar (Dynamic Array) ---
         if ($request->has('services') && is_array($request->services)) {
-            // ลบข้อมูลเก่าที่ไม่ได้อยู่ในรายการใหม่
-            \App\Models\Service::query()->delete();
-            
+            $serviceKeepIds = [];
             foreach ($request->services as $index => $item) {
                 if (!empty($item['title'])) {
-                    \App\Models\Service::create([
+                    $id = !empty($item['id']) ? $item['id'] : null;
+                    $service = \App\Models\Service::updateOrCreate(['id' => $id], [
                         'icon' => $item['icon'] ?? 'fas fa-star',
                         'title' => $item['title'],
                         'sort_order' => $index + 1,
                         'is_active' => true
                     ]);
+                    $serviceKeepIds[] = $service->id;
                 }
             }
+            \App\Models\Service::whereNotIn('id', $serviceKeepIds)->delete();
         }
 
         // --- 7. 6 Reasons (Features) (Dynamic Array) ---
         if ($request->has('reasons') && is_array($request->reasons)) {
-            \App\Models\Feature::query()->delete();
-            
+            $featureKeepIds = [];
             foreach ($request->reasons as $index => $item) {
                 if (!empty($item['title'])) {
-                    \App\Models\Feature::create([
+                    $id = !empty($item['id']) ? $item['id'] : null;
+                    $feature = \App\Models\Feature::updateOrCreate(['id' => $id], [
                         'icon' => $item['icon'] ?? 'fas fa-check',
                         'title' => $item['title'],
                         'description' => $item['description'] ?? '',
                         'sort_order' => $index + 1,
                         'is_active' => true
                     ]);
+                    $featureKeepIds[] = $feature->id;
                 }
             }
+            \App\Models\Feature::whereNotIn('id', $featureKeepIds)->delete();
         }
 
         // --- 8. Customer Review Images (Dynamic Array) ---

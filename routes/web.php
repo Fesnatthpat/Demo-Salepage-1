@@ -90,13 +90,16 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // -- ระบบชำระเงิน (Checkout & Payment) --
-    Route::get('/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
+    // 🛠️ แก้ไข: เปลี่ยนจาก 'checkout' เป็น 'index' ตามชื่อฟังก์ชันใน PaymentController
+    Route::get('/checkout', [PaymentController::class, 'index'])->name('payment.checkout');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
     Route::post('/payment/apply-discount', [PaymentController::class, 'applyDiscount'])->name('payment.applyDiscount');
+    Route::post('/payment/calculate-shipping', [PaymentController::class, 'calculateShipping'])->name('payment.calculateShipping');
 
     // หน้าแสดง QR Code และ Upload Slip
     Route::get('/payment/qr/{orderId}', [PaymentController::class, 'showQr'])->name('payment.qr');
-    Route::post('/payment/refresh/{orderCode}', [PaymentController::class, 'refreshQr'])->name('payment.refresh');
+    Route::get('/payment/refresh/{orderCode}', [PaymentController::class, 'refreshQr'])->name('payment.qr.refresh');
+    // 🛠️ จุดที่แก้ไข: เปลี่ยนจาก Route::get เป็น Route::post สำหรับการยกเลิกออเดอร์
     Route::post('/payment/cancel/{orderCode}', [PaymentController::class, 'cancelOrder'])->name('payment.cancel');
     Route::post('/payment/slip/upload/{orderCode}', [PaymentController::class, 'uploadSlip'])->name('payment.slip.upload');
 
@@ -128,16 +131,18 @@ Route::get('/ordertracking/form', [TrackingController::class, 'index'])->name('o
 // ==========================================
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
+Route::get('/api/address-info/{id}', [AddressController::class, 'getAddressInfo']);
 
 // ==========================================
 // 7. Admin Panel (ระบบหลังบ้าน)
 // ==========================================
 // ✅ แก้ไข: เปลี่ยน 'name' => 'admin' เป็น 'as' => 'admin.'
-Route::group(['prefix' => 'admin', 'as' => 'admin.'], function() {
+Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('/', function () {
         if (auth()->guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }
+
         // ✅ แก้ไข: ให้ Redirect ไปที่หน้า login ของ admin
         return redirect()->route('admin.login');
     })->name('index');
@@ -198,18 +203,18 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function() {
 
         // Favorite Management (จัดการเกี่ยวกับติดใจ)
         Route::resource('favorites', \App\Http\Controllers\Admin\FavoriteController::class);
-        
+
         // About Page Additional Sections (จัดการส่วนอื่นๆ ของหน้าเกี่ยวกับติดใจ)
         Route::post('/about-videos', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeVideo'])->name('about-videos.store');
         Route::put('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateVideo'])->name('about-videos.update');
         Route::delete('/about-videos/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideo'])->name('about-videos.destroy');
         Route::delete('/about-videos-thumbnail/{video}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyVideoThumbnail'])->name('about-videos.thumbnail.destroy');
-        
+
         Route::post('/about-galleries', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeGallery'])->name('about-galleries.store');
         Route::put('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateGallery'])->name('about-galleries.update');
         Route::delete('/about-galleries/{gallery}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGallery'])->name('about-galleries.destroy');
         Route::delete('/about-gallery-images/{image}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroyGalleryImage'])->name('about-gallery-images.destroy');
-        
+
         Route::post('/about-social-links', [\App\Http\Controllers\Admin\FavoriteController::class, 'storeSocialLink'])->name('about-social-links.store');
         Route::put('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'updateSocialLink'])->name('about-social-links.update');
         Route::delete('/about-social-links/{socialLink}', [\App\Http\Controllers\Admin\FavoriteController::class, 'destroySocialLink'])->name('about-social-links.destroy');
@@ -237,7 +242,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function() {
 
             // Shipping Settings
             Route::get('/shipping-settings', [App\Http\Controllers\Admin\ShippingSettingController::class, 'index'])->name('shipping.index');
-            Route::post('/shipping-settings', [App\Http\Controllers\Admin\ShippingSettingController::class, 'update'])->name('shipping.update');
+            Route::post('/shipping-settings/global', [App\Http\Controllers\Admin\ShippingSettingController::class, 'updateGlobal'])->name('shipping.updateGlobal');
+            Route::post('/shipping-settings/methods', [App\Http\Controllers\Admin\ShippingSettingController::class, 'store'])->name('shipping.methods.store');
+            Route::post('/shipping-settings/methods/{method}/toggle', [App\Http\Controllers\Admin\ShippingSettingController::class, 'toggleStatus'])->name('shipping.methods.toggle');
+            Route::delete('/shipping-settings/methods/{method}', [App\Http\Controllers\Admin\ShippingSettingController::class, 'destroy'])->name('shipping.methods.destroy');
 
             // Homepage Content Management
             Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');

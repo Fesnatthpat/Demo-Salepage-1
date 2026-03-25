@@ -68,6 +68,21 @@ class AddressController extends Controller
         return response()->json($amphures);
     }
 
+    public function getAddressInfo($id)
+    {
+        $address = DeliveryAddress::with('province')->findOrFail($id);
+        
+        $bkkMetroNames = ['กรุงเทพมหานคร', 'นนทบุรี', 'ปทุมธานี', 'สมุทรปราการ'];
+        $isBkk = $address->province && in_array($address->province->name_th, $bkkMetroNames);
+
+        return response()->json([
+            'id' => $address->id,
+            'province_id' => $address->province_id,
+            'province_name' => $address->province->name_th ?? '',
+            'isBkk' => $isBkk
+        ]);
+    }
+
     public function getDistricts($amphure_id)
     {
         $districts = District::where('amphure_id', $amphure_id)->orderBy('name_th', 'asc')->get();

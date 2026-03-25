@@ -114,6 +114,33 @@ class OrderService
             }
 
             if (! empty($selectedFreebies)) {
+                // 🔒 Security Check: Verify if the user actually earns these freebies
+                $applicablePromos = $this->promotionService->getApplicablePromotions($cartItems);
+                $allowedFreebieLimit = $this->promotionService->calculateFreebieLimit($cartItems, $applicablePromos);
+                
+                if (count($selectedFreebies) > $allowedFreebieLimit) {
+                    throw new \Exception('จำนวนของแถมเกินสิทธิ์ที่คุณได้รับ');
+                }
+
+                $allowedGiftIds = $applicablePromos->flatMap(function ($promo) {
+                    return $promo->actions->flatMap(function ($action) {
+                        $ids = collect();
+                        if (isset($action->actions['product_id_to_get'])) {
+                            $ids->push((int)$action->actions['product_id_to_get']);
+                        }
+                        if ($action->giftableProducts->isNotEmpty()) {
+                            $ids = $ids->merge($action->giftableProducts->pluck('pd_sp_id'));
+                        }
+                        return $ids;
+                    });
+                })->unique()->toArray();
+
+                foreach ($selectedFreebies as $sfId) {
+                    if (!in_array((int)$sfId, $allowedGiftIds)) {
+                        throw new \Exception('สินค้าของแถมบางรายการไม่ตรงตามเงื่อนไขโปรโมชั่น');
+                    }
+                }
+
                 $existingFreebieIdsInCart = $itemsToProcess->filter(fn ($i) => $i['is_freebie'])
                     ->map(fn ($i) => (int) ($i['attributes']['product_id'] ?? $i['id']))
                     ->toArray();

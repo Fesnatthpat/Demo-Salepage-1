@@ -47,6 +47,13 @@ class CartController extends Controller
             'selectedCount' => is_array($selectedIds) ? count($selectedIds) : 0,
             // เพิ่มเติม: ข้อมูลของแถมถ้ามี (เพื่อใช้ Update UI ฝั่งของแถม)
             'freebieLimit' => (int)$data['freebieLimit'],
+            'giftableProducts' => $data['giftableProducts']->map(function($gift) {
+                return [
+                    'id' => $gift->pd_sp_id,
+                    'name' => $gift->pd_sp_name,
+                    'image' => $gift->cover_image_url
+                ];
+            })
         ]);
     }
 

@@ -193,25 +193,28 @@
                                 </div>
 
                                 {{-- ★ ส่วนเลือกของแถม (สำหรับโปรโมชั่นแบบชุด) ★ --}}
-                                @if (isset($freebieLimit) && $freebieLimit > 0 && isset($giftableProducts) && $giftableProducts->count() > 0)
-                                    <div class="mb-5 sm:mb-6 p-3 sm:p-4 bg-gradient-to-br from-pink-50 to-red-50 rounded-xl sm:rounded-2xl border border-pink-200 shadow-inner"
-                                        id="gift-selection-area">
-                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
-                                            <div class="flex items-center gap-2">
-                                                <span
-                                                    class="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-pink-500 text-white shadow-md">
-                                                    <i class="fas fa-gift text-[10px] sm:text-xs"></i>
-                                                </span>
-                                                <h3 class="font-bold text-pink-900 text-xs sm:text-sm">เลือกของแถม</h3>
-                                            </div>
+                                @php
+                                    $hasGifts = (isset($freebieLimit) && $freebieLimit > 0 && isset($giftableProducts) && $giftableProducts->count() > 0);
+                                @endphp
+                                <div class="mb-5 sm:mb-6 p-3 sm:p-4 bg-gradient-to-br from-pink-50 to-red-50 rounded-xl sm:rounded-2xl border border-pink-200 shadow-inner"
+                                    id="gift-selection-area" style="display: {{ $hasGifts ? 'block' : 'none' }};">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+                                        <div class="flex items-center gap-2">
                                             <span
-                                                class="text-[10px] sm:text-xs font-black bg-white text-pink-600 border-2 border-pink-200 px-2 sm:px-3 py-1 rounded-full shadow-sm w-fit">
-                                                เลือกได้: <span id="gift-limit-display">{{ $freebieLimit }}</span> ชิ้น
+                                                class="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-pink-500 text-white shadow-md">
+                                                <i class="fas fa-gift text-[10px] sm:text-xs"></i>
                                             </span>
+                                            <h3 class="font-bold text-pink-900 text-xs sm:text-sm">เลือกของแถม</h3>
                                         </div>
+                                        <span
+                                            class="text-[10px] sm:text-xs font-black bg-white text-pink-600 border-2 border-pink-200 px-2 sm:px-3 py-1 rounded-full shadow-sm w-fit">
+                                            เลือกได้: <span id="gift-limit-display">{{ $freebieLimit ?? 0 }}</span> ชิ้น
+                                        </span>
+                                    </div>
 
-                                        {{-- Responsive Grid: มือถือ 2, แท็บเล็ต 3, คอม 2 (เพราะอยู่ Sidebar) --}}
-                                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-3" id="gift-pool">
+                                    {{-- Responsive Grid: มือถือ 2, แท็บเล็ต 3, คอม 2 (เพราะอยู่ Sidebar) --}}
+                                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-3" id="gift-pool">
+                                        @if (isset($giftableProducts))
                                             @foreach ($giftableProducts as $gift)
                                                 <div class="relative group flex flex-col items-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl border-2 transition-all duration-300 cursor-pointer bg-white border-transparent shadow-sm hover:shadow-md hover:border-pink-300 hover:-translate-y-1"
                                                     id="gift-card-{{ $gift->pd_sp_id }}"
@@ -243,16 +246,16 @@
                                                     </div>
                                                 </div>
                                             @endforeach
-                                        </div>
-
-                                        <div class="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-pink-200/60 flex justify-center">
-                                            <p class="text-[10px] sm:text-[11px] font-bold text-pink-600 bg-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm border border-pink-100"
-                                                id="gift-count-text">
-                                                เลือกไปแล้ว 0 / {{ $freebieLimit }} ชิ้น
-                                            </p>
-                                        </div>
+                                        @endif
                                     </div>
-                                @endif
+
+                                    <div class="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-pink-200/60 flex justify-center">
+                                        <p class="text-[10px] sm:text-[11px] font-bold text-pink-600 bg-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm border border-pink-100"
+                                            id="gift-count-text">
+                                            เลือกไปแล้ว 0 / {{ $freebieLimit ?? 0 }} ชิ้น
+                                        </p>
+                                    </div>
+                                </div>
 
                                 <div id="hidden-gifts-inputs"></div>
 
@@ -381,17 +384,61 @@
                         checkoutBtn.disabled = (data.selectedCount === 0);
                     }
 
-                    // 4. (Optional) ถ้ามีระบบของแถม ให้ Update โควตาของแถมด้วย
+                    // 4. Update โควตาและรายการของแถมแบบ Real-time
+                    const giftSelectionArea = document.getElementById('gift-selection-area');
                     const giftLimitDisplay = document.getElementById('gift-limit-display');
-                    if (giftLimitDisplay) {
-                        const oldLimit = parseInt(giftLimitDisplay.innerText);
-                        giftLimitDisplay.innerText = data.freebieLimit;
-                        
-                        // ถ้า Limit เปลี่ยน (เช่น ลดลงจนเกินที่เลือกไว้) ให้แจ้งเตือนและล้างของแถมที่เกิน
+                    const giftPool = document.getElementById('gift-pool');
+
+                    if (data.freebieLimit > 0 && data.giftableProducts && data.giftableProducts.length > 0) {
+                        // แสดงกล่องเลือกของแถม
+                        if (giftSelectionArea) {
+                            giftSelectionArea.style.display = 'block';
+                            giftLimitDisplay.innerText = data.freebieLimit;
+                        }
+
+                        // วาดรายการของแถมใหม่ (Gift Pool)
+                        if (giftPool) {
+                            giftPool.innerHTML = '';
+                            data.giftableProducts.forEach(gift => {
+                                const giftHtml = `
+                                    <div class="relative group flex flex-col items-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl border-2 transition-all duration-300 cursor-pointer bg-white border-transparent shadow-sm hover:shadow-md hover:border-pink-300 hover:-translate-y-1"
+                                        id="gift-card-${gift.id}"
+                                        onclick="addCartGift('${gift.id}')">
+
+                                        <div class="aspect-square w-full rounded-md sm:rounded-lg overflow-hidden bg-gray-50 mb-1.5 sm:mb-2 relative">
+                                            <img src="${gift.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+                                        </div>
+                                        <p class="text-[9px] sm:text-[10px] font-bold text-gray-700 line-clamp-2 px-1 text-center w-full leading-tight">
+                                            ${gift.name}
+                                        </p>
+
+                                        <button type="button"
+                                            class="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-5 h-5 sm:w-6 sm:h-6 bg-white border-2 border-gray-200 text-gray-600 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 hover:border-gray-400 z-10 hidden transition-all"
+                                            id="gift-remove-${gift.id}"
+                                            onclick="event.stopPropagation(); removeCartGift('${gift.id}')">
+                                            <i class="fas fa-minus text-[8px] sm:text-[10px]"></i>
+                                        </button>
+                                        <div class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-pink-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-md hidden border-2 border-white"
+                                            id="gift-badge-${gift.id}">
+                                            <span class="text-[10px] sm:text-xs font-black" id="gift-count-${gift.id}">0</span>
+                                        </div>
+                                    </div>
+                                `;
+                                giftPool.innerHTML += giftHtml;
+                            });
+                        }
+
+                        // ถ้า Limit เปลี่ยน (เช่น ลดลงจนเกินที่เลือกไว้) ให้ล้างของแถมที่เกิน
                         if (data.freebieLimit < selectedFreebiesArray.length) {
                             selectedFreebiesArray = selectedFreebiesArray.slice(0, data.freebieLimit);
-                            updateCartGiftUI();
                         }
+                        updateCartGiftUI();
+                    } else {
+                        // ถ้าไม่มีสิทธิ์แถม ให้ซ่อนกล่องเลือกของแถม
+                        if (giftSelectionArea) giftSelectionArea.style.display = 'none';
+                        selectedFreebiesArray = [];
+                        updateCartGiftUI();
                     }
                 }
             })

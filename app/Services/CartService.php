@@ -194,12 +194,17 @@ class CartService
         }
 
         // 3. จัดการของแถม
-        $giftProducts = ProductSalepage::whereIn('pd_sp_id', $giftIds)->with('images')->get()->keyBy('pd_sp_id');
+        $giftProducts = ProductSalepage::whereIn('pd_sp_id', $giftIds)->with(['images', 'stock'])->get()->keyBy('pd_sp_id');
 
         foreach ($giftIds as $giftId) {
             $giftProduct = $giftProducts->get($giftId);
             if (! $giftProduct) {
                 continue;
+            }
+
+            // 📦 Stock Check for Gift
+            if (($giftProduct->pd_sp_stock ?? 0) <= 0) {
+                throw new Exception("ขออภัย! สินค้าของแถม '{$giftProduct->pd_sp_name}' หมดสต็อกแล้ว");
             }
 
             $imgPath = $giftProduct->images->first()?->img_path;
@@ -349,14 +354,12 @@ class CartService
 
         $allApplicablePromotions = $this->promotionService->getApplicablePromotions($itemsToCalculate);
 
-        $cartApplicablePromotions = $allApplicablePromotions->filter(fn ($p) => $p->condition_type === 'all');
-
-        $rawFreebieLimit = $this->promotionService->calculateFreebieLimit($itemsToCalculate, $cartApplicablePromotions);
+        $rawFreebieLimit = $this->promotionService->calculateFreebieLimit($itemsToCalculate, $allApplicablePromotions);
 
         $existingFreebiesCount = $allItems->filter(fn ($item) => $item->attributes->get('is_freebie'))->sum('quantity');
         $freebieLimit = max(0, $rawFreebieLimit - $existingFreebiesCount);
 
-        $giftableProducts = $cartApplicablePromotions->flatMap(function ($promo) {
+        $giftableProducts = $allApplicablePromotions->flatMap(function ($promo) {
             return $promo->actions->flatMap(function ($action) {
                 $gifts = collect();
                 $productToGetId = $action->actions['product_id_to_get'] ?? null;
@@ -380,7 +383,7 @@ class CartService
             'totalDiscount' => $orderDiscount,
             'total' => $finalTotal,
             'products' => $products,
-            'applicablePromotions' => $cartApplicablePromotions,
+            'applicablePromotions' => $allApplicablePromotions,
             'giftableProducts' => $giftableProducts,
             'freebieLimit' => $freebieLimit,
         ];

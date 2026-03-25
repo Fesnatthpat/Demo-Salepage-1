@@ -238,7 +238,7 @@ class PromotionService
 
         $allPromoIds = $validPromotionIds->merge($noRulePromoIds)->merge($birthdayPromoIds)->unique();
 
-        return Promotion::with(['rules', 'actions.giftableProducts'])
+        return Promotion::with(['rules', 'actions.giftableProducts.stock', 'actions.productToGet.stock'])
             ->whereIn('id', $allPromoIds)
             ->where('is_active', true)
             ->where(function ($q) {
@@ -249,9 +249,21 @@ class PromotionService
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->get()
             ->filter(function ($promo) use ($cartQuantities, $subTotal) {
+                // 1. Check Min Order Value
                 if ($promo->min_order_value > 0 && $subTotal < (float) $promo->min_order_value) {
                     return false;
                 }
+
+                // 2. 📦 New: Check if at least one gift is in stock (if it's a freebie promo)
+                $hasGifts = $promo->actions->contains(fn($a) => isset($a->actions['product_id_to_get']) || $a->giftableProducts->isNotEmpty());
+                if ($hasGifts) {
+                    $anyGiftInStock = $promo->actions->contains(function($action) {
+                        if ($action->productToGet && ($action->productToGet->pd_sp_stock ?? 0) > 0) return true;
+                        return $action->giftableProducts->contains(fn($g) => ($g->pd_sp_stock ?? 0) > 0);
+                    });
+                    if (!$anyGiftInStock) return false;
+                }
+
                 if ($promo->rules->isEmpty()) {
                     return true;
                 }

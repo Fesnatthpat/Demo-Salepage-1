@@ -14,6 +14,7 @@ use App\Models\ShippingMethod;
 use App\Models\ShippingSetting;
 use App\Models\Province;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -29,8 +30,13 @@ class OrderService
     /**
      * Helper to calculate shipping cost.
      */
-    public function calculateShippingValue($addressId, $subtotal, $shippingMethodId = null, $itemCount = 1)
+    public function calculateShippingValue($addressId, $subtotal, $shippingMethodId = null, $itemCount = 1, ?Collection $cartItems = null)
     {
+        // 🎫 Check for Free Shipping from Promotions
+        if ($cartItems && $this->promotionService->isFreeShippingApplicable($cartItems)) {
+            return 0;
+        }
+
         if (!$addressId) {
             return (float) ShippingSetting::get('upc_flat_rate', 60);
         }
@@ -335,7 +341,7 @@ class OrderService
             $totalDiscount += $additionalDiscount;
 
             // 🚚 Calculate Real Shipping Cost
-            $shippingCost = $this->calculateShippingValue($deliveryAddressId, $subTotalAfterPromo, $shippingMethodId, $totalItemCount);
+            $shippingCost = $this->calculateShippingValue($deliveryAddressId, $subTotalAfterPromo, $shippingMethodId, $totalItemCount, $cartItems);
             $netAmount = $subTotalAfterPromo + $shippingCost;
 
             $order->total_price = $totalPrice;

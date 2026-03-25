@@ -38,15 +38,33 @@ class PromotionController extends Controller
         $this->validatePromotion($request);
 
         $promotion = DB::transaction(function () use ($request) {
-            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit');
+            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
 
             $promoType = $request->input('promo_type_selector');
-            $data['is_discount_code'] = ($promoType === 'code');
-            $data['code'] = ($promoType === 'code') ? $request->input('code') : null;
+            $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
+
+            if ($promoType === 'code') {
+                $data['is_discount_code'] = true;
+                $data['code'] = $request->input('code');
+            } elseif ($promoType === 'free_shipping_code') {
+                $data['is_discount_code'] = true;
+                $data['code'] = $request->input('code');
+                $data['discount_type'] = null;
+                $data['discount_value'] = null;
+            } elseif ($promoType === 'free_shipping') {
+                $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
+                $data['code'] = null;
+                $data['discount_type'] = null;
+                $data['discount_value'] = null;
+            } else {
+                $data['is_discount_code'] = false;
+                $data['code'] = null;
+            }
 
             if ($promoType === 'bxgy') {
                 $data['discount_type'] = null;
                 $data['discount_value'] = null;
+                $data['is_free_shipping'] = false;
             }
 
             $promotion = Promotion::create($data);
@@ -121,15 +139,33 @@ class PromotionController extends Controller
             $promotion = Promotion::findOrFail($id);
             $originalData = $promotion->toArray();
 
-            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit');
+            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
 
             $promoType = $request->input('promo_type_selector');
-            $data['is_discount_code'] = ($promoType === 'code');
-            $data['code'] = ($promoType === 'code') ? $request->input('code') : null;
+            $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
+
+            if ($promoType === 'code') {
+                $data['is_discount_code'] = true;
+                $data['code'] = $request->input('code');
+            } elseif ($promoType === 'free_shipping_code') {
+                $data['is_discount_code'] = true;
+                $data['code'] = $request->input('code');
+                $data['discount_type'] = null;
+                $data['discount_value'] = null;
+            } elseif ($promoType === 'free_shipping') {
+                $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
+                $data['code'] = null;
+                $data['discount_type'] = null;
+                $data['discount_value'] = null;
+            } else {
+                $data['is_discount_code'] = false;
+                $data['code'] = null;
+            }
 
             if ($promoType === 'bxgy') {
                 $data['discount_type'] = null;
                 $data['discount_value'] = null;
+                $data['is_free_shipping'] = false;
             }
 
             $promotion->fill($data);
@@ -227,6 +263,7 @@ class PromotionController extends Controller
             'is_active' => 'boolean',
             'condition_type' => 'required|in:any,all',
             'is_discount_code' => 'boolean',
+            'is_free_shipping' => 'nullable|boolean',
             'code' => ['nullable', 'string', 'max:50', 'alpha_dash', 'unique:promotions,code'.($id ? ','.$id : '')],
             'discount_type' => ['nullable', 'string', 'in:fixed,percentage'],
             'discount_value' => ['nullable', 'numeric', 'min:0'],
@@ -251,11 +288,13 @@ class PromotionController extends Controller
             $request->offsetUnset('get_items');
             $request->offsetUnset('giftable_product_ids');
 
-            if ($promoType === 'code') {
+            if ($promoType === 'code' || $promoType === 'free_shipping_code') {
                 $rules['code'][] = 'required';
             }
-            $rules['discount_type'][] = 'required';
-            $rules['discount_value'][] = 'required';
+            if ($promoType !== 'free_shipping_code') {
+                $rules['discount_type'][] = 'required';
+                $rules['discount_value'][] = 'required';
+            }
         }
 
         $request->validate($rules);

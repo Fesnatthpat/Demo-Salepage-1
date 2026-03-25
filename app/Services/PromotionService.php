@@ -294,6 +294,26 @@ class PromotionService
             });
     }
 
+    /**
+     * Check if free shipping is applicable to the current cart based on applied promotions.
+     */
+    public function isFreeShippingApplicable(Collection $cartItems): bool
+    {
+        $promos = $this->getApplicablePromotions($cartItems);
+        $appliedCode = $this->getAppliedPromoCode();
+
+        foreach ($promos as $promo) {
+            $isAuto = !$promo->is_discount_code;
+            $isMatchingCode = $promo->is_discount_code && !empty($appliedCode) && $promo->code === $appliedCode;
+
+            if ($promo->is_free_shipping && ($isAuto || $isMatchingCode)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function getUserId(): string|int
     {
         return Auth::check() ? Auth::id() : '_guest_' . session()->getId();

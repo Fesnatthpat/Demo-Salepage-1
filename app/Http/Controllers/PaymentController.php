@@ -95,6 +95,18 @@ class PaymentController extends Controller
         $productIds = $cartItems->pluck('id')->toArray();
         $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
 
+        // 🎟️ ดึงรายการคูปองที่สามารถใช้งานได้ (Active และเป็นรหัสส่วนลด)
+        $now = now();
+        $availableCoupons = \App\Models\Promotion::where('is_active', true)
+            ->where('is_discount_code', true)
+            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
+            ->where(function ($q) {
+                $q->whereNull('usage_limit')
+                    ->orWhereColumn('used_count', '<', 'usage_limit');
+            })
+            ->get();
+
         // Calculate initial shipping cost based on the first address or 0
         $shippingCost = 0;
         if ($addresses->count() > 0) {
@@ -102,14 +114,15 @@ class PaymentController extends Controller
                 $addresses->first()->id, 
                 $totalAmount, 
                 null,
-                $totalItemCount
+                $totalItemCount,
+                $cartItems
             );
         }
 
         return view('payment', compact(
             'cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 
             'addresses', 'selectedItems', 'selectedFreebies', 'provinces', 
-            'products', 'shippingCost', 'totalItemCount'
+            'products', 'shippingCost', 'totalItemCount', 'availableCoupons'
         ));
     }
 
@@ -121,8 +134,12 @@ class PaymentController extends Controller
         $addressId = $request->input('address_id');
         $subtotal = (float) $request->input('subtotal');
         $itemCount = (int) $request->input('item_count', 1);
+        
+        $userId = auth()->id();
+        $cartContent = Cart::session($userId)->getContent();
+        $cartItems = $cartContent->filter(fn($item) => in_array((string)$item->id, $request->input('selected_items', [])));
 
-        $shippingCost = $this->orderService->calculateShippingValue($addressId, $subtotal, null, $itemCount);
+        $shippingCost = $this->orderService->calculateShippingValue($addressId, $subtotal, null, $itemCount, $cartItems);
 
         return response()->json([
             'success' => true,
@@ -312,7 +329,7 @@ class PaymentController extends Controller
             $totalDiscount = $totalDiscountFromProducts + $promoDiscount;
             
             // Recalculate shipping based on new grandTotal and item count
-            $shippingCost = $this->orderService->calculateShippingValue($addressId, $grandTotal, null, $totalItemCount);
+            $shippingCost = $this->orderService->calculateShippingValue($addressId, $grandTotal, null, $totalItemCount, $checkoutCartItems);
             
             $finalTotal = $grandTotal + $shippingCost;
 

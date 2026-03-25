@@ -51,7 +51,8 @@
                     selectedItems: @js($selectedItems),
                     selectedFreebies: @js($selectedFreebies),
                     initialShippingMethodId: {{ $defaultMethod->id ?? 'null' }},
-                    itemCount: {{ $totalItemCount ?? 1 }}
+                    itemCount: {{ $totalItemCount ?? 1 }},
+                    availableCoupons: @js($availableCoupons->map(fn($c) => ['code' => $c->code, 'desc' => $c->name]))
                 })">
                 
                 {{-- ⬅️ ฝั่งซ้าย: ข้อมูลที่อยู่, รายการสินค้า, ช่องทางชำระ --}}   
@@ -558,13 +559,7 @@
                 isApplyingDiscount: false,
                 selectedItems: config.selectedItems || [],
                 selectedFreebies: config.selectedFreebies || [],
-                
-                // ✅ เพิ่ม Mockup Coupons ตรงนี้
-                availableCoupons: [
-                    { code: 'SALE20', desc: 'ลดพิเศษ 20 บาท' },
-                    { code: 'WELCOME50', desc: 'ลูกค้าใหม่ลด 50 บาท' },
-                    { code: 'FREESHIP', desc: 'ส่งฟรีเมื่อซื้อครบ 500.-' }
-                ],
+                availableCoupons: config.availableCoupons || [],
 
                 // ฟังก์ชันจัดการอัปเดต Address (ให้ scope เข้าใจตรงกัน)
                 setActiveAddress(id) {

@@ -4,6 +4,7 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" x-data="{
+        activeTab: 'all',
         copyCode(code) {
                 navigator.clipboard.writeText(code);
             },
@@ -59,7 +60,7 @@
                     <i class="fas fa-ticket-alt text-2xl"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-400">แบบใช้โค้ด (Coupon)</p>
+                    <p class="text-sm font-medium text-gray-400">รหัสโค้ด (Manual Code)</p>
                     <p class="text-3xl font-black text-white mt-1">{{ $promotions->whereNotNull('code')->count() }}</p>
                 </div>
             </div>
@@ -80,6 +81,30 @@
                     </p>
                 </div>
             </div>
+        </div>
+
+        {{-- Category Tabs --}}
+        <div class="flex flex-wrap items-center gap-2 bg-gray-900/50 p-2 rounded-2xl border border-gray-700 w-fit">
+            <button @click="activeTab = 'all'" 
+                :class="activeTab === 'all' ? 'bg-gray-700 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
+                class="px-5 py-2 rounded-xl text-sm font-bold transition-all">
+                ทั้งหมด
+            </button>
+            <button @click="activeTab = 'coupon'" 
+                :class="activeTab === 'coupon' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
+                class="px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <i class="fas fa-bolt text-[10px]"></i> คูปองอัตโนมัติ
+            </button>
+            <button @click="activeTab = 'code'" 
+                :class="activeTab === 'code' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
+                class="px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <i class="fas fa-ticket-alt text-[10px]"></i> รหัสโค้ด
+            </button>
+            <button @click="activeTab = 'bxgy'" 
+                :class="activeTab === 'bxgy' ? 'bg-pink-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
+                class="px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <i class="fas fa-gifts text-[10px]"></i> ซื้อ X แถม Y
+            </button>
         </div>
 
         {{-- Success Alert --}}
@@ -116,7 +141,16 @@
                     </thead>
                     <tbody class="divide-y divide-gray-700/50">
                         @forelse ($promotions as $promo)
-                            <tr class="hover:bg-gray-700/30 transition-colors duration-150 group">
+                            @php
+                                $type = 'auto';
+                                if ($promo->code) $type = 'code';
+                                elseif ($promo->rules->count() > 0) $type = 'bxgy';
+                                
+                                // Mapping to tabs: 'auto' promotions are grouped under 'coupon' tab
+                                $tabType = $type === 'auto' ? 'coupon' : $type;
+                            @endphp
+                            <tr x-show="activeTab === 'all' || activeTab === '{{ $tabType }}'" 
+                                class="hover:bg-gray-700/30 transition-colors duration-150 group">
                                 {{-- Name --}}
                                 <td class="px-6 py-5 align-top">
                                     <div class="flex flex-col">
@@ -144,13 +178,31 @@
 
                                 {{-- Type Badge --}}
                                 <td class="px-6 py-5 text-center align-middle">
-                                    @if ($promo->code)
+                                    @if ($promo->is_free_shipping)
+                                        @if ($promo->code)
+                                            <button @click="copyCode('{{ $promo->code }}')"
+                                                class="group/btn inline-flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                                                title="คลิกเพื่อคัดลอก">
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover/btn:bg-purple-500/20 group-hover/btn:border-purple-500/40 transition-all">
+                                                    <i class="fas fa-shipping-fast"></i> รหัสส่งฟรี
+                                                </span>
+                                                <span
+                                                    class="font-mono text-sm font-bold text-white group-hover/btn:text-purple-300">{{ $promo->code }}</span>
+                                            </button>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm shadow-purple-900/20">
+                                                <i class="fas fa-shipping-fast"></i> คูปองส่งฟรี (Auto)
+                                            </span>
+                                        @endif
+                                    @elseif ($promo->code)
                                         <button @click="copyCode('{{ $promo->code }}')"
                                             class="group/btn inline-flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
                                             title="คลิกเพื่อคัดลอก">
                                             <span
                                                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover/btn:bg-blue-500/20 group-hover/btn:border-blue-500/40 transition-all">
-                                                <i class="fas fa-ticket-alt"></i> Code
+                                                <i class="fas fa-ticket-alt"></i> รหัสส่วนลด
                                             </span>
                                             <span
                                                 class="font-mono text-sm font-bold text-white group-hover/btn:text-blue-300">{{ $promo->code }}</span>
@@ -163,7 +215,7 @@
                                     @else
                                         <span
                                             class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-900/20">
-                                            <i class="fas fa-bolt"></i> Auto
+                                            <i class="fas fa-bolt"></i> คูปองส่วนลด (Auto)
                                         </span>
                                     @endif
                                 </td>

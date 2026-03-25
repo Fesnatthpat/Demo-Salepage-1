@@ -76,68 +76,94 @@
     '{{ old('discount_type', $promotion->discount_type ?? '') }}'
 )" class="space-y-8 animate-fade-in-up">
 
-    {{-- 1. Campaign Type Selector --}}
-    <div class="space-y-3">
-        <label class="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">เลือกประเภทโปรโมชั่น</label>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {{-- Auto Discount --}}
-            <label class="cursor-pointer group relative">
-                <input type="radio" name="promo_type_selector" value="auto" x-model="promoType" class="peer sr-only" />
-                <div
-                    class="h-full p-6 rounded-2xl border border-gray-700 bg-gray-800 hover:bg-gray-750 hover:border-emerald-500/50 transition-all duration-300 peer-checked:border-emerald-500 peer-checked:bg-emerald-900/10 peer-checked:shadow-[0_0_20px_rgba(16,185,129,0.15)] flex flex-col items-center text-center">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center text-gray-400 mb-4 peer-checked:bg-emerald-500 peer-checked:text-white transition-all duration-300 group-hover:scale-110 shadow-inner">
-                        <i class="fas fa-bolt text-3xl"></i>
+    {{-- 1. Campaign Category & Type Selector --}}
+    <div class="space-y-6">
+        {{-- Section A: คูปอง (อัตโนมัติ - ไม่ต้องกรอกโค้ด) --}}
+        <div class="space-y-3">
+            <div class="flex items-center gap-2 ml-1">
+                <span class="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                <label class="text-sm font-bold text-gray-100 uppercase tracking-wider">หมวดหมู่: คูปอง (ระบบใช้ให้อัตโนมัติ)</label>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {{-- Auto Discount --}}
+                <label class="cursor-pointer group relative">
+                    <input type="radio" name="promo_type_selector" value="auto" x-model="promoType" class="peer sr-only" />
+                    <div class="h-full p-4 rounded-2xl border border-gray-700 bg-gray-800 hover:border-emerald-500/50 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-900/10 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center text-gray-400 peer-checked:bg-emerald-500 peer-checked:text-white transition-all">
+                            <i class="fas fa-bolt text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-white text-sm">ส่วนลดอัตโนมัติ</h4>
+                            <p class="text-[10px] text-gray-500 leading-tight mt-0.5">ลดราคาให้ทันทีเมื่อเข้าเงื่อนไข</p>
+                        </div>
                     </div>
-                    <h4 class="font-bold text-white text-lg peer-checked:text-emerald-400">ส่วนลดอัตโนมัติ</h4>
-                    <p class="text-xs text-gray-400 mt-2 leading-relaxed">ระบบลดราคาให้อัตโนมัติ<br>เมื่อเข้าเงื่อนไข
-                        (ไม่ต้องใช้โค้ด)</p>
-                </div>
-                <div
-                    class="absolute top-4 right-4 text-emerald-500 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100">
-                    <i class="fas fa-check-circle text-2xl drop-shadow-lg"></i>
-                </div>
-            </label>
+                </label>
 
-            {{-- Coupon Code --}}
-            <label class="cursor-pointer group relative">
-                <input type="radio" name="promo_type_selector" value="code" x-model="promoType"
-                    class="peer sr-only" />
-                <div
-                    class="h-full p-6 rounded-2xl border border-gray-700 bg-gray-800 hover:bg-gray-750 hover:border-blue-500/50 transition-all duration-300 peer-checked:border-blue-500 peer-checked:bg-blue-900/10 peer-checked:shadow-[0_0_20px_rgba(59,130,246,0.15)] flex flex-col items-center text-center">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center text-gray-400 mb-4 peer-checked:bg-blue-500 peer-checked:text-white transition-all duration-300 group-hover:scale-110 shadow-inner">
-                        <i class="fas fa-ticket-alt text-3xl"></i>
+                {{-- Auto Free Shipping --}}
+                <label class="cursor-pointer group relative">
+                    <input type="radio" name="promo_type_selector" value="free_shipping" x-model="promoType" class="peer sr-only" />
+                    <div class="h-full p-4 rounded-2xl border border-gray-700 bg-gray-800 hover:border-orange-500/50 transition-all peer-checked:border-orange-500 peer-checked:bg-orange-900/10 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center text-gray-400 peer-checked:bg-orange-500 peer-checked:text-white transition-all">
+                            <i class="fas fa-truck text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-white text-sm">ส่งฟรีอัตโนมัติ</h4>
+                            <p class="text-[10px] text-gray-500 leading-tight mt-0.5">ยกเว้นค่าส่งให้ทันทีเมื่อเข้าเงื่อนไข</p>
+                        </div>
                     </div>
-                    <h4 class="font-bold text-white text-lg peer-checked:text-blue-400">คูปองส่วนลด</h4>
-                    <p class="text-xs text-gray-400 mt-2 leading-relaxed">ลูกค้าต้องกรอกรหัส
-                        Code<br>เพื่อรับสิทธิ์ส่วนลด</p>
-                </div>
-                <div
-                    class="absolute top-4 right-4 text-blue-500 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100">
-                    <i class="fas fa-check-circle text-2xl drop-shadow-lg"></i>
-                </div>
-            </label>
+                </label>
 
-            {{-- Buy X Get Y --}}
-            <label class="cursor-pointer group relative">
-                <input type="radio" name="promo_type_selector" value="bxgy" x-model="promoType"
-                    class="peer sr-only" />
-                <div
-                    class="h-full p-6 rounded-2xl border border-gray-700 bg-gray-800 hover:bg-gray-750 hover:border-pink-500/50 transition-all duration-300 peer-checked:border-pink-500 peer-checked:bg-pink-900/10 peer-checked:shadow-[0_0_20px_rgba(236,72,153,0.15)] flex flex-col items-center text-center">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center text-gray-400 mb-4 peer-checked:bg-pink-500 peer-checked:text-white transition-all duration-300 group-hover:scale-110 shadow-inner">
-                        <i class="fas fa-gifts text-3xl"></i>
+                {{-- Buy X Get Y --}}
+                <label class="cursor-pointer group relative">
+                    <input type="radio" name="promo_type_selector" value="bxgy" x-model="promoType" class="peer sr-only" />
+                    <div class="h-full p-4 rounded-2xl border border-gray-700 bg-gray-800 hover:border-pink-500/50 transition-all peer-checked:border-pink-500 peer-checked:bg-pink-900/10 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center text-gray-400 peer-checked:bg-pink-500 peer-checked:text-white transition-all">
+                            <i class="fas fa-gifts text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-white text-sm">ซื้อ X แถม Y</h4>
+                            <p class="text-[10px] text-gray-500 leading-tight mt-0.5">แถมสินค้าฟรีเมื่อซื้อครบตามกำหนด</p>
+                        </div>
                     </div>
-                    <h4 class="font-bold text-white text-lg peer-checked:text-pink-400">ซื้อ X แถม Y</h4>
-                    <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-                        จัดโปรโมชั่นแถมสินค้า<br>เมื่อซื้อสินค้าครบตามกำหนด</p>
-                </div>
-                <div
-                    class="absolute top-4 right-4 text-pink-500 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100">
-                    <i class="fas fa-check-circle text-2xl drop-shadow-lg"></i>
-                </div>
-            </label>
+                </label>
+            </div>
+        </div>
+
+        {{-- Section B: รหัสโค้ด (ต้องกรอกรหัส - Manual Code) --}}
+        <div class="space-y-3">
+            <div class="flex items-center gap-2 ml-1">
+                <span class="flex h-2 w-2 rounded-full bg-blue-500"></span>
+                <label class="text-sm font-bold text-gray-100 uppercase tracking-wider">หมวดหมู่: รหัสโค้ด (ลูกค้าต้องกรอกเอง)</label>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {{-- Code Discount --}}
+                <label class="cursor-pointer group relative">
+                    <input type="radio" name="promo_type_selector" value="code" x-model="promoType" class="peer sr-only" />
+                    <div class="h-full p-4 rounded-2xl border border-gray-700 bg-gray-800 hover:border-blue-500/50 transition-all peer-checked:border-blue-500 peer-checked:bg-blue-900/10 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center text-gray-400 peer-checked:bg-blue-500 peer-checked:text-white transition-all">
+                            <i class="fas fa-ticket-alt text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-white text-sm">รหัสส่วนลด</h4>
+                            <p class="text-[10px] text-gray-500 leading-tight mt-0.5">ใช้ส่วนลดด้วยการกรอก Code</p>
+                        </div>
+                    </div>
+                </label>
+
+                {{-- Code Free Shipping --}}
+                <label class="cursor-pointer group relative">
+                    <input type="radio" name="promo_type_selector" value="free_shipping_code" x-model="promoType" class="peer sr-only" />
+                    <div class="h-full p-4 rounded-2xl border border-gray-700 bg-gray-800 hover:border-purple-500/50 transition-all peer-checked:border-purple-500 peer-checked:bg-purple-900/10 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gray-700/50 flex items-center justify-center text-gray-400 peer-checked:bg-purple-500 peer-checked:text-white transition-all">
+                            <i class="fas fa-shipping-fast text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-white text-sm">รหัสส่งฟรี</h4>
+                            <p class="text-[10px] text-gray-500 leading-tight mt-0.5">ใช้สิทธิ์ส่งฟรีด้วยการกรอก Code</p>
+                        </div>
+                    </div>
+                </label>
+            </div>
         </div>
     </div>
     <input type="hidden" name="is_discount_code" :value="isDiscountCode ? 1 : 0">
@@ -165,8 +191,8 @@
         {{-- LEFT COLUMN: RULES & CONFIGURATION --}}
         <div class="xl:col-span-2 space-y-6">
 
-            {{-- A. Discount Configuration (Auto/Code) --}}
-            <div x-show="promoType === 'auto' || promoType === 'code'"
+            {{-- A. Discount Configuration (Auto/Code/Free Shipping) --}}
+            <div x-show="promoType === 'auto' || promoType === 'code' || promoType === 'free_shipping' || promoType === 'free_shipping_code'"
                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
                 class="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden relative">
@@ -183,32 +209,37 @@
                         <i class="fas fa-calculator"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-white text-lg">ตั้งค่ามูลค่าส่วนลด</h3>
-                        <p class="text-xs text-gray-400">กำหนดรหัสและมูลค่าที่จะลดราคา</p>
+                        <h3 class="font-bold text-white text-lg">ตั้งค่ามูลค่าส่วนลด / เงื่อนไข</h3>
+                        <p class="text-xs text-gray-400">กำหนดรหัสและมูลค่าที่จะลดราคาหรือส่งฟรี</p>
                     </div>
                 </div>
 
                 <div class="p-6 space-y-8 relative z-10">
                     {{-- Coupon Code Field --}}
-                    <div x-show="promoType === 'code'"
-                        class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 relative group transition-all hover:border-blue-500/50">
-                        <label class="block text-sm font-bold text-blue-300 mb-2 uppercase tracking-wide">รหัสส่วนลด
+                    <div x-show="promoType === 'code' || promoType === 'free_shipping_code'"
+                        class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-6 relative group transition-all hover:border-blue-500/50"
+                        :class="promoType === 'free_shipping_code' ? 'bg-purple-900/20 border-purple-500/30 hover:border-purple-500/50' : ''">
+                        <label class="block text-sm font-bold text-blue-300 mb-2 uppercase tracking-wide"
+                            :class="promoType === 'free_shipping_code' ? 'text-purple-300' : ''">รหัสส่วนลด
                             (Coupon Code) <span class="text-red-400">*</span></label>
                         <div class="relative">
                             <input type="text" name="code" placeholder="เช่น SALE2024"
                                 class="block w-full bg-gray-900 border-gray-600 rounded-lg py-4 px-5 text-white placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase tracking-widest font-mono text-xl shadow-inner transition-all"
+                                :class="promoType === 'free_shipping_code' ? 'focus:ring-purple-500 focus:border-purple-500' : ''"
                                 value="{{ old('code', $promotion->code ?? '') }}"
-                                :required="promoType === 'code'" />
+                                :required="promoType === 'code' || promoType === 'free_shipping_code'" />
                             <div
-                                class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none text-blue-500">
+                                class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none"
+                                :class="promoType === 'free_shipping_code' ? 'text-purple-500' : 'text-blue-500'">
                                 <i class="fas fa-ticket-alt text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-xs text-blue-400/70 mt-2"><i class="fas fa-info-circle mr-1"></i>
+                        <p class="text-xs mt-2" :class="promoType === 'free_shipping_code' ? 'text-purple-400/70' : 'text-blue-400/70'">
+                            <i class="fas fa-info-circle mr-1"></i>
                             เฉพาะภาษาอังกฤษตัวพิมพ์ใหญ่และตัวเลข</p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-show="promoType === 'auto' || promoType === 'code'">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">รูปแบบส่วนลด</label>
                             <div class="relative">
@@ -243,6 +274,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div x-show="promoType === 'free_shipping' || promoType === 'free_shipping_code'" 
+                        class="border rounded-xl p-4 text-sm flex items-center gap-3"
+                        :class="promoType === 'free_shipping' ? 'bg-orange-500/10 border-orange-500/20 text-orange-300' : 'bg-purple-500/10 border-purple-500/20 text-purple-300'">
+                        <i class="fas fa-truck text-lg"></i>
+                        <span x-text="promoType === 'free_shipping' ? 'แคมเปญส่งฟรีอัตโนมัติจะยกเว้นค่าจัดส่งทั้งหมดให้กับทุกคำสั่งซื้อที่เข้าเงื่อนไข' : 'แคมเปญส่งฟรีจะยกเว้นค่าจัดส่งทั้งหมดให้กับคำสั่งซื้อที่ใช้รหัสนี้'"></span>
                     </div>
                 </div>
             </div>
@@ -621,11 +659,11 @@
             gets: @json($getData),
             discountType: initialDiscountType,
             conditionType: '{{ old('condition_type', $promotion->condition_type ?? 'any') }}',
-            promoType: '{{ old('promo_type_selector', isset($promotion) ? ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto')) : 'auto') }}',
+            promoType: '{{ old('promo_type_selector', isset($promotion) ? ($promotion->is_free_shipping ? ($promotion->code ? 'free_shipping_code' : 'free_shipping') : ($promotion->code ? 'code' : ($promotion->rules->count() > 0 ? 'bxgy' : 'auto'))) : 'auto') }}',
             giftTomSelect: null,
 
             get isDiscountCode() {
-                return this.promoType === 'code';
+                return this.promoType === 'code' || this.promoType === 'free_shipping_code';
             },
             get isBxGy() {
                 return this.promoType === 'bxgy';

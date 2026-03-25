@@ -24,6 +24,7 @@ class Promotion extends Model
         'usage_limit',
         'used_count',
         'is_discount_code',
+        'is_free_shipping',
     ];
 
     protected $casts = [
@@ -35,6 +36,7 @@ class Promotion extends Model
         'usage_limit' => 'integer',
         'used_count' => 'integer',
         'is_discount_code' => 'boolean',
+        'is_free_shipping' => 'boolean',
     ];
 
     /**

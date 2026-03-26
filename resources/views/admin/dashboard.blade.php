@@ -345,6 +345,75 @@
         </div>
     </div>
 
+    {{-- Recent Visitors Table --}}
+    <div class="mt-8 bg-gray-800 rounded-2xl shadow-lg border border-gray-700 overflow-hidden">
+        <div class="p-6 border-b border-gray-700 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <i class="fas fa-walking"></i>
+            </div>
+            <h3 class="font-bold text-gray-200 text-lg">ผู้เข้าชมล่าสุด (Real-time Visitors)</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-xs text-gray-500 border-b border-gray-700 bg-gray-900/30">
+                        <th class="px-6 py-4 font-bold uppercase tracking-wider">สถานะ</th>
+                        <th class="px-6 py-4 font-bold uppercase tracking-wider">ชื่อผู้ใช้ / IP</th>
+                        <th class="px-6 py-4 font-bold uppercase tracking-wider">หน้าที่เข้าชม</th>
+                        <th class="px-6 py-4 font-bold uppercase tracking-wider">อุปกรณ์</th>
+                        <th class="px-6 py-4 font-bold uppercase tracking-wider text-right">เวลาเข้าชม</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-700/50">
+                    @forelse ($recentVisitors as $visitor)
+                        <tr class="hover:bg-gray-700/30 transition-colors">
+                            <td class="px-6 py-4">
+                                @if($visitor->user_id)
+                                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                                        <i class="fas fa-user-check mr-1"></i> LOGGED IN
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 text-[10px] font-bold border border-gray-600">
+                                        <i class="fas fa-user-secret mr-1"></i> GUEST
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="text-gray-200 font-medium">{{ $visitor->user->name ?? 'Guest Visitor' }}</span>
+                                    <span class="text-[10px] text-gray-500 font-mono">{{ $visitor->ip_address }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 bg-gray-900/50 text-indigo-300 rounded text-xs border border-indigo-500/10">
+                                    /{{ $visitor->path ?: 'หน้าหลัก' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs text-gray-500 truncate max-w-[200px] block" title="{{ $visitor->user_agent }}">
+                                    {{ Str::limit($visitor->user_agent, 40) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex flex-col items-end">
+                                    <span class="text-gray-300 font-medium">{{ $visitor->created_at->diffForHumans() }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ $visitor->created_at->format('H:i:s') }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                <i class="fas fa-users-slash text-4xl mb-3 opacity-20"></i>
+                                <p>ยังไม่มีข้อมูลผู้เข้าชม</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')

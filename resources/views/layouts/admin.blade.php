@@ -249,6 +249,10 @@
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.activity-log.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - ประวัติกิจกรรม
                             </a>
+                            <a href="{{ route('admin.visitors.index') }}"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.visitors.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
+                                - สถิติผู้เข้าชม
+                            </a>
                             <a href="{{ route('admin.shipping.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.shipping.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - ตั้งค่าการจัดส่ง
@@ -261,7 +265,7 @@
                     <a href="{{ route('admin.popups.index') }}"
                         class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.popups.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                         <i class="fas fa-window-restore mr-3 w-5 text-center"></i>
-                        จัดการ Popup หน้าแรก
+                        จัดการ Popup
                     </a>
                 @endif
 

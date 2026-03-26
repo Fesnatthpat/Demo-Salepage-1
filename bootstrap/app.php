@@ -13,9 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
         $middleware->prepend(\App\Http\Middleware\HandleProxiedRequests::class);
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackVisitor::class,
+        ]);
         $middleware->alias([
             'profile.completed' => \App\Http\Middleware\CheckUserProfileCompletion::class,
             'is.superadmin' => \App\Http\Middleware\IsSuperadmin::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -241,6 +241,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             // Activity Log
             Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
 
+            // Visitor Statistics
+            Route::get('/visitors', [App\Http\Controllers\Admin\VisitorLogController::class, 'index'])->name('visitors.index');
+            Route::delete('/visitors/clear-all', [App\Http\Controllers\Admin\VisitorLogController::class, 'clearAll'])->name('visitors.clearAll');
+            Route::delete('/visitors/{visitorLog}', [App\Http\Controllers\Admin\VisitorLogController::class, 'destroy'])->name('visitors.destroy');
+
             // Shipping Settings
             Route::get('/shipping-settings', [App\Http\Controllers\Admin\ShippingSettingController::class, 'index'])->name('shipping.index');
             Route::post('/shipping-settings/global', [App\Http\Controllers\Admin\ShippingSettingController::class, 'updateGlobal'])->name('shipping.updateGlobal');

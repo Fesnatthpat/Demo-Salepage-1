@@ -97,6 +97,23 @@ class DashboardController extends Controller
         // 7. ออเดอร์ล่าสุด
         $recentOrders = Order::with('user')->latest()->take(10)->get();
 
+        // 8. สถิติผู้เข้าชม (Visitors)
+        $visitorQuery = \App\Models\VisitorLog::whereBetween('visit_date', [$startDate->toDateString(), $endDate->toDateString()]);
+        
+        // นับจำนวนผู้เข้าชมแบบไม่ซ้ำ IP
+        $uniqueVisitorsCount = (clone $visitorQuery)->distinct('ip_address')->count('ip_address');
+        
+        // แยก Guest กับ Logged-in
+        $loggedInVisitorsCount = (clone $visitorQuery)->whereNotNull('user_id')->distinct('user_id')->count('user_id');
+        $guestVisitorsCount = $uniqueVisitorsCount - $loggedInVisitorsCount;
+        if ($guestVisitorsCount < 0) $guestVisitorsCount = 0;
+
+        // รายการผู้เข้าชมล่าสุด
+        $recentVisitors = \App\Models\VisitorLog::with('user')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
         // ส่งตัวแปรวันที่กลับไปหน้า View เพื่อแสดงใน Input
         $currentStartDate = $startDate->format('Y-m-d');
         $currentEndDate = $endDate->format('Y-m-d');
@@ -105,8 +122,9 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'period', 'currentStartDate', 'currentEndDate',
             'totalSales', 'totalOrders', 'avgOrderValue', 'newCustomers',
-            'salesChartLabels', 'salesChartRawDates', 'salesChartValues', 'orderStatusBreakdown', // ✅ เพิ่มตรงนี้
-            'topSellingProducts', 'recentOrders'
+            'salesChartLabels', 'salesChartRawDates', 'salesChartValues', 'orderStatusBreakdown',
+            'topSellingProducts', 'recentOrders',
+            'uniqueVisitorsCount', 'loggedInVisitorsCount', 'guestVisitorsCount', 'recentVisitors'
         ));
     }
 

@@ -221,12 +221,12 @@
                 @endif
 
                 {{-- System Management --}}
-                @if($hasPermission('system_management'))
+                @if($hasPermission('system_management') || $hasPermission('roles') || $hasPermission('visitors'))
                     <div class="pt-4 pb-2">
                         <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
                     </div>
 
-                    <div x-data="{ open: {{ request()->routeIs('admin.admins.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.activity-log.*') || request()->routeIs('admin.shipping.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <div x-data="{ open: {{ request()->routeIs('admin.admins.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.activity-log.*') || request()->routeIs('admin.visitors.*') || request()->routeIs('admin.shipping.*') ? 'true' : 'false' }} }" class="space-y-1">
                         <button @click="open = !open"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
                             <span class="flex items-center">
@@ -237,26 +237,40 @@
                                 :class="{ 'rotate-180': open }"></i>
                         </button>
                         <div x-show="open" x-transition class="pl-8 pr-4 space-y-1">
+                            @if($hasPermission('system_management'))
                             <a href="{{ route('admin.admins.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.admins.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - จัดการแอดมิน
                             </a>
+                            @endif
+
+                            @if($hasPermission('roles') || $hasPermission('system_management'))
                             <a href="{{ route('admin.roles.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.roles.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - จัดการระดับสิทธิ์
                             </a>
+                            @endif
+
+                            @if($hasPermission('system_management'))
                             <a href="{{ route('admin.activity-log.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.activity-log.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - ประวัติกิจกรรม
                             </a>
+                            @endif
+
+                            @if($hasPermission('visitors') || $hasPermission('system_management'))
                             <a href="{{ route('admin.visitors.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.visitors.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - สถิติผู้เข้าชม
                             </a>
+                            @endif
+
+                            @if($hasPermission('system_management'))
                             <a href="{{ route('admin.shipping.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.shipping.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - ตั้งค่าการจัดส่ง
                             </a>
+                            @endif
                         </div>
                     </div>
                 @endif

@@ -33,6 +33,8 @@ class Role extends Model
             'birthday_promotions' => 'จัดการโปรโมชั่นวันเกิด',
             'content_management' => 'จัดการเนื้อหา (หน้าแรก/FAQ/ติดใจ)',
             'system_management'  => 'จัดการระบบ (แอดมิน/Log/ขนส่ง)',
+            'roles'              => 'จัดการระดับสิทธิ์',
+            'visitors'           => 'สถิติผู้เข้าชม',
             'popups'             => 'จัดการ Popup',
             'settings'           => 'ตั้งค่าเว็บไซต์',
         ];

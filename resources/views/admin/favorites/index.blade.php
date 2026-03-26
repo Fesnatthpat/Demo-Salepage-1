@@ -99,7 +99,7 @@
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 font-bold text-sm shrink-0">{{ $loop->iteration }}</span>
                                     <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">{{ $fav->title }}</h2>
                                 </div>
-                                <div class="text-gray-600 text-base leading-relaxed space-y-4 font-light pl-11">{!! nl2br($fav->content) !!}</div>
+                                <div class="text-gray-600 text-base leading-relaxed space-y-4 font-light pl-11">{!! nl2br(e($fav->content)) !!}</div>
                             </div>
                             <div class="w-full md:w-1/2 min-h-[350px] bg-gray-900 relative overflow-hidden {{ $index % 2 != 0 ? 'md:order-1' : '' }}">
                                 @php

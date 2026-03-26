@@ -92,7 +92,7 @@
                                 <span class="w-1.5 h-10 bg-red-600 rounded-full mt-1 flex-shrink-0"></span>
                                 <h2 class="text-3xl font-bold text-gray-800 leading-tight">{{ $fav->title }}</h2>
                             </div>
-                            <div class="prose prose-lg text-gray-600 leading-loose font-light">{!! $fav->content !!}</div>
+                            <div class="prose prose-lg text-gray-600 leading-loose font-light">{!! nl2br(e($fav->content)) !!}</div>
                         </div>
 
                         @if ($hasMedia)

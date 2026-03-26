@@ -16,21 +16,19 @@ class TrackingController extends Controller
     public function index(Request $request)
     {
         $trackingData = null;
-        $searchValue = trim($request->search ?? $request->order_code);
+        $orderCode = trim($request->order_code);
+        $phone = trim($request->phone);
 
-        if ($searchValue) {
-            // เพิ่ม ->latest() เพื่อดึงออเดอร์ล่าสุด กรณีค้นหาด้วยเบอร์โทรที่มีหลายออเดอร์
-            $order = Order::where('ord_code', $searchValue)
-                ->orWhere('tracking_number', $searchValue)
-                ->orWhere('shipping_phone', $searchValue)
-                ->latest()
+        if ($orderCode && $phone) {
+            $order = Order::where('ord_code', $orderCode)
+                ->where('shipping_phone', $phone)
                 ->first();
 
-            $searchCode = $searchValue;
-            if ($order) {
-                // เอารหัส tracking หรือ ord_code ล่าสุดไปค้นหาใน API
-                $searchCode = $order->tracking_number ?? $order->ord_code;
+            if (!$order) {
+                return back()->with('error', 'ไม่พบข้อมูลการจัดส่ง กรุณาตรวจสอบรหัสออเดอร์และเบอร์โทรศัพท์ให้ถูกต้อง');
             }
+
+            $searchCode = $order->tracking_number ?? $order->ord_code;
 
             try {
 

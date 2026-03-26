@@ -70,7 +70,9 @@ class AddressController extends Controller
 
     public function getAddressInfo($id)
     {
-        $address = DeliveryAddress::with('province')->findOrFail($id);
+        $address = DeliveryAddress::with('province')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
         
         $bkkMetroNames = ['กรุงเทพมหานคร', 'นนทบุรี', 'ปทุมธานี', 'สมุทรปราการ'];
         $isBkk = $address->province && in_array($address->province->name_th, $bkkMetroNames);

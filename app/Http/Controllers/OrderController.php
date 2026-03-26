@@ -36,7 +36,9 @@ class OrderController extends Controller
      */
     public function show($ord_code)
     {
-        $order = Order::where('ord_code', $ord_code)->firstOrFail();
+        $order = Order::where('ord_code', $ord_code)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
         return view('orderdetail', compact('order'));
     }

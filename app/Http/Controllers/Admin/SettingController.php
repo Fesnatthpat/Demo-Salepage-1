@@ -43,10 +43,19 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        // Whitelist of allowed setting keys
+        $allowedKeys = [
+            'about_title', 'about_subtitle', 'life_title', 'life_subtitle',
+            'team_title', 'team_subtitle', 'team_phone', 'team_email',
+            'social_title', 'footer_slogan', 'faq_title', 'home_recommended_title'
+        ];
+
         // Support bulk update from settings array
         if ($request->has('settings') && is_array($request->settings)) {
             foreach ($request->settings as $key => $value) {
-                SiteSetting::set($key, $value);
+                if (in_array($key, $allowedKeys)) {
+                    SiteSetting::set($key, $value);
+                }
             }
             
             if ($request->ajax() || $request->wantsJson()) {

@@ -65,12 +65,16 @@ class AllProductController extends Controller
         // 5. ดึงข้อมูลและแบ่งหน้า (Pagination)
         $products = $query->paginate(10);
 
-        // 6. เพิ่มข้อมูลโปรโมชั่น/ของแถม (Logic เดิม)
+        // 6. เพิ่มข้อมูลโปรโมชั่น/ของแถม (กรองเฉพาะโปรที่มีของแถมจริง)
         $products->getCollection()->transform(function ($product) {
             $promotions = $this->cartService->getPromotionsForProduct($product->pd_sp_id);
-            if ($promotions->isNotEmpty()) {
+            
+            // กรองหาโปรโมชั่นที่มีการ "แถมสินค้า" จริงๆ
+            $giftPromo = $promotions->filter(fn($p) => $p->actions->isNotEmpty())->first();
+
+            if ($giftPromo) {
                 // คำนวณจำนวนของแถม
-                $giftsPerItem = $promotions->first()->actions->sum(fn ($a) => (int) ($a->actions['quantity_to_get'] ?? 0));
+                $giftsPerItem = $giftPromo->actions->sum(fn ($a) => (int) ($a->actions['quantity_to_get'] ?? 0));
                 $product->gifts_per_item = $giftsPerItem > 0 ? $giftsPerItem : null;
             } else {
                 $product->gifts_per_item = null;

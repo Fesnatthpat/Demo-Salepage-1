@@ -32,20 +32,16 @@ class PromotionService
         }
 
         return self::$activePromotionsCache->filter(function ($promo) use ($productId) {
-            // ถ้าไม่มีกฎเลย (No Rules) ให้ถือว่าใช้กับสินค้าทุกตัวได้ (ตาม Logic ของ GetApplicablePromotions)
+            // ถ้าไม่มีกฎเลย (No Rules) ให้ถือว่าใช้กับสินค้าทุกตัวได้
             if ($promo->rules->isEmpty()) {
                 return true;
             }
 
-            // ตรวจสอบกฎของแต่ละโปรโมชั่นว่ามี Product ID นี้หรือไม่
-            foreach ($promo->rules as $rule) {
+            // ตรวจสอบกฎของแต่ละโปรโมชั่นว่ามี Product ID นี้หรือไม่ (ใช้ contains เพื่อป้องกันการ return ซ้ำและเพิ่มประสิทธิภาพ)
+            return $promo->rules->contains(function ($rule) use ($productId) {
                 $pids = (array) ($rule->rules['product_id'] ?? []);
-                if (in_array((string) $productId, array_map('strval', $pids))) {
-                    return true;
-                }
-            }
-
-            return false;
+                return in_array((string) $productId, array_map('strval', $pids));
+            });
         });
     }
 

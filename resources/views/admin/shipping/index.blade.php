@@ -115,9 +115,12 @@
                                     <tr class="hover:bg-gray-700/30 transition-colors" :class="method.is_default ? 'bg-indigo-500/5' : ''">
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex justify-center">
-                                                <i class="fas fa-star text-amber-400" x-show="method.is_default"></i>
-                                                <button @click="setAsDefault(method)" x-show="!method.is_default" class="text-gray-600 hover:text-amber-400 transition-colors">
-                                                    <i class="far fa-star"></i>
+                                                <div x-show="method.is_default" class="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 border border-amber-500/30">
+                                                    <i class="fas fa-star"></i> ค่าเริ่มต้น
+                                                </div>
+                                                <button @click="setAsDefault(method)" x-show="!method.is_default" 
+                                                    class="text-gray-500 hover:text-amber-400 transition-all text-xs flex items-center gap-1 group">
+                                                    <i class="far fa-star group-hover:fas"></i> <span class="opacity-0 group-hover:opacity-100 transition-opacity">ตั้งเป็นหลัก</span>
                                                 </button>
                                             </div>
                                         </td>

@@ -32,21 +32,33 @@ class OrderService
      */
     public function calculateShippingValue($addressId, $subtotal, $shippingMethodId = null, $itemCount = 1, ?Collection $cartItems = null)
     {
-        // 🎫 Check for Free Shipping from Promotions
+        // 🎫 1. Check for Free Shipping from Promotions
         if ($cartItems && $this->promotionService->isFreeShippingApplicable($cartItems)) {
             return 0;
         }
 
-        if (!$addressId) {
-            return (float) ShippingSetting::get('upc_flat_rate', 60);
+        // 📦 2. Check for individual product free shipping
+        if ($cartItems) {
+            foreach ($cartItems as $item) {
+                $productId = $item->attributes['product_id'] ?? $item->id;
+                $product = ProductSalepage::find($productId);
+                if ($product && $product->pd_sp_free_shipping) {
+                    return 0;
+                }
+            }
         }
 
         $shippingMode = ShippingSetting::get('shipping_mode', 'global');
 
+        // 🚛 3. Global Mode: Check Threshold BEFORE address
         if ($shippingMode === 'global') {
             $freeThreshold = (float) ShippingSetting::get('free_shipping_threshold', 999);
             if ($subtotal >= $freeThreshold) {
                 return 0;
+            }
+
+            if (!$addressId) {
+                return (float) ShippingSetting::get('upc_flat_rate', 60);
             }
 
             $address = DeliveryAddress::find($addressId);
@@ -59,20 +71,34 @@ class OrderService
                 : (float) ShippingSetting::get('upc_flat_rate', 60);
         }
 
-        // Methods mode (Automated: Use default or first active method)
-        $method = ShippingMethod::where('is_active', true)->where('is_default', true)->first()
-               ?? ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
+        // 🚚 4. Methods mode: Use specific method ID or fallback to default
+        $method = null;
+        if ($shippingMethodId) {
+            $method = ShippingMethod::find($shippingMethodId);
+        }
+        
+        if (!$method || !$method->is_active) {
+            $method = ShippingMethod::where('is_active', true)->where('is_default', true)->first()
+                   ?? ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
+        }
 
         if (!$method) {
+            // Fallback if no method found
+            $freeThreshold = (float) ShippingSetting::get('free_shipping_threshold', 999);
+            if ($subtotal >= $freeThreshold) return 0;
             return (float) ShippingSetting::get('upc_flat_rate', 60);
         }
 
         // Check Free Shipping Conditions for Method
-        if ($method->free_threshold !== null && $subtotal >= $method->free_threshold) {
+        if ($method->free_threshold !== null && $subtotal >= (float)$method->free_threshold) {
             return 0;
         }
-        if ($method->min_items_for_free_shipping !== null && $itemCount >= $method->min_items_for_free_shipping) {
+        if ($method->min_items_for_free_shipping !== null && $itemCount >= (int)$method->min_items_for_free_shipping) {
             return 0;
+        }
+
+        if (!$addressId) {
+            return (float)$method->upc_rate;
         }
 
         $address = DeliveryAddress::find($addressId);
@@ -83,9 +109,9 @@ class OrderService
             $isBkk = $province && in_array($province->name_th, $bkkMetroNames);
         }
 
-        $baseRate = $isBkk ? $method->bkk_rate : $method->upc_rate;
+        $baseRate = $isBkk ? (float)$method->bkk_rate : (float)$method->upc_rate;
         $extraItems = max(0, $itemCount - 1);
-        $extraCost = $extraItems * $method->per_item_rate;
+        $extraCost = $extraItems * (float)$method->per_item_rate;
 
         return (float) ($baseRate + $extraCost);
     }
@@ -216,9 +242,22 @@ class OrderService
 
             $ord_code = 'ORD-'.now()->format('YmdHis').'-'.str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
 
-            // Set Default Shipping Info
+            // Determine Shipping Method to use (Automated)
+            $shippingMode = ShippingSetting::get('shipping_mode', 'global');
             $shippingMethodId = null;
             $shippingMethodName = 'Standard Delivery';
+
+            if ($shippingMode === 'methods') {
+                $method = ShippingMethod::where('is_active', true)->where('is_default', true)->first()
+                       ?? ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
+                
+                if ($method) {
+                    $shippingMethodId = $method->id;
+                    $shippingMethodName = $method->name;
+                }
+            } else {
+                $shippingMethodName = 'Global Flat Rate';
+            }
 
             $order = Order::create([
                 'ord_code' => $ord_code,

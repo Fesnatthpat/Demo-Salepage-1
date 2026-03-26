@@ -130,48 +130,69 @@
             <div class="container mx-auto px-4 max-w-7xl">
 
                 
-                <div class="navbar md:hidden px-0 min-h-[60px]">
-                    <div class="navbar-start w-1/4">
+                <div class="navbar lg:hidden px-2 sm:px-4 min-h-[70px] gap-3 sm:gap-3">
+                    
+                    
+                    <div class="navbar-start w-auto flex-none">
                         <div class="dropdown">
-                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle text-white hover:bg-white/20">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle text-white hover:bg-white/20 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
                                 </svg>
                             </div>
-                            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-3 shadow-xl border border-gray-100 text-gray-800">
+                            
+                            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-white rounded-2xl z-50 mt-4 w-64 p-4 shadow-2xl border border-gray-100 text-gray-800">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $menuItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$item['auth_required'] || auth()->check()): ?>
-                                        <li><a href="<?php echo e($item['url']); ?>" class="py-3 px-4 font-bold text-sm hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><?php echo e($item['name']); ?></a></li>
+                                        <li><a href="<?php echo e($item['url']); ?>" class="py-3 px-4 font-medium text-base hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"><?php echo e($item['name']); ?></a></li>
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
-                                    <div class="divider my-1"></div>
-                                    <li><a href="<?php echo e(route('profile.edit')); ?>" class="py-3 px-4 font-bold text-sm hover:text-red-600 hover:bg-red-50 rounded-lg">ข้อมูลส่วนตัว</a></li>
+                                    <div class="divider my-2"></div>
+                                    <li><a href="<?php echo e(route('profile.edit')); ?>" class="py-3 px-4 font-medium text-base hover:text-red-600 hover:bg-red-50 rounded-xl">ข้อมูลส่วนตัว</a></li>
                                     <li>
                                         <form action="<?php echo e(route('logout')); ?>" method="POST" class="p-0"><?php echo csrf_field(); ?>
-                                            <button type="submit" class="text-red-500 font-bold py-3 px-4 w-full text-left hover:bg-red-50 rounded-lg">ออกจากระบบ</button>
+                                            <button type="submit" class="text-red-600 font-medium py-3 px-4 w-full text-left hover:bg-red-50 rounded-xl">ออกจากระบบ</button>
                                         </form>
                                     </li>
                                 <?php else: ?>
                                     <div class="p-2 mt-2">
-                                        <a href="/login" class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none rounded-xl">เข้าสู่ระบบ</a>
+                                        <a href="/login" class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none rounded-xl shadow-md">เข้าสู่ระบบ</a>
                                     </div>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </ul>
                         </div>
                     </div>
-                    <div class="navbar-center flex-1 justify-center">
-                        <a href="/" class="btn btn-ghost p-0 hover:bg-transparent h-auto min-h-0">
-                            <img src="<?php echo e($siteLogo); ?>" alt="Logo" class="h-10 sm:h-12 w-auto object-contain">
+
+                    
+                    <div class="navbar-center flex-1">
+                        <form action="/allproducts" method="GET" class="relative w-full shadow-sm rounded-full">
+                            <input type="text" name="search" placeholder="ค้นหา..."
+                                class="w-full rounded-full pl-4 pr-10 py-2 sm:py-2.5 text-sm text-gray-700 bg-white border border-transparent focus:border-red-300 focus:ring-4 focus:ring-white/40 transition-all" />
+                            <button type="submit"
+                                class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
+                                <i class="fas fa-search text-sm"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    
+                    <div class="navbar-end w-auto flex-none justify-end">
+                        <a href="/" class="hover:scale-105 transition-transform duration-300">
+                            
+                            <img src="<?php echo e($siteLogo); ?>" alt="Logo" class="h-14 sm:h-14 w-auto object-contain drop-shadow-sm">
                         </a>
                     </div>
-                    <div class="navbar-end w-1/4 flex justify-end items-center gap-1 sm:gap-2">
-                        <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-white/20">
-                            <div class="indicator">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <?php
+                </div>
+
+                
+                <div class="fixed bottom-6 right-6 z-[90] lg:hidden">
+                    <a href="/cart" class="flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:bg-red-500 hover:scale-110 border-2 border-red-100 transition-all duration-300">
+                        <div class="indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <?php
 $__split = function ($name, $params = []) {
     return [$name, $params];
 };
@@ -192,36 +213,12 @@ unset($__params);
 unset($__componentSlots);
 unset($__split);
 ?>
-                            </div>
-                        </a>
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
-                            <a href="<?php echo e(route('profile.edit')); ?>" class="btn btn-ghost btn-circle avatar hover:bg-white/20 hidden sm:flex">
-                                <div class="w-8 rounded-full border border-white">
-                                    <img src="<?php echo e(auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name); ?>" />
-                                </div>
-                            </a>
-                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                    </div>
+                        </div>
+                    </a>
                 </div>
-                
-                
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (! (isset($hideSearchBar) && $hideSearchBar)): ?>
-                    <div class="w-full flex justify-center pb-3 px-2 sm:px-4 md:hidden">
-                        <form action="/allproducts" method="GET" class="relative w-full">
-                            <input type="text" name="search" placeholder="ค้นหาสินค้า..."
-                                class="w-full rounded-full pl-4 pr-10 py-2 text-sm text-gray-700 bg-white border-none shadow-inner focus:outline-none focus:ring-2 focus:ring-red-300 transition-all" />
-                            <button type="submit"
-                                class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-                        </form>
-                    </div>
-                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                 
-                <div class="hidden md:flex items-center justify-between py-3 gap-6">
+                <div class="hidden lg:flex items-center justify-between py-3 gap-6">
 
                     
                     <div class="flex items-center gap-6 xl:gap-8 flex-shrink-0">

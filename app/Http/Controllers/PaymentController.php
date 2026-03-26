@@ -136,10 +136,19 @@ class PaymentController extends Controller
         $itemCount = (int) $request->input('item_count', 1);
         
         $userId = auth()->id();
-        $cartContent = Cart::session($userId)->getContent();
+        $cartContent = \Cart::session($userId)->getContent();
         $cartItems = $cartContent->filter(fn($item) => in_array((string)$item->id, $request->input('selected_items', [])));
 
-        $shippingCost = $this->orderService->calculateShippingValue($addressId, $subtotal, null, $itemCount, $cartItems);
+        // Determine shipping method to use for calculation
+        $shippingMethodId = null;
+        $shippingMode = \App\Models\ShippingSetting::get('shipping_mode', 'global');
+        if ($shippingMode === 'methods') {
+            $method = \App\Models\ShippingMethod::where('is_active', true)->where('is_default', true)->first()
+                   ?? \App\Models\ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
+            $shippingMethodId = $method?->id;
+        }
+
+        $shippingCost = $this->orderService->calculateShippingValue($addressId, $subtotal, $shippingMethodId, $itemCount, $cartItems);
 
         return response()->json([
             'success' => true,
@@ -328,8 +337,17 @@ class PaymentController extends Controller
             $grandTotal = max(0, $totalAmount - $promoDiscount);
             $totalDiscount = $totalDiscountFromProducts + $promoDiscount;
             
+            // Determine shipping method to use for calculation
+            $shippingMethodId = null;
+            $shippingMode = \App\Models\ShippingSetting::get('shipping_mode', 'global');
+            if ($shippingMode === 'methods') {
+                $method = \App\Models\ShippingMethod::where('is_active', true)->where('is_default', true)->first()
+                       ?? \App\Models\ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
+                $shippingMethodId = $method?->id;
+            }
+
             // Recalculate shipping based on new grandTotal and item count
-            $shippingCost = $this->orderService->calculateShippingValue($addressId, $grandTotal, null, $totalItemCount, $checkoutCartItems);
+            $shippingCost = $this->orderService->calculateShippingValue($addressId, $grandTotal, $shippingMethodId, $totalItemCount, $checkoutCartItems);
             
             $finalTotal = $grandTotal + $shippingCost;
 

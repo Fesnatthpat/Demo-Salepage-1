@@ -24,6 +24,21 @@ class ProductController extends Controller
         // 2. ดึงโปรโมชั่น
         $promotions = $this->cartService->getPromotionsForProduct((int) $id);
 
+        // 🛡️ กรองให้เหลือเฉพาะโปรโมชั่น "ซื้อคู่ (Bundle)" หรือ "ของแถม/1แถม1 (Free Gift/BXGY)"
+        $promotions = $promotions->filter(function($promo) {
+            // 1. มีของแถม (ของแถม / 1 แถม 1)
+            if ($promo->actions->isNotEmpty()) {
+                return true;
+            }
+            // 2. เป็นโปรซื้อคู่ (มีกฎหลายข้อและต้องซื้อร่วมกันครบทุกอัน)
+            if ($promo->rules->count() > 1 && ($promo->condition_type ?? 'any') === 'all') {
+                return true;
+            }
+            // โปรอื่นๆ เช่น ลดราคาทั่วไป (Auto Discount), ส่งฟรี หรือรหัสส่วนลด 
+            // จะไม่แสดงในกล่องโปรโมชั่นหน้าสินค้า (เพื่อลดความซับซ้อน)
+            return false;
+        });
+
         // ดึงตะกร้าผ่าน Service เพื่อความชัวร์
         $cartContent = $this->cartService->getCartContents();
 

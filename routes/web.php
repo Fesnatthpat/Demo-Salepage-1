@@ -236,6 +236,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::middleware(['is.superadmin'])->group(function () {
             // Admin Management (จัดการผู้ดูแลระบบ)
             Route::resource('admins', App\Http\Controllers\Admin\AdminManagementController::class);
+            Route::resource('roles', App\Http\Controllers\Admin\RoleController::class);
 
             // Activity Log
             Route::get('/activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');

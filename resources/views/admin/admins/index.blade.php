@@ -82,15 +82,17 @@
                                     {{ $admin->username }}
                                 </td>
                                 <td class="px-5 py-4 text-sm text-center">
-                                    @if ($admin->role === 'superadmin')
-                                        <span
-                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-900/50 text-purple-200 border border-purple-800">
+                                    @if ($admin->role->role_key === 'superadmin')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
                                             Super Admin
                                         </span>
+                                    @elseif ($admin->role->role_key === 'viewer')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            Viewer
+                                        </span>
                                     @else
-                                        <span
-                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-900/50 text-blue-200 border border-blue-800">
-                                            Admin
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            {{ $admin->role->name ?? 'Admin' }}
                                         </span>
                                     @endif
                                 </td>
@@ -116,11 +118,13 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-4 text-sm text-center">
+                                    @if(auth('admin')->user()->role->role_key !== 'viewer')
                                     <div class="flex justify-center space-x-3">
                                         <a href="{{ route('admin.admins.edit', $admin->id) }}"
                                             class="text-indigo-400 hover:text-indigo-300 transition" title="Edit">
                                             <i class="fas fa-edit text-lg"></i>
                                         </a>
+                                        @if(auth('admin')->user()->role->role_key === 'superadmin')
                                         <form action="{{ route('admin.admins.destroy', $admin->id) }}" method="POST"
                                             class="inline-block"
                                             onsubmit="return confirm('ยืนยันการลบผู้ดูแลระบบรายนี้?');">
@@ -132,7 +136,11 @@
                                                 <i class="fas fa-trash-alt text-lg"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
+                                    @else
+                                        <span class="text-gray-500 italic text-xs">View Only</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

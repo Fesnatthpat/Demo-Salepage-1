@@ -18,7 +18,7 @@ class AdminManagementController extends Controller
      */
     public function index()
     {
-        $admins = Admin::all();
+        $admins = Admin::with('role')->get();
 
         return view('admin.admins.index', compact('admins'));
     }
@@ -28,7 +28,8 @@ class AdminManagementController extends Controller
      */
     public function create()
     {
-        return view('admin.admins.create');
+        $roles = \App\Models\Role::orderBy('id', 'asc')->get();
+        return view('admin.admins.create', compact('roles'));
     }
 
     /**
@@ -40,7 +41,7 @@ class AdminManagementController extends Controller
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('admins')->whereNull('deleted_at')],
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,superadmin',
+            'role_id' => 'required|exists:roles,id',
             'is_active' => 'required|boolean',
         ]);
 
@@ -53,7 +54,7 @@ class AdminManagementController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role_id' => $request->role_id,
             'admin_code' => $code,
             'is_active' => $request->is_active,
         ]);
@@ -76,7 +77,8 @@ class AdminManagementController extends Controller
      */
     public function edit(Admin $admin)
     {
-        return view('admin.admins.edit', compact('admin'));
+        $roles = \App\Models\Role::orderBy('id', 'asc')->get();
+        return view('admin.admins.edit', compact('admin', 'roles'));
     }
 
     /**
@@ -88,18 +90,19 @@ class AdminManagementController extends Controller
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('admins')->ignore($admin->id)->whereNull('deleted_at')],
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,superadmin',
+            'role_id' => 'required|exists:roles,id',
             'is_active' => 'required|boolean',
         ]);
 
         $originalData = $admin->toArray();
-        $data = $request->only('name', 'username', 'role', 'is_active');
+        $data = $request->only('name', 'username', 'role_id', 'is_active');
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
         // Prevent changing the role of the last superadmin
-        if ($admin->role === 'superadmin' && $request->role !== 'superadmin' && Admin::where('role', 'superadmin')->count() === 1) {
+        $superAdminRole = \App\Models\Role::where('role_key', 'superadmin')->first();
+        if ($superAdminRole && $admin->role_id == $superAdminRole->id && $request->role_id != $superAdminRole->id && Admin::where('role_id', $superAdminRole->id)->count() === 1) {
             return redirect()->route('admin.admins.edit', $admin->id)->with('error', 'Cannot change the role of the last superadmin.');
         }
 
@@ -121,7 +124,8 @@ class AdminManagementController extends Controller
         }
 
         // Prevent deleting the last superadmin
-        if ($admin->role === 'superadmin' && Admin::where('role', 'superadmin')->count() === 1) {
+        $superAdminRole = \App\Models\Role::where('role_key', 'superadmin')->first();
+        if ($superAdminRole && $admin->role_id == $superAdminRole->id && Admin::where('role_id', $superAdminRole->id)->count() === 1) {
             return redirect()->route('admin.admins.index')->with('error', 'Cannot delete the last superadmin.');
         }
 

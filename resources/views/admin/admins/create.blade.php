@@ -41,23 +41,29 @@
 
                             {{-- Role --}}
                             <div class="col-span-2 sm:col-span-1">
-                                <label for="role" class="block text-sm font-semibold text-gray-300 mb-2">ระดับสิทธิ์
-                                    <span class="text-red-400">*</span></label>
-                                {{-- หมายเหตุ: เปลี่ยนสีไอคอนลูกศรใน SVG เป็นสีเทาอ่อน (%239ca3af) --}}
-                                <select id="role" name="role"
-                                    class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out appearance-none bg-no-repeat bg-right pr-10 @error('role') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
+                                <div class="flex items-center justify-between mb-2">
+                                    <label for="role_id" class="block text-sm font-semibold text-gray-300">ระดับสิทธิ์
+                                        <span class="text-red-400">*</span></label>
+                                    @if(auth('admin')->user()->role->role_key === 'superadmin')
+                                        <a href="{{ route('admin.roles.index') }}" class="text-[10px] text-indigo-400 hover:text-indigo-300 transition flex items-center">
+                                            <i class="fas fa-cog mr-1"></i> จัดการระดับสิทธิ์
+                                        </a>
+                                    @endif
+                                </div>
+                                <select id="role_id" name="role_id"
+                                    class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out appearance-none bg-no-repeat bg-right pr-10 @error('role_id') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
                                     style="background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%239ca3af\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E'); background-position: right 1rem center; background-size: 1.5em 1.5em;"
                                     required>
                                     <option value="" disabled selected class="bg-gray-800 text-gray-400">
                                         กรุณาเลือกตำแหน่ง</option>
-                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}
-                                        class="bg-gray-800">Admin
-                                        (ผู้ดูแลทั่วไป)</option>
-                                    <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}
-                                        class="bg-gray-800">Super
-                                        Admin (ผู้ดูแลสูงสุด)</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}
+                                            class="bg-gray-800">
+                                            {{ ucfirst($role->name) }}
+                                        </option>
+                                    @endforeach
                                 </select>
-                                @error('role')
+                                @error('role_id')
                                     <p class="mt-2 text-sm text-red-400 flex items-center"><i
                                             class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
                                 @enderror

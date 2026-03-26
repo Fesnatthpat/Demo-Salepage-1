@@ -14,7 +14,7 @@ class Admin extends Authenticatable
     protected $guard = 'admin';
 
     protected $fillable = [
-        'name', 'username', 'password', 'role', 'admin_code', 'last_login_at', 'last_login_ip', 'is_active',
+        'name', 'username', 'password', 'role_id', 'admin_code', 'last_login_at', 'last_login_ip', 'is_active',
     ];
 
     protected $hidden = [
@@ -25,4 +25,12 @@ class Admin extends Authenticatable
         'last_login_at' => 'datetime',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the role associated with the admin.
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }

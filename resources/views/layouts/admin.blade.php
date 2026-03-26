@@ -117,49 +117,78 @@
             </div>
 
             <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+                @php
+                    $userRole = auth()->guard('admin')->user()->role;
+                    $permissions = $userRole->permissions ?? [];
+                    $isSuper = $userRole->role_key === 'superadmin';
+                    
+                    $hasPermission = function($perm) use ($isSuper, $permissions) {
+                        return $isSuper || in_array($perm, $permissions);
+                    };
+                @endphp
+
+                @if($hasPermission('dashboard'))
                 <a href="{{ route('admin.dashboard') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i>
                     แดชบอร์ด
                 </a>
+                @endif
+
+                @if($hasPermission('orders'))
                 <a href="{{ route('admin.orders.index') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.orders.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-shopping-cart mr-3 w-5 text-center"></i>
                     ออเดอร์
                 </a>
+                @endif
+
+                @if($hasPermission('products'))
                 <a href="{{ route('admin.products.index') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-boxes mr-3 w-5 text-center"></i>
                     จัดการสินค้า
                 </a>
+                @endif
+
+                @if($hasPermission('customers'))
                 <a href="{{ route('admin.customers.index') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.customers.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-users mr-3 w-5 text-center"></i>
                     ลูกค้า
                 </a>
+                @endif
+
+                @if($hasPermission('promotions'))
                 <a href="{{ route('admin.promotions.index') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.promotions.index') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-tags mr-3 w-5 text-center"></i>
                     โปรโมชั่น
                 </a>
+                @endif
+
+                @if($hasPermission('birthday_promotions'))
                 <a href="{{ route('admin.birthday-promotion.index') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.birthday-promotion.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-birthday-cake mr-3 w-5 text-center text-pink-400"></i>
                     โปรโมชั่นวันเกิด
                 </a>
+                @endif
+
+                @if($hasPermission('promotions')) {{-- ใช้สิทธิ์เดียวกับโปรโมชั่น --}}
                 <a href="{{ route('admin.promotions.logs') }}"
                     class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.promotions.logs') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                     <i class="fas fa-history mr-3 w-5 text-center"></i>
                     ประวัติการใช้โปรโมชั่น
                 </a>
+                @endif
 
-                {{-- ส่วนเมนู Super Admin ที่นำกลับมา --}}
-                @if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin')
+                {{-- Content Management --}}
+                @if($hasPermission('content_management'))
                     <div class="pt-4 pb-2">
-                        <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
+                        <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Content</p>
                     </div>
 
-                    {{-- Dropdown for Content Management (Super Admin) --}}
                     <div x-data="{ open: {{ request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') || request()->routeIs('admin.homepage-content.*') ? 'true' : 'false' }} }" class="space-y-1">
                         <button @click="open = !open"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
@@ -189,9 +218,15 @@
                             </a>
                         </div>
                     </div>
+                @endif
 
-                    {{-- Dropdown for System Management --}}
-                    <div x-data="{ open: {{ request()->routeIs('admin.admins.*') || request()->routeIs('admin.activity-log.*') ? 'true' : 'false' }} }" class="space-y-1">
+                {{-- System Management --}}
+                @if($hasPermission('system_management'))
+                    <div class="pt-4 pb-2">
+                        <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
+                    </div>
+
+                    <div x-data="{ open: {{ request()->routeIs('admin.admins.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.activity-log.*') || request()->routeIs('admin.shipping.*') ? 'true' : 'false' }} }" class="space-y-1">
                         <button @click="open = !open"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
                             <span class="flex items-center">
@@ -206,6 +241,10 @@
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.admins.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - จัดการแอดมิน
                             </a>
+                            <a href="{{ route('admin.roles.index') }}"
+                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.roles.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
+                                - จัดการระดับสิทธิ์
+                            </a>
                             <a href="{{ route('admin.activity-log.index') }}"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm {{ request()->routeIs('admin.activity-log.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white' }}">
                                 - ประวัติกิจกรรม
@@ -216,12 +255,17 @@
                             </a>
                         </div>
                     </div>
+                @endif
 
+                @if($hasPermission('popups'))
                     <a href="{{ route('admin.popups.index') }}"
                         class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.popups.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                         <i class="fas fa-window-restore mr-3 w-5 text-center"></i>
                         จัดการ Popup หน้าแรก
                     </a>
+                @endif
+
+                @if($hasPermission('settings'))
                     <a href="{{ route('admin.settings.index') }}"
                         class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.settings.*') ? 'bg-gray-700 text-emerald-400 font-semibold border-l-4 border-emerald-500' : 'text-gray-400 hover:bg-gray-700 hover:text-white' }}">
                         <i class="fas fa-cogs mr-3 w-5 text-center"></i>

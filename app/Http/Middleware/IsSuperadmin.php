@@ -15,7 +15,7 @@ class IsSuperadmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role === 'superadmin') {
+        if (auth()->guard('admin')->check() && auth()->guard('admin')->user()->role->role_key === 'superadmin') {
             return $next($request);
         }
 

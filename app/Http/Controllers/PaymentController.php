@@ -203,10 +203,20 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
-        $expireTime = $order->updated_at->addMinutes(1);
+        // ตั้งเวลาหมดอายุ 15 นาทีจากเวลาที่อัปเดตล่าสุด (รองรับการ Refresh QR)
+        $expireTime = $order->updated_at->addMinutes(15);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
-        if ($secondsRemaining < 0) {
-            $secondsRemaining = 0;
+        
+        if ($secondsRemaining <= 0) {
+            // ถ้านับถอยหลังหมดแล้ว ให้พยายามยกเลิกออเดอร์ทันที
+            if ($order->status_id == Order::STATUS_PENDING) {
+                try {
+                    $this->orderService->cancelOrder($order);
+                } catch (\Exception $e) {
+                    Log::error('Auto cancel failed in showQr: ' . $e->getMessage());
+                }
+            }
+            return redirect()->route('cart.index')->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ของคุณถูกยกเลิก');
         }
 
         $promptpayTarget = env('PROMPTPAY_ACCOUNT', '0812345678');
@@ -224,12 +234,14 @@ class PaymentController extends Controller
             return back()->with('error', 'ออเดอร์นี้ถูกยกเลิกแล้ว ไม่สามารถสร้าง QR Code ใหม่ได้');
         }
 
+        // อนุญาตให้รีเฟรชได้ภายใน 30 นาทีแรกหลังจากสร้างออเดอร์เท่านั้น
         if (now()->greaterThan($order->created_at->addMinutes(30))) {
             $this->orderService->cancelOrder($order);
             return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
         }
 
         if ($order->status_id == Order::STATUS_PENDING) {
+            // การ touch() จะทำให้อัปเดต updated_at และยืดเวลาในหน้า QR ออกไปอีก 15 นาที (แต่ไม่เกิน 30 นาทีรวม)
             $order->touch();
 
             return redirect()->route('payment.qr', ['orderId' => $orderCode])->with('success', 'รีเฟรช QR Code แล้ว');

@@ -32,8 +32,8 @@ trait LogsActivity
      */
     protected function logActivity(Model $model, string $action, ?array $originalData = null, ?array $newData = null): void
     {
-        // ตรวจสอบสิทธิ์ Admin ก่อนทำงาน
-        if (! Auth::guard('admin')->check()) {
+        // 🛠️ แก้ไข: ตรวจสอบสิทธิ์ Admin (ยอมให้ผ่านได้ถ้าเป็นการบันทึก failed_login)
+        if (! Auth::guard('admin')->check() && $action !== 'failed_login') {
             return;
         }
 
@@ -49,6 +49,9 @@ trait LogsActivity
             ];
         } elseif ($action === 'deleted') {
             $changes = ['original' => $this->filterSensitiveData($model->toArray())];
+        } elseif ($action === 'failed_login') {
+            // 🛠️ แก้ไข: สำหรับ Login ล้มเหลว ให้เก็บข้อมูล (Username, IP) ลงใน array 'new'
+            $changes = ['new' => $this->filterSensitiveData($newData ?? [])];
         } else {
             // สำหรับ Action อื่นๆ ที่ไม่ใช่มาตรฐาน
             $changes = [
@@ -58,8 +61,10 @@ trait LogsActivity
         }
 
         ActivityLog::create([
+            // 🛠️ แก้ไข: ถ้าล็อกอินไม่ผ่าน ID จะเป็น null
             'admin_id' => Auth::guard('admin')->id(),
-            'loggable_id' => $model->getKey(),
+            // 🛠️ แก้ไข: ป้องกัน Database Error กรณีส่ง Model ว่างๆ มา (ไม่มี ID) ให้บังคับใส่เป็น 0 แทน
+            'loggable_id' => $model->getKey() ?? 0, 
             'loggable_type' => get_class($model),
             'action' => $action,
             'changes' => $changes,

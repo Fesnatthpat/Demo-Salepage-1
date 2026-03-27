@@ -204,7 +204,7 @@ class PaymentController extends Controller
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
         // ตั้งเวลาหมดอายุ 15 นาทีจากเวลาที่อัปเดตล่าสุด (รองรับการ Refresh QR)
-        $expireTime = $order->updated_at->addMinutes(15);
+        $expireTime = $order->updated_at->addMinutes(1);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
         
         if ($secondsRemaining <= 0) {

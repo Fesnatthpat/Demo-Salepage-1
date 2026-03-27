@@ -8,11 +8,10 @@ use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductSalepage;
-use App\Models\StockProduct;
-use App\Models\User;
 use App\Models\ShippingMethod;
 use App\Models\ShippingSetting;
-use App\Models\Province;
+use App\Models\StockProduct;
+use App\Models\User;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +56,7 @@ class OrderService
                 return 0;
             }
 
-            if (!$addressId) {
+            if (! $addressId) {
                 return (float) ShippingSetting::get('upc_flat_rate', 60);
             }
 
@@ -66,7 +65,7 @@ class OrderService
             $province = \App\Models\Province::find($address?->province_id);
             $isBkk = $province && in_array($province->name_th, $bkkMetroNames);
 
-            return $isBkk 
+            return $isBkk
                 ? (float) ShippingSetting::get('bkk_flat_rate', 40)
                 : (float) ShippingSetting::get('upc_flat_rate', 60);
         }
@@ -76,29 +75,32 @@ class OrderService
         if ($shippingMethodId) {
             $method = ShippingMethod::find($shippingMethodId);
         }
-        
-        if (!$method || !$method->is_active) {
+
+        if (! $method || ! $method->is_active) {
             $method = ShippingMethod::where('is_active', true)->where('is_default', true)->first()
                    ?? ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
         }
 
-        if (!$method) {
+        if (! $method) {
             // Fallback if no method found
             $freeThreshold = (float) ShippingSetting::get('free_shipping_threshold', 999);
-            if ($subtotal >= $freeThreshold) return 0;
+            if ($subtotal >= $freeThreshold) {
+                return 0;
+            }
+
             return (float) ShippingSetting::get('upc_flat_rate', 60);
         }
 
         // Check Free Shipping Conditions for Method
-        if ($method->free_threshold !== null && $subtotal >= (float)$method->free_threshold) {
+        if ($method->free_threshold !== null && $subtotal >= (float) $method->free_threshold) {
             return 0;
         }
-        if ($method->min_items_for_free_shipping !== null && $itemCount >= (int)$method->min_items_for_free_shipping) {
+        if ($method->min_items_for_free_shipping !== null && $itemCount >= (int) $method->min_items_for_free_shipping) {
             return 0;
         }
 
-        if (!$addressId) {
-            return (float)$method->upc_rate;
+        if (! $addressId) {
+            return (float) $method->upc_rate;
         }
 
         $address = DeliveryAddress::find($addressId);
@@ -109,9 +111,9 @@ class OrderService
             $isBkk = $province && in_array($province->name_th, $bkkMetroNames);
         }
 
-        $baseRate = $isBkk ? (float)$method->bkk_rate : (float)$method->upc_rate;
+        $baseRate = $isBkk ? (float) $method->bkk_rate : (float) $method->upc_rate;
         $extraItems = max(0, $itemCount - 1);
-        $extraCost = $extraItems * (float)$method->per_item_rate;
+        $extraCost = $extraItems * (float) $method->per_item_rate;
 
         return (float) ($baseRate + $extraCost);
     }
@@ -149,7 +151,7 @@ class OrderService
                 // 🔒 Security Check: Verify if the user actually earns these freebies
                 $applicablePromos = $this->promotionService->getApplicablePromotions($cartItems);
                 $allowedFreebieLimit = $this->promotionService->calculateFreebieLimit($cartItems, $applicablePromos);
-                
+
                 if (count($selectedFreebies) > $allowedFreebieLimit) {
                     throw new \Exception('จำนวนของแถมเกินสิทธิ์ที่คุณได้รับ');
                 }
@@ -158,17 +160,18 @@ class OrderService
                     return $promo->actions->flatMap(function ($action) {
                         $ids = collect();
                         if (isset($action->actions['product_id_to_get'])) {
-                            $ids->push((int)$action->actions['product_id_to_get']);
+                            $ids->push((int) $action->actions['product_id_to_get']);
                         }
                         if ($action->giftableProducts->isNotEmpty()) {
                             $ids = $ids->merge($action->giftableProducts->pluck('pd_sp_id'));
                         }
+
                         return $ids;
                     });
                 })->unique()->toArray();
 
                 foreach ($selectedFreebies as $sfId) {
-                    if (!in_array((int)$sfId, $allowedGiftIds)) {
+                    if (! in_array((int) $sfId, $allowedGiftIds)) {
                         throw new \Exception('สินค้าของแถมบางรายการไม่ตรงตามเงื่อนไขโปรโมชั่น');
                     }
                 }
@@ -250,7 +253,7 @@ class OrderService
             if ($shippingMode === 'methods') {
                 $method = ShippingMethod::where('is_active', true)->where('is_default', true)->first()
                        ?? ShippingMethod::where('is_active', true)->orderBy('sort_order')->first();
-                
+
                 if ($method) {
                     $shippingMethodId = $method->id;
                     $shippingMethodName = $method->name;
@@ -352,8 +355,8 @@ class OrderService
                 }
 
                 $thisPromoDiscount = 0;
-                $isAutoDiscount = !$promo->is_discount_code;
-                $isMatchingCode = $promo->is_discount_code && !empty($appliedCode) && $promo->code === $appliedCode;
+                $isAutoDiscount = ! $promo->is_discount_code;
+                $isMatchingCode = $promo->is_discount_code && ! empty($appliedCode) && $promo->code === $appliedCode;
 
                 if ($promo->discount_value > 0 && ($isAutoDiscount || $isMatchingCode)) {
                     if ($promo->discount_type === 'fixed') {
@@ -370,8 +373,8 @@ class OrderService
                         'promotion_id' => $promo->id,
                         'order_id' => $order->id,
                         'user_id' => $userId,
-                        'code_used' => $promo->is_discount_code ? $promo->code : null, 
-                        'discount_amount' => $thisPromoDiscount, 
+                        'code_used' => $promo->is_discount_code ? $promo->code : null,
+                        'discount_amount' => $thisPromoDiscount,
                     ]);
                 }
             }
@@ -399,18 +402,6 @@ class OrderService
                 ['user_id' => $userId],
                 ['cart_data' => Cart::session($userId)->getContent()->toJson()]
             );
-
-            $addressData = [
-                'province' => $shippingDetails['province'],
-                'amphure' => $shippingDetails['amphure'],
-                'district' => $shippingDetails['district'],
-                'postal_code' => $shippingDetails['zipcode'],
-                'customer_name' => $shippingDetails['name'],
-                'payment_method' => $data['payment_method'] ?? 'PromptPay',
-                'shipping_method' => $shippingMethodName,
-            ];
-
-            SendOrderToApiJob::dispatch($order, $addressData);
 
             return $order;
         });

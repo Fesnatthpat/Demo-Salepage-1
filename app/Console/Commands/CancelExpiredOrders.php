@@ -19,7 +19,7 @@ class CancelExpiredOrders extends Command
     public function handle(\App\Services\OrderService $orderService)
     {
         // 1. หาออเดอร์ที่หมดเวลา (เกิน 15 นาทีหลังจากอัปเดตล่าสุด)
-        $expireTime = now()->subMinutes(15);
+        $expireTime = now()->subMinutes(1);
 
         // 2. ดึงออเดอร์ที่สถานะ STATUS_PENDING (รอชำระเงิน)
         $expiredOrders = Order::where('status_id', Order::STATUS_PENDING)

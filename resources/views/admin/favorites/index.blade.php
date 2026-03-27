@@ -84,7 +84,9 @@
             {{-- 2. MAIN CONTENT (Favorites) --}}
             <div class="container mx-auto px-4 max-w-5xl -mt-16 relative z-20 pb-10 space-y-12">
                 @forelse($favorites as $index => $fav)
-                    <div id="fav-item-{{ $fav->id }}" class="bg-white rounded-2xl shadow-lg overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                    <div id="fav-item-{{ $fav->id }}" class="bg-white rounded-3xl shadow-xl p-8 md:p-12 relative overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                        
+                        {{-- Action Buttons (Admin Controls) --}}
                         <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 z-50 flex gap-2 transform group-hover:translate-y-0 -translate-y-2">
                             <a href="{{ route('admin.favorites.edit', $fav->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white p-2.5 rounded-full shadow-lg transition-colors" title="แก้ไข"><i class="fas fa-edit"></i></a>
                             <button type="button" onclick="confirmDelete('{{ route('admin.favorites.destroy', $fav->id) }}', document.getElementById('fav-item-{{ $fav->id }}'))" 
@@ -92,33 +94,68 @@
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
-                        <div class="absolute inset-0 border-2 border-transparent group-hover:border-emerald-500 border-dashed rounded-2xl pointer-events-none z-40 transition-colors"></div>
-                        <div class="flex flex-col md:flex-row h-full">
-                            <div class="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center {{ $index % 2 != 0 ? 'md:order-2' : '' }}">
-                                <div class="flex items-start gap-3 mb-4">
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 font-bold text-sm shrink-0">{{ $loop->iteration }}</span>
-                                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">{{ $fav->title }}</h2>
+                        <div class="absolute inset-0 border-2 border-transparent group-hover:border-emerald-500 border-dashed rounded-3xl pointer-events-none z-40 transition-colors"></div>
+
+                        @php
+                            $imageCollection = [];
+                            if (isset($fav->images) && $fav->images->count() > 0) {
+                                foreach ($fav->images as $img) {
+                                    $imageCollection[] = asset('storage/' . $img->image_path);
+                                }
+                            }
+
+                            if (empty($imageCollection) && $fav->image_path) {
+                                $imageCollection[] = asset('storage/' . $fav->image_path);
+                            }
+
+                            $videoPath = $fav->video_path ?? ($fav->video ?? null);
+                            $hasMultipleImages = count($imageCollection) > 1;
+                            $hasAnyImage = count($imageCollection) > 0;
+                            $hasMedia = $hasAnyImage || $videoPath;
+                        @endphp
+
+                        <div class="flex flex-col md:flex-row gap-12 {{ !$hasMedia ? 'justify-center' : '' }}">
+                            
+                            {{-- Text Content --}}
+                            <div class="w-full {{ $hasMedia ? 'md:w-1/2' : 'md:w-3/4' }} flex flex-col justify-center {{ $index % 2 == 0 && $hasMedia ? 'order-2 md:order-1' : 'order-2 md:order-2' }}">
+                                <div class="flex items-start gap-4 mb-6">
+                                    {{-- เปลี่ยนจากวงกลมตัวเลข เป็นเส้นขีดสีแดงเหมือนหน้าบ้าน --}}
+                                    <span class="w-1.5 h-10 bg-red-600 rounded-full mt-1 flex-shrink-0"></span>
+                                    <h2 class="text-3xl font-bold text-gray-800 leading-tight">{{ $fav->title }}</h2>
                                 </div>
-                                <div class="text-gray-600 text-base leading-relaxed space-y-4 font-light pl-11">{!! nl2br(e($fav->content)) !!}</div>
+                                <div class="prose prose-lg text-gray-600 leading-loose font-light">{!! $fav->content !!}</div>
                             </div>
-                            <div class="w-full md:w-1/2 min-h-[350px] bg-gray-900 relative overflow-hidden {{ $index % 2 != 0 ? 'md:order-1' : '' }}">
-                                @php
-                                    $images = isset($fav->images) && count($fav->images) > 0 ? $fav->images : null;
-                                    $imagePath = $fav->image_path;
-                                    $videoPath = $fav->video_path ?? $fav->video ?? null;
-                                @endphp
-                                @if ($videoPath)
-                                    <div class="absolute inset-0 flex items-center justify-center bg-black">
-                                        <video controls class="w-full h-full object-cover"><source src="{{ asset('storage/' . $videoPath) }}" type="video/mp4"></video>
-                                    </div>
-                                @elseif ($images)
-                                    <img src="{{ asset('storage/' . $images[0]->image_path) }}" class="absolute inset-0 w-full h-full object-cover">
-                                @elseif ($imagePath)
-                                    <img src="{{ asset('storage/' . $imagePath) }}" class="absolute inset-0 w-full h-full object-cover">
-                                @else
-                                    <div class="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-100"><i class="fas fa-image text-4xl mb-2"></i><span class="text-sm">ไม่มีรูปภาพหรือวิดีโอ</span></div>
-                                @endif
-                            </div>
+
+                            {{-- Media Content --}}
+                            @if ($hasMedia)
+                                <div class="w-full md:w-1/2 min-h-[350px] {{ $index % 2 == 0 ? 'order-1 md:order-2' : 'order-1 md:order-1' }} relative">
+                                    @if ($videoPath)
+                                        <div class="relative w-full h-full min-h-[300px] rounded-2xl overflow-hidden shadow-lg border-4 border-white bg-black flex items-center justify-center">
+                                            <video controls class="w-full h-full object-cover">
+                                                <source src="{{ asset('storage/' . $videoPath) }}" type="video/mp4">
+                                            </video>
+                                        </div>
+                                    @elseif ($hasMultipleImages)
+                                        <div class="relative group/carousel h-full min-h-[300px] rounded-2xl overflow-hidden shadow-lg border-4 border-white bg-gray-100" id="carousel-{{ $fav->id }}">
+                                            <div class="carousel-track flex transition-transform duration-500 ease-in-out h-full w-full absolute inset-0" data-index="0">
+                                                @foreach ($imageCollection as $key => $imgUrl)
+                                                    <div class="min-w-full h-full relative cursor-pointer" onclick='openLightbox(@json($imageCollection), {{ $key }})'>
+                                                        <img src="{{ $imgUrl }}" class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="{{ $fav->title }}">
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <button onclick="moveCarousel('{{ $fav->id }}', -1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg opacity-100 md:opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 z-10"><i class="fas fa-chevron-left text-base md:text-lg"></i></button>
+                                            <button onclick="moveCarousel('{{ $fav->id }}', 1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 md:p-3 rounded-full shadow-lg opacity-100 md:opacity-0 group-hover/carousel:opacity-100 transition-all duration-300 z-10"><i class="fas fa-chevron-right text-base md:text-lg"></i></button>
+                                        </div>
+                                    @else
+                                        {{-- รูปภาพเดี่ยว พร้อม Effect เงาสีแดงหมุนด้านหลัง --}}
+                                        <div class="relative group-img h-full min-h-[300px] cursor-pointer" onclick='openLightbox(@json($imageCollection), 0)'>
+                                            <div class="absolute inset-0 bg-red-600 rounded-2xl transform rotate-3 transition-transform duration-300 opacity-10 group-hover:rotate-6"></div>
+                                            <img src="{{ $imageCollection[0] }}" alt="{{ $fav->title }}" class="absolute inset-0 rounded-2xl shadow-lg w-full h-full object-cover border-4 border-white transform transition-transform duration-300 group-hover:-translate-y-2">
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -213,50 +250,93 @@
                 </div>
             </div>
 
-            {{-- 5. SOCIAL & TEAM (ปรับแก้ให้เหมือนหน้าบ้าน: แสดงแค่ไอคอนเพียวๆ) --}}
-            <div class="container mx-auto px-4 max-w-5xl py-20 border-t border-gray-200 group relative">
+            {{-- 5. SOCIAL & TEAM & CONTACT (New Layout 🚀 - ฝั่ง Admin) --}}
+            <div class="container mx-auto px-4 max-w-5xl mt-20 pt-16 border-t border-gray-200 group relative">
+                
+                {{-- Action Buttons (Admin Controls) --}}
                 <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 z-50 flex gap-2">
-                    <button onclick="openModal('settingsSocialTeamModal')" class="bg-white/80 backdrop-blur-sm hover:bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-colors"><i class="fas fa-pen mr-2"></i> แก้ไขข้อความส่วนทีม</button>
+                    <button onclick="openModal('settingsSocialTeamModal')" class="bg-white/80 backdrop-blur-sm hover:bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-colors"><i class="fas fa-pen mr-2"></i> แก้ไขข้อความส่วนนี้</button>
                     <button onclick="openAddSocialModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-colors"><i class="fas fa-plus mr-2"></i> เพิ่มโซเชียล</button>
                 </div>
-                
-                <div class="text-center mb-16">
-                    <h2 class="text-xl font-bold text-gray-800 mb-8">{{ $socialTitle }}</h2>
-                    <div class="flex flex-wrap justify-center gap-8 md:gap-12">
-                        @forelse($socialLinks as $link)
-                            {{-- ส่วนนี้ปรับแต่งให้แสดงแค่ไอคอนและมีปุ่มแก้ไขแสดงเมื่อ Hover เหมือน User side แต่มี Action buttons --}}
-                            <div id="social-item-{{ $link->id }}" class="relative group/soc cursor-pointer">
-                                {{-- Action Buttons: แสดงเฉพาะเมื่อ Hover ที่ไอคอน --}}
-                                <div class="absolute -top-3 -right-3 flex gap-1 opacity-0 group-hover/soc:opacity-100 transition-opacity z-10">
-                                    <button onclick="editSocial({{ $link }})" class="bg-yellow-500 text-white p-1 rounded-full text-[10px] shadow-sm"><i class="fas fa-edit"></i></button>
-                                    <button type="button" onclick="confirmDelete('{{ route('admin.about-social-links.destroy', $link->id) }}', document.getElementById('social-item-{{ $link->id }}'))" 
-                                        class="bg-red-500 text-white p-1 rounded-full text-[10px] shadow-sm" title="ลบ">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                                
-                                {{-- แสดงไอคอนเพียวๆ สีตามแบรนด์ (ดึงค่า bg_color มาใช้เป็นสีตัวอักษร) --}}
-                                <div class="flex items-center justify-center text-4xl md:text-5xl">
-                                    @if($link->image_path)
-                                        <img src="{{ asset('storage/' . $link->image_path) }}" class="w-12 h-12 object-contain">
-                                    @else
-                                        <div style="color: {{ $link->bg_color ?? '#333' }};">
-                                            <i class="{{ $link->icon_class }}"></i>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-gray-400 text-sm italic">ยังไม่มีข้อมูลโซเชียลมีเดีย (เพิ่มได้ที่ปุ่มด้านบน)</div>
-                        @endforelse
-                    </div>
+
+                {{-- Header Section --}}
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">ช่องทางการติดต่อ</h2>
+                    <p class="text-gray-500 text-lg font-light max-w-2xl mx-auto">สอบถามข้อมูลเพิ่มเติม หรือติดตามข่าวสารและกิจกรรมใหม่ๆ จากเราได้หลากหลายช่องทาง</p>
                 </div>
 
-                <div class="text-center mb-16 space-y-3">
-                    <h2 class="text-xl font-extrabold text-gray-800">{{ $teamTitle }}</h2>
-                    <p class="text-sm text-gray-600 font-light">{{ $teamSub }}</p>
-                    <p class="text-sm font-bold text-gray-700">โทร & Line : <span class="text-gray-600 font-normal">{{ $teamPhone }}</span></p>
-                    <p class="text-sm font-bold text-gray-700">E-mail : <span class="text-blue-500 font-normal">{{ $teamEmail }}</span></p>
+                {{-- Contact Cards Grid --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+
+                    {{-- 1. Team Contact Card --}}
+                    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center justify-center text-center group/card hover:shadow-[0_8px_30px_rgb(220,38,38,0.1)] transition-all duration-300">
+                        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mb-6 group-hover/card:-translate-y-2 transition-transform duration-300">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 mb-2">{{ $teamTitle }}</h3>
+                        <p class="text-sm text-gray-500 font-light mb-8">{{ $teamSub }}</p>
+
+                        <div class="space-y-4 w-full max-w-sm">
+                            <div class="flex items-center gap-4 bg-gray-50 hover:bg-red-50/50 p-4 rounded-2xl transition-colors duration-300">
+                                <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 shrink-0">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="text-left">
+                                    <p class="text-xs text-gray-500 font-light mb-0.5">โทรศัพท์ / Line</p>
+                                    <p class="text-sm md:text-base font-semibold text-gray-700">{{ $teamPhone }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 bg-gray-50 hover:bg-red-50/50 p-4 rounded-2xl transition-colors duration-300">
+                                <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 shrink-0">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="text-left">
+                                    <p class="text-xs text-gray-500 font-light mb-0.5">อีเมล</p>
+                                    <p class="text-sm md:text-base font-semibold text-blue-600">{{ $teamEmail }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 2. Social Media Card --}}
+                    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center text-center group/card hover:shadow-[0_8px_30px_rgb(220,38,38,0.1)] transition-all duration-300">
+                        <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-3xl mb-6 group-hover/card:-translate-y-2 transition-transform duration-300">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 mb-2">{{ $socialTitle ?: 'ติดตามเรา' }}</h3>
+                        <p class="text-sm text-gray-500 font-light mb-10">ร่วมเป็นส่วนหนึ่งกับเราผ่านแพลตฟอร์มที่คุณชื่นชอบ</p>
+
+                        <div class="flex flex-wrap justify-center gap-6">
+                            @forelse($socialLinks as $link)
+                                <div id="social-item-{{ $link->id }}" class="relative group/soc cursor-pointer">
+                                    
+                                    {{-- Admin Action Buttons (แสดงเฉพาะเมื่อ Hover ที่ไอคอน) --}}
+                                    <div class="absolute -top-3 -right-3 flex gap-1 opacity-0 group-hover/soc:opacity-100 transition-opacity z-10">
+                                        <button onclick="editSocial({{ $link }})" class="bg-yellow-500 text-white p-1.5 rounded-full text-[10px] shadow-md hover:bg-yellow-600"><i class="fas fa-edit"></i></button>
+                                        <button type="button" onclick="confirmDelete('{{ route('admin.about-social-links.destroy', $link->id) }}', document.getElementById('social-item-{{ $link->id }}'))" 
+                                            class="bg-red-500 text-white p-1.5 rounded-full text-[10px] shadow-md hover:bg-red-600" title="ลบ">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    {{-- ไอคอนที่มีกรอบและ Effect เหมือนหน้าบ้าน --}}
+                                    <div class="social-icon-item block group/icon">
+                                        <div class="w-16 h-16 bg-gray-50 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-white group-hover/icon:shadow-md transition-all duration-300">
+                                            @if ($link->image_path)
+                                                <img src="{{ asset('storage/' . $link->image_path) }}" class="w-8 h-8 object-contain group-hover/icon:scale-110 transition-transform">
+                                            @else
+                                                <div style="color: {{ $link->bg_color ?? '#333' }};" class="group-hover/icon:scale-110 transition-transform">
+                                                    <i class="{{ $link->icon_class }}"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-gray-400 text-sm italic w-full">ยังไม่มีข้อมูลโซเชียลมีเดีย (เพิ่มได้ที่ปุ่มด้านบน)</div>
+                            @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
 

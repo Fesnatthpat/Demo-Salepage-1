@@ -92,7 +92,7 @@
                                 <span class="w-1.5 h-10 bg-red-600 rounded-full mt-1 flex-shrink-0"></span>
                                 <h2 class="text-3xl font-bold text-gray-800 leading-tight">{{ $fav->title }}</h2>
                             </div>
-                            <div class="prose prose-lg text-gray-600 leading-loose font-light">{!! nl2br(e($fav->content)) !!}</div>
+                            <div class="prose prose-lg text-gray-600 leading-loose font-light">{!! $fav->content !!}</div>
                         </div>
 
                         @if ($hasMedia)
@@ -253,27 +253,32 @@
 
             {{-- 4. SOCIAL & TEAM & CONTACT (New Layout 🚀) --}}
             <div class="mt-20 pt-16 border-t border-gray-200" data-aos="fade-up">
-                
+
                 {{-- Header Section --}}
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">ช่องทางการติดต่อ</h2>
-                    <p class="text-gray-500 text-lg font-light max-w-2xl mx-auto">สอบถามข้อมูลเพิ่มเติม หรือติดตามข่าวสารและกิจกรรมใหม่ๆ จากเราได้หลากหลายช่องทาง</p>
+                    <p class="text-gray-500 text-lg font-light max-w-2xl mx-auto">สอบถามข้อมูลเพิ่มเติม
+                        หรือติดตามข่าวสารและกิจกรรมใหม่ๆ จากเราได้หลากหลายช่องทาง</p>
                 </div>
 
                 {{-- Contact Cards Grid --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                    
+
                     {{-- Team Contact Card --}}
-                    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center justify-center text-center group hover:shadow-[0_8px_30px_rgb(220,38,38,0.1)] transition-all duration-300">
-                        <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                    <div
+                        class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center justify-center text-center group hover:shadow-[0_8px_30px_rgb(220,38,38,0.1)] transition-all duration-300">
+                        <div
+                            class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl mb-6 group-hover:-translate-y-2 transition-transform duration-300">
                             <i class="fas fa-headset"></i>
                         </div>
                         <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 mb-2">{{ $teamTitle }}</h3>
                         <p class="text-sm text-gray-500 font-light mb-8">{{ $teamSub }}</p>
-                        
+
                         <div class="space-y-4 w-full max-w-sm">
-                            <div class="flex items-center gap-4 bg-gray-50 hover:bg-red-50/50 p-4 rounded-2xl transition-colors duration-300">
-                                <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 shrink-0">
+                            <div
+                                class="flex items-center gap-4 bg-gray-50 hover:bg-red-50/50 p-4 rounded-2xl transition-colors duration-300">
+                                <div
+                                    class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 shrink-0">
                                     <i class="fas fa-phone-alt"></i>
                                 </div>
                                 <div class="text-left">
@@ -281,65 +286,89 @@
                                     <p class="text-sm md:text-base font-semibold text-gray-700">{{ $teamPhone }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4 bg-gray-50 hover:bg-red-50/50 p-4 rounded-2xl transition-colors duration-300">
-                                <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 shrink-0">
+                            <div
+                                class="flex items-center gap-4 bg-gray-50 hover:bg-red-50/50 p-4 rounded-2xl transition-colors duration-300">
+                                <div
+                                    class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 shrink-0">
                                     <i class="fas fa-envelope"></i>
                                 </div>
                                 <div class="text-left">
                                     <p class="text-xs text-gray-500 font-light mb-0.5">อีเมล</p>
-                                    <a href="mailto:{{ $teamEmail }}" class="text-sm md:text-base font-semibold text-blue-600 hover:text-red-600 transition-colors">{{ $teamEmail }}</a>
+                                    <a href="mailto:{{ $teamEmail }}"
+                                        class="text-sm md:text-base font-semibold text-blue-600 hover:text-red-600 transition-colors">{{ $teamEmail }}</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {{-- Social Media Card --}}
-                    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center justify-center text-center group hover:shadow-[0_8px_30px_rgb(220,38,38,0.1)] transition-all duration-300">
-                        <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-3xl mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                    <div
+                        class="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center justify-center text-center group hover:shadow-[0_8px_30px_rgb(220,38,38,0.1)] transition-all duration-300">
+                        <div
+                            class="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-3xl mb-6 group-hover:-translate-y-2 transition-transform duration-300">
                             <i class="fas fa-hashtag"></i>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 mb-2">{{ $socialTitle ?: 'ติดตามเรา' }}</h3>
-                        <p class="text-sm text-gray-500 font-light mb-10">ร่วมเป็นส่วนหนึ่งกับเราผ่านแพลตฟอร์มที่คุณชื่นชอบ</p>
-                        
+                        <h3 class="text-xl md:text-2xl font-extrabold text-gray-800 mb-2">
+                            {{ $socialTitle ?: 'ติดตามเรา' }}</h3>
+                        <p class="text-sm text-gray-500 font-light mb-10">ร่วมเป็นส่วนหนึ่งกับเราผ่านแพลตฟอร์มที่คุณชื่นชอบ
+                        </p>
+
                         <div class="flex flex-wrap justify-center gap-6">
                             @if (isset($socialLinks) && count($socialLinks) > 0)
                                 @foreach ($socialLinks as $link)
-                                    <a href="{{ $link->url }}" target="_blank" class="social-icon-item block group/icon">
-                                        <div class="w-16 h-16 bg-gray-50 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-white group-hover/icon:shadow-md transition-all duration-300">
+                                    <a href="{{ $link->url }}" target="_blank"
+                                        class="social-icon-item block group/icon">
+                                        <div
+                                            class="w-16 h-16 bg-gray-50 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-white group-hover/icon:shadow-md transition-all duration-300">
                                             @if ($link->image_path)
-                                                <img src="{{ asset('storage/' . $link->image_path) }}" class="w-8 h-8 object-contain group-hover/icon:scale-110 transition-transform">
+                                                <img src="{{ asset('storage/' . $link->image_path) }}"
+                                                    class="w-8 h-8 object-contain group-hover/icon:scale-110 transition-transform">
                                             @else
-                                                <div style="color: {{ $link->bg_color ?? '#333' }};" class="group-hover/icon:scale-110 transition-transform"><i class="{{ $link->icon_class }}"></i></div>
+                                                <div style="color: {{ $link->bg_color ?? '#333' }};"
+                                                    class="group-hover/icon:scale-110 transition-transform"><i
+                                                        class="{{ $link->icon_class }}"></i></div>
                                             @endif
                                         </div>
                                     </a>
                                 @endforeach
                             @else
                                 @if (isset($socialFB) && $socialFB !== '#')
-                                    <a href="{{ $socialFB }}" target="_blank" class="social-icon-item block group/icon">
-                                        <div class="w-16 h-16 bg-[#1877F2]/10 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-[#1877F2] transition-all duration-300">
-                                            <i class="fab fa-facebook-f text-[#1877F2] group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
+                                    <a href="{{ $socialFB }}" target="_blank"
+                                        class="social-icon-item block group/icon">
+                                        <div
+                                            class="w-16 h-16 bg-[#1877F2]/10 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-[#1877F2] transition-all duration-300">
+                                            <i
+                                                class="fab fa-facebook-f text-[#1877F2] group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
                                         </div>
                                     </a>
                                 @endif
                                 @if (isset($socialIG) && $socialIG !== '#')
-                                    <a href="{{ $socialIG }}" target="_blank" class="social-icon-item block group/icon">
-                                        <div class="w-16 h-16 bg-[#E1306C]/10 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-[#E1306C] transition-all duration-300">
-                                            <i class="fab fa-instagram text-[#E1306C] group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
+                                    <a href="{{ $socialIG }}" target="_blank"
+                                        class="social-icon-item block group/icon">
+                                        <div
+                                            class="w-16 h-16 bg-[#E1306C]/10 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-[#E1306C] transition-all duration-300">
+                                            <i
+                                                class="fab fa-instagram text-[#E1306C] group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
                                         </div>
                                     </a>
                                 @endif
                                 @if (isset($socialTT) && $socialTT !== '#')
-                                    <a href="{{ $socialTT }}" target="_blank" class="social-icon-item block group/icon">
-                                        <div class="w-16 h-16 bg-gray-100 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-black transition-all duration-300">
-                                            <i class="fab fa-tiktok text-black group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
+                                    <a href="{{ $socialTT }}" target="_blank"
+                                        class="social-icon-item block group/icon">
+                                        <div
+                                            class="w-16 h-16 bg-gray-100 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-black transition-all duration-300">
+                                            <i
+                                                class="fab fa-tiktok text-black group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
                                         </div>
                                     </a>
                                 @endif
                                 @if (isset($socialLI) && $socialLI !== '#')
-                                    <a href="{{ $socialLI }}" target="_blank" class="social-icon-item block group/icon">
-                                        <div class="w-16 h-16 bg-[#0077b5]/10 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-[#0077b5] transition-all duration-300">
-                                            <i class="fab fa-linkedin-in text-[#0077b5] group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
+                                    <a href="{{ $socialLI }}" target="_blank"
+                                        class="social-icon-item block group/icon">
+                                        <div
+                                            class="w-16 h-16 bg-[#0077b5]/10 rounded-2xl shadow-sm flex items-center justify-center text-3xl group-hover/icon:bg-[#0077b5] transition-all duration-300">
+                                            <i
+                                                class="fab fa-linkedin-in text-[#0077b5] group-hover/icon:text-white group-hover/icon:scale-110 transition-all"></i>
                                         </div>
                                     </a>
                                 @endif
@@ -582,14 +611,14 @@
                 let videoId = '';
                 const parts = video.video_url.split('?')[0].split('/');
                 videoId = parts.filter(p => p !== '').pop();
-                
+
                 embedHtml =
                     `<blockquote class="tiktok-embed" cite="${video.video_url}" data-video-id="${videoId}" data-theme="dark" style="max-width: 605px; min-width: 325px; margin: 0; padding: 0;" > <section> </section> </blockquote>`;
             }
 
             if (embedHtml) {
                 container.innerHTML = embedHtml;
-                
+
                 if (window.tiktok && window.tiktok.embed) {
                     window.tiktok.embed.render();
                     loading.classList.add('hidden');
@@ -669,8 +698,8 @@
         }
 
         /* =========================================
-                CSS สำหรับจัดการ Video Embed ให้ไร้ขอบขาว
-                ========================================= */
+                    CSS สำหรับจัดการ Video Embed ให้ไร้ขอบขาว
+                    ========================================= */
         #videoContainer {
             background: transparent !important;
             box-shadow: none !important;

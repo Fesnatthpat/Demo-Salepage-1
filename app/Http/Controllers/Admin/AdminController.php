@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Traits\LogsActivity;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
-use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -47,10 +47,10 @@ class AdminController extends Controller
         }
 
         // บันทึก Log เมื่อ Login ล้มเหลว
-        $this->logActivity(new \App\Models\Admin(), 'failed_login', null, [
+        $this->logActivity(new \App\Models\Admin, 'failed_login', null, [
             'username' => $request->username,
             'ip' => $request->ip(),
-            'user_agent' => $request->userAgent()
+            'user_agent' => $request->userAgent(),
         ]);
 
         return back()->withInput($request->only('username'))
@@ -79,7 +79,7 @@ class AdminController extends Controller
         ]);
 
         // บันทึก Log การแก้ไขตั้งค่า
-        $logModel = SiteSetting::first() ?? new SiteSetting();
+        $logModel = SiteSetting::first() ?? new SiteSetting;
         $this->logActivity($logModel, 'updated_settings', null, ['inputs' => $request->except(['_token', 'site_logo', 'site_cover_image'])]);
 
         // --- 1 & 2. Logo & Cover Image (SiteSetting) ---
@@ -105,7 +105,7 @@ class AdminController extends Controller
         if ($request->has('hero_banners')) {
             $heroKeepIds = [];
             foreach ($request->hero_banners as $index => $bannerData) {
-                $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
+                $id = ! empty($bannerData['id']) ? $bannerData['id'] : null;
                 $updateData = [
                     'type' => 'hero',
                     'location' => 'homepage',
@@ -116,7 +116,7 @@ class AdminController extends Controller
 
                 if ($request->hasFile("hero_banners.$index.image")) {
                     $updateData['image_path'] = $request->file("hero_banners.$index.image")->store('uploads/banners', 'public');
-                } elseif (!empty($bannerData['existing_path'])) {
+                } elseif (! empty($bannerData['existing_path'])) {
                     $updateData['image_path'] = $bannerData['existing_path'];
                 }
 
@@ -135,7 +135,7 @@ class AdminController extends Controller
         } elseif ($request->hasFile('allergy_image')) {
             $path = $request->file('allergy_image')->store('uploads/banners', 'public');
             SiteSetting::set('allergy_image', $path);
-            
+
             \App\Models\Banner::updateOrCreate(
                 ['type' => 'info', 'location' => 'homepage'],
                 ['image_path' => $path, 'is_active' => true]
@@ -146,7 +146,7 @@ class AdminController extends Controller
         if ($request->has('secondary_banners')) {
             $secKeepIds = [];
             foreach ($request->secondary_banners as $index => $bannerData) {
-                $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
+                $id = ! empty($bannerData['id']) ? $bannerData['id'] : null;
                 $updateData = [
                     'type' => 'secondary',
                     'location' => 'homepage',
@@ -157,7 +157,7 @@ class AdminController extends Controller
 
                 if ($request->hasFile("secondary_banners.$index.image")) {
                     $updateData['image_path'] = $request->file("secondary_banners.$index.image")->store('uploads/banners', 'public');
-                } elseif (!empty($bannerData['existing_path'])) {
+                } elseif (! empty($bannerData['existing_path'])) {
                     $updateData['image_path'] = $bannerData['existing_path'];
                 }
 
@@ -173,7 +173,7 @@ class AdminController extends Controller
         if ($request->has('all_products_hero_banners')) {
             $allProdKeepIds = [];
             foreach ($request->all_products_hero_banners as $index => $bannerData) {
-                $id = !empty($bannerData['id']) ? $bannerData['id'] : null;
+                $id = ! empty($bannerData['id']) ? $bannerData['id'] : null;
                 $updateData = [
                     'type' => 'hero',
                     'location' => 'all_products',
@@ -184,7 +184,7 @@ class AdminController extends Controller
 
                 if ($request->hasFile("all_products_hero_banners.$index.image")) {
                     $updateData['image_path'] = $request->file("all_products_hero_banners.$index.image")->store('uploads/banners', 'public');
-                } elseif (!empty($bannerData['existing_path'])) {
+                } elseif (! empty($bannerData['existing_path'])) {
                     $updateData['image_path'] = $bannerData['existing_path'];
                 }
 
@@ -200,11 +200,11 @@ class AdminController extends Controller
         if ($request->has('categories')) {
             $catKeepIds = [];
             foreach ($request->categories as $index => $catData) {
-                $id = !empty($catData['id']) ? $catData['id'] : null;
+                $id = ! empty($catData['id']) ? $catData['id'] : null;
                 $updateData = [
                     'name' => $catData['name'] ?? 'Untitled Category',
-                    'slug' => !empty($catData['slug']) ? $catData['slug'] : \Illuminate\Support\Str::slug($catData['name'] ?? 'untitled-category'),
-                    'parent_id' => !empty($catData['parent_id']) ? $catData['parent_id'] : null,
+                    'slug' => ! empty($catData['slug']) ? $catData['slug'] : \Illuminate\Support\Str::slug($catData['name'] ?? 'untitled-category'),
+                    'parent_id' => ! empty($catData['parent_id']) ? $catData['parent_id'] : null,
                     'icon' => $catData['icon'] ?? 'fas fa-th',
                     'link_url' => $catData['link_url'] ?? null,
                     'linked_product_id' => $catData['linked_product_id'] ?? null,
@@ -214,7 +214,7 @@ class AdminController extends Controller
 
                 if ($request->hasFile("categories.$index.image")) {
                     $updateData['image_path'] = $request->file("categories.$index.image")->store('uploads/categories', 'public');
-                } elseif (!empty($catData['existing_path'])) {
+                } elseif (! empty($catData['existing_path'])) {
                     $updateData['image_path'] = $catData['existing_path'];
                 }
 
@@ -228,13 +228,13 @@ class AdminController extends Controller
         if ($request->has('services') && is_array($request->services)) {
             $serviceKeepIds = [];
             foreach ($request->services as $index => $item) {
-                if (!empty($item['title'])) {
-                    $id = !empty($item['id']) ? $item['id'] : null;
+                if (! empty($item['title'])) {
+                    $id = ! empty($item['id']) ? $item['id'] : null;
                     $service = \App\Models\Service::updateOrCreate(['id' => $id], [
                         'icon' => $item['icon'] ?? 'fas fa-star',
                         'title' => $item['title'],
                         'sort_order' => $index + 1,
-                        'is_active' => true
+                        'is_active' => true,
                     ]);
                     $serviceKeepIds[] = $service->id;
                 }
@@ -246,14 +246,14 @@ class AdminController extends Controller
         if ($request->has('reasons') && is_array($request->reasons)) {
             $featureKeepIds = [];
             foreach ($request->reasons as $index => $item) {
-                if (!empty($item['title'])) {
-                    $id = !empty($item['id']) ? $item['id'] : null;
+                if (! empty($item['title'])) {
+                    $id = ! empty($item['id']) ? $item['id'] : null;
                     $feature = \App\Models\Feature::updateOrCreate(['id' => $id], [
                         'icon' => $item['icon'] ?? 'fas fa-check',
                         'title' => $item['title'],
                         'description' => $item['description'] ?? '',
                         'sort_order' => $index + 1,
-                        'is_active' => true
+                        'is_active' => true,
                     ]);
                     $featureKeepIds[] = $feature->id;
                 }
@@ -265,14 +265,14 @@ class AdminController extends Controller
         if ($request->has('review_images')) {
             $keepReviewIds = [];
             foreach ($request->review_images as $index => $reviewData) {
-                $id = !empty($reviewData['id']) ? $reviewData['id'] : null;
+                $id = ! empty($reviewData['id']) ? $reviewData['id'] : null;
                 $updateData = [
                     'sort_order' => $index,
                 ];
 
                 if ($request->hasFile("review_images.$index.image")) {
                     $updateData['image_url'] = $request->file("review_images.$index.image")->store('uploads/reviews', 'public');
-                } elseif (!empty($reviewData['existing_path'])) {
+                } elseif (! empty($reviewData['existing_path'])) {
                     $updateData['image_url'] = $reviewData['existing_path'];
                 }
 
@@ -292,7 +292,7 @@ class AdminController extends Controller
             'facebook_url', 'line_id', 'line_url', 'tiktok_url', 'instagram_url',
             'meta_title', 'meta_description', 'meta_keywords',
             'google_analytics_id', 'facebook_pixel_id',
-            'shipping_note', 'tax_id', 'company_name'
+            'shipping_note', 'tax_id', 'company_name',
         ];
 
         // Handle generic settings array if exists
@@ -305,16 +305,15 @@ class AdminController extends Controller
             }
         }
 
-            // ล้าง Cache เพื่อให้หน้าแรกและหน้าอื่นๆ อัปเดตทันที
-            try {
-                \Illuminate\Support\Facades\Artisan::call('view:clear');
-                \Illuminate\Support\Facades\Artisan::call('cache:clear');
-            } catch (\Exception $e) {
-                // ข้ามหากไม่มีสิทธิ์รันคำสั่ง
-            }
+        // ล้าง Cache เพื่อให้หน้าแรกและหน้าอื่นๆ อัปเดตทันที
+        try {
+            \Illuminate\Support\Facades\Artisan::call('view:clear');
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        } catch (\Exception $e) {
+            // ข้ามหากไม่มีสิทธิ์รันคำสั่ง
+        }
 
-            return Redirect::back()->with('success', 'Settings updated successfully!');
-        });
+        return Redirect::back()->with('success', 'Settings updated successfully!');
     }
 
     public function index()
@@ -328,7 +327,7 @@ class AdminController extends Controller
         $heroBanners = \App\Models\Banner::location('homepage')->hero()->get();
         $secondaryBanners = \App\Models\Banner::location('homepage')->secondary()->get();
         $infoBanner = \App\Models\Banner::location('homepage')->info()->first();
-        
+
         // All Products Page Content
         $allProductsHeroBanners = \App\Models\Banner::location('all_products')->hero()->get();
         $categories = \App\Models\Category::orderBy('sort_order')->get();
@@ -339,30 +338,14 @@ class AdminController extends Controller
         $reviewImages = \App\Models\ProductReviewImage::whereNull('product_salepage_id')->orderBy('sort_order', 'asc')->get();
 
         return view('admin.settings.index', compact(
-            'settings', 
-            'heroBanners', 
-            'secondaryBanners', 
-            'infoBanner', 
+            'settings',
+            'heroBanners',
+            'secondaryBanners',
+            'infoBanner',
             'allProductsHeroBanners',
             'categories',
             'products',
-            'services', 
-            'features',
-            'reviewImages'
-        ));
-    }
-}
-'product_salepage_id')->orderBy('sort_order', 'asc')->get();
-
-        return view('admin.settings.index', compact(
-            'settings', 
-            'heroBanners', 
-            'secondaryBanners', 
-            'infoBanner', 
-            'allProductsHeroBanners',
-            'categories',
-            'products',
-            'services', 
+            'services',
             'features',
             'reviewImages'
         ));

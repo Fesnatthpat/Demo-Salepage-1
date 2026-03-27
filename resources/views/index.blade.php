@@ -522,7 +522,7 @@
                 {{ $settings['home_reasons_title'] ?? '6 เหตุผลทำไมต้องเลือกเรา' }}
             </h2>
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 sm:gap-y-12 px-2 sm:px-10 lg:px-20">
+                class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 sm:gap-y-12 px-2 sm:px-10 lg:px-20">
                 @if (isset($reasons) && $reasons->count() > 0)
                     @foreach ($reasons as $reason)
                         <div class="flex flex-col items-center text-center group">

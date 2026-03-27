@@ -73,7 +73,7 @@
         </div>
 
         <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="relative"
-            @submit="isSaving = true">
+            @submit.prevent="submitForm($event)">
             @csrf
 
             {{-- 🟣 TAB: FOOTER --}}
@@ -1004,11 +1004,66 @@
     <script>
         function siteSettings() {
             return {
-                activeTab: 'homepage',
+                activeTab: localStorage.getItem('admin_settings_active_tab') || 'homepage',
                 isSaving: false,
                 showIconPicker: false,
                 activeIconIndex: 0,
                 activeIconType: 'service',
+
+                init() {
+                    this.$watch('activeTab', value => localStorage.setItem('admin_settings_active_tab', value));
+                },
+
+                async submitForm(e) {
+                    this.isSaving = true;
+                    const formData = new FormData(e.target);
+
+                    try {
+                        const response = await fetch(e.target.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            if (window.showNotification) {
+                                window.showNotification('success', 'สำเร็จ!', data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว');
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ!',
+                                    text: data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว',
+                                    timer: 2000
+                                });
+                            }
+                            // ไม่รีเฟรชหน้า แต่ถ้ามีการอัปโหลดรูปภาพใหม่ การแสดงผลอาจยังเป็น Blob URL อยู่
+                            // ซึ่งก็โอเคเพราะผู้ใช้เห็นรูปที่เลือกไปแล้ว
+                        } else {
+                            throw data;
+                        }
+                    } catch (error) {
+                        console.error('Save error:', error);
+                        let msg = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+                        if (error.errors) {
+                            msg = Object.values(error.errors).flat().join('\n');
+                        } else if (error.message) {
+                            msg = error.message;
+                        }
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'ผิดพลาด!',
+                            text: msg
+                        });
+                    } finally {
+                        this.isSaving = false;
+                    }
+                },
                 iconList: [
                     'fas fa-star', 'fas fa-heart', 'fas fa-check', 'fas fa-truck', 'fas fa-box', 'fas fa-tag',
                     'fas fa-percent', 'fas fa-gift', 'fas fa-utensils', 'fas fa-coffee', 'fas fa-glass-cheers',

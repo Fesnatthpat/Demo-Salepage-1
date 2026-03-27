@@ -16,17 +16,16 @@
     {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- ★★★ CSS ของ Swiper (จำเป็นสำหรับสไลด์) ★★★ --}}
+    {{-- CSS ของ Swiper --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-    {{-- ★★★ [เพิ่มใหม่] Font Awesome (จำเป็นสำหรับ Icons) ★★★ --}}
+    {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
     <title>@yield('title', $settings['site_name'] ?? 'Salepage Demo')</title>
 
     <style>
-        /* CSS ปรับแต่งปุ่มลูกศร Swiper */
         .swiper-button-next,
         .swiper-button-prev {
             color: #ffffff !important;
@@ -38,7 +37,6 @@
             transition: all 0.3s ease;
         }
 
-        /* ปรับปุ่มให้ใหญ่ขึ้นในจอคอม */
         @media (min-width: 768px) {
             .swiper-button-next,
             .swiper-button-prev {
@@ -59,7 +57,6 @@
             border-radius: 5px;
         }
 
-        /* Site Background Dynamic */
         .site-bg-main {
             min-height: 100vh;
             background-attachment: fixed;
@@ -68,18 +65,18 @@
             background-size: cover;
             @php
                 $bgPath = $settings['site_cover_image'] ?? null;
-                // เช็คว่าไฟล์มีอยู่จริงใน storage/app/public หรือไม่
                 $isBgFileExists = $bgPath && file_exists(storage_path('app/public/' . $bgPath));
                 $bgUrl = $isBgFileExists ? asset('storage/' . $bgPath) : asset('images/BG/fruit2.png');
             @endphp
             background-image: url('{{ $bgUrl }}');
         }
+
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 
-<body class="font-['Noto_Sans_Thai'] bg-gray-100">
+<body class="font-['Noto_Sans_Thai'] bg-gray-100" x-data="{ mobileMenuOpen: false }">
 
-    {{-- Logic คำนวณจำนวนสินค้า --}}
     @php
         $cartCount = 0;
         if (auth()->check()) {
@@ -91,18 +88,12 @@
             $cartCount = \Cart::session($cartSessionId)->getTotalQuantity();
         }
         
-        // จัดการ URL ของ Logo
         $logoPath = $settings['site_logo'] ?? null;
         if ($logoPath) {
             $siteLogo = str_starts_with($logoPath, 'http') ? $logoPath : asset('storage/' . $logoPath);
         } else {
             $siteLogo = asset('images/logo/logo1.png');
         }
-
-        $siteName = $settings['site_name'] ?? 'ติดใจ';
-        $sitePhone = $settings['site_phone'] ?? '02-123-4567';
-        $siteEmail = $settings['site_email'] ?? 'contact@tidjai.com';
-        $siteAddress = $settings['site_address'] ?? "บริษัท ติดใจ จำกัด\n123 ถนนสุขุมวิท แขวงคลองเตย\nเขตคลองเตย กรุงเทพฯ 10110";
 
         $socialLinks = [
             'facebook' => $settings['social_facebook'] ?? '#',
@@ -112,102 +103,114 @@
         ];
 
         $menuItems = [
-            ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false],
-            ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts', 'auth_required' => false],
-            ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq', 'auth_required' => false],
-            ['name' => 'ประวัติการสั่งซื้อ', 'url' => '/orderhistory', 'auth_required' => true],
-            ['name' => 'เกี่ยวกับติดใจ', 'url' => '/about', 'auth_required' => false],
-            ['name' => 'ติดต่อติดใจ', 'url' => '/contact', 'auth_required' => false],
-            ['name' => 'เช็คพัสดุ', 'url' => route('order.tracking.form'), 'auth_required' => false],
+            ['name' => 'หน้าหลัก', 'url' => '/', 'auth_required' => false, 'icon' => 'fas fa-home'],
+            ['name' => 'สินค้าทั้งหมด', 'url' => '/allproducts', 'auth_required' => false, 'icon' => 'fas fa-th-large'],
+            ['name' => 'คำถามที่พบบ่อย', 'url' => '/faq', 'auth_required' => false, 'icon' => 'fas fa-question-circle'],
+            ['name' => 'ประวัติการสั่งซื้อ', 'url' => '/orderhistory', 'auth_required' => true, 'icon' => 'fas fa-history'],
+            ['name' => 'เกี่ยวกับเรา', 'url' => '/about', 'auth_required' => false, 'icon' => 'fas fa-info-circle'],
+            ['name' => 'ติดต่อเรา', 'url' => '/contact', 'auth_required' => false, 'icon' => 'fas fa-envelope'],
+            ['name' => 'เช็คพัสดุ', 'url' => route('order.tracking.form'), 'auth_required' => false, 'icon' => 'fas fa-truck'],
         ];
     @endphp
 
     {{-- ★★★ NAVBAR ★★★ --}}
     @unless (isset($hideNavbar) && $hideNavbar)
         <div class="sticky top-0 z-50 shadow-sm bg-red-600 border-b border-red-500">
-
             <div class="container mx-auto px-4 max-w-7xl">
 
                 {{-- ================= MOBILE & TABLET NAV ================= --}}
-                <div class="navbar lg:hidden px-2 sm:px-4 min-h-[70px] gap-3 sm:gap-3">
-                    
-                    {{-- 1. เมนูแฮมเบอร์เกอร์ (ฝั่งซ้าย) --}}
+                <div class="navbar lg:hidden px-2 sm:px-4 min-h-[70px] gap-3">
                     <div class="navbar-start w-auto flex-none">
-                        <div class="dropdown">
-                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle text-white hover:bg-white/20 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                                </svg>
-                            </div>
-                            {{-- Dropdown Menu --}}
-                            <ul tabindex="-1" class="menu menu-sm dropdown-content bg-white rounded-2xl z-50 mt-4 w-64 p-4 shadow-2xl border border-gray-100 text-gray-800">
-                                @foreach ($menuItems as $item)
-                                    @if (!$item['auth_required'] || auth()->check())
-                                        <li><a href="{{ $item['url'] }}" class="py-3 px-4 font-medium text-base hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">{{ $item['name'] }}</a></li>
-                                    @endif
-                                @endforeach
-                                @auth
-                                    <div class="divider my-2"></div>
-                                    <li><a href="{{ route('profile.edit') }}" class="py-3 px-4 font-medium text-base hover:text-red-600 hover:bg-red-50 rounded-xl">ข้อมูลส่วนตัว</a></li>
-                                    <li>
-                                        <form action="{{ route('logout') }}" method="POST" class="p-0">@csrf
-                                            <button type="submit" class="text-red-600 font-medium py-3 px-4 w-full text-left hover:bg-red-50 rounded-xl">ออกจากระบบ</button>
-                                        </form>
-                                    </li>
-                                @else
-                                    <div class="p-2 mt-2">
-                                        <a href="/login" class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none rounded-xl shadow-md">เข้าสู่ระบบ</a>
-                                    </div>
-                                @endauth
-                            </ul>
-                        </div>
+                        <button @click="mobileMenuOpen = true" class="btn btn-ghost btn-circle text-white hover:bg-white/20 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
                     </div>
 
-                    {{-- 2. ช่องค้นหา (แทรกตรงกลาง) --}}
                     <div class="navbar-center flex-1">
                         <form action="/allproducts" method="GET" class="relative w-full shadow-sm rounded-full">
                             <input type="text" name="search" placeholder="ค้นหา..."
-                                class="w-full rounded-full pl-4 pr-10 py-2 sm:py-2.5 text-sm text-gray-700 bg-white border border-transparent focus:border-red-300 focus:ring-4 focus:ring-white/40 transition-all" />
-                            <button type="submit"
-                                class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
+                                class="w-full rounded-full pl-4 pr-10 py-2 sm:py-2.5 text-sm text-gray-700 bg-white border border-transparent focus:outline-none focus:ring-2 focus:ring-red-300 transition-all" />
+                            <button type="submit" class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-red-600">
                                 <i class="fas fa-search text-sm"></i>
                             </button>
                         </form>
                     </div>
                     
-                    {{-- 3. โลโก้ (ฝั่งขวา) --}}
-                    <div class="navbar-end w-auto flex-none justify-end">
+                    <div class="navbar-end w-auto flex-none">
                         <a href="/" class="hover:scale-105 transition-transform duration-300">
-                            {{-- ปรับขนาดโลโก้ให้เล็กลงนิดหน่อยเพื่อให้ช่องค้นหามีพื้นที่พิมพ์ --}}
-                            <img src="{{ $siteLogo }}" alt="Logo" class="h-14 sm:h-14 w-auto object-contain drop-shadow-sm">
+                            <img src="{{ $siteLogo }}" alt="Logo" class="h-12 sm:h-14 w-auto object-contain">
                         </a>
                     </div>
                 </div>
 
-                {{-- ★★★ FLOATING CART (ตะกร้าแบบฟิกซ์มุมล่างขวา) สำหรับมือถือ/แท็บเล็ต ★★★ --}}
+                {{-- ================= SIDE SLIDE MENU (Mobile) ================= --}}
+                <div x-show="mobileMenuOpen" class="fixed inset-0 z-[100] lg:hidden" x-cloak>
+                    <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="mobileMenuOpen = false" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+                    <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300 transform" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="absolute inset-y-0 left-0 w-80 max-w-[85%] bg-white shadow-2xl flex flex-col">
+                        
+                        <div class="p-6 bg-red-600 flex items-center justify-between">
+                            <img src="{{ $siteLogo }}" alt="Logo" class="h-10 w-auto brightness-0 invert">
+                            <button @click="mobileMenuOpen = false" class="text-white hover:rotate-90 transition-transform duration-300">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto py-4">
+                            <ul class="menu w-full px-4">
+                                @foreach ($menuItems as $item)
+                                    @if (!$item['auth_required'] || auth()->check())
+                                        <li class="mb-1">
+                                            <a href="{{ $item['url'] }}" class="flex items-center gap-4 py-3.5 px-4 text-gray-700 font-bold text-base hover:bg-red-50 hover:text-red-600 rounded-xl transition-all">
+                                                <span class="w-8 text-center text-lg text-gray-400">
+                                                    <i class="{{ $item['icon'] ?? 'fas fa-link' }}"></i>
+                                                </span>
+                                                {{ $item['name'] }}
+                                            </a>
+                                        </li>
+                                    @endif
+                                @endforeach
+
+                                <div class="divider px-4 opacity-50">บัญชีผู้ใช้</div>
+                                
+                                @auth
+                                    <li><a href="{{ route('profile.edit') }}" class="flex items-center gap-4 py-3.5 px-4 text-gray-700 font-bold text-base hover:bg-red-50 rounded-xl"><span class="w-8 text-center"><i class="fas fa-user-circle"></i></span>ข้อมูลส่วนตัว</a></li>
+                                    <li>
+                                        <form action="{{ route('logout') }}" method="POST" class="p-0">@csrf
+                                            <button type="submit" class="flex items-center gap-4 py-3.5 px-4 text-red-600 font-bold text-base hover:bg-red-50 rounded-xl w-full text-left"><span class="w-8 text-center"><i class="fas fa-sign-out-alt"></i></span>ออกจากระบบ</button>
+                                        </form>
+                                    </li>
+                                @else
+                                    <div class="p-4"><a href="/login" class="btn bg-red-600 hover:bg-red-700 text-white w-full border-none rounded-xl shadow-lg">เข้าสู่ระบบ</a></div>
+                                @endauth
+                            </ul>
+                        </div>
+
+                        <div class="p-6 border-t border-gray-100 bg-gray-50">
+                            <p class="text-xs text-gray-400 text-center">© {{ date('Y') }} {{ $settings['site_name'] ?? 'Salepage' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ★★ FLOATING CART ★★ --}}
                 <div class="fixed bottom-6 right-6 z-[90] lg:hidden">
-                    <a href="/cart" class="flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:bg-red-500 hover:scale-110 border-2 border-red-100 transition-all duration-300">
+                    <a href="/cart" class="flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl hover:scale-110 border-2 border-white transition-all">
                         <div class="indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+                            <i class="fas fa-shopping-cart text-xl"></i>
                             <livewire:cart-icon />
                         </div>
                     </a>
                 </div>
 
-                {{-- ================= DESKTOP NAV (หน้าจอคอม) ================= --}}
+                {{-- ================= DESKTOP NAV ================= --}}
                 <div class="hidden lg:flex items-center justify-between py-3 gap-6">
-
-                    {{-- 1. Logo & Menu Group --}}
-                    <div class="flex items-center gap-6 xl:gap-8 flex-shrink-0">
-                        {{-- Logo --}}
+                    <div class="flex items-center gap-8 flex-shrink-0">
                         <a href="/" class="hover:opacity-80 transition-opacity">
-                            <img src="{{ $siteLogo }}" alt="Logo" class="h-12 lg:h-14 w-auto object-contain">
+                            <img src="{{ $siteLogo }}" alt="Logo" class="h-14 w-auto object-contain">
                         </a>
-
-                        {{-- Menu --}}
-                        <nav class="flex items-center gap-4 xl:gap-6 text-white text-sm lg:text-base font-bold">
+                        <nav class="flex items-center gap-6 text-white text-base font-bold">
                             @foreach ($menuItems as $item)
                                 @if (!$item['auth_required'] || auth()->check())
                                     <a href="{{ $item['url'] }}" class="hover:text-red-200 transition-colors whitespace-nowrap">{{ $item['name'] }}</a>
@@ -216,366 +219,112 @@
                         </nav>
                     </div>
 
-                    {{-- 2. Search Bar Group --}}
                     @unless (isset($hideSearchBar) && $hideSearchBar)
-                        <div class="flex-1 max-w-md xl:max-w-lg mx-4">
+                        <div class="flex-1 max-w-lg mx-4">
                             <form action="/allproducts" method="GET" class="relative w-full">
                                 <input type="text" name="search" placeholder="ค้นหาสินค้าที่ต้องการ..."
                                     class="w-full rounded-full pl-5 pr-12 py-2.5 text-sm text-gray-700 bg-white border-none shadow-inner focus:outline-none focus:ring-2 focus:ring-white/50 transition-all" />
-                                <button type="submit"
-                                    class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </button>
+                                <button type="submit" class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full text-red-600"><i class="fas fa-search"></i></button>
                             </form>
                         </div>
                     @endunless
 
-                    {{-- 3. Icons Group (Cart & Profile) --}}
-                    <div class="flex items-center gap-2 lg:gap-3 flex-shrink-0">
-                        {{-- Cart --}}
+                    <div class="flex items-center gap-3 flex-shrink-0">
                         <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-white/20">
-                            <div class="indicator">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 lg:h-7 lg:w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <livewire:cart-icon />
-                            </div>
+                            <div class="indicator"><i class="fas fa-shopping-cart text-2xl text-white"></i><livewire:cart-icon /></div>
                         </a>
-
-                        {{-- Login / Profile --}}
-                        @guest
-                            <a href="/login"
-                                class="bg-white text-red-600 hover:bg-gray-50 border-none rounded-full px-5 py-2 text-sm lg:text-base shadow-sm font-bold transition-colors">
-                                เข้าสู่ระบบ
-                            </a>
-                        @endguest
-
+                        @guest <a href="/login" class="bg-white text-red-600 hover:bg-gray-50 border-none rounded-full px-6 py-2 shadow-sm font-bold transition-colors">เข้าสู่ระบบ</a> @endguest
                         @auth
                             <div class="dropdown dropdown-end">
-                                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar hover:bg-white/20">
-                                    <div class="w-9 lg:w-10 rounded-full border-2 border-white/50">
-                                        <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name }}" />
-                                    </div>
-                                </div>
-                                <ul tabindex="-1" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-white rounded-xl w-52 border border-gray-100 text-gray-800">
-                                    <li class="menu-title px-4 py-2 border-b border-gray-100 mb-1 text-red-600 font-bold">
-                                        {{ auth()->user()->name }}
-                                    </li>
-                                    <li><a href="{{ route('profile.edit') }}" class="py-2.5 font-medium hover:bg-red-50 hover:text-red-600 rounded-lg">ข้อมูลส่วนตัว</a></li>
-                                    <li><a href="/orderhistory" class="py-2.5 font-medium hover:bg-red-50 hover:text-red-600 rounded-lg">ประวัติการสั่งซื้อ</a></li>
-                                    <li>
-                                        <form action="{{ route('logout') }}" method="POST" class="p-0 mt-1">@csrf
-                                            <button type="submit" class="text-red-500 font-bold py-2.5 px-4 w-full text-left hover:bg-red-50 rounded-lg">ออกจากระบบ</button>
-                                        </form>
-                                    </li>
+                                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar hover:bg-white/20"><div class="w-10 rounded-full border-2 border-white"><img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name=' . auth()->user()->name }}" /></div></div>
+                                <ul tabindex="-1" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-white rounded-xl w-52 text-gray-800">
+                                    <li class="menu-title px-4 py-2 border-b border-gray-100 text-red-600 font-bold">{{ auth()->user()->name }}</li>
+                                    <li><a href="{{ route('profile.edit') }}" class="py-2.5 font-medium hover:bg-red-50 hover:text-red-600">ข้อมูลส่วนตัว</a></li>
+                                    <li><a href="/orderhistory" class="py-2.5 font-medium hover:bg-red-50 hover:text-red-600">ประวัติการสั่งซื้อ</a></li>
+                                    <li><form action="{{ route('logout') }}" method="POST" class="p-0">@csrf<button type="submit" class="text-red-500 font-bold py-2.5 px-4 w-full text-left hover:bg-red-50">ออกจากระบบ</button></form></li>
                                 </ul>
                             </div>
                         @endauth
                     </div>
-
                 </div>
-
             </div>
         </div>
     @endunless
 
-    {{-- Main Content Background (เพิ่ม bg-cover bg-center bg-fixed เพื่อให้มือถือสเกลรูปได้ถูกต้อง) --}}
     <div class="site-bg-main">
         @yield('content')
     </div>
 
-    {{-- ★★★ FOOTER ★★★ --}}
+    {{-- FOOTER --}}
     <div class="bg-red-600 text-white border-t border-red-700">
-        <footer class="container mx-auto px-4 py-10 lg:py-12 max-w-7xl">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
-                
-                {{-- Column 1: โลโก้และข้อมูลร้าน --}}
+        <footer class="container mx-auto px-4 py-12 max-w-7xl">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10">
                 <div class="sm:col-span-2 lg:col-span-4 flex flex-col gap-4 items-center sm:items-start text-center sm:text-left">
-                    <img src="{{ $siteLogo }}" alt="{{ $siteName }} Logo"
-                        class="w-24 h-24 sm:w-28 sm:h-28 object-contain bg-white rounded-full p-2 shadow-md hover:scale-105 transition-transform duration-300">
-                    <p class="text-red-100 text-sm leading-relaxed mt-2">
-                        <span class="font-bold text-white text-lg">{{ $siteName }}</span><br>
-                        {!! nl2br(e($settings['footer_slogan'] ?? "ของกินเล่นสูตรเด็ด ต้นตำรับความอร่อย\nคัดสรรวัตถุดิบคุณภาพเพื่อคุณ")) !!}
+                    <img src="{{ $siteLogo }}" alt="Logo" class="w-24 h-24 object-contain bg-white rounded-full p-2 shadow-md">
+                    <p class="text-red-100 text-sm leading-relaxed">
+                        <span class="font-bold text-white text-lg">{{ $settings['site_name'] ?? 'Salepage' }}</span><br>
+                        {!! nl2br(e($settings['footer_slogan'] ?? "สูตรเด็ด ต้นตำรับความอร่อย")) !!}
                     </p>
                 </div>
 
-                {{-- Column 2: ศูนย์ช่วยเหลือ --}}
                 <div class="flex flex-col gap-3 lg:col-span-2">
-                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">{{ $settings['faq_badge'] ?? 'ศูนย์ช่วยเหลือ' }}</h6>
-                    @for($i=1; $i<=4; $i++)
-                        @php
-                            $label = $settings['footer_col2_link'.$i.'_label'] ?? ($i==1?'ติดตามสถานะคำสั่งซื้อ':($i==2?'การรับประกันสินค้า':($i==3?'การคืนสินค้าและการคืนเงิน':'วิธีการสั่งซื้อ')));
-                            $url = $settings['footer_col2_link'.$i.'_url'] ?? ($i==1?route('order.tracking.form'):'#');
-                        @endphp
-                        @if($label)
-                            <a href="{{ $url }}" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> {{ $label }}</a>
+                    <h6 class="text-lg font-bold mb-3">{{ $settings['faq_badge'] ?? 'ช่วยเหลือ' }}</h6>
+                    @for ($i = 1; $i <= 4; $i++)
+                        @if (!empty($settings['footer_col2_link' . $i . '_label']))
+                            <a href="{{ $settings['footer_col2_link' . $i . '_url'] ?? '#' }}" class="text-sm text-red-100 hover:text-white">
+                                {{ $settings['footer_col2_link' . $i . '_label'] }}
+                            </a>
                         @endif
                     @endfor
                 </div>
 
-                {{-- Column 3: เกี่ยวกับติดใจ --}}
                 <div class="flex flex-col gap-3 lg:col-span-2">
-                    <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">{{ $settings['footer_about_title'] ?? 'เกี่ยวกับติดใจ' }}</h6>
-                    @for($i=1; $i<=4; $i++)
-                        @php
-                            $label = $settings['footer_col3_link'.$i.'_label'] ?? ($i==1?'เรื่องราวของเรา':($i==2?'บทความน่ารู้':($i==3?'นโยบายความเป็นส่วนตัว':'ข้อกำหนดและเงื่อนไข')));
-                            $url = $settings['footer_col3_link'.$i.'_url'] ?? ($i==1?'/about':'#');
-                        @endphp
-                        @if($label)
-                            <a href="{{ $url }}" class="text-sm text-red-100 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-angle-right text-[10px]"></i> {{ $label }}</a>
+                    <h6 class="text-lg font-bold mb-3">{{ $settings['footer_about_title'] ?? 'เกี่ยวกับเรา' }}</h6>
+                    @for ($i = 1; $i <= 4; $i++)
+                        @if (!empty($settings['footer_col3_link' . $i . '_label']))
+                            <a href="{{ $settings['footer_col3_link' . $i . '_url'] ?? '#' }}" class="text-sm text-red-100 hover:text-white">
+                                {{ $settings['footer_col3_link' . $i . '_label'] }}
+                            </a>
                         @endif
                     @endfor
                 </div>
 
-                {{-- Column 4: ติดต่อ --}}
                 <div class="flex flex-col gap-4 lg:col-span-4 sm:col-span-2">
-                    {{-- Contact Info --}}
-                    <div>
-                        <h6 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3">ติดต่อ{{ $siteName }}</h6>
-                        <div class="flex flex-col gap-3 text-sm text-red-100">
-                            <div class="flex items-start gap-3">
-                                <i class="fas fa-map-marker-alt mt-1 flex-shrink-0 w-4 text-center"></i>
-                                <span class="leading-relaxed">{!! nl2br(e($siteAddress)) !!}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-phone-alt flex-shrink-0 w-4 text-center"></i>
-                                <span>{{ $sitePhone }}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-envelope flex-shrink-0 w-4 text-center"></i>
-                                <span>{{ $siteEmail }}</span>
-                            </div>
-                        </div>
+                    <h6 class="text-lg font-bold mb-3">ติดต่อเรา</h6>
+                    <div class="text-sm text-red-100 space-y-2">
+                        <p><i class="fas fa-map-marker-alt w-5"></i> {!! nl2br(e($settings['site_address'] ?? '')) !!}</p>
+                        <p><i class="fas fa-phone-alt w-5"></i> {{ $settings['site_phone'] ?? '' }}</p>
+                        <p><i class="fas fa-envelope w-5"></i> {{ $settings['site_email'] ?? '' }}</p>
                     </div>
                 </div>
-
             </div>
         </footer>
 
-        {{-- Footer Bottom --}}
-        <div class="bg-red-700 py-4 text-center border-t border-red-800/50">
+        <div class="bg-red-700 py-4 border-t border-red-800/50">
             <div class="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row justify-between items-center gap-3">
-                <p class="text-xs sm:text-sm text-red-200">Copyright © {{ date('Y') }} - All right reserved by {{ $siteName }} Co., Ltd.</p>
-                
-                {{-- ส่วนที่แก้ไข Icon โซเชียลมีเดียให้รองรับ Font Awesome 6 --}}
+                <p class="text-xs text-red-200">{{ $settings['footer_copyright'] ?? 'Copyright © ' . date('Y') . ' - ' . ($settings['site_name'] ?? 'Salepage') . ' Co., Ltd.' }}</p>
                 <div class="flex gap-4">
-                    <a href="{{ $socialLinks['facebook'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
-                        <i class="fa-brands fa-facebook-f text-lg"></i>
-                    </a>
-                    <a href="{{ $socialLinks['twitter'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
-                        <i class="fa-brands fa-x-twitter text-lg"></i>
-                    </a>
-                    <a href="{{ $socialLinks['instagram'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
-                        <i class="fa-brands fa-instagram text-lg"></i>
-                    </a>
-                    <a href="{{ $socialLinks['line'] }}" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-700 transition-all">
-                        <i class="fa-brands fa-line text-lg"></i>
-                    </a>
+                    <a href="{{ $socialLinks['facebook'] }}" class="hover:scale-110 transition-transform"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="{{ $socialLinks['twitter'] }}" class="hover:scale-110 transition-transform"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="{{ $socialLinks['line'] }}" class="hover:scale-110 transition-transform"><i class="fa-brands fa-line"></i></a>
+                    <a href="{{ $socialLinks['instagram'] }}" class="hover:scale-110 transition-transform"><i class="fa-brands fa-instagram"></i></a>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ★★★ JS ของ Swiper ★★★ --}}
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
     <script>
-        /**
-         * ฟังก์ชันกลางสำหรับแสดง Notification (SweetAlert2)
-         * ปรับแต่งให้แสดงตรงกลางและสวยงามเหมือนกันทั้งเว็บ
-         */
         window.showNotification = function(type, title, message = '', timer = 2000) {
-            const config = {
-                icon: type,
-                title: title,
-                text: message,
-                showConfirmButton: (type === 'error' || type === 'warning'), // ถ้าเป็น Error ให้กดปิดเอง
-                confirmButtonColor: '#dc2626',
-                timer: (type === 'success' || type === 'info') ? timer : null,
-                timerProgressBar: (type === 'success' || type === 'info'),
-                position: 'center', // บังคับให้อยู่ตรงกลาง
-                padding: '1.5rem',
-                borderRadius: '1.25rem',
-                customClass: {
-                    popup: 'rounded-3xl shadow-2xl border border-gray-100',
-                    title: 'text-xl font-black text-gray-800',
-                    htmlContainer: 'text-sm font-medium text-gray-500',
-                    confirmButton: 'px-8 py-2.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95'
-                }
-            };
-
-            return Swal.fire(config);
+            Swal.fire({ icon: type, title: title, text: message, timer: timer, timerProgressBar: true, confirmButtonColor: '#dc2626' });
         };
-
         document.addEventListener('DOMContentLoaded', function() {
-            @if (session('success'))
-                showNotification('success', 'สำเร็จ!', "{{ session('success') }}");
-            @endif
-
-            @if (session('error'))
-                showNotification('error', 'ขออภัย!', "{{ session('error') }}");
-            @endif
+            @if (session('success')) showNotification('success', 'สำเร็จ!', "{{ session('success') }}"); @endif
+            @if (session('error')) showNotification('error', 'ขออภัย!', "{{ session('error') }}"); @endif
         });
     </script>
 
     @yield('scripts')
     @livewireScripts
-
-    {{-- ★★★ [แก้ไขใหม่] Sequential Homepage Popup Modals ★★★ --}}
-    @if(isset($activePopups) && $activePopups->count() > 0)
-    <div x-data="{ 
-            popups: {{ $activePopups->map(fn($p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'image' => asset('storage/' . $p->image_path),
-                'url' => $p->final_url,
-                'displayType' => $p->display_type
-            ])->toJson() }},
-            currentIndex: -1, // เริ่มที่ -1 เพื่อให้ init จัดการหาอันแรกที่จะแสดง
-            showPopup: false,
-            
-            init() {
-                this.findNextPopup();
-            },
-
-            findNextPopup() {
-                const now = new Date().getTime();
-                let foundIndex = -1;
-
-                // วนหา popup อันถัดไปที่ยังไม่เคยแสดง (ตามเงื่อนไข Session/Day)
-                for (let i = this.currentIndex + 1; i < this.popups.length; i++) {
-                    const popup = this.popups[i];
-                    let shouldShow = false;
-
-                    if (popup.displayType === 'always') {
-                        shouldShow = true;
-                    } else if (popup.displayType === 'once_per_day') {
-                        const lastShow = localStorage.getItem('popup_day_show_' + popup.id);
-                        if (!lastShow || (now - parseInt(lastShow) > 24 * 60 * 60 * 1000)) {
-                            shouldShow = true;
-                        }
-                    } else {
-                        // default: once_per_session
-                        const sessionShow = sessionStorage.getItem('popup_session_show_' + popup.id);
-                        if (!sessionShow) {
-                            shouldShow = true;
-                        }
-                    }
-
-                    if (shouldShow) {
-                        foundIndex = i;
-                        break;
-                    }
-                }
-
-                if (foundIndex !== -1) {
-                    this.currentIndex = foundIndex;
-                    this.recordDisplay(this.popups[foundIndex].id);
-                    setTimeout(() => {
-                        this.showPopup = true;
-                    }, foundIndex === 0 ? 500 : 50); // อันแรกหน่วง 0.5 วิ อันต่อๆ มาเด้งเกือบทันที
-                } else {
-                    this.showPopup = false;
-                    this.currentIndex = this.popups.length;
-                }
-            },
-
-            recordDisplay(id) {
-                // ตรวจสอบว่า Browser นี้เคยนับไปแล้วหรือยัง (Unique User)
-                if (localStorage.getItem('popup_recorded_' + id)) return;
-
-                fetch(`/popups/${id}/record-display`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(res => {
-                    if (res.ok) {
-                        // บันทึกลง localStorage ว่านับไปแล้ว
-                        localStorage.setItem('popup_recorded_' + id, 'true');
-                    }
-                })
-                .catch(err => console.error('Error recording popup display:', err));
-            },
-
-            recordShown(id) {
-                const now = new Date().getTime();
-                localStorage.setItem('popup_day_show_' + id, now);
-                sessionStorage.setItem('popup_session_show_' + id, 'true');
-            },
-
-            closePopup() {
-                if (this.currentIndex >= 0 && this.currentIndex < this.popups.length) {
-                    this.recordShown(this.popups[this.currentIndex].id);
-                }
-                this.showPopup = false;
-                // หลังจากปิดอันนี้ ให้หาอันถัดไปแสดงต่อแทบทันที
-                setTimeout(() => {
-                    this.findNextPopup();
-                }, 100);
-            }
-         }" 
-         x-show="showPopup" 
-         x-cloak
-         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-         @keydown.escape.window="closePopup()"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95">
-        
-        <template x-if="currentIndex >= 0 && currentIndex < popups.length">
-            <div class="relative w-full max-w-lg" @click.away="closePopup()">
-                {{-- Close Button --}}
-                <button @click="closePopup()" 
-                    class="absolute -top-3 -right-3 w-10 h-10 bg-white text-gray-800 rounded-full shadow-2xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all z-20 border-2 border-white group">
-                    <i class="fas fa-times text-lg group-hover:rotate-90 transition-transform"></i>
-                </button>
-
-                {{-- Popup Content --}}
-                <div class="overflow-hidden rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border-4 border-white/10 bg-gray-900">
-                    <template x-if="popups[currentIndex].url">
-                        <a :href="popups[currentIndex].url" @click="recordShown(popups[currentIndex].id)" class="block group">
-                            <img :src="popups[currentIndex].image" 
-                                class="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105" 
-                                :alt="popups[currentIndex].name">
-                        </a>
-                    </template>
-                    <template x-if="!popups[currentIndex].url">
-                        <img :src="popups[currentIndex].image" 
-                            class="w-full h-auto object-contain" 
-                            :alt="popups[currentIndex].name">
-                    </template>
-                </div>
-
-                {{-- Optional: Footer text --}}
-                <div class="mt-4 flex justify-center">
-                    <button @click="closePopup()" class="px-4 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white/80 text-xs transition-colors border border-white/10">
-                        <i class="fas fa-times mr-1"></i> ปิดหน้าต่างนี้ (<span x-text="currentIndex + 1"></span>/<span x-text="popups.length"></span>)
-                    </button>
-                </div>
-            </div>
-        </template>
-    </div>
-
-    <style>
-        [x-cloak] { display: none !important; }
-        @keyframes pop-in {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop-in {
-            animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-    </style>
-    @endif
 </body>
-
 </html>

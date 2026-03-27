@@ -149,7 +149,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
     Route::middleware(['guest:admin'])->group(function () {
         Route::get('login', [AdminController::class, 'showLoginForm'])->name('login');
-        Route::post('login', [AdminController::class, 'login']);
+        Route::post('login', [AdminController::class, 'login'])->middleware('throttle:5,1');
     });
 
     Route::post('logout', [AdminController::class, 'logout'])->name('logout');

@@ -46,6 +46,13 @@ class AdminController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
+        // บันทึก Log เมื่อ Login ล้มเหลว
+        $this->logActivity(new \App\Models\Admin(), 'failed_login', null, [
+            'username' => $request->username,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+
         return back()->withInput($request->only('username'))
             ->withErrors([
                 'username' => 'ชื่อผู้ใช้งาน รหัสผ่านไม่ถูกต้อง หรือบัญชีของคุณถูกระงับ',
@@ -279,22 +286,35 @@ class AdminController extends Controller
             \App\Models\ProductReviewImage::whereNull('product_salepage_id')->whereNotIn('id', $keepReviewIds)->delete();
         }
 
+        // รายชื่อ Key ที่อนุญาตให้แก้ไขได้ (Whitelist)
+        $allowedSettings = [
+            'contact_email', 'contact_phone', 'contact_address',
+            'facebook_url', 'line_id', 'line_url', 'tiktok_url', 'instagram_url',
+            'meta_title', 'meta_description', 'meta_keywords',
+            'google_analytics_id', 'facebook_pixel_id',
+            'shipping_note', 'tax_id', 'company_name'
+        ];
+
         // Handle generic settings array if exists
         if ($request->has('settings') && is_array($request->settings)) {
             foreach ($request->settings as $key => $value) {
-                SiteSetting::set(trim($key), $value);
+                $trimmedKey = trim($key);
+                if (in_array($trimmedKey, $allowedSettings)) {
+                    SiteSetting::set($trimmedKey, $value);
+                }
             }
         }
 
-        // ล้าง Cache เพื่อให้หน้าแรกและหน้าอื่นๆ อัปเดตทันที
-        try {
-            \Illuminate\Support\Facades\Artisan::call('view:clear');
-            \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        } catch (\Exception $e) {
-            // ข้ามหากไม่มีสิทธิ์รันคำสั่ง
-        }
+            // ล้าง Cache เพื่อให้หน้าแรกและหน้าอื่นๆ อัปเดตทันที
+            try {
+                \Illuminate\Support\Facades\Artisan::call('view:clear');
+                \Illuminate\Support\Facades\Artisan::call('cache:clear');
+            } catch (\Exception $e) {
+                // ข้ามหากไม่มีสิทธิ์รันคำสั่ง
+            }
 
-        return Redirect::back()->with('success', 'Settings updated successfully!');
+            return Redirect::back()->with('success', 'Settings updated successfully!');
+        });
     }
 
     public function index()
@@ -317,6 +337,22 @@ class AdminController extends Controller
         $services = \App\Models\Service::orderBy('sort_order')->get();
         $features = \App\Models\Feature::orderBy('sort_order')->get();
         $reviewImages = \App\Models\ProductReviewImage::whereNull('product_salepage_id')->orderBy('sort_order', 'asc')->get();
+
+        return view('admin.settings.index', compact(
+            'settings', 
+            'heroBanners', 
+            'secondaryBanners', 
+            'infoBanner', 
+            'allProductsHeroBanners',
+            'categories',
+            'products',
+            'services', 
+            'features',
+            'reviewImages'
+        ));
+    }
+}
+'product_salepage_id')->orderBy('sort_order', 'asc')->get();
 
         return view('admin.settings.index', compact(
             'settings', 

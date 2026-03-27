@@ -253,11 +253,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('/shipping-settings/methods/{method}/toggle', [App\Http\Controllers\Admin\ShippingSettingController::class, 'toggleStatus'])->name('shipping.methods.toggle');
             Route::delete('/shipping-settings/methods/{method}', [App\Http\Controllers\Admin\ShippingSettingController::class, 'destroy'])->name('shipping.methods.destroy');
 
-            // Homepage Content Management
-            Route::get('/homepage-content/live-edit', [App\Http\Controllers\Admin\HomepageContentController::class, 'liveEdit'])->name('homepage-content.live-edit');
-            Route::post('/homepage-content/{homepageContent}/update-value', [App\Http\Controllers\Admin\HomepageContentController::class, 'updateValue'])->name('homepage-content.updateValue');
-            Route::resource('homepage-content', App\Http\Controllers\Admin\HomepageContentController::class);
-
             // Settings (การตั้งค่าระบบและ Banner)
             Route::get('/settings', [AdminController::class, 'index'])->name('settings.index');
             Route::post('/settings', [AdminController::class, 'update'])->name('settings.update');

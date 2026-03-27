@@ -189,7 +189,7 @@
                         <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Content</p>
                     </div>
 
-                    <div x-data="{ open: <?php echo e(request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') || request()->routeIs('admin.homepage-content.*') ? 'true' : 'false'); ?> }" class="space-y-1">
+                    <div x-data="{ open: <?php echo e(request()->routeIs('admin.faqs.*') || request()->routeIs('admin.favorites.*') || request()->routeIs('admin.contacts.*') ? 'true' : 'false'); ?> }" class="space-y-1">
                         <button @click="open = !open"
                             class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-gray-400 hover:bg-gray-700 hover:text-white">
                             <span class="flex items-center">
@@ -200,10 +200,6 @@
                                 :class="{ 'rotate-180': open }"></i>
                         </button>
                         <div x-show="open" x-transition class="pl-8 pr-4 space-y-1">
-                            <a href="<?php echo e(route('admin.homepage-content.index')); ?>"
-                                class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.homepage-content.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
-                                - จัดการเนื้อหาหน้าแรก
-                            </a>
                             <a href="<?php echo e(route('admin.faqs.index')); ?>"
                                 class="block w-full px-4 py-2 rounded-lg transition-colors text-sm <?php echo e(request()->routeIs('admin.faqs.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'); ?>">
                                 - จัดการคำถามที่พบบ่อย

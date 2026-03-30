@@ -17,30 +17,33 @@ class ActivityLogController extends Controller
 
     public function index(Request $request)
     {
-        // 1. Validate Input เพื่อความปลอดภัย
-        $request->validate([
-            'admin_id' => 'nullable|integer|exists:admins,id',
-        ]);
-
-        // 2. Eager Load ข้อมูลที่จำเป็นเพื่อลด Query (N+1 Problem)
+        // 1. Eager Load ข้อมูลที่จำเป็น
         $query = ActivityLog::with(['admin', 'loggable'])->latest();
 
-        $filter_admin_name = null;
-
-        // 3. Filter Logic
-        if ($request->filled('admin_id')) {
-            $adminId = $request->input('admin_id');
-            $query->where('admin_id', $adminId);
-
-            $admin = Admin::find($adminId);
-            if ($admin) {
-                $filter_admin_name = $admin->name;
-            }
+        // 2. Search Logic (Search Admin Name or Description)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('description', 'like', "%$search%")
+                  ->orWhereHas('admin', function($adminQuery) use ($search) {
+                      $adminQuery->where('name', 'like', "%$search%");
+                  });
+            });
         }
 
-        // 4. Pagination (ใช้ Simple Paginate ถ้าข้อมูลเยอะมากจะเร็วกว่า)
+        // 3. Filter: Action Type (Created, Updated, Deleted)
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+
+        // 4. Filter: Date
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        // 5. Pagination
         $activities = $query->paginate(20)->withQueryString();
 
-        return view('admin.activity_log.index', compact('activities', 'filter_admin_name'));
+        return view('admin.activity_log.index', compact('activities'));
     }
 }

@@ -17,23 +17,56 @@
                 </div>
             </div>
 
-            {{-- Filter Alert --}}
-            @if ($filter_admin_name)
-                <div
-                    class="mb-6 flex items-center justify-between rounded-xl bg-blue-500/10 border border-blue-500/20 p-4 text-blue-200 backdrop-blur-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-blue-500/20 p-2 rounded-lg">
-                            <i class="fas fa-filter text-blue-400"></i>
+            {{-- ฟอร์มค้นหาและกรองข้อมูล (Filters) --}}
+            <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 mb-8 shadow-md">
+                <form action="{{ route('admin.activity-log.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                    <div class="md:col-span-5">
+                        <label class="text-[11px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">ค้นหาแอดมิน / รายละเอียดกิจกรรม</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-500 text-sm"></i>
+                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาตามชื่อแอดมิน หรือกิจกรรม..." 
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-900/50 border border-gray-600 text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow placeholder-gray-600">
                         </div>
-                        <p>กำลังแสดงรายการของ: <span
-                                class="font-bold text-white text-lg ml-1">{{ $filter_admin_name }}</span></p>
                     </div>
-                    <a href="{{ route('admin.activity-log.index') }}"
-                        class="flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/40 rounded-lg text-sm transition-all duration-200">
-                        <i class="fas fa-times"></i> ล้างตัวกรอง
-                    </a>
-                </div>
-            @endif
+                    
+                    <div class="md:col-span-3">
+                        <label class="text-[11px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">ประเภทกิจกรรม</label>
+                        <div class="relative">
+                            <select name="action" class="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-600 text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow appearance-none">
+                                <option value="">ทั้งหมด (All)</option>
+                                <option value="created" {{ request('action') == 'created' ? 'selected' : '' }}>สร้างใหม่ (Created)</option>
+                                <option value="updated" {{ request('action') == 'updated' ? 'selected' : '' }}>แก้ไข (Updated)</option>
+                                <option value="deleted" {{ request('action') == 'deleted' ? 'selected' : '' }}>ลบ (Deleted)</option>
+                                <option value="logged_in" {{ request('action') == 'logged_in' ? 'selected' : '' }}>เข้าสู่ระบบ (Login)</option>
+                                <option value="failed_login" {{ request('action') == 'failed_login' ? 'selected' : '' }}>ล็อกอินพลาด (Failed)</option>
+                                <option value="toggle_status" {{ request('action') == 'toggle_status' ? 'selected' : '' }}>เปลี่ยนสถานะ (Status)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="text-[11px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">วันที่</label>
+                        <input type="date" name="date" value="{{ request('date') }}" 
+                            class="w-full px-4 py-2.5 bg-gray-900/50 border border-gray-600 text-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert">
+                    </div>
+                    
+                    <div class="md:col-span-2 flex gap-2">
+                        <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/30 text-sm flex items-center justify-center">
+                            <i class="fas fa-filter mr-2"></i> กรอง
+                        </button>
+                        @if(request()->anyFilled(['search', 'action', 'date']))
+                            <a href="{{ route('admin.activity-log.index') }}" title="ล้างตัวกรอง" class="flex-none bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium py-2.5 px-4 rounded-xl transition-all text-sm flex items-center justify-center">
+                                <i class="fas fa-undo"></i>
+                            </a>
+                        @endif
+                    </div>
+                </form>
+            </div>
 
             {{-- Activities List --}}
             <div class="space-y-6">

@@ -77,6 +77,109 @@
             </div>
         </div>
 
+        {{-- Analysis Dashboard --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {{-- Top Pages --}}
+            <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-lg overflow-hidden">
+                <div class="bg-gray-900/50 px-5 py-4 border-b border-gray-700 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center">
+                        <i class="fas fa-file-alt mr-2 text-indigo-400"></i> หน้าที่เข้าชมมากที่สุด
+                    </h3>
+                    <span class="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full font-bold uppercase">Top 5</span>
+                </div>
+                <div class="p-5">
+                    <div class="space-y-4">
+                        @forelse($stats['top_pages'] as $page)
+                            <div>
+                                <div class="flex justify-between text-xs mb-1.5">
+                                    <span class="text-gray-400 truncate pr-4">
+                                        {{ $page->path == '' ? 'หน้าหลัก (/)' : '/'.$page->path }}
+                                    </span>
+                                    <span class="text-gray-200 font-bold">{{ number_format($page->total_visits) }} ครั้ง</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-1.5">
+                                    @php
+                                        $maxVisits = $stats['top_pages']->max('total_visits') ?: 1;
+                                        $percent = ($page->total_visits / $maxVisits) * 100;
+                                    @endphp
+                                    <div class="bg-indigo-500 h-1.5 rounded-full" style="width: {{ $percent }}%"></div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-center text-gray-500 text-xs py-4">ไม่มีข้อมูล</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            {{-- Top Products --}}
+            <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-lg overflow-hidden">
+                <div class="bg-gray-900/50 px-5 py-4 border-b border-gray-700 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center">
+                        <i class="fas fa-shopping-bag mr-2 text-emerald-400"></i> สินค้าที่มีคนดูมากที่สุด
+                    </h3>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase">Top 5</span>
+                </div>
+                <div class="p-5">
+                    <div class="space-y-4">
+                        @forelse($stats['top_products'] as $product)
+                            <div>
+                                <div class="flex justify-between text-xs mb-1.5">
+                                    <span class="text-gray-400 truncate pr-4">/{{ $product->path }}</span>
+                                    <span class="text-gray-200 font-bold">{{ number_format($product->total_views) }} ครั้ง</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-1.5">
+                                    @php
+                                        $maxViews = $stats['top_products']->max('total_views') ?: 1;
+                                        $percent = ($product->total_views / $maxViews) * 100;
+                                    @endphp
+                                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ $percent }}%"></div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-center text-gray-500 text-xs py-4">ไม่มีข้อมูลการชมสินค้า</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            {{-- Device Breakdown --}}
+            <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-lg overflow-hidden">
+                <div class="bg-gray-900/50 px-5 py-4 border-b border-gray-700">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center">
+                        <i class="fas fa-laptop-house mr-2 text-purple-400"></i> สัดส่วนอุปกรณ์ที่ใช้เข้าชม
+                    </h3>
+                </div>
+                <div class="p-5 flex flex-col h-full justify-center">
+                    @php
+                        $totalDev = $stats['devices']['mobile'] + $stats['devices']['desktop'];
+                        $mobPercent = $totalDev > 0 ? ($stats['devices']['mobile'] / $totalDev) * 100 : 0;
+                        $deskPercent = $totalDev > 0 ? ($stats['devices']['desktop'] / $totalDev) * 100 : 0;
+                    @endphp
+                    <div class="flex h-8 w-full rounded-xl overflow-hidden mb-6 shadow-inner bg-gray-700">
+                        <div class="bg-purple-500 transition-all duration-500 h-full flex items-center justify-center text-[10px] font-bold text-white" style="width: {{ $mobPercent }}%" title="Mobile: {{ number_format($mobPercent, 1) }}%">
+                            {{ $mobPercent > 10 ? number_format($mobPercent, 0).'%' : '' }}
+                        </div>
+                        <div class="bg-blue-500 transition-all duration-500 h-full flex items-center justify-center text-[10px] font-bold text-white" style="width: {{ $deskPercent }}%" title="Desktop: {{ number_format($deskPercent, 1) }}%">
+                            {{ $deskPercent > 10 ? number_format($deskPercent, 0).'%' : '' }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-900/40 p-3 rounded-xl border border-purple-500/20 text-center">
+                            <i class="fas fa-mobile-alt text-purple-400 mb-1"></i>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase">Mobile</p>
+                            <p class="text-lg font-black text-gray-200">{{ number_format($stats['devices']['mobile']) }}</p>
+                        </div>
+                        <div class="bg-gray-900/40 p-3 rounded-xl border border-blue-500/20 text-center">
+                            <i class="fas fa-desktop text-blue-400 mb-1"></i>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase">Desktop</p>
+                            <p class="text-lg font-black text-gray-200">{{ number_format($stats['devices']['desktop']) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Filters Form --}}
         <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 mb-6 shadow-md">
             <form action="{{ route('admin.visitors.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
@@ -157,8 +260,13 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="inline-flex items-center px-3 py-1 bg-gray-900 text-gray-300 rounded-lg text-xs border border-gray-700 font-mono">
-                                        <i class="fas fa-link text-[10px] mr-2 text-gray-500"></i>
-                                        /{{ $visitor->path ?: 'หน้าหลัก' }}
+                                        @if($visitor->path == '' || $visitor->path == '/')
+                                            <i class="fas fa-home text-[10px] mr-2 text-emerald-500"></i>
+                                            หน้าหลัก (/)
+                                        @else
+                                            <i class="fas fa-link text-[10px] mr-2 text-gray-500"></i>
+                                            /{{ $visitor->path }}
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">

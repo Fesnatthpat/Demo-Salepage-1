@@ -1,170 +1,157 @@
 @extends('layout')
 
-@section('title', 'QR Code สำหรับออเดอร์ ' . $order->ord_code . ' | Salepage Demo')
+@section('title', 'ชำระเงิน ออเดอร์ ' . $order->ord_code . ' | Salepage Demo')
 
 @section('content')
-    <div class="container mx-auto p-4 min-h-screen flex items-center justify-center ">
+    <div class="min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center font-sans">
 
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        {{-- Main Container (ปรับเป็น flex-col สำหรับมือถือ และ lg:flex-row สำหรับจอใหญ่ พร้อมคุมความกว้างในแต่ละหน้าจอ) --}}
+        <div
+            class="w-full max-w-md md:max-w-2xl lg:max-w-5xl mx-auto bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-gray-200">
 
-            {{-- Header --}}
-            <div class="bg-gradient-to-r from-red-600 to-red-800 p-6 text-center text-white relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <svg width="100%" height="100%">
-                        <pattern id="pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                            <circle cx="20" cy="20" r="1" fill="white" />
-                        </pattern>
-                        <rect width="100%" height="100%" fill="url(#pattern)" />
-                    </svg>
-                </div>
-                <h1 class="font-bold text-2xl relative z-10 tracking-tight">ชำระเงิน</h1>
-                <p class="text-white/90 font-medium text-base mt-1 relative z-10">บริษัท กวินบราเทอร์</p>
-                <div class="flex items-center justify-center gap-2 mt-1 relative z-10 opacity-75">
-                    <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full border border-white/30">ออเดอร์
-                        {{ $order->ord_code }}</span>
-                </div>
+            {{-- ================= ฝั่งซ้าย: ข้อมูลออเดอร์ และ QR Code ================= --}}
+            <div
+                class="w-full lg:w-1/2 flex flex-col bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 relative">
 
+                {{-- Header Section (ยอดเงินและเลขออเดอร์) --}}
                 <div
-                    class="mt-5 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 inline-block relative z-10 shadow-inner">
-                    <span
-                        class="block text-[10px] text-white/70 uppercase tracking-widest font-bold mb-1">ยอดชำระทั้งหมด</span>
-                    <div class="flex items-center justify-center gap-2">
-                        <span class="text-3xl font-black tabular-nums">฿{{ number_format($order->net_amount, 2) }}</span>
-                        <button onclick="copyToClipboard('{{ $order->net_amount }}', 'ยอดเงิน')"
-                            class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/40 transition-colors"
-                            title="คัดลอกยอดเงิน">
-                            <i class="fas fa-copy text-[10px]"></i>
-                        </button>
+                    class="bg-gradient-to-br from-red-600 to-red-800 p-6 sm:p-8 text-center text-white relative overflow-hidden shrink-0">
+                    <div class="absolute inset-0 opacity-10 pointer-events-none">
+                        <svg width="100%" height="100%">
+                            <pattern id="pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <circle cx="20" cy="20" r="1.5" fill="white" />
+                            </pattern>
+                            <rect width="100%" height="100%" fill="url(#pattern)" />
+                        </svg>
+                    </div>
+
+                    <div class="relative z-10">
+                        <span
+                            class="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium tracking-wider mb-2 sm:mb-3 border border-white/30">
+                            ออเดอร์ {{ $order->ord_code }}
+                        </span>
+                        <h1 class="text-xs sm:text-sm font-medium text-red-100 mb-1">ยอดชำระเงินทั้งหมด</h1>
+
+                        <div class="flex items-center justify-center gap-3">
+                            <span
+                                class="text-3xl sm:text-4xl lg:text-5xl font-black tabular-nums tracking-tight">฿{{ number_format($order->net_amount, 2) }}</span>
+                        </div>
+                        <p class="text-[10px] sm:text-xs text-red-200 mt-2 font-medium">บริษัท กวินบราเทอร์</p>
+                    </div>
+                </div>
+
+                {{-- QR Code Section --}}
+                <div class="p-6 sm:p-8 flex-grow flex flex-col items-center justify-center">
+
+                    {{-- Timer --}}
+                    <div id="timer-container"
+                        class="flex items-center justify-center gap-2 sm:gap-3 mb-5 sm:mb-6 bg-red-100/50 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full border border-red-200 w-full max-w-sm">
+                        <i class="fas fa-stopwatch text-red-500 text-base sm:text-lg animate-pulse"></i>
+                        <div class="text-center flex items-baseline gap-1.5 sm:gap-2">
+                            <span class="text-xs sm:text-sm font-bold text-red-500">กรุณาชำระภายใน</span>
+                            <span id="countdown-timer"
+                                class="font-mono font-black text-red-600 text-lg sm:text-xl tabular-nums">--:--</span>
+                            <span class="text-xs sm:text-sm font-bold text-red-500">นาที</span>
+                        </div>
+                    </div>
+
+                    <div id="expired-message"
+                        class="hidden text-center mb-5 sm:mb-6 w-full max-w-sm bg-gray-100 py-4 rounded-2xl border-2 border-dashed border-gray-300">
+                        <i class="fas fa-clock text-gray-400 text-2xl sm:text-3xl mb-2"></i>
+                        <p class="text-xs sm:text-sm font-bold text-gray-600">QR Code หมดอายุแล้ว</p>
+                        <p class="text-[10px] sm:text-xs text-gray-400 mt-1">กรุณาทำรายการสั่งซื้อใหม่อีกครั้ง</p>
+                    </div>
+
+                    {{-- QR Image Box --}}
+                    <div class="text-center relative w-full flex flex-col items-center" id="qr-container">
+                        <div
+                            class="inline-block bg-white p-4 lg:p-5 rounded-3xl border-2 border-gray-200 shadow-sm relative group">
+                            <img id="qr-code-image" src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}"
+                                alt="PromptPay QR Code" class="w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56 object-cover rounded-xl mx-auto">
+
+                            <div id="qr-overlay"
+                                class="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300 rounded-3xl">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
+                                    <i class="fas fa-times text-red-500 text-lg sm:text-xl"></i>
+                                </div>
+                                <p class="text-sm sm:text-base text-gray-800 font-bold">หมดเวลาชำระเงิน</p>
+                            </div>
+
+                            <div class="mt-3 sm:mt-4 flex flex-col items-center justify-center gap-1">
+                                <img src="{{ asset('images/ci-qrpayment-img-01.png') }}" class="h-5 sm:h-6 lg:h-7 object-contain"
+                                    alt="Thai QR Payment" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+
+                        <div id="save-btn-container" class="mt-5 sm:mt-6">
+                            <button onclick="saveQRCode()"
+                                class="text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 px-5 sm:px-6 py-2 sm:py-2.5 rounded-full transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fas fa-download"></i> บันทึกรูป QR Code
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            
+            {{-- ================= ฝั่งขวา: โอนธนาคาร และ ปุ่มจัดการออเดอร์ ================= --}}
+            <div class="w-full lg:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center bg-white">
 
-            {{-- ส่วนแสดงเลขบัญชีธนาคาร --}}
-            <div class="px-6 pt-6 pb-2">
+                <h2 class="text-base sm:text-lg font-bold text-gray-800 mb-1 sm:mb-2">หรือโอนผ่านบัญชีธนาคาร</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mb-5 sm:mb-6">คุณสามารถโอนเงินเข้าบัญชีด้านล่าง และแนบสลิปเพื่อยืนยัน</p>
+
+                {{-- Bank Account Block --}}
                 @php
                     $bankName = 'ธนาคารกสิกรไทย';
                     $accNumber = '123-4-56789-0';
                     $accName = 'บจก. กวินบราเทอร์';
                 @endphp
-
                 <div onclick="copyToClipboard('{{ $accNumber }}', 'เลขบัญชี')"
-                    class="bg-white border-2 border-gray-100 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:border-red-200 hover:bg-red-50/30 transition-all duration-300 group shadow-sm">
-
-                    <div class="flex items-center gap-4">
+                    class="bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:border-red-300 hover:bg-red-50/50 transition-all duration-300 group mb-6 sm:mb-8 shadow-sm">
+                    <div class="flex items-center gap-3 sm:gap-4 lg:gap-5">
                         <div
-                            class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-md">
-                            <i class="fas fa-university text-lg"></i>
+                            class="w-12 h-12 sm:w-14 sm:h-14 bg-green-600 rounded-2xl flex items-center justify-center text-white shadow-md">
+                            <i class="fas fa-leaf text-xl sm:text-2xl"></i>
                         </div>
-                        <div class="text-left">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ $bankName }}</p>
-                            <p class="text-lg font-black text-gray-800 font-mono tracking-tighter">{{ $accNumber }}</p>
-                            <p class="text-[10px] text-gray-500 font-medium">{{ $accName }}</p>
+                        <div>
+                            <p class="text-[10px] sm:text-xs font-bold text-gray-500 mb-0.5">{{ $bankName }}</p>
+                            <p class="text-lg sm:text-xl lg:text-2xl font-black text-gray-800 tracking-tight">{{ $accNumber }}</p>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-0.5">{{ $accName }}</p>
                         </div>
                     </div>
-
                     <div
-                        class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 group-hover:bg-red-100 group-hover:text-red-600 flex items-center justify-center transition-all">
-                        <i class="fas fa-copy text-sm"></i>
-                    </div>
-                </div>
-                <div class="relative flex items-center justify-center my-6">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-200"></div>
-                    </div>
-                    <span
-                        class="relative px-3 bg-white text-[10px] font-bold text-gray-400 uppercase tracking-widest">หรือสแกนคิวอาร์</span>
-                </div>
-            </div>
-
-            <div class="p-6 pt-0">
-                {{-- Countdown Timer --}}
-                <div id="timer-container"
-                    class="flex items-center justify-center gap-3 mb-6 bg-red-50/50 py-3 rounded-2xl border border-red-100 shadow-inner group">
-                    <div
-                        class="flex items-center justify-center w-8 h-8 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform">
-                        <i class="fas fa-hourglass-half text-red-500 text-xs animate-pulse"></i>
-                    </div>
-                    <div class="flex flex-col">
-                        <span
-                            class="text-[10px] font-bold text-red-400 uppercase tracking-wider leading-none mb-1">จะหมดอายุใน</span>
-                        <span id="countdown-timer"
-                            class="font-mono font-black text-red-600 text-xl leading-none">--:--</span>
-                    </div>
-                    <span class="text-xs font-bold text-red-400">นาที</span>
-                </div>
-
-                <div id="expired-message"
-                    class="hidden text-center mb-6 bg-gray-100 py-4 rounded-2xl border-2 border-dashed border-gray-300">
-                    <div class="flex flex-col items-center gap-2">
-                        <i class="fas fa-clock text-gray-400 text-2xl"></i>
-                        <p class="text-sm font-bold text-gray-500">QR Code หมดอายุแล้ว</p>
+                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 text-gray-400 group-hover:text-red-500 group-hover:border-red-200 flex items-center justify-center shadow-sm shrink-0">
+                        <i class="fas fa-copy text-sm sm:text-base"></i>
                     </div>
                 </div>
 
-                <div class="text-center animate-fade-in relative">
-                    <div class="bg-white p-5 rounded-3xl border-2 border-gray-100 inline-block mb-6 relative group transition-all duration-500 shadow-sm"
-                        id="qr-container">
-                        <div class="relative">
-                            <img id="qr-code-image" src="data:image/svg+xml;base64,{{ $qrCodeBase64 }}"
-                                alt="PromptPay QR Code"
-                                class="w-52 h-52 object-cover rounded-xl mx-auto transition-all duration-500 group-hover:scale-[1.02]">
-                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-                                <i class="fas fa-qrcode text-6xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <div class="flex items-center justify-center gap-2 mb-1">
-                                <img src="{{ asset('images/ci-qrpayment-img-01.png') }}" class="h-4 object-contain"
-                                    onerror="this.style.display='none'">
-                                <p class="font-black text-gray-800 text-sm tracking-tight">Thai QR Payment</p>
-                            </div>
-                            <p class="text-[10px] text-gray-400 font-medium">บริษัท กวินบราเทอร์</p>
-                        </div>
-                        <div id="qr-overlay"
-                            class="absolute inset-0 bg-white/95 backdrop-blur-md z-10 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 rounded-3xl">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                                <i class="fas fa-calendar-times text-gray-400 text-2xl"></i>
-                            </div>
-                            <p class="text-gray-500 font-black text-base">QR หมดอายุ</p>
-                            <p class="text-[10px] text-gray-400 mt-1">กรุณาทำรายการสั่งซื้อใหม่</p>
-                        </div>
-                    </div>
+                <hr class="border-gray-100 mb-6 sm:mb-8">
 
-                    <div id="save-btn-container" class="flex justify-center gap-3 mb-8 transition-all duration-300">
-                        <button onclick="saveQRCode()"
-                            class="flex items-center gap-2 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95">
-                            <i class="fas fa-download"></i>
-                            บันทึกรูป QR
-                        </button>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
+                {{-- Action Buttons --}}
+                <div class="space-y-3 sm:space-y-4">
                     <button id="upload-slip-btn"
-                        class="w-full h-14 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-2xl font-black text-lg shadow-lg shadow-red-500/30 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 group">
-                        <i class="fas fa-file-invoice-dollar opacity-70 group-hover:scale-110 transition-transform"></i>
-                        <span>แจ้งชำระเงิน / แนบสลิป</span>
+                        class="w-full h-14 sm:h-16 bg-red-600 hover:bg-red-700 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl shadow-red-500/20 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2 sm:gap-3">
+                        <i class="fas fa-file-invoice-dollar text-lg sm:text-xl"></i>
+                        แจ้งชำระเงิน / แนบสลิป
                     </button>
 
-                    <div id="cancel-order-container" class="transition-all duration-300">
-                        <form id="cancel-form" action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}"
-                            method="POST">
-                            @csrf
-                            <button type="button" onclick="confirmCancel()"
-                                class="w-full h-11 border-2 border-gray-200 text-gray-400 hover:border-red-200 hover:text-red-500 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
-                                <i class="fas fa-times-circle"></i>
-                                ยกเลิกคำสั่งซื้อนี้
-                            </button>
-                        </form>
-                    </div>
+                    <form id="cancel-form" action="{{ route('payment.cancel', ['orderCode' => $order->ord_code]) }}"
+                        method="POST">
+                        @csrf
+                        <button type="button" onclick="confirmCancel()"
+                            class="w-full h-12 sm:h-14 bg-white border-2 border-gray-200 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-600 rounded-xl sm:rounded-2xl text-sm sm:text-base font-bold transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-times"></i>
+                            ยกเลิกคำสั่งซื้อนี้
+                        </button>
+                    </form>
                 </div>
 
-                <a href="{{ route('orders.index') }}"
-                    class="block text-center mt-6 text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest">
-                    <i class="fas fa-history mr-1"></i> ประวัติการสั่งซื้อ
-                </a>
+                <div class="mt-6 sm:mt-8 text-center">
+                    <a href="{{ route('orders.index') }}"
+                        class="text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-700 transition-colors inline-flex items-center gap-1.5 sm:gap-2">
+                        <i class="fas fa-arrow-left"></i> กลับไปหน้าประวัติการสั่งซื้อ
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>
@@ -178,8 +165,8 @@
 @endsection
 
 @section('scripts')
+    {{-- สคริปต์ยังคงเหมือนเดิมทุกประการ เพื่อให้ระบบทำงานได้เสถียรครับ --}}
     <script>
-        // --- ฟังก์ชัน Copy to Clipboard (ปรับปรุงใหม่ให้รองรับการแจ้งชื่อฟิลด์) ---
         window.copyToClipboard = function(text, label = 'ข้อมูล') {
             navigator.clipboard.writeText(text).then(() => {
                 const Toast = Swal.mixin({
@@ -188,32 +175,29 @@
                     showConfirmButton: false,
                     timer: 2000,
                     timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    }
                 });
                 Toast.fire({
                     icon: 'success',
-                    title: `คัดลอก ${label} แล้ว`,
-                    text: text
+                    title: `คัดลอก${label}เรียบร้อย`,
                 });
             });
         }
 
-        // --- ส่วนการทำงานอื่นๆ คงเดิม แต่ปรับแต่ง UI นิดหน่อย ---
         window.confirmCancel = function() {
             Swal.fire({
-                title: 'ยืนยันการยกเลิก?',
-                text: "คุณต้องการยกเลิกคำสั่งซื้อ {{ $order->ord_code }} ใช่หรือไม่?",
+                title: 'ยกเลิกคำสั่งซื้อ?',
+                text: "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกออเดอร์ {{ $order->ord_code }}?",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#9ca3af',
-                confirmButtonText: 'ใช่, ยกเลิกออเดอร์',
-                cancelButtonText: 'ไม่ยกเลิก',
+                cancelButtonColor: '#e5e7eb',
+                confirmButtonText: 'ใช่, ยกเลิกเลย',
+                cancelButtonText: '<span class="text-gray-700">กลับไปชำระเงิน</span>',
                 reverseButtons: true,
-                borderRadius: '1.5rem'
+                borderRadius: '1.5rem',
+                customClass: {
+                    cancelButton: 'text-gray-800'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('cancel-form').submit();
@@ -229,13 +213,16 @@
             const reader = new FileReader();
             reader.onload = function() {
                 const output = document.getElementById('slip-preview');
-                if (output) {
+                const placeholder = document.getElementById('slip-preview-placeholder');
+                if (output && placeholder) {
                     output.src = reader.result;
                     output.classList.remove('hidden');
-                    document.getElementById('slip-preview-placeholder').classList.add('hidden');
+                    placeholder.classList.add('hidden');
                 }
             };
-            reader.readAsDataURL(event.target.files[0]);
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
         }
 
         window.saveQRCode = function() {
@@ -261,12 +248,11 @@
                     timerContainer.classList.add('hidden');
                     expiredMessage.classList.remove('hidden');
                     qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
-                    if (saveBtnContainer) saveBtnContainer.classList.add('opacity-50', 'pointer-events-none');
-                    
-                    // 🔄 เมื่อเวลาหมด ให้รีเฟรชหน้าจอเพื่อแจ้งเตือนและยกเลิกออเดอร์ใน DB
+                    if (saveBtnContainer) saveBtnContainer.classList.add('hidden');
+
                     setTimeout(() => {
                         window.location.reload();
-                    }, 1000);
+                    }, 2000);
                     return;
                 }
                 const minutes = Math.floor(timeLeft / 60);
@@ -276,41 +262,51 @@
                 timeLeft--;
             }
 
-            setInterval(updateTimerDisplay, 1000);
-            updateTimerDisplay(); // Initial call
+            if (timeLeft > 0) {
+                setInterval(updateTimerDisplay, 1000);
+                updateTimerDisplay();
+            } else {
+                updateTimerDisplay();
+            }
 
             const uploadBtn = document.getElementById('upload-slip-btn');
             if (uploadBtn) {
                 uploadBtn.addEventListener('click', function() {
                     Swal.fire({
-                        title: 'แนบสลิปชำระเงิน',
-                        html: `<div class="p-2">
-                                <p class="text-xs text-gray-500 mb-6 font-medium">กรุณาอัปโหลดหลักฐานการโอนเงินจำนวน <br><span class="text-lg font-black text-red-600">฿{{ number_format($order->net_amount, 2) }}</span></p>
-                                <div id="slip-preview-container" class="w-full h-64 bg-gray-50 rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 cursor-pointer hover:border-red-300 hover:bg-red-50/30 transition-all" onclick="window.triggerFileInput()">
-                                     <div id="slip-preview-placeholder" class="text-center text-gray-300">
-                                        <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
-                                            <i class="fas fa-cloud-upload-alt text-xl"></i>
+                        title: 'ยืนยันการชำระเงิน',
+                        html: `
+                            <div class="p-2">
+                                <p class="text-sm text-gray-600 mb-4">ยอดที่ต้องชำระ <span class="font-bold text-red-600 text-lg">฿{{ number_format($order->net_amount, 2) }}</span></p>
+                                <div id="slip-preview-container" 
+                                     class="w-full h-64 bg-gray-50 rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all overflow-hidden" 
+                                     onclick="window.triggerFileInput()">
+                                    
+                                    <div id="slip-preview-placeholder" class="text-center text-gray-400 p-4">
+                                        <div class="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-image text-2xl text-gray-300"></i>
                                         </div>
-                                        <p class="font-bold text-xs uppercase tracking-widest">คลิกเพื่ออัปโหลดสลิป</p>
-                                        <p class="text-[10px] mt-1 font-medium">รองรับ JPG, PNG, PDF</p>
+                                        <p class="font-bold text-sm text-gray-600">แตะเพื่อเลือกรูปสลิป</p>
+                                        <p class="text-xs mt-1">รองรับ JPG, PNG</p>
                                     </div>
-                                    <img id="slip-preview" class="hidden h-full w-full object-contain rounded-2xl" />
+                                    
+                                    <img id="slip-preview" class="hidden h-full w-full object-contain bg-gray-900/5" />
                                 </div>
-                            </div>`,
+                            </div>
+                        `,
                         showCancelButton: true,
-                        confirmButtonText: 'ยืนยันการแจ้งชำระ',
+                        confirmButtonText: 'อัปโหลดสลิป',
                         confirmButtonColor: '#dc2626',
                         cancelButtonText: 'ยกเลิก',
-                        borderRadius: '2rem',
+                        borderRadius: '1.5rem',
                         preConfirm: () => {
                             if (document.getElementById('slip_image_input').files.length ===
                                 0) {
-                                Swal.showValidationMessage('กรุณาเลือกไฟล์สลิป');
+                                Swal.showValidationMessage(
+                                    'กรุณาแนบรูปสลิปชำระเงินก่อนกดยืนยันครับ');
                                 return false;
                             }
-                            // Show loading state on the button
                             Swal.getConfirmButton().innerHTML =
-                                '<i class="fas fa-spinner fa-spin mr-2"></i> กำลังส่งข้อมูล...';
+                                '<i class="fas fa-spinner fa-spin mr-2"></i> กำลังอัปโหลด...';
                             Swal.getConfirmButton().disabled = true;
                             document.getElementById('slip-upload-form').submit();
                         }

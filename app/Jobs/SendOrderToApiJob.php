@@ -109,11 +109,12 @@ class SendOrderToApiJob implements ShouldQueue
                 'tracking_number' => '',
                 'payment_date' => $orderDateFormatted,
                 'payment_method' => $this->addressData['payment_method'] ?? 'Prepaid',
+                'payment_img' => 'https://tidjaithaisnack.com/storage/' . $this->order->slip_path,
                 'phone_number1' => $this->order->shipping_phone,
                 'phone_number2' => '',
                 'postal_code' => $this->addressData['postal_code'] ?? '',
                 'province' => $this->addressData['province'] ?? '',
-                'shipping_method' => 'Standard Delivery',
+                'shipping_method' => 'Shopee SPX Express',
                 'social_name' => '',
                 'store_name' => 'Sale Page',
                 'order_upload_status' => '',
@@ -122,7 +123,7 @@ class SendOrderToApiJob implements ShouldQueue
             ],
         ];
 
-        Log::info('Sending order to CRM API: '.$this->order->ord_code, ['payload' => $payload]);
+        Log::info('Sending order to CRM API: '.$this->order->ord_code.' '.json_encode(['payload' => $payload], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         try {
             $response = Http::withoutVerifying()
@@ -131,18 +132,19 @@ class SendOrderToApiJob implements ShouldQueue
                 ->asJson()
                 ->post($apiUrl, $payload);
 
-            Log::debug('CRM API Debug:', [
+            Log::debug('CRM API Debug: '.json_encode([
                 'status' => $response->status(),
                 'response' => $response->json(),
-            ]);
+                'payload' => $payload
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
             if ($response->successful()) {
-                Log::info('✅ Successfully sent order to CRM: '.$this->order->ord_code);
+                Log::info('Successfully sent order to CRM: '.$this->order->ord_code);
             } else {
-                Log::error('❌ Failed to send order to CRM: '.$this->order->ord_code, [
+                Log::error('Failed to send order to CRM: '.$this->order->ord_code.' '.json_encode([
                     'status' => $response->status(),
                     'response' => $response->body(),
-                ]);
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
             }
         } catch (\Exception $e) {
             Log::critical('❌ Exception when sending order to CRM: '.$this->order->ord_code, [

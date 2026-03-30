@@ -36,8 +36,11 @@ class OrderController extends Controller
      */
     public function show($ord_code)
     {
-        $order = Order::where('ord_code', $ord_code)
-            ->where('user_id', Auth::id())
+        // ค้นหาจากทั้ง ord_code หรือ tracking_number (od_ref)
+        $order = Order::where(function($q) use ($ord_code) {
+                $q->where('ord_code', $ord_code)
+                  ->orWhere('tracking_number', $ord_code);
+            })
             ->firstOrFail();
 
         return view('orderdetail', compact('order'));

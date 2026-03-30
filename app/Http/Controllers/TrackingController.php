@@ -59,6 +59,7 @@ class TrackingController extends Controller
                                             'external_url' => $item['link'],
                                             'carrier_name' => $item['logistics_name'] ?? 'ขนส่งพาร์ทเนอร์',
                                             'tracking_number' => $item['od_ref'] ?? $item['od_code'],
+                                            'od_ref' => $item['od_ref'] ?? null,
                                             'order_code' => $item['od_code'],
                                             'order_date' => $item['od_date'] ?? '-',
                                         ];
@@ -78,6 +79,7 @@ class TrackingController extends Controller
                                             'is_external' => false,
                                             'carrier_name' => $item['logistics_name'] ?? ($shipmentData['shippingService']['productName'] ?? 'Internal Service'),
                                             'tracking_number' => $item['od_ref'] ?? ($shipmentData['trackingID'] ?? $item['od_code']),
+                                            'od_ref' => $item['od_ref'] ?? null,
                                             'order_code' => $item['od_code'],
                                             'status_text' => $latestStatus,
                                             'order_date' => $item['od_date'] ?? '-',
@@ -88,6 +90,7 @@ class TrackingController extends Controller
                                             'is_external' => false,
                                             'carrier_name' => $item['logistics_name'] ?? 'Internal Service',
                                             'tracking_number' => $item['od_ref'] ?? $item['od_code'],
+                                            'od_ref' => $item['od_ref'] ?? null,
                                             'order_code' => $item['od_code'],
                                             'status_text' => 'กำลังเตรียมการจัดส่ง',
                                             'order_date' => $item['od_date'] ?? '-',

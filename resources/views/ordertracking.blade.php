@@ -104,7 +104,7 @@
                                     {{ $data['carrier_name'] }}
                                 </h3>
                                 <p class="text-slate-500 text-sm mb-1">หมายเลขติดตาม: <span
-                                        class="font-bold text-red-600">{{ $data['tracking_number'] }}</span></p>
+                                        class="font-bold text-red-600">{{ $data['od_ref'] ?? $data['tracking_number'] }}</span></p>
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1">
                                     <p class="text-slate-400 text-xs italic">วันที่สั่งซื้อ: {{ $data['order_date'] }}</p>
                                     @if(!isset($data['is_external']) || !$data['is_external'])
@@ -128,12 +128,10 @@
                                     </button>
                                 @endif
                                 
-                                @auth
-                                    <a href="{{ route('orders.show', $data['order_code']) }}" 
-                                        class="btn btn-outline border-red-600 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white px-6 rounded-xl transition-all w-full text-center py-2 border font-bold text-sm">
-                                        รายละเอียดคำสั่งซื้อ
-                                    </a>
-                                @endauth
+                                <a href="{{ route('orders.show', $data['od_ref'] ?? $data['order_code']) }}" 
+                                    class="btn btn-outline border-red-600 text-red-600 hover:bg-red-600 hover:border-red-600 hover:text-white px-6 rounded-xl transition-all w-full text-center py-2 border font-bold text-sm">
+                                    รายละเอียดคำสั่งซื้อ
+                                </a>
                             </div>
                         </div>
                     @endforeach

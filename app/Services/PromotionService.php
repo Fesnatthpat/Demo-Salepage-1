@@ -76,7 +76,7 @@ class PromotionService
         }
 
         $promos = $this->getApplicablePromotions($cartItems);
-        $maxDiscount = 0;
+        $totalDiscount = 0;
         $appliedCode = $this->getAppliedPromoCode(); 
 
         foreach ($promos as $promo) {
@@ -85,19 +85,19 @@ class PromotionService
 
             if ($promo->discount_value > 0 && ($isAutoDiscount || $isMatchingCode)) {
                 $currentPromoDiscount = 0;
+                $multiplier = $promo->multiplier ?? 1;
+
                 if ($promo->discount_type === 'fixed') {
-                    $currentPromoDiscount = (float) $promo->discount_value;
+                    $currentPromoDiscount = (float) $promo->discount_value * $multiplier;
                 } elseif ($promo->discount_type === 'percentage') {
                     $currentPromoDiscount = ($subTotal * ((float) $promo->discount_value / 100));
                 }
                 
-                if ($currentPromoDiscount > $maxDiscount) {
-                    $maxDiscount = $currentPromoDiscount;
-                }
+                $totalDiscount += $currentPromoDiscount;
             }
         }
 
-        return $maxDiscount;
+        return $totalDiscount;
     }
 
     /**

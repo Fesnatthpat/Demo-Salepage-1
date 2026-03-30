@@ -368,30 +368,52 @@ class OrderService
             $appliedCode = $this->promotionService->getAppliedPromoCode();
 
             foreach ($promos as $promo) {
-                if ($promo->usage_limit !== null && $promo->used_count >= $promo->usage_limit) {
+                // 🔒 Lock for Update to prevent race condition on usage_limit
+                $lockedPromo = \App\Models\Promotion::where('id', $promo->id)->lockForUpdate()->first();
+                
+                if ($lockedPromo->usage_limit !== null && $lockedPromo->used_count >= $lockedPromo->usage_limit) {
                     continue;
                 }
 
-                $thisPromoDiscount = 0;
-                $isAutoDiscount = ! $promo->is_discount_code;
-                $isMatchingCode = $promo->is_discount_code && ! empty($appliedCode) && $promo->code === $appliedCode;
+                // 🛡️ Added: Check for duplicate usage (for both logged-in and guest users)
+                if ($lockedPromo->is_discount_code) {
+                    $alreadyUsedQuery = \App\Models\PromotionUsageLog::where('promotion_id', $lockedPromo->id)
+                        ->whereHas('order', function ($q) use ($shippingDetails, $userId) {
+                            $q->where('status_id', '!=', Order::STATUS_CANCELLED);
+                            if ($userId > 0) {
+                                $q->where('user_id', $userId);
+                            } else {
+                                $q->where('shipping_phone', $shippingDetails['phone']);
+                            }
+                        });
 
-                if ($promo->discount_value > 0 && ($isAutoDiscount || $isMatchingCode)) {
-                    if ($promo->discount_type === 'fixed') {
-                        $thisPromoDiscount = (float) $promo->discount_value;
-                    } elseif ($promo->discount_type === 'percentage') {
-                        $thisPromoDiscount = ($subTotal * ((float) $promo->discount_value / 100));
+                    if ($alreadyUsedQuery->exists()) {
+                        throw new \Exception("ขออภัย! คุณเคยใช้รหัสส่วนลด '{$lockedPromo->code}' นี้ไปแล้ว");
+                    }
+                }
+
+                $thisPromoDiscount = 0;
+                $isAutoDiscount = ! $lockedPromo->is_discount_code;
+                $isMatchingCode = $lockedPromo->is_discount_code && ! empty($appliedCode) && $lockedPromo->code === $appliedCode;
+
+                if ($lockedPromo->discount_value > 0 && ($isAutoDiscount || $isMatchingCode)) {
+                    $multiplier = $promo->multiplier ?? 1;
+                    if ($lockedPromo->discount_type === 'fixed') {
+                        $thisPromoDiscount = (float) $lockedPromo->discount_value * $multiplier;
+                    } elseif ($lockedPromo->discount_type === 'percentage') {
+                        $thisPromoDiscount = ($subTotal * ((float) $lockedPromo->discount_value / 100));
                     }
                 }
 
                 if ($thisPromoDiscount > 0) {
                     $additionalDiscount += $thisPromoDiscount;
-                    \App\Models\Promotion::where('id', $promo->id)->increment('used_count');
+                    $lockedPromo->increment('used_count');
+                    
                     \App\Models\PromotionUsageLog::create([
-                        'promotion_id' => $promo->id,
+                        'promotion_id' => $lockedPromo->id,
                         'order_id' => $order->id,
-                        'user_id' => $userId,
-                        'code_used' => $promo->is_discount_code ? $promo->code : null,
+                        'user_id' => $user ? $user->id : null, // 🛡️ Fix guest user_id to null
+                        'code_used' => $lockedPromo->is_discount_code ? $lockedPromo->code : null,
                         'discount_amount' => $thisPromoDiscount,
                     ]);
                 }
@@ -476,6 +498,12 @@ class OrderService
             $oldStatus = $order->status_id;
             $order->status_id = Order::STATUS_CANCELLED;
             $order->save();
+
+            // 🎫 Decrement used_count for promotions
+            $usageLogs = \App\Models\PromotionUsageLog::where('order_id', $order->id)->get();
+            foreach ($usageLogs as $log) {
+                \App\Models\Promotion::where('id', $log->promotion_id)->decrement('used_count');
+            }
 
             $hasReservedQty = Schema::hasTable('stock_product') && Schema::hasColumn('stock_product', 'reserved_qty');
 

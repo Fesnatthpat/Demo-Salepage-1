@@ -195,14 +195,17 @@
                 </div>
 
                 {{-- ★★ FLOATING CART ★★ --}}
-                <div class="fixed bottom-6 right-6 z-[90] lg:hidden">
-                    <a href="/cart" class="flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl hover:scale-110 border-2 border-white transition-all">
-                        <div class="indicator">
-                            <i class="fas fa-shopping-cart text-xl"></i>
-                            <livewire:cart-icon :key="'cart-mobile'" />
-                        </div>
-                    </a>
-                </div>
+                @if (request()->routeIs('home') || request()->routeIs('allproducts'))
+                    <div class="fixed bottom-6 right-6 z-[90] lg:hidden">
+                        <a href="/cart"
+                            class="flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl hover:scale-110 border-2 border-white transition-all">
+                            <div class="indicator">
+                                <i class="fas fa-shopping-cart text-xl"></i>
+                                <livewire:cart-icon :key="'cart-mobile'" />
+                            </div>
+                        </a>
+                    </div>
+                @endif
 
                 {{-- ================= DESKTOP NAV ================= --}}
                 <div class="hidden lg:flex items-center justify-between py-3 gap-6">

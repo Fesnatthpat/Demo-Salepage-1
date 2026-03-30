@@ -109,8 +109,8 @@
 
             <div class="form-control w-full">
                 <label class="label text-xs font-bold text-gray-400 uppercase tracking-wider">รายละเอียดสินค้า</label>
-                <textarea name="pd_sp_details" rows="5"
-                    class="textarea w-full bg-gray-900 border border-gray-600 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl leading-relaxed p-4">{{ old('pd_sp_details', $productSalepage->pd_sp_description ?? '') }}</textarea>
+                <textarea name="pd_sp_description" rows="5"
+                    class="textarea w-full bg-gray-900 border border-gray-600 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl leading-relaxed p-4">{{ old('pd_sp_description', $productSalepage->pd_sp_description ?? '') }}</textarea>
             </div>
         </div>
     </div>

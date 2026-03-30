@@ -17,7 +17,13 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = ProductSalepage::with(['images', 'stock', 'category'])->orderBy('pd_sp_id', 'desc');
+        $query = ProductSalepage::with([
+            'category',
+            'stock',
+            'images' => function ($q) {
+                $q->orderBy('img_sort', 'asc');
+            }
+        ])->orderBy('pd_sp_id', 'desc');
 
         if ($request->filled('search')) {
             $searchTerm = '%'.$request->search.'%';
@@ -90,7 +96,7 @@ class ProductController extends Controller
                 'category_id' => $request->category_id,
                 'pd_sp_SKU' => $request->pd_sp_SKU,
                 'pd_sp_name' => $request->pd_sp_name,
-                'pd_sp_description' => $request->pd_sp_details,
+                'pd_sp_description' => $request->pd_sp_description,
                 'pd_sp_price' => $request->pd_sp_price,
                 'pd_sp_price2' => $request->pd_sp_price2,
                 'pd_sp_discount' => $request->pd_sp_discount ?? 0,
@@ -195,7 +201,7 @@ class ProductController extends Controller
                 'pd_sp_price' => $request->pd_sp_price,
                 'pd_sp_price2' => $request->pd_sp_price2,
                 'pd_sp_discount' => $request->pd_sp_discount ?? 0,
-                'pd_sp_description' => $request->pd_sp_details,
+                'pd_sp_description' => $request->pd_sp_description,
                 'pd_sp_active' => $request->boolean('pd_sp_active'),
                 'is_recommended' => $request->boolean('is_recommended'),
                 'pd_sp_display_location' => $request->pd_sp_display_location ?? 'general',

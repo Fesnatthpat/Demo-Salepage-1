@@ -155,7 +155,15 @@
         </div>
 
         {{-- Table --}}
-        <div class="bg-gray-800 rounded-3xl shadow-xl border border-gray-700 overflow-hidden">
+        <div class="bg-gray-800 rounded-3xl shadow-xl border border-gray-700 overflow-hidden relative">
+            {{-- Global Loading Overlay (for filtering/pagination) --}}
+            <div id="table-loading" class="hidden absolute inset-0 bg-gray-900/40 backdrop-blur-[2px] z-50 items-center justify-center transition-all duration-300">
+                <div class="flex flex-col items-center gap-4 bg-gray-800 p-8 rounded-3xl border border-gray-700 shadow-2xl">
+                    <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500"></i>
+                    <p class="text-emerald-400 font-bold tracking-wider animate-pulse">กำลังโหลดข้อมูล...</p>
+                </div>
+            </div>
+
             <div class="overflow-x-auto custom-scroll">
                 <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
@@ -173,9 +181,9 @@
                             <tr class="hover:bg-gray-700/30 transition-colors group">
                                 <td class="px-6 py-4 text-center">
                                     @php
-                                        $imagePath = 'https://via.placeholder.com/150?text=No+Image';
+                                        $imagePath = null;
                                         if ($product->images->isNotEmpty()) {
-                                            $primaryImage = $product->images->sortByDesc('img_sort')->first();
+                                            $primaryImage = $product->images->first(); // ใช้ตัวแรกที่โหลดมา (sorted ใน controller แล้ว)
                                             if ($primaryImage) {
                                                 $path = $primaryImage->img_path ?? $primaryImage->image_path;
                                                 $imagePath = \Illuminate\Support\Str::startsWith($path, 'http')
@@ -183,10 +191,15 @@
                                                     : asset('storage/' . $path);
                                             }
                                         }
+                                        if (!$imagePath) {
+                                            $imagePath = 'https://via.placeholder.com/150?text=No+Image';
+                                        }
                                     @endphp
                                     <img src="{{ $imagePath }}" alt="{{ $product->pd_sp_name }}"
-                                        class="mx-auto slip-thumbnail" data-slip-src="{{ $imagePath }}"
-                                        onerror="this.src='https://via.placeholder.com/150?text=Error'">
+                                        class="mx-auto slip-thumbnail" 
+                                        data-slip-src="{{ $imagePath }}"
+                                        loading="lazy"
+                                        onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Error'">
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -388,6 +401,30 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ระบบแสดงผลการโหลด (Loading Overlay) เมื่อมีการเปลี่ยนหน้า หรือกรองข้อมูล
+            const loadingOverlay = document.getElementById('table-loading');
+            
+            // ดักจับการคลิกที่ลิงก์ในส่วนของ Filters และ Pagination
+            const interactiveLinks = document.querySelectorAll('.flex.overflow-x-auto.custom-scroll a, .pagination a');
+            interactiveLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // ถ้าไม่ได้กดปุ่มพิเศษ (Ctrl/Cmd) ให้โชว์ Loading
+                    if (!e.ctrlKey && !e.metaKey) {
+                        loadingOverlay.classList.remove('hidden');
+                        loadingOverlay.classList.add('flex');
+                    }
+                });
+            });
+
+            // ดักจับการเปลี่ยนค่าใน Select (หมวดหมู่)
+            const categorySelect = document.querySelector('select[name="category_id"]');
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function() {
+                    loadingOverlay.classList.remove('hidden');
+                    loadingOverlay.classList.add('flex');
+                });
+            }
+
             // ระบบแสดงรูปภาพขยาย (ปรับให้ฉลาดขึ้นบนมือถือไม่บังจอ)
             const modal = document.getElementById('slip-preview-modal');
             if (!modal) return;

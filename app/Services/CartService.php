@@ -152,8 +152,9 @@ class CartService
             $mainProduct = $this->checkStockAndGetProduct($mainProductId, $qty);
             $mainDetails = $this->getProductDetails($mainProductId);
             if ($mainDetails) {
+                $cartId = "{$mainDetails->id}-bundle-{$promoGroupId}";
                 $cart->add([
-                    'id' => $mainDetails->id,
+                    'id' => $cartId,
                     'name' => $mainDetails->name,
                     'price' => $mainDetails->price,
                     'quantity' => $qty,
@@ -164,6 +165,8 @@ class CartService
                         'is_condition_item' => true,
                         'item_type' => 'main',
                         'product_id' => $mainDetails->id,
+                        'original_price' => $mainDetails->original_price,
+                        'discount' => $mainDetails->discount,
                     ],
                     'associatedModel' => $mainProduct,
                 ]);
@@ -175,8 +178,9 @@ class CartService
             $secProduct = $this->checkStockAndGetProduct($secondaryProductId, 1);
             $secDetails = $this->getProductDetails($secondaryProductId);
             if ($secDetails) {
+                $cartId = "{$secDetails->id}-bundle-{$promoGroupId}";
                 $cart->add([
-                    'id' => $secDetails->id,
+                    'id' => $cartId,
                     'name' => $secDetails->name,
                     'price' => $secDetails->price,
                     'quantity' => 1,
@@ -187,6 +191,8 @@ class CartService
                         'is_condition_item' => true,
                         'item_type' => 'secondary',
                         'product_id' => $secDetails->id,
+                        'original_price' => $secDetails->original_price,
+                        'discount' => $secDetails->discount,
                     ],
                     'associatedModel' => $secProduct,
                 ]);
@@ -212,8 +218,10 @@ class CartService
                 $imgPath = asset('storage/'.ltrim(str_replace('storage/', '', $imgPath), '/'));
             }
 
+            $cartId = $giftProduct->pd_sp_id.($isBirthday ? '_birthday' : '_free')."-{$promoGroupId}";
+
             $cart->add([
-                'id' => $giftProduct->pd_sp_id.($isBirthday ? '_birthday' : '_free'),
+                'id' => $cartId,
                 'name' => $giftProduct->pd_sp_name.($isBirthday ? ' (ของขวัญวันเกิด)' : ' (ของแถม)'),
                 'price' => 0,
                 'quantity' => 1,
@@ -234,12 +242,12 @@ class CartService
         }
     }
 
-    public function removeItem(string|int $productId): void
+    public function removeItem(string|int $cartKey): void
     {
-        $this->removeItems([$productId]);
+        $this->removeItems([$cartKey]);
     }
 
-    public function removeItems(array $productIds): void
+    public function removeItems(array $cartKeys): void
     {
         $userId = $this->getUserId();
         $this->getCartContents();
@@ -247,32 +255,23 @@ class CartService
 
         $keysToDelete = [];
 
-        foreach ($productIds as $productId) {
-            $targetKeys = $this->findCartKeys($productId);
-            if (empty($targetKeys)) {
-                if ($cart->get($productId)) {
-                    $targetKeys = [$productId];
-                } else {
-                    continue;
-                }
+        foreach ($cartKeys as $key) {
+            $item = $cart->get($key);
+            if (! $item) {
+                continue;
             }
 
-            foreach ($targetKeys as $key) {
-                $item = $cart->get($key);
-                if (!$item) continue;
+            $promoGroupId = $item->attributes['promo_group_id'] ?? null;
+            $isFreebie = $item->attributes['is_freebie'] ?? false;
 
-                $promoGroupId = $item->attributes['promo_group_id'] ?? null;
-                $isFreebie = $item->attributes['is_freebie'] ?? false;
-
-                if ($promoGroupId && !$isFreebie) {
-                    foreach ($cart->getContent() as $k => $cartItem) {
-                        if (($cartItem->attributes['promo_group_id'] ?? null) === $promoGroupId) {
-                            $keysToDelete[] = $k;
-                        }
+            if ($promoGroupId && ! $isFreebie) {
+                foreach ($cart->getContent() as $k => $cartItem) {
+                    if (($cartItem->attributes['promo_group_id'] ?? null) === $promoGroupId) {
+                        $keysToDelete[] = $k;
                     }
-                } else {
-                    $keysToDelete[] = $key;
                 }
+            } else {
+                $keysToDelete[] = $key;
             }
         }
 
@@ -286,40 +285,37 @@ class CartService
         }
     }
 
-    public function updateQuantity(string|int $productId, string $action): void
+    public function updateQuantity(string|int $cartKey, string $action): void
     {
         $userId = $this->getUserId();
         $this->getCartContents();
         $cart = Cart::session($userId);
 
-        $keys = $this->findCartKeys($productId);
-        if (empty($keys)) {
+        $item = $cart->get($cartKey);
+        if (! $item) {
             return;
         }
 
-        foreach ($keys as $key) {
-            $item = $cart->get($key);
-            if ($action === 'increase') {
-                $productIdReal = $item->attributes['product_id'] ?? $item->id;
-                $optionId = $item->attributes['option_id'] ?? null;
+        if ($action === 'increase') {
+            $productIdReal = $item->attributes['product_id'] ?? $item->id;
+            $optionId = $item->attributes['option_id'] ?? null;
 
-                if ($optionId) {
-                    $option = \App\Models\ProductOption::with('stock')->find($optionId);
-                    if ($option && $item->quantity + 1 > $option->option_stock) {
-                        throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$option->option_stock})");
-                    }
-                } else {
-                    $product = ProductSalepage::with('stock')->find($productIdReal);
-                    if ($product && $item->quantity + 1 > $product->pd_sp_stock) {
-                        throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$product->pd_sp_stock})");
-                    }
+            if ($optionId) {
+                $option = \App\Models\ProductOption::with('stock')->find($optionId);
+                if ($option && $item->quantity + 1 > $option->option_stock) {
+                    throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$option->option_stock})");
                 }
-
-                $cart->update($key, ['quantity' => 1]);
             } else {
-                if ($item->quantity > 1) {
-                    $cart->update($key, ['quantity' => -1]);
+                $product = ProductSalepage::with('stock')->find($productIdReal);
+                if ($product && $item->quantity + 1 > $product->pd_sp_stock) {
+                    throw new Exception("สินค้า '{$item->name}' มีไม่เพียงพอ (สต็อกเหลือ {$product->pd_sp_stock})");
                 }
+            }
+
+            $cart->update($cartKey, ['quantity' => 1]);
+        } else {
+            if ($item->quantity > 1) {
+                $cart->update($cartKey, ['quantity' => -1]);
             }
         }
 
@@ -558,7 +554,12 @@ class CartService
         $cart = Cart::session($userId);
         $items = $cart->getContent();
 
-        $freebies = $items->filter(fn ($item) => ($item->attributes['is_freebie'] ?? false) && !($item->attributes['is_birthday_gift'] ?? false));
+        $freebies = $items->filter(fn ($item) => 
+            ($item->attributes['is_freebie'] ?? false) && 
+            !($item->attributes['is_birthday_gift'] ?? false) &&
+            !($item->attributes['promo_group_id'] ?? false)
+        );
+        
         if ($freebies->isEmpty()) {
             return;
         }

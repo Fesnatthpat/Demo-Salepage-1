@@ -199,7 +199,7 @@
                     <a href="/cart" class="flex items-center justify-center w-14 h-14 bg-red-600 text-white rounded-full shadow-2xl hover:scale-110 border-2 border-white transition-all">
                         <div class="indicator">
                             <i class="fas fa-shopping-cart text-xl"></i>
-                            <livewire:cart-icon />
+                            <livewire:cart-icon :key="'cart-mobile'" />
                         </div>
                     </a>
                 </div>
@@ -231,7 +231,7 @@
 
                     <div class="flex items-center gap-3 flex-shrink-0">
                         <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-white/20">
-                            <div class="indicator"><i class="fas fa-shopping-cart text-2xl text-white"></i><livewire:cart-icon /></div>
+                            <div class="indicator"><i class="fas fa-shopping-cart text-2xl text-white"></i><livewire:cart-icon :key="'cart-desktop'" /></div>
                         </a>
                         @guest <a href="/login" class="bg-white text-red-600 hover:bg-gray-50 border-none rounded-full px-6 py-2 shadow-sm font-bold transition-colors">เข้าสู่ระบบ</a> @endguest
                         @auth

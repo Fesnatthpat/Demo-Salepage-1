@@ -207,7 +207,7 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('cart-icon', []);
 
-$key = null;
+$key = 'cart-mobile';
 $__componentSlots = [];
 
 $key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3387468502-0', $key);
@@ -259,7 +259,7 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('cart-icon', []);
 
-$key = null;
+$key = 'cart-desktop';
 $__componentSlots = [];
 
 $key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3387468502-1', $key);

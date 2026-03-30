@@ -555,8 +555,24 @@
                                 if (typeof window.flyToCart === 'function') window.flyToCart(
                                     submitBtn);
                                 showNotification('success', 'เพิ่มลงตะกร้าแล้ว', '', 1500);
+                                
+                                // 🛠️ Manual Update UI (Immediate)
+                                const cartBadges = document.querySelectorAll('.cart-badge-count');
+                                if (cartBadges.length > 0 && data.cartCount !== undefined) {
+                                    cartBadges.forEach(badge => {
+                                        badge.innerText = data.cartCount;
+                                        if (data.cartCount > 0) {
+                                            badge.classList.remove('hidden');
+                                        } else {
+                                            badge.classList.add('hidden');
+                                        }
+                                    });
+                                }
+
                                 setTimeout(() => {
-                                    Livewire.dispatch('cartUpdated');
+                                    if (typeof Livewire !== 'undefined') {
+                                        Livewire.dispatch('cartUpdated');
+                                    }
                                 }, 50);
                             } else {
                                 throw new Error(data.message);

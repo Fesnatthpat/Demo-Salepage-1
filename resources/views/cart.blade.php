@@ -63,18 +63,17 @@
 
                                         {{-- Checkbox --}}
                                         <div class="pt-4 sm:pt-0 sm:self-center flex-shrink-0">
-                                            @if (!$isFree)
-                                                <input type="checkbox" name="selected_items[]" value="{{ $item->id }}"
-                                                    data-price="{{ $totalPrice }}"
-                                                    data-original-price="{{ $totalOriginalPrice }}"
-                                                    class="item-checkbox w-4 h-4 sm:w-5 sm:h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
-                                                    onchange="onItemSelectionChange()">
-                                            @else
-                                                <div class="w-4 sm:w-5">
-                                                    <input type="checkbox" name="selected_items[]"
-                                                        value="{{ $item->id }}" class="free-item-checkbox hidden">
-                                                </div>
-                                            @endif
+                                            @php
+                                                $promoGroupId = $item->attributes->get('promo_group_id');
+                                            @endphp
+                                            <input type="checkbox" name="selected_items[]" value="{{ $item->id }}"
+                                                data-price="{{ $totalPrice }}"
+                                                data-original-price="{{ $totalOriginalPrice }}"
+                                                data-promo-group-id="{{ $promoGroupId }}"
+                                                data-quantity="{{ $item->quantity }}"
+                                                class="item-checkbox w-4 h-4 sm:w-5 sm:h-5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer {{ $isFree ? 'hidden' : '' }}"
+                                                {{ $isFree ? 'data-is-freebie=true' : '' }}
+                                                onchange="onItemSelectionChange(this)">
                                         </div>
 
                                         {{-- Image --}}
@@ -335,8 +334,15 @@
         // ตัวแปรเก็บสถานะการโหลดเพื่อป้องกันการส่งซ้ำซ้อน
         let isUpdatingTotals = false;
 
-        function onItemSelectionChange() {
+        function onItemSelectionChange(source) {
             if (isUpdatingTotals) return;
+
+            // Handle Bundle Selection (Link all items in same promoGroupId)
+            if (source && source.dataset.promoGroupId) {
+                const groupId = source.dataset.promoGroupId;
+                const bundleItems = document.querySelectorAll(`.item-checkbox[data-promo-group-id="${groupId}"]`);
+                bundleItems.forEach(cb => cb.checked = source.checked);
+            }
 
             const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
             const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
@@ -613,26 +619,25 @@
         }
 
         function calculateTotal() {
-            const checkboxes = document.querySelectorAll('.item-checkbox');
-            const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
-            const count = checkedBoxes.length;
-
-            const freeCheckboxes = document.querySelectorAll('.free-item-checkbox');
-            freeCheckboxes.forEach(fcb => {
-                fcb.checked = (count > 0);
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            let count = 0;
+            checkboxes.forEach(cb => {
+                count += parseInt(cb.dataset.quantity || 1);
             });
 
             saveSelectedItems();
 
             const selectAll = document.getElementById('select-all');
             if (selectAll) {
-                const totalNormalItems = document.querySelectorAll('.item-checkbox').length;
-                selectAll.checked = (totalNormalItems > 0 && totalNormalItems === count);
+                const totalNormalItems = document.querySelectorAll('.item-checkbox:not([data-is-freebie="true"])').length;
+                const checkedNormalItems = Array.from(document.querySelectorAll('.item-checkbox:not([data-is-freebie="true"]):checked')).length;
+                selectAll.checked = (totalNormalItems > 0 && totalNormalItems === checkedNormalItems);
             }
 
             const removeSelectedBtn = document.getElementById('remove-selected-btn');
             if (removeSelectedBtn) {
-                if (count > 0) {
+                const checkedCount = Array.from(document.querySelectorAll('.item-checkbox:checked')).length;
+                if (checkedCount > 0) {
                     removeSelectedBtn.classList.remove('hidden');
                     removeSelectedBtn.classList.add('flex');
                 } else {
@@ -643,9 +648,7 @@
 
             const selectedCountEl = document.getElementById('selected-count');
             if (selectedCountEl) {
-                const freebieCount =
-                    {{ isset($items) ? $items->filter(fn($i) => $i->attributes->get('is_freebie'))->sum('quantity') : 0 }};
-                selectedCountEl.innerText = count + freebieCount;
+                selectedCountEl.innerText = count;
             }
 
             const btn = document.getElementById('checkout-btn');
@@ -715,6 +718,24 @@
                         const data = await response.json();
 
                         if (data.success) {
+                            // 🛠️ Manual Update Badge UI (Immediate)
+                            const cartBadges = document.querySelectorAll('.cart-badge-count');
+                            if (cartBadges.length > 0 && data.cartCount !== undefined) {
+                                cartBadges.forEach(badge => {
+                                    badge.innerText = data.cartCount;
+                                    if (data.cartCount > 0) {
+                                        badge.classList.remove('hidden');
+                                    } else {
+                                        badge.classList.add('hidden');
+                                    }
+                                });
+                            }
+
+                            // 🔄 Sync with Livewire (Background)
+                            if (typeof Livewire !== 'undefined') {
+                                Livewire.dispatch('cartUpdated');
+                            }
+
                             if (method === 'PATCH') {
                                 // 1. กรณีอัปเดตจำนวนสินค้า (+/-)
                                 const quantitySpan = btnElement.parentElement.querySelector('span');

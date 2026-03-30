@@ -855,7 +855,24 @@
                             if (isBuyNow) window.location.href = config.cartUrl;
                             else {
                                 showNotification('success', 'เพิ่มสินค้าแล้ว', '', 1500);
-                                Livewire.dispatch('cartUpdated');
+                                
+                                // 🛠️ Manual Update UI (Immediate)
+                                const cartBadges = document.querySelectorAll('.cart-badge-count');
+                                if (cartBadges.length > 0 && data.cartCount !== undefined) {
+                                    cartBadges.forEach(badge => {
+                                        badge.innerText = data.cartCount;
+                                        if (data.cartCount > 0) {
+                                            badge.classList.remove('hidden');
+                                        } else {
+                                            badge.classList.add('hidden');
+                                        }
+                                    });
+                                }
+
+                                // 🔄 Sync with Livewire (Background)
+                                if (typeof Livewire !== 'undefined') {
+                                    Livewire.dispatch('cartUpdated');
+                                }
                             }
                         } else throw new Error(data.message);
                     } catch (e) {

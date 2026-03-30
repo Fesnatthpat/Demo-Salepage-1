@@ -128,6 +128,19 @@ class OrderService
                 return in_array((string) $item->id, array_map('strval', $selectedItems));
             });
 
+            // 🛡️ Security Check: Ensure all items in a bundle are selected together
+            foreach ($cartItems as $item) {
+                $promoGroupId = $item->attributes['promo_group_id'] ?? null;
+                if ($promoGroupId) {
+                    $bundleItemsInCart = $allCartItems->filter(fn($i) => ($i->attributes['promo_group_id'] ?? null) === $promoGroupId);
+                    $bundleItemsSelected = $cartItems->filter(fn($i) => ($i->attributes['promo_group_id'] ?? null) === $promoGroupId);
+                    
+                    if ($bundleItemsInCart->count() !== $bundleItemsSelected->count()) {
+                        throw new \Exception("กรุณาเลือกสินค้าทุกรายการในชุดโปรโมชั่น '{$item->name}'");
+                    }
+                }
+            }
+
             if ($cartItems->isEmpty() && empty($selectedFreebies)) {
                 throw new \Exception('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
             }

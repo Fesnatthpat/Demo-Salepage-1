@@ -185,7 +185,8 @@ class CartController extends Controller
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'อัปเดตจำนวนสินค้าเรียบร้อยแล้ว'
+                    'message' => 'อัปเดตจำนวนสินค้าเรียบร้อยแล้ว',
+                    'cartCount' => $this->cartService->getTotalQuantity(),
                 ]);
             }
         } catch (\Exception $e) {
@@ -208,7 +209,8 @@ class CartController extends Controller
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'ลบสินค้าเรียบร้อยแล้ว'
+                'message' => 'ลบสินค้าเรียบร้อยแล้ว',
+                'cartCount' => $this->cartService->getTotalQuantity(),
             ]);
         }
 
@@ -230,7 +232,8 @@ class CartController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'ลบสินค้าที่เลือกเรียบร้อยแล้ว'
+                'message' => 'ลบสินค้าที่เลือกเรียบร้อยแล้ว',
+                'cartCount' => $this->cartService->getTotalQuantity(),
             ]);
         }
 

@@ -673,8 +673,24 @@
                     if (data.success) {
                         if (typeof window.flyToCart === 'function') window.flyToCart(btnElement);
                         showNotification('success', 'เพิ่มเรียบร้อย!', '', 1500);
+                        
+                        // 🛠️ Manual Update UI (Immediate)
+                        const cartBadges = document.querySelectorAll('.cart-badge-count');
+                        if (cartBadges.length > 0 && data.cartCount !== undefined) {
+                            cartBadges.forEach(badge => {
+                                badge.innerText = data.cartCount;
+                                if (data.cartCount > 0) {
+                                    badge.classList.remove('hidden');
+                                } else {
+                                    badge.classList.add('hidden');
+                                }
+                            });
+                        }
+
                         setTimeout(() => {
-                            Livewire.dispatch('cartUpdated');
+                            if (typeof Livewire !== 'undefined') {
+                                Livewire.dispatch('cartUpdated');
+                            }
                         }, 50);
                     } else {
                         showNotification('error', 'แจ้งเตือน', data.message || 'เพิ่มสินค้าไม่ได้');

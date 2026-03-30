@@ -262,6 +262,11 @@
                     expiredMessage.classList.remove('hidden');
                     qrOverlay.classList.remove('opacity-0', 'pointer-events-none');
                     if (saveBtnContainer) saveBtnContainer.classList.add('opacity-50', 'pointer-events-none');
+                    
+                    // 🔄 เมื่อเวลาหมด ให้รีเฟรชหน้าจอเพื่อแจ้งเตือนและยกเลิกออเดอร์ใน DB
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                     return;
                 }
                 const minutes = Math.floor(timeLeft / 60);

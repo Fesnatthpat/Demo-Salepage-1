@@ -70,35 +70,40 @@ class OrderController extends Controller
             'tracking_number' => 'nullable|string|max:255',
         ]);
 
-        $newStatusId = (int) $request->input('status_id');
-        $oldStatusId = $order->status_id;
+        try {
+            $newStatusId = (int) $request->input('status_id');
+            $oldStatusId = $order->status_id;
 
-        if ($newStatusId == Order::STATUS_CANCELLED && $oldStatusId != Order::STATUS_CANCELLED) {
-            // ใช้ OrderService เพื่อยกเลิกและคืนสต็อก
-            $this->orderService->cancelOrder($order);
-        } else {
-            $order->status_id = $newStatusId;
+            if ($newStatusId == Order::STATUS_CANCELLED && $oldStatusId != Order::STATUS_CANCELLED) {
+                // ใช้ OrderService เพื่อยกเลิกและคืนสต็อก
+                $this->orderService->cancelOrder($order);
+            } else {
+                $order->status_id = $newStatusId;
+            }
+
+            $order->tracking_number = $request->input('tracking_number');
+            $order->save();
+
+            // บันทึก Log การเปลี่ยนแปลงสถานะ
+            if ($oldStatusId != $newStatusId) {
+                \App\Models\ActivityLog::create([
+                    'admin_id' => auth()->id(),
+                    'loggable_id' => $order->id,
+                    'loggable_type' => get_class($order),
+                    'action' => 'status_changed',
+                    'changes' => [
+                        'old' => $oldStatusId,
+                        'new' => $newStatusId,
+                        'order_code' => $order->ord_code
+                    ],
+                    'ip_address' => $request->ip(),
+                ]);
+            }
+
+            return back()->with('success', 'อัปเดตสถานะและเลขพัสดุเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            \Log::error('Order status update failed: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'เกิดข้อผิดพลาดในการอัปเดตสถานะ: ' . $e->getMessage());
         }
-
-        $order->tracking_number = $request->input('tracking_number');
-        $order->save();
-
-        // บันทึก Log การเปลี่ยนแปลงสถานะ
-        if ($oldStatusId != $newStatusId) {
-            \App\Models\ActivityLog::create([
-                'admin_id' => auth()->id(),
-                'loggable_id' => $order->id,
-                'loggable_type' => get_class($order),
-                'action' => 'status_changed',
-                'changes' => [
-                    'old' => $oldStatusId,
-                    'new' => $newStatusId,
-                    'order_code' => $order->ord_code
-                ],
-                'ip_address' => $request->ip(),
-            ]);
-        }
-
-        return back()->with('success', 'อัปเดตสถานะและเลขพัสดุเรียบร้อยแล้ว');
     }
 }

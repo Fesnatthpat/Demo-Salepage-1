@@ -42,8 +42,10 @@ class ProductController extends Controller
         // ดึงตะกร้าผ่าน Service เพื่อความชัวร์
         $cartContent = $this->cartService->getCartContents();
 
-        // หาจำนวนสินค้านี้ที่มีอยู่ในตะกร้าแล้ว
-        $currentCartQty = $cartContent->where('id', $id)->first()->quantity ?? 0;
+        // ✅ แก้ไข: หาจำนวนรวมของสินค้านี้ที่มีอยู่ในตะกร้า (รวมที่อยู่ใน Bundle ด้วย)
+        $currentCartQty = $cartContent->filter(function($item) use ($id) {
+            return ($item->id == $id) || (($item->attributes['product_id'] ?? null) == $id);
+        })->sum('quantity');
 
         // 3. Map ข้อมูลโปรโมชั่น + ตรวจสอบเงื่อนไข
         $promotions->map(function ($promo) use ($id, $currentCartQty, $cartContent) {
@@ -64,7 +66,12 @@ class ProductController extends Controller
             $partnerProductIds = [];
 
             if (($promo->condition_type ?? 'any') === 'all') {
-                $cartQuantities = $cartContent->pluck('quantity', 'id')->toArray();
+                // ✅ แก้ไข: นับจำนวนสินค้าแต่ละชนิดในตะกร้าโดยอ้างอิงจาก Product ID จริงๆ
+                $cartQuantities = [];
+                foreach($cartContent as $item) {
+                    $realPid = $item->attributes['product_id'] ?? $item->id;
+                    $cartQuantities[$realPid] = ($cartQuantities[$realPid] ?? 0) + $item->quantity;
+                }
 
                 foreach ($promo->rules as $rule) {
                     $pids = $rule->rules['product_id'] ?? [];

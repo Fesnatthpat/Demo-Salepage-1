@@ -92,7 +92,9 @@ class PaymentController extends Controller
 
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
-        $productIds = $cartItems->pluck('id')->toArray();
+        
+        // ✅ แก้ไขการดึง Product IDs ให้รองรับระบบ Bundle (ใช้ product_id จาก attributes)
+        $productIds = $cartItems->map(fn($item) => $item->attributes['product_id'] ?? $item->id)->toArray();
         $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
 
         // 🎟️ ดึงรายการคูปองที่สามารถใช้งานได้ (Active และเป็นรหัสส่วนลด)
@@ -203,21 +205,28 @@ class PaymentController extends Controller
     {
         $order = Order::where('ord_code', $orderId)->where('user_id', Auth::id())->firstOrFail();
 
-        // ตั้งเวลาหมดอายุ 15 นาทีจากเวลาที่อัปเดตล่าสุด (รองรับการ Refresh QR)
+        // ถ้านิ่งเป็นสถานะยกเลิกแล้ว ให้เด้งออกไปหน้าประวัติการสั่งซื้อเลย
+        if ($order->status_id == Order::STATUS_CANCELLED) {
+            return redirect()->route('orders.index')->with('error', 'ออเดอร์นี้ถูกยกเลิกแล้ว เนื่องจากหมดเวลาชำระเงิน');
+        }
+
+        // ตั้งเวลาหมดอายุ 15 นาทีจากเวลาที่อัปเดตล่าสุด
         $expireTime = $order->updated_at->addMinutes(1);
         $secondsRemaining = now()->diffInSeconds($expireTime, false);
-        
+
         if ($secondsRemaining <= 0) {
-            // ถ้านับถอยหลังหมดแล้ว ให้พยายามยกเลิกออเดอร์ทันที
+            // 🛡️ ถ้านับถอยหลังหมดแล้ว ให้ยกเลิกออเดอร์และคืนสต็อกทันที
             if ($order->status_id == Order::STATUS_PENDING) {
                 try {
                     $this->orderService->cancelOrder($order);
+                    Log::info("Order {$order->ord_code} automatically cancelled due to timeout.");
                 } catch (\Exception $e) {
-                    Log::error('Auto cancel failed in showQr: ' . $e->getMessage());
+                    Log::error("Failed to auto-cancel order {$order->ord_code}: " . $e->getMessage());
                 }
             }
-            return redirect()->route('cart.index')->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ของคุณถูกยกเลิก');
+            return redirect()->route('cart.index')->with('error', 'ขออภัย! หมดเวลาชำระเงินแล้ว ระบบได้ทำการคืนสินค้าเข้าคลังเรียบร้อยแล้ว กรุณาทำรายการใหม่อีกครั้ง');
         }
+
 
         $promptpayTarget = env('PROMPTPAY_ACCOUNT', '0812345678');
         $payload = $promptPayService->generatePayload($promptpayTarget, $order->net_amount);

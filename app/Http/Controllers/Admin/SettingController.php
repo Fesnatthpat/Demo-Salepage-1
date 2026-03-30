@@ -43,82 +43,92 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
-        // Whitelist of allowed setting keys
+        // Whitelist of allowed setting keys for bulk update
         $allowedKeys = [
             'about_title', 'about_subtitle', 'life_title', 'life_subtitle',
             'team_title', 'team_subtitle', 'team_phone', 'team_email',
             'social_title', 'footer_slogan', 'faq_title', 'home_recommended_title'
         ];
 
-        // Support bulk update from settings array
-        if ($request->has('settings') && is_array($request->settings)) {
-            foreach ($request->settings as $key => $value) {
-                if (in_array($key, $allowedKeys)) {
-                    SiteSetting::set($key, $value);
+        try {
+            // Support bulk update from settings array
+            if ($request->has('settings') && is_array($request->settings)) {
+                foreach ($request->settings as $key => $value) {
+                    if (in_array($key, $allowedKeys)) {
+                        SiteSetting::set($key, $value);
+                    }
                 }
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'บันทึกการตั้งค่าเรียบร้อยแล้ว'
+                    ]);
+                }
+                
+                return back()->with('success', 'บันทึกการตั้งค่าเรียบร้อยแล้ว');
             }
-            
+
+            $validated = $request->validate([
+                'site_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
+                'site_cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+                'site_description' => 'nullable|string|max:500',
+                'site_menu' => 'nullable|json',
+                'hero_section_tagline' => 'nullable|string|max:100',
+                'hero_section_title_prefix' => 'nullable|string|max:100',
+                'hero_section_title_highlight' => 'nullable|string|max:100',
+                'hero_section_title_suffix' => 'nullable|string|max:100',
+                'hero_section_description' => 'nullable|string|max:500',
+                'hero_section_small_text' => 'nullable|string|max:500',
+                'service_bar_items' => 'nullable|json',
+                'hero_slider_items' => 'nullable|json',
+                'allergy_info_content' => 'nullable|string',
+                'reasons_section_items' => 'nullable|json',
+                'second_slider_items' => 'nullable|json',
+                'category_menu_items' => 'nullable|json',
+                'small_slider_allproducts_items' => 'nullable|json',
+            ]);
+
+            // Only loop through explicitly validated data to prevent Mass Assignment vulnerabilities
+            foreach ($validated as $key => $value) {
+                // Handle file uploads
+                if ($request->hasFile($key) && $request->file($key)->isValid()) {
+                    // Delete old file if it exists
+                    $oldPath = SiteSetting::get($key);
+                    if ($oldPath && !is_array($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                    
+                    $path = $request->file($key)->store('settings', 'public');
+                    $value = $path;
+                }
+
+                // Don't save null values for non-file inputs if they are empty
+                if (! $request->hasFile($key) && $value === null) {
+                    continue;
+                }
+
+                SiteSetting::set($key, $value);
+            }
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'บันทึกการตั้งค่าเรียบร้อยแล้ว'
                 ]);
             }
-            
+
             return back()->with('success', 'บันทึกการตั้งค่าเรียบร้อยแล้ว');
-        }
-
-        $validated = $request->validate([
-            'site_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
-            'site_cover_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
-            'site_description' => 'nullable|string|max:500',
-            'site_menu' => 'nullable|json',
-            'hero_section_tagline' => 'nullable|string|max:100',
-            'hero_section_title_prefix' => 'nullable|string|max:100',
-            'hero_section_title_highlight' => 'nullable|string|max:100',
-            'hero_section_title_suffix' => 'nullable|string|max:100',
-            'hero_section_description' => 'nullable|string|max:500',
-            'hero_section_small_text' => 'nullable|string|max:500',
-            'service_bar_items' => 'nullable|json',
-            'hero_slider_items' => 'nullable|json',
-            'allergy_info_content' => 'nullable|string',
-            'reasons_section_items' => 'nullable|json',
-            'second_slider_items' => 'nullable|json',
-            'category_menu_items' => 'nullable|json',
-            'small_slider_allproducts_items' => 'nullable|json',
-        ]);
-
-        $data = $request->except('_token');
-
-        foreach ($data as $key => $value) {
-            // Handle file uploads
-            if ($request->hasFile($key) && $request->file($key)->isValid()) {
-                // Delete old file if it exists
-                $oldPath = SiteSetting::get($key);
-                if ($oldPath && !is_array($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-                
-                $path = $request->file($key)->store('settings', 'public');
-                $value = $path;
+        } catch (\Exception $e) {
+            \Log::error('Settings update failed: ' . $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'เกิดข้อผิดพลาดในการบันทึกการตั้งค่า: ' . $e->getMessage()
+                ], 500);
             }
-
-            // Don't save null values for non-file inputs if they are empty
-            if (! $request->hasFile($key) && $value === null) {
-                continue;
-            }
-
-            SiteSetting::set($key, $value);
+            return back()->with('error', 'เกิดข้อผิดพลาดในการบันทึกการตั้งค่า: ' . $e->getMessage());
         }
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'บันทึกการตั้งค่าเรียบร้อยแล้ว'
-            ]);
-        }
-
-        return back()->with('success', 'บันทึกการตั้งค่าเรียบร้อยแล้ว');
     }
 
     public function destroy($key)

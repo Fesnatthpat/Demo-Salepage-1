@@ -37,10 +37,15 @@ class PromotionService
                 return true;
             }
 
-            // ตรวจสอบกฎของแต่ละโปรโมชั่นว่ามี Product ID นี้หรือไม่ (ใช้ contains เพื่อป้องกันการ return ซ้ำและเพิ่มประสิทธิภาพ)
+            // ตรวจสอบกฎของแต่ละโปรโมชั่นว่ามี Product ID นี้หรือไม่
             return $promo->rules->contains(function ($rule) use ($productId) {
-                $pids = (array) ($rule->rules['product_id'] ?? []);
-                return in_array((string) $productId, array_map('strval', $pids));
+                $ruleData = $rule->rules;
+                $pids = $ruleData['product_id'] ?? [];
+                
+                // รองรับทั้งแบบ ID เดี่ยว และแบบ Array
+                $pidsArray = is_array($pids) ? $pids : [$pids];
+                
+                return in_array((string) $productId, array_map('strval', $pidsArray));
             });
         });
     }

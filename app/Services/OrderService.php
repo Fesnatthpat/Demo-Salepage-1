@@ -230,7 +230,12 @@ class OrderService
             if ($deliveryAddressId) {
                 $deliveryAddress = DeliveryAddress::with(['province', 'amphure', 'district'])
                     ->where('id', $deliveryAddressId)
-                    ->firstOrFail();
+                    ->where('user_id', $userId) // 🛡️ Security Check: ต้องเป็นที่อยู่ของผู้ใช้นี้เท่านั้น
+                    ->first();
+
+                if (!$deliveryAddress) {
+                    throw new \Exception('ไม่พบข้อมูลที่อยู่จัดส่ง หรือที่อยู่ไม่ถูกต้อง');
+                }
 
                 $shippingDetails['name'] = $deliveryAddress->fullname;
                 $shippingDetails['phone'] = $deliveryAddress->phone;

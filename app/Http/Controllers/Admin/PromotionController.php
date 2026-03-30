@@ -37,75 +37,80 @@ class PromotionController extends Controller
     {
         $this->validatePromotion($request);
 
-        $promotion = DB::transaction(function () use ($request) {
-            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
+        try {
+            $promotion = DB::transaction(function () use ($request) {
+                $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
 
-            $promoType = $request->input('promo_type_selector');
-            $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
+                $promoType = $request->input('promo_type_selector');
+                $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
 
-            if ($promoType === 'code') {
-                $data['is_discount_code'] = true;
-                $data['code'] = $request->input('code');
-            } elseif ($promoType === 'free_shipping_code') {
-                $data['is_discount_code'] = true;
-                $data['code'] = $request->input('code');
-                $data['discount_type'] = null;
-                $data['discount_value'] = null;
-            } elseif ($promoType === 'free_shipping') {
-                $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
-                $data['code'] = null;
-                $data['discount_type'] = null;
-                $data['discount_value'] = null;
-            } else {
-                $data['is_discount_code'] = false;
-                $data['code'] = null;
-            }
+                if ($promoType === 'code') {
+                    $data['is_discount_code'] = true;
+                    $data['code'] = $request->input('code');
+                } elseif ($promoType === 'free_shipping_code') {
+                    $data['is_discount_code'] = true;
+                    $data['code'] = $request->input('code');
+                    $data['discount_type'] = null;
+                    $data['discount_value'] = null;
+                } elseif ($promoType === 'free_shipping') {
+                    $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
+                    $data['code'] = null;
+                    $data['discount_type'] = null;
+                    $data['discount_value'] = null;
+                } else {
+                    $data['is_discount_code'] = false;
+                    $data['code'] = null;
+                }
 
-            if ($promoType === 'bxgy') {
-                $data['discount_type'] = null;
-                $data['discount_value'] = null;
-                $data['is_free_shipping'] = false;
-            }
+                if ($promoType === 'bxgy') {
+                    $data['discount_type'] = null;
+                    $data['discount_value'] = null;
+                    $data['is_free_shipping'] = false;
+                }
 
-            $promotion = Promotion::create($data);
-            $this->logActivity($promotion, 'created');
+                $promotion = Promotion::create($data);
+                $this->logActivity($promotion, 'created');
 
-            if ($promoType === 'bxgy') {
-                if ($request->has('buy_items')) {
-                    foreach ($request->buy_items as $item) {
-                        PromotionRule::create([
-                            'promotion_id' => $promotion->id,
-                            'type' => 'buy_x_get_y',
-                            'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
-                        ]);
+                if ($promoType === 'bxgy') {
+                    if ($request->has('buy_items')) {
+                        foreach ($request->buy_items as $item) {
+                            PromotionRule::create([
+                                'promotion_id' => $promotion->id,
+                                'type' => 'buy_x_get_y',
+                                'rules' => ['product_id' => $item['product_id'], 'quantity_to_buy' => $item['quantity']],
+                            ]);
+                        }
+                    }
+
+                    $createdActions = [];
+                    if ($request->has('get_items')) {
+                        foreach ($request->get_items as $item) {
+                            $createdActions[] = PromotionAction::create([
+                                'promotion_id' => $promotion->id,
+                                'type' => 'buy_x_get_y',
+                                'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
+                            ]);
+                        }
+                    }
+
+                    if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
+                        $selectableGiftAction = collect($createdActions)->first(function ($action) {
+                            return empty($action->actions['product_id_to_get']);
+                        });
+                        if ($selectableGiftAction) {
+                            $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
+                        }
                     }
                 }
 
-                $createdActions = [];
-                if ($request->has('get_items')) {
-                    foreach ($request->get_items as $item) {
-                        $createdActions[] = PromotionAction::create([
-                            'promotion_id' => $promotion->id,
-                            'type' => 'buy_x_get_y',
-                            'actions' => ['product_id_to_get' => $item['product_id'] ?? null, 'quantity_to_get' => $item['quantity']],
-                        ]);
-                    }
-                }
+                return $promotion;
+            });
 
-                if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
-                    $selectableGiftAction = collect($createdActions)->first(function ($action) {
-                        return empty($action->actions['product_id_to_get']);
-                    });
-                    if ($selectableGiftAction) {
-                        $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
-                    }
-                }
-            }
-
-            return $promotion;
-        });
-
-        return redirect()->route('admin.promotions.index')->with('success', 'สร้างโปรโมชั่นเรียบร้อยแล้ว');
+            return redirect()->route('admin.promotions.index')->with('success', 'สร้างโปรโมชั่นเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            \Log::error('Promotion creation failed: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'เกิดข้อผิดพลาดในการสร้างโปรโมชั่น: ' . $e->getMessage());
+        }
     }
 
     public function edit($id)
@@ -135,104 +140,114 @@ class PromotionController extends Controller
     {
         $this->validatePromotion($request, $id);
 
-        DB::transaction(function () use ($request, $id) {
-            $promotion = Promotion::findOrFail($id);
-            $originalData = $promotion->toArray();
+        try {
+            DB::transaction(function () use ($request, $id) {
+                $promotion = Promotion::findOrFail($id);
+                $originalData = $promotion->toArray();
 
-            $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
+                $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
 
-            $promoType = $request->input('promo_type_selector');
-            $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
+                $promoType = $request->input('promo_type_selector');
+                $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
 
-            if ($promoType === 'code') {
-                $data['is_discount_code'] = true;
-                $data['code'] = $request->input('code');
-            } elseif ($promoType === 'free_shipping_code') {
-                $data['is_discount_code'] = true;
-                $data['code'] = $request->input('code');
-                $data['discount_type'] = null;
-                $data['discount_value'] = null;
-            } elseif ($promoType === 'free_shipping') {
-                $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
-                $data['code'] = null;
-                $data['discount_type'] = null;
-                $data['discount_value'] = null;
-            } else {
-                $data['is_discount_code'] = false;
-                $data['code'] = null;
-            }
-
-            if ($promoType === 'bxgy') {
-                $data['discount_type'] = null;
-                $data['discount_value'] = null;
-                $data['is_free_shipping'] = false;
-            }
-
-            $promotion->fill($data);
-            if ($promotion->isDirty()) {
-                $this->logActivity($promotion, 'updated', $originalData, $promotion->toArray());
-            }
-            $promotion->save();
-
-            // Clear old data
-            $promotion->rules()->delete();
-            $promotion->actions()->delete();
-
-            if ($promoType === 'bxgy') {
-                if ($request->has('buy_items')) {
-                    foreach ($request->buy_items as $item) {
-                        PromotionRule::create([
-                            'promotion_id' => $promotion->id,
-                            'type' => 'buy_x_get_y',
-                            // รองรับทั้ง product_id เดียว หรือหลายตัว (Array)
-                            'rules' => [
-                                'product_id' => is_array($item['product_id']) ? $item['product_id'] : [$item['product_id']],
-                                'quantity_to_buy' => $item['quantity'],
-                            ],
-                        ]);
-                    }
+                if ($promoType === 'code') {
+                    $data['is_discount_code'] = true;
+                    $data['code'] = $request->input('code');
+                } elseif ($promoType === 'free_shipping_code') {
+                    $data['is_discount_code'] = true;
+                    $data['code'] = $request->input('code');
+                    $data['discount_type'] = null;
+                    $data['discount_value'] = null;
+                } elseif ($promoType === 'free_shipping') {
+                    $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
+                    $data['code'] = null;
+                    $data['discount_type'] = null;
+                    $data['discount_value'] = null;
+                } else {
+                    $data['is_discount_code'] = false;
+                    $data['code'] = null;
                 }
 
-                $createdActions = [];
-                if ($request->has('get_items')) {
-                    foreach ($request->get_items as $item) {
-                        $createdActions[] = PromotionAction::create([
-                            'promotion_id' => $promotion->id,
-                            'type' => 'buy_x_get_y',
-                            'actions' => [
-                                'product_id_to_get' => $item['product_id'] ?? null,
-                                'quantity_to_get' => $item['quantity'],
-                            ],
-                        ]);
-                    }
+                if ($promoType === 'bxgy') {
+                    $data['discount_type'] = null;
+                    $data['discount_value'] = null;
+                    $data['is_free_shipping'] = false;
                 }
 
-                if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
-                    $selectableGiftAction = collect($createdActions)->first(function ($action) {
-                        return empty($action->actions['product_id_to_get']);
-                    });
-                    if ($selectableGiftAction) {
-                        $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
+                $promotion->fill($data);
+                if ($promotion->isDirty()) {
+                    $this->logActivity($promotion, 'updated', $originalData, $promotion->toArray());
+                }
+                $promotion->save();
+
+                // Clear old data
+                $promotion->rules()->delete();
+                $promotion->actions()->delete();
+
+                if ($promoType === 'bxgy') {
+                    if ($request->has('buy_items')) {
+                        foreach ($request->buy_items as $item) {
+                            PromotionRule::create([
+                                'promotion_id' => $promotion->id,
+                                'type' => 'buy_x_get_y',
+                                // รองรับทั้ง product_id เดียว หรือหลายตัว (Array)
+                                'rules' => [
+                                    'product_id' => is_array($item['product_id']) ? $item['product_id'] : [$item['product_id']],
+                                    'quantity_to_buy' => $item['quantity'],
+                                ],
+                            ]);
+                        }
+                    }
+
+                    $createdActions = [];
+                    if ($request->has('get_items')) {
+                        foreach ($request->get_items as $item) {
+                            $createdActions[] = PromotionAction::create([
+                                'promotion_id' => $promotion->id,
+                                'type' => 'buy_x_get_y',
+                                'actions' => [
+                                    'product_id_to_get' => $item['product_id'] ?? null,
+                                    'quantity_to_get' => $item['quantity'],
+                                ],
+                            ]);
+                        }
+                    }
+
+                    if ($request->has('giftable_product_ids') && ! empty($request->giftable_product_ids)) {
+                        $selectableGiftAction = collect($createdActions)->first(function ($action) {
+                            return empty($action->actions['product_id_to_get']);
+                        });
+                        if ($selectableGiftAction) {
+                            $selectableGiftAction->giftableProducts()->sync($request->giftable_product_ids);
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        return redirect()->route('admin.promotions.index')->with('success', 'อัปเดตโปรโมชั่นเรียบร้อยแล้ว');
+            return redirect()->route('admin.promotions.index')->with('success', 'อัปเดตโปรโมชั่นเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            \Log::error('Promotion update failed: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'เกิดข้อผิดพลาดในการอัปเดตโปรโมชั่น: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)
     {
-        $promotion = Promotion::findOrFail($id);
-        $this->logActivity($promotion, 'deleted');
+        try {
+            $promotion = Promotion::findOrFail($id);
+            $this->logActivity($promotion, 'deleted');
 
-        DB::transaction(function () use ($promotion) {
-            $promotion->rules()->delete();
-            $promotion->actions()->delete();
-            $promotion->delete();
-        });
+            DB::transaction(function () use ($promotion) {
+                $promotion->rules()->delete();
+                $promotion->actions()->delete();
+                $promotion->delete();
+            });
 
-        return redirect()->back()->with('success', 'ลบโปรโมชั่นเรียบร้อยแล้ว');
+            return redirect()->back()->with('success', 'ลบโปรโมชั่นเรียบร้อยแล้ว');
+        } catch (\Exception $e) {
+            \Log::error('Promotion deletion failed: ' . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการลบโปรโมชั่น: ' . $e->getMessage());
+        }
     }
 
     /**

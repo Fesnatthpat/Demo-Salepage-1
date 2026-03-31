@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class AdminManagementController extends Controller
 {
@@ -40,7 +41,16 @@ class AdminManagementController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('admins')->whereNull('deleted_at')],
-            'password' => 'required|string|min:8|confirmed',
+            'password' => [
+                'required',
+                'string',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(),
+            ],
             'role_id' => 'required|exists:roles,id',
             'is_active' => 'required|boolean',
         ]);
@@ -89,7 +99,16 @@ class AdminManagementController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('admins')->ignore($admin->id)->whereNull('deleted_at')],
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => [
+                'nullable',
+                'string',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(),
+            ],
             'role_id' => 'required|exists:roles,id',
             'is_active' => 'required|boolean',
         ]);

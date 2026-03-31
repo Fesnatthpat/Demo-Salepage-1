@@ -1,175 +1,170 @@
 @extends('layouts.admin')
 
-@section('title', 'Create Admin')
+@section('title', 'สร้างผู้ดูแลระบบใหม่ | TIDJAI Admin')
+@section('page-title', 'สร้างผู้ดูแลระบบใหม่')
 
 @section('content')
-    <div class="container mx-auto px-4 sm:px-8 py-8">
-        <div class="max-w-3xl mx-auto">
-            {{-- Header & Back Button --}}
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h2 class="text-3xl font-extrabold text-gray-100">สร้างผู้ดูแลระบบใหม่</h2>
-                    <p class="mt-2 text-sm text-gray-400">กรอกข้อมูลเพื่อเพิ่มบัญชีผู้ดูแลระบบเข้าสู่ระบบ</p>
-                </div>
-                <a href="{{ route('admin.admins.index') }}"
-                    class="inline-flex items-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 hover:text-white focus:outline-none transition">
-                    <i class="fas fa-arrow-left mr-2 -ml-1 text-gray-500 group-hover:text-white"></i> ย้อนกลับ
-                </a>
-            </div>
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6">
+            <a href="{{ route('admin.admins.index') }}" class="text-gray-400 hover:text-white transition-colors flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> กลับหน้าจัดการแอดมิน
+            </a>
+        </div>
 
-            <form action="{{ route('admin.admins.store') }}" method="POST">
-                @csrf
-                <div class="bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-700">
-                    <div class="p-8 space-y-8">
-
-                        {{-- Grid Layout --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                            {{-- Name --}}
-                            <div class="col-span-2 sm:col-span-1">
-                                <label for="name" class="block text-sm font-semibold text-gray-300 mb-2">ชื่อ - นามสกุล
-                                    <span class="text-red-400">*</span></label>
-                                <input type="text" name="name" id="name" value="{{ old('name') }}"
-                                    autocomplete="name"
-                                    class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500 @error('name') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
-                                    placeholder="เช่น สมชาย ใจดี" required>
-                                @error('name')
-                                    <p class="mt-2 text-sm text-red-400 flex items-center"><i
-                                            class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            {{-- Role --}}
-                            <div class="col-span-2 sm:col-span-1">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label for="role_id" class="block text-sm font-semibold text-gray-300">ระดับสิทธิ์
-                                        <span class="text-red-400">*</span></label>
-                                    @if(auth('admin')->user()->role->role_key === 'superadmin')
-                                        <a href="{{ route('admin.roles.index') }}" class="text-[10px] text-indigo-400 hover:text-indigo-300 transition flex items-center">
-                                            <i class="fas fa-cog mr-1"></i> จัดการระดับสิทธิ์
-                                        </a>
-                                    @endif
-                                </div>
-                                <select id="role_id" name="role_id"
-                                    class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out appearance-none bg-no-repeat bg-right pr-10 @error('role_id') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
-                                    style="background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%239ca3af\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E'); background-position: right 1rem center; background-size: 1.5em 1.5em;"
-                                    required>
-                                    <option value="" disabled selected class="bg-gray-800 text-gray-400">
-                                        กรุณาเลือกตำแหน่ง</option>
-                                    @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}
-                                            class="bg-gray-800">
-                                            {{ ucfirst($role->name) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('role_id')
-                                    <p class="mt-2 text-sm text-red-400 flex items-center"><i
-                                            class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            {{-- Status --}}
-                            <div class="col-span-2">
-                                <label class="block text-sm font-semibold text-gray-300 mb-3">สถานะการใช้งาน</label>
-                                <div class="flex items-center space-x-6">
-                                    <label class="inline-flex items-center cursor-pointer group">
-                                        <input type="radio" name="is_active" value="1" class="hidden" {{ old('is_active', '1') == '1' ? 'checked' : '' }}>
-                                        <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center transition-all group-hover:border-emerald-500 radio-checked:border-emerald-500 radio-checked:bg-emerald-500">
-                                            <div class="w-2 h-2 rounded-full bg-white opacity-0 radio-checked:opacity-100"></div>
-                                        </div>
-                                        <span class="ml-2 text-gray-300 group-hover:text-white transition-colors">Active (เปิดใช้งาน)</span>
-                                    </label>
-                                    <label class="inline-flex items-center cursor-pointer group">
-                                        <input type="radio" name="is_active" value="0" class="hidden" {{ old('is_active') == '0' ? 'checked' : '' }}>
-                                        <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center transition-all group-hover:border-red-500 radio-checked:border-red-500 radio-checked:bg-red-500">
-                                            <div class="w-2 h-2 rounded-full bg-white opacity-0 radio-checked:opacity-100"></div>
-                                        </div>
-                                        <span class="ml-2 text-gray-300 group-hover:text-white transition-colors">No Active (ปิดการใช้งาน)</span>
-                                    </label>
-                                </div>
-                                <style>
-                                    input[type="radio"]:checked + div { border-color: inherit; background-color: currentColor; }
-                                    input[value="1"]:checked + div { border-color: #10b981; background-color: #10b981; }
-                                    input[value="0"]:checked + div { border-color: #ef4444; background-color: #ef4444; }
-                                    input[type="radio"]:checked + div + span { color: white; font-weight: 600; }
-                                </style>
-                            </div>
-
-                            {{-- Username --}}
-                            <div class="col-span-2">
-                                <label for="username" class="block text-sm font-semibold text-gray-300 mb-2">ชื่อผู้ใช้
-                                    (Username) <span class="text-red-400">*</span></label>
-                                <div class="relative rounded-md shadow-sm">
-                                    <input type="text" name="username" id="username" value="{{ old('username') }}"
-                                        autocomplete="username"
-                                        class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500 @error('username') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
-                                        placeholder="ภาษาอังกฤษและตัวเลขเท่านั้น" required>
-                                </div>
-                                @error('username')
-                                    <p class="mt-2 text-sm text-red-400 flex items-center"><i
-                                            class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div class="col-span-2 border-b border-gray-700"></div>
-
-                            {{-- Password --}}
-                            <div class="col-span-2 sm:col-span-1">
-                                <label for="password" class="block text-sm font-semibold text-gray-300 mb-2">รหัสผ่าน <span
-                                        class="text-red-400">*</span></label>
-                                <input type="password" name="password" id="password"
-                                    class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500 @error('password') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
-                                    placeholder="อย่างน้อย 8 ตัวอักษร" required>
-                                @error('password')
-                                    <p class="mt-2 text-sm text-red-400 flex items-center"><i
-                                            class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            {{-- Confirm Password --}}
-                            <div class="col-span-2 sm:col-span-1">
-                                <label for="password_confirmation"
-                                    class="block text-sm font-semibold text-gray-300 mb-2">ยืนยันรหัสผ่าน <span
-                                        class="text-red-400">*</span></label>
-                                <input type="password" name="password_confirmation" id="password_confirmation"
-                                    class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500"
-                                    placeholder="กรอกรหัสผ่านอีกครั้ง" required>
-                            </div>
+        <div class="bg-gray-800 rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
+            <div class="p-6 sm:p-8">
+                <form action="{{ route('admin.admins.store') }}" method="POST">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Name --}}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="name" class="block text-sm font-semibold text-gray-300 mb-2">ชื่อ-นามสกุล <span class="text-red-400">*</span></label>
+                            <input type="text" name="name" id="name" value="{{ old('name') }}"
+                                class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500 @error('name') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
+                                placeholder="เช่น นายสมชาย ใจดี" required autofocus>
+                            @error('name')
+                                <p class="mt-2 text-sm text-red-400 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
+                            @enderror
                         </div>
 
-                        {{-- Server Side Errors Display (General) --}}
-                        @if (session('error'))
-                            <div class="rounded-lg bg-red-900/50 p-4 border-l-4 border-red-500">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-times-circle text-red-400"></i>
-                                    </div>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-red-300">พบข้อผิดพลาด</h3>
-                                        <div class="mt-2 text-sm text-red-200">
-                                            <p>{{ session('error') }}</p>
-                                        </div>
-                                    </div>
+                        {{-- Username --}}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="username" class="block text-sm font-semibold text-gray-300 mb-2">ชื่อผู้ใช้ (Username) <span class="text-red-400">*</span></label>
+                            <input type="text" name="username" id="username" value="{{ old('username') }}"
+                                class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500 @error('username') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
+                                placeholder="เช่น somchai_admin" required>
+                            @error('username')
+                                <p class="mt-2 text-sm text-red-400 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Role --}}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="role_id" class="block text-sm font-semibold text-gray-300 mb-2">ระดับสิทธิ์ (Role) <span class="text-red-400">*</span></label>
+                            <select name="role_id" id="role_id"
+                                class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out @error('role_id') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
+                                required>
+                                <option value="" disabled selected>เลือกสิทธิ์การใช้งาน</option>
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('role_id')
+                                <p class="mt-2 text-sm text-red-400 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="is_active" class="block text-sm font-semibold text-gray-300 mb-2">สถานะบัญชี <span class="text-red-400">*</span></label>
+                            <select name="is_active" id="is_active"
+                                class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out @error('is_active') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
+                                required>
+                                <option value="1" {{ old('is_active', '1') == '1' ? 'selected' : '' }}>ใช้งานได้ปกติ (Active)</option>
+                                <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>ระงับการใช้งาน (Disabled)</option>
+                            </select>
+                            @error('is_active')
+                                <p class="mt-2 text-sm text-red-400 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="col-span-2 border-b border-gray-700 my-4"></div>
+
+                        {{-- Password --}}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="password" class="block text-sm font-semibold text-gray-300 mb-2">รหัสผ่าน <span class="text-red-400">*</span></label>
+                            <input type="password" name="password" id="password"
+                                class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500 @error('password') border-red-500 bg-red-900/20 text-red-200 focus:ring-red-500 focus:border-red-500 @enderror"
+                                placeholder="อย่างน้อย 8 ตัวอักษร" required>
+                            
+                            {{-- Strength Meter --}}
+                            <div class="mt-3 bg-gray-900/50 p-2 rounded-lg border border-gray-700">
+                                <div class="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
+                                    <div id="strength-bar" class="h-full transition-all duration-300 bg-gray-500" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between items-center mt-2">
+                                    <p id="strength-text" class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">ระดับความปลอดภัย: <span>ว่าง</span></p>
+                                    <div id="strength-icon" class="text-gray-600"><i class="fas fa-shield-alt text-xs"></i></div>
                                 </div>
                             </div>
-                        @endif
 
+                            @error('password')
+                                <p class="mt-2 text-sm text-red-400 flex items-center"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Confirm Password --}}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="password_confirmation" class="block text-sm font-semibold text-gray-300 mb-2">ยืนยันรหัสผ่าน <span class="text-red-400">*</span></label>
+                            <input type="password" name="password_confirmation" id="password_confirmation"
+                                class="block w-full px-4 py-3 rounded-lg border-gray-600 bg-gray-700 text-gray-100 text-base shadow-sm focus:bg-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 transition duration-150 ease-in-out placeholder-gray-500"
+                                placeholder="กรอกรหัสผ่านอีกครั้ง" required>
+                        </div>
                     </div>
 
-                    {{-- Footer Buttons --}}
-                    <div class="px-8 py-6 bg-gray-900/50 flex justify-end items-center space-x-4 border-t border-gray-700">
-                        <a href="{{ route('admin.admins.index') }}"
-                            class="px-6 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-300 font-medium hover:bg-gray-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition shadow-sm">
-                            ยกเลิก
-                        </a>
-                        <button type="submit"
-                            class="px-6 py-3 bg-indigo-600 border border-transparent rounded-lg text-white font-bold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 shadow-md shadow-indigo-900/30 transition flex items-center">
-                            <i class="fas fa-save mr-2"></i> บันทึกข้อมูล
+                    <div class="mt-10 flex items-center justify-end space-x-4">
+                        <button type="reset" class="px-6 py-3 rounded-lg text-sm font-semibold text-gray-300 hover:text-white transition-colors">ล้างค่าที่กรอก</button>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center">
+                            <i class="fas fa-save mr-2"></i> สร้างบัญชีแอดมิน
                         </button>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('password');
+        const bar = document.getElementById('strength-bar');
+        const textSpan = document.getElementById('strength-text').querySelector('span');
+        const iconDiv = document.getElementById('strength-icon');
+
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+            let strength = 0;
+
+            if (val.length === 0) {
+                strength = 0;
+            } else {
+                if (val.length >= 8) strength += 25;
+                if (val.match(/[a-z]/) && val.match(/[A-Z]/)) strength += 25;
+                if (val.match(/[0-9]/)) strength += 25;
+                if (val.match(/[^a-zA-Z0-9]/)) strength += 25;
+            }
+
+            // Update UI
+            bar.style.width = strength + '%';
+            
+            if (strength === 0) {
+                bar.style.backgroundColor = '#4b5563'; // gray-600
+                textSpan.textContent = 'ว่าง';
+                textSpan.className = 'text-gray-500';
+                iconDiv.className = 'text-gray-600';
+            } else if (strength <= 25) {
+                bar.style.backgroundColor = '#ef4444'; // red-500
+                textSpan.textContent = 'ง่ายมาก (ไม่ปลอดภัย)';
+                textSpan.className = 'text-red-500';
+                iconDiv.className = 'text-red-500';
+            } else if (strength <= 50) {
+                bar.style.backgroundColor = '#f97316'; // orange-500
+                textSpan.textContent = 'ปานกลาง (ควรเพิ่มสัญลักษณ์)';
+                textSpan.className = 'text-orange-500';
+                iconDiv.className = 'text-orange-500';
+            } else if (strength <= 75) {
+                bar.style.backgroundColor = '#eab308'; // yellow-500
+                textSpan.textContent = 'ดี (ค่อนข้างปลอดภัย)';
+                textSpan.className = 'text-yellow-500';
+                iconDiv.className = 'text-yellow-500';
+            } else {
+                bar.style.backgroundColor = '#10b981'; // emerald-500
+                textSpan.textContent = 'ยอดเยี่ยม (ปลอดภัยสูง)';
+                textSpan.className = 'text-emerald-500 font-black';
+                iconDiv.className = 'text-emerald-500';
+            }
+        });
+    });
+</script>
+@endpush

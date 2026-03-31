@@ -345,10 +345,6 @@
                                 class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md overflow-hidden shadow-xl z-50 border border-gray-700"
                                 style="display: none;">
 
-                                <a href="#"
-                                    class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
-                                    <i class="fas fa-user-circle mr-2"></i> โปรไฟล์
-                                </a>
                                 <div class="border-t border-gray-700"></div>
                                 <a href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();"

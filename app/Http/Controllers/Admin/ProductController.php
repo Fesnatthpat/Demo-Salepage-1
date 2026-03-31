@@ -130,14 +130,13 @@ class ProductController extends Controller
                         if (! empty($optionData['option_name'])) {
                             $hasOptions = true;
 
-                            // ✅ ตรวจสอบและบันทึกรูปภาพสำหรับตัวเลือกนี้
                             $optionImgId = null;
                             if ($request->hasFile("product_options.{$index}.image")) {
                                 $path = $request->file("product_options.{$index}.image")->store('product_images', 'public');
                                 $newImage = ProductImage::create([
                                     'pd_sp_id' => $salePage->pd_sp_id,
                                     'img_path' => $path,
-                                    'img_sort' => 99, // รูปตัวเลือกให้ sort ไว้ท้ายๆ
+                                    'img_sort' => 99,
                                 ]);
                                 $optionImgId = $newImage->img_id;
                             }
@@ -147,11 +146,10 @@ class ProductController extends Controller
                                 'option_SKU' => $optionData['option_SKU'] ?? null,
                                 'option_price' => $optionData['option_price'] ?? $salePage->pd_sp_price,
                                 'option_price2' => $optionData['option_price2'] ?? null,
-                                'options_img_id' => $optionImgId, // บันทึก ID รูปภาพที่เพิ่งสร้าง
+                                'options_img_id' => $optionImgId,
                                 'option_active' => 1,
                             ]);
 
-                            // บันทึกสต็อกสินค้าตัวเลือก
                             StockProduct::create([
                                 'pd_sp_id' => $salePage->pd_sp_id,
                                 'option_id' => $newOption->option_id,
@@ -161,10 +159,10 @@ class ProductController extends Controller
                     }
                 }
 
-                // บันทึกสต็อกหลักเสมอ (เพื่อให้ OrderService ทำงานได้ราบรื่น)
+                // บันทึกสต็อกหลัก (ถ้ามีตัวเลือก ให้สต็อกหลักเป็น 0 เพื่อป้องกันการตัดสต็อกผิดจุด)
                 StockProduct::updateOrCreate(
                     ['pd_sp_id' => $salePage->pd_sp_id, 'option_id' => null],
-                    ['quantity' => $request->pd_sp_stock ?? 0]
+                    ['quantity' => $hasOptions ? 0 : ($request->pd_sp_stock ?? 0)]
                 );
 
                 $this->logActivity($salePage, 'created');
@@ -193,7 +191,7 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
+        $productSalepage = ProductSalepage::where('pd_sp_id', $id)->with('options')->firstOrFail();
         $this->validateSalePage($request, $productSalepage);
 
         try {
@@ -231,14 +229,21 @@ class ProductController extends Controller
                     }
                 }
 
-                // จัดการตัวเลือกสินค้า (Options) และ สต็อก (รักษา reserved_qty)
+                // จัดการตัวเลือกสินค้า (Options)
                 $keepOptionIds = [];
+                $hasOptions = false;
                 
                 if ($request->has('product_options')) {
                     foreach ($request->product_options as $index => $optionData) {
                         if (! empty($optionData['option_name'])) {
-                            // ✅ ตรวจสอบรูปภาพ: ใช้รูปเดิมที่มี ID หรืออัปโหลดใหม่
-                            $optionImgId = $optionData['options_img_id'] ?? null;
+                            $hasOptions = true;
+                            $existingOption = isset($optionData['option_id']) 
+                                ? $productSalepage->options()->find($optionData['option_id']) 
+                                : null;
+
+                            // รักษา ID รูปภาพเดิมไว้หากไม่มีการอัปโหลดใหม่
+                            $optionImgId = $existingOption ? $existingOption->options_img_id : null;
+
                             if ($request->hasFile("product_options.{$index}.image")) {
                                 $path = $request->file("product_options.{$index}.image")->store('product_images', 'public');
                                 $newImage = ProductImage::create([
@@ -263,7 +268,6 @@ class ProductController extends Controller
 
                             $keepOptionIds[] = $option->option_id;
 
-                            // อัปเดตสต็อกโดยรักษา reserved_qty
                             StockProduct::updateOrCreate(
                                 ['pd_sp_id' => $productSalepage->pd_sp_id, 'option_id' => $option->option_id],
                                 ['quantity' => $optionData['option_stock'] ?? 0]
@@ -279,10 +283,10 @@ class ProductController extends Controller
                     ->whereNotIn('option_id', $keepOptionIds)
                     ->delete();
 
-                // บันทึกสต็อกหลักเสมอ (เพื่อให้ OrderService ทำงานได้ราบรื่น)
+                // บันทึกสต็อกหลัก
                 StockProduct::updateOrCreate(
                     ['pd_sp_id' => $productSalepage->pd_sp_id, 'option_id' => null],
-                    ['quantity' => $request->pd_sp_stock ?? 0]
+                    ['quantity' => $hasOptions ? 0 : ($request->pd_sp_stock ?? 0)]
                 );
 
                 $this->logActivity($productSalepage, 'updated', $originalData, $productSalepage->toArray());
@@ -297,17 +301,37 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $productSalepage = ProductSalepage::where('pd_sp_id', $id)->firstOrFail();
-        $this->logActivity($productSalepage, 'deleted');
+        $productSalepage = ProductSalepage::with(['images', 'options', 'reviewImages'])->where('pd_sp_id', $id)->firstOrFail();
+        
+        try {
+            return DB::transaction(function () use ($productSalepage) {
+                $this->logActivity($productSalepage, 'deleted');
 
-        foreach ($productSalepage->images as $img) {
-            Storage::disk('public')->delete($img->img_path);
+                // 1. ลบรูปภาพสินค้าหลัก
+                foreach ($productSalepage->images as $img) {
+                    Storage::disk('public')->delete($img->img_path);
+                }
+                $productSalepage->images()->delete();
+
+                // 2. ลบรูปภาพรีวิว
+                foreach ($productSalepage->reviewImages as $reviewImg) {
+                    Storage::disk('public')->delete($reviewImg->image_url);
+                }
+                $productSalepage->reviewImages()->delete();
+
+                // 3. ลบ Options และสต็อกที่เกี่ยวข้อง
+                $productSalepage->options()->delete();
+                StockProduct::where('pd_sp_id', $productSalepage->pd_sp_id)->delete();
+
+                // 4. ลบสินค้าหลัก
+                $productSalepage->delete();
+
+                return redirect()->route('admin.products.index')->with('success', 'ลบสินค้าและข้อมูลที่เกี่ยวข้องเรียบร้อยแล้ว');
+            });
+        } catch (\Exception $e) {
+            \Log::error('Product deletion failed: ' . $e->getMessage());
+            return back()->with('error', 'เกิดข้อผิดพลาดในการลบสินค้า');
         }
-
-        $productSalepage->options()->delete();
-        $productSalepage->delete();
-
-        return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 
     public function destroyImage($imageId)

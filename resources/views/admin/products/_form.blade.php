@@ -155,33 +155,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-700/50 pt-6">
-                <label
-                    class="flex items-center gap-4 bg-gray-900/80 hover:bg-gray-700 p-4 rounded-2xl border border-gray-600 transition-colors cursor-pointer">
-                    <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400"><i
-                            class="fas fa-shipping-fast"></i></div>
-                    <div class="flex-1">
-                        <span class="block text-sm font-bold text-white">ฟรีค่าจัดส่ง (โอน)</span>
-                        <span class="text-xs text-gray-500">สำหรับลูกค้ายอดโอนเงิน</span>
-                    </div>
-                    <input type="hidden" name="pd_sp_free_shipping" value="0">
-                    <input type="checkbox" name="pd_sp_free_shipping" value="1" class="toggle toggle-info"
-                        {{ old('pd_sp_free_shipping', $productSalepage->pd_sp_free_shipping ?? 0) ? 'checked' : '' }}>
-                </label>
-
-                <label
-                    class="flex items-center gap-4 bg-gray-900/80 hover:bg-gray-700 p-4 rounded-2xl border border-gray-600 transition-colors cursor-pointer">
-                    <div class="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400">
-                        <i class="fas fa-hand-holding-usd"></i></div>
-                    <div class="flex-1">
-                        <span class="block text-sm font-bold text-white">ฟรีค่าจัดส่ง (COD)</span>
-                        <span class="text-xs text-gray-500">สำหรับลูกค้าเก็บเงินปลายทาง</span>
-                    </div>
-                    <input type="hidden" name="pd_sp_free_cod" value="0">
-                    <input type="checkbox" name="pd_sp_free_cod" value="1" class="toggle toggle-secondary"
-                        {{ old('pd_sp_free_cod', $productSalepage->pd_sp_free_cod ?? 0) ? 'checked' : '' }}>
-                </label>
-            </div>
+            
         </div>
     </div>
 

@@ -409,7 +409,7 @@
                             
                             <p x-show="appliedCode !== ''" x-transition
                                 class="text-emerald-600 bg-emerald-50 border-emerald-200 text-[11px] sm:text-xs font-bold mt-2 sm:mt-3 p-2 rounded-lg border flex items-center gap-1.5">
-                                <i class="fas fa-check-circle"></i> ใช้รหัสส่วนลดสำเร็จ: <span x-text="appliedCode"></span>
+                                <i class="fas fa-check-circle"></i> ใช้คูปองสำเร็จ: <span x-text="appliedPromoName || appliedCode"></span>
                             </p>
 
                             {{-- ✅ เพิ่ม Mockup Coupons ตรงนี้ --}}
@@ -417,7 +417,7 @@
                                 <p class="text-[11px] font-bold text-gray-500 mb-2">คูปองแนะนำ (คลิกเพื่อใช้)</p>
                                 <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 hide-scrollbar">
                                     <template x-for="coupon in availableCoupons" :key="coupon.code">
-                                        <button type="button" @click="discountCode = coupon.code; applyPromoCode()"
+                                        <button type="button" @click="applyPromoCode(coupon.code, coupon.name)"
                                             :disabled="isApplyingDiscount"
                                             class="shrink-0 flex items-center gap-3 border border-red-200 bg-red-50/50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all disabled:opacity-50 text-left active:scale-95 shadow-sm">
                                             <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center text-white shrink-0">
@@ -628,8 +628,9 @@
                     } catch (error) { console.error(error); }
                 },
 
-                async applyPromoCode() {
-                    if (!this.discountCode) return;
+                async applyPromoCode(providedCode = null, providedName = null) {
+                    const codeToApply = providedCode || this.discountCode;
+                    if (!codeToApply) return;
                     this.isApplyingDiscount = true;
                     
                     try {
@@ -640,7 +641,7 @@
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                             },
                             body: JSON.stringify({
-                                code: this.discountCode,
+                                code: codeToApply,
                                 selected_items: this.selectedItems,
                                 selected_freebies: this.selectedFreebies,
                                 address_id: this.activeAddressId
@@ -649,7 +650,13 @@
                         
                         const data = await response.json();
                         if (data.success) {
-                            this.appliedCode = this.discountCode;
+                            this.appliedCode = codeToApply;
+                            this.appliedPromoName = providedName || data.promoName || codeToApply;
+                            
+                            if (!providedCode) {
+                                this.discountCode = '';
+                            }
+
                             this.totalOriginalAmount = data.totalOriginalAmount;
                             this.grandTotal = data.grandTotal;
                             this.shippingCost = data.shippingCost;
@@ -658,8 +665,8 @@
                             
                             Swal.fire({
                                 icon: 'success',
-                                title: 'สำเร็จ',
-                                text: data.message,
+                                title: 'ใช้ส่วนลดสำเร็จ',
+                                text: this.appliedPromoName,
                                 timer: 1500,
                                 showConfirmButton: false,
                                 borderRadius: '1rem'
@@ -676,7 +683,6 @@
                 },
 
                 async removePromoCode() {
-                    this.discountCode = '';
                     this.isApplyingDiscount = true;
                     try {
                         const response = await fetch('{{ route('payment.applyDiscount') }}', {
@@ -695,6 +701,8 @@
                         const data = await response.json();
                         if (data.success) {
                             this.appliedCode = '';
+                            this.appliedPromoName = '';
+                            this.discountCode = '';
                             this.totalOriginalAmount = data.totalOriginalAmount;
                             this.grandTotal = data.grandTotal;
                             this.shippingCost = data.shippingCost;

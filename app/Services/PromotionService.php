@@ -71,12 +71,15 @@ class PromotionService
      */
     public function calculateTotalDiscount(float $subTotal, Collection $cartItems): float
     {
-        if ($cartItems->isEmpty()) {
+        if ($cartItems->isEmpty() || $subTotal <= 0) {
             return 0;
         }
 
-        $promos = $this->getApplicablePromotions($cartItems);
+        // ดึงโปรโมชั่นที่ผ่านเงื่อนไขพื้นฐานมาทั้งหมด และเรียงตาม Priority (น้อยไปมาก)
+        $promos = $this->getApplicablePromotions($cartItems)->sortBy('priority');
+        
         $totalDiscount = 0;
+        $remainingSubTotal = $subTotal;
         $appliedCode = $this->getAppliedPromoCode(); 
 
         foreach ($promos as $promo) {
@@ -87,13 +90,28 @@ class PromotionService
                 $currentPromoDiscount = 0;
                 $multiplier = $promo->multiplier ?? 1;
 
+                // 💡 คำนวณส่วนลดจากยอดคงเหลือ (Compound Discount)
                 if ($promo->discount_type === 'fixed') {
                     $currentPromoDiscount = (float) $promo->discount_value * $multiplier;
                 } elseif ($promo->discount_type === 'percentage') {
-                    $currentPromoDiscount = ($subTotal * ((float) $promo->discount_value / 100));
+                    $currentPromoDiscount = ($remainingSubTotal * ((float) $promo->discount_value / 100));
                 }
                 
+                // ตรวจสอบไม่ให้ส่วนลดเกินราคาสินค้าที่เหลือ
+                $currentPromoDiscount = min($currentPromoDiscount, $remainingSubTotal);
+                
                 $totalDiscount += $currentPromoDiscount;
+                $remainingSubTotal -= $currentPromoDiscount;
+
+                // 🛑 ถ้าโปรโมชั่นนี้ไม่อนุญาตให้ใช้ร่วมกับโปรอื่น (Exclusive) ให้หยุดคำนวณทันที
+                if (!$promo->is_stackable) {
+                    break;
+                }
+                
+                // ถ้าหักจนยอดเหลือ 0 แล้วก็หยุด
+                if ($remainingSubTotal <= 0) {
+                    break;
+                }
             }
         }
 
@@ -111,6 +129,14 @@ class PromotionService
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
             ->first();
+
+        // 💡 ถ้าไม่เจอใน Promotion ปกติ ให้ลองหาใน BirthdayPromotion เผื่อว่าใช้รหัสตรงๆ
+        if (! $promo) {
+            $birthdayPromo = \App\Models\BirthdayPromotion::where('discount_code', $code)->where('is_active', true)->first();
+            if ($birthdayPromo && $birthdayPromo->promotion) {
+                $promo = $birthdayPromo->promotion;
+            }
+        }
 
         if (! $promo) {
             throw new Exception('รหัสส่วนลดไม่ถูกต้อง หรือหมดอายุแล้ว');

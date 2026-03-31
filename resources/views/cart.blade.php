@@ -172,22 +172,16 @@
                                         <span class="font-bold text-gray-900">฿<span
                                                 id="subtotal-display">{{ number_format($subTotal, 2) }}</span></span>
                                     </div>
-                                    <div
-                                        class="flex justify-between text-xs sm:text-sm text-red-500 font-medium bg-red-50 p-2 rounded-lg">
-                                        <span><i class="fas fa-tag mr-1"></i> ส่วนลดโปรโมชั่น</span>
-                                        <span>-฿<span
-                                                id="discount-display">{{ number_format($totalDiscount, 2) }}</span></span>
-                                    </div>
                                 </div>
 
                                 <div class="border-t border-dashed border-gray-200 my-4"></div>
 
                                 <div class="flex justify-between items-end mb-5 sm:mb-6">
-                                    <span class="font-bold text-gray-800 text-sm sm:text-base">ยอดสุทธิ</span>
+                                    <span class="font-bold text-gray-800 text-sm sm:text-base">ยอดรวมสุทธิ</span>
                                     <div class="text-right">
                                         <div class="text-2xl sm:text-3xl font-black text-red-600 tracking-tight leading-none">฿<span
-                                                id="total-display">{{ number_format($total, 2) }}</span></div>
-                                        <div class="text-[9px] sm:text-[10px] text-gray-400 mt-1">รวมภาษีมูลค่าเพิ่มแล้ว</div>
+                                                id="total-display">{{ number_format($subTotal, 2) }}</span></div>
+                                        <div class="text-[9px] sm:text-[10px] text-gray-400 mt-1">ยังไม่รวมส่วนลดและค่าจัดส่ง</div>
                                     </div>
                                 </div>
 
@@ -371,8 +365,7 @@
                 if (data.success) {
                     // 1. อัปเดตตัวเลขรวมในหน้าเว็บ
                     document.getElementById('subtotal-display').innerText = numberWithCommas(data.subTotal);
-                    document.getElementById('discount-display').innerText = numberWithCommas(data.totalDiscount);
-                    document.getElementById('total-display').innerText = numberWithCommas(data.total);
+                    document.getElementById('total-display').innerText = numberWithCommas(data.subTotal);
                     document.getElementById('selected-count').innerText = data.selectedCount;
 
                     // 2. อัปเดต URL ใน Browser (เพื่อให้ Refresh แล้วคงสถานะเดิม)

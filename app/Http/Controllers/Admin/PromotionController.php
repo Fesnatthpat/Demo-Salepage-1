@@ -15,14 +15,42 @@ class PromotionController extends Controller
 {
     use LogsActivity;
 
-    public function index()
+    public function index(Request $request)
     {
-        $promotions = Promotion::with(['rules', 'actions.giftableProducts', 'usageLogs'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = Promotion::with(['rules', 'actions.giftableProducts', 'usageLogs', 'birthdayPromotion']);
+
+        // 1. กรองตามประเภท (Type Filter)
+        $type = $request->input('type', 'all');
+        switch ($type) {
+            case 'birthday':
+                $query->whereHas('birthdayPromotion');
+                break;
+            case 'coupon':
+                $query->where('is_discount_code', false)->whereDoesntHave('rules')->whereDoesntHave('birthdayPromotion');
+                break;
+            case 'code':
+                $query->where('is_discount_code', true)->whereDoesntHave('birthdayPromotion');
+                break;
+            case 'bxgy':
+                $query->whereHas('rules')->whereDoesntHave('birthdayPromotion');
+                break;
+        }
+
+        // 2. กรองตามสถานะ (Status Filter)
+        $status = $request->input('status', 'all');
+        if ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        $promotions = $query->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
         $products = ProductSalepage::get()->keyBy('pd_sp_id');
 
-        return view('admin.promotions.index', compact('promotions', 'products'));
+        return view('admin.promotions.index', compact('promotions', 'products', 'type', 'status'));
     }
 
     public function create()
@@ -39,21 +67,29 @@ class PromotionController extends Controller
 
         try {
             $promotion = DB::transaction(function () use ($request) {
-                $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
+                $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping', 'priority', 'is_stackable');
+                $data['priority'] = $request->input('priority', 0);
+                $data['is_stackable'] = $request->has('is_stackable') ? $request->boolean('is_stackable') : true;
+                $data['is_active'] = $request->boolean('is_active');
 
                 $promoType = $request->input('promo_type_selector');
                 $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
+                $data['is_selectable'] = ($promoType === 'coupon_selectable');
 
                 if ($promoType === 'code') {
                     $data['is_discount_code'] = true;
                     $data['code'] = $request->input('code');
+                } elseif ($promoType === 'coupon_selectable') {
+                    $data['is_discount_code'] = true;
+                    // สร้างรหัสภายในจากชื่อแคมเปญ
+                    $data['code'] = \Illuminate\Support\Str::slug($request->input('name')) . '-' . time();
                 } elseif ($promoType === 'free_shipping_code') {
                     $data['is_discount_code'] = true;
                     $data['code'] = $request->input('code');
                     $data['discount_type'] = null;
                     $data['discount_value'] = null;
                 } elseif ($promoType === 'free_shipping') {
-                    $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
+                    $data['is_discount_code'] = false;
                     $data['code'] = null;
                     $data['discount_type'] = null;
                     $data['discount_value'] = null;
@@ -145,21 +181,29 @@ class PromotionController extends Controller
                 $promotion = Promotion::findOrFail($id);
                 $originalData = $promotion->toArray();
 
-                $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping');
+                $data = $request->only('name', 'description', 'start_date', 'end_date', 'is_active', 'condition_type', 'discount_type', 'discount_value', 'min_order_value', 'usage_limit', 'is_free_shipping', 'priority', 'is_stackable');
+                $data['priority'] = $request->input('priority', 0);
+                $data['is_stackable'] = $request->has('is_stackable') ? $request->boolean('is_stackable') : true;
+                $data['is_active'] = $request->boolean('is_active');
 
                 $promoType = $request->input('promo_type_selector');
                 $data['is_free_shipping'] = ($promoType === 'free_shipping' || $promoType === 'free_shipping_code');
+                $data['is_selectable'] = ($promoType === 'coupon_selectable');
 
                 if ($promoType === 'code') {
                     $data['is_discount_code'] = true;
                     $data['code'] = $request->input('code');
+                } elseif ($promoType === 'coupon_selectable') {
+                    $data['is_discount_code'] = true;
+                    // สร้างรหัสภายในจากชื่อแคมเปญ
+                    $data['code'] = \Illuminate\Support\Str::slug($request->input('name')) . '-' . time();
                 } elseif ($promoType === 'free_shipping_code') {
                     $data['is_discount_code'] = true;
                     $data['code'] = $request->input('code');
                     $data['discount_type'] = null;
                     $data['discount_value'] = null;
                 } elseif ($promoType === 'free_shipping') {
-                    $data['is_discount_code'] = false; // ส่งฟรีแบบแยกประเภท ให้เป็นอัตโนมัติเสมอ
+                    $data['is_discount_code'] = false;
                     $data['code'] = null;
                     $data['discount_type'] = null;
                     $data['discount_value'] = null;
@@ -284,6 +328,8 @@ class PromotionController extends Controller
             'discount_value' => ['nullable', 'numeric', 'min:0'],
             'min_order_value' => ['nullable', 'numeric', 'min:0'],
             'usage_limit' => ['nullable', 'integer', 'min:1'],
+            'priority' => ['nullable', 'integer', 'min:0'],
+            'is_stackable' => ['nullable', 'boolean'],
         ];
 
         $promoType = $request->input('promo_type_selector');

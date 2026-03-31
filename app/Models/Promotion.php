@@ -16,6 +16,8 @@ class Promotion extends Model
         'start_date',
         'end_date',
         'is_active',
+        'priority',
+        'is_stackable',
         'condition_type',
         'code',
         'discount_type',
@@ -24,11 +26,14 @@ class Promotion extends Model
         'usage_limit',
         'used_count',
         'is_discount_code',
+        'is_selectable',
         'is_free_shipping',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_stackable' => 'boolean',
+        'priority' => 'integer',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
         'discount_value' => 'float',
@@ -36,6 +41,7 @@ class Promotion extends Model
         'usage_limit' => 'integer',
         'used_count' => 'integer',
         'is_discount_code' => 'boolean',
+        'is_selectable' => 'boolean',
         'is_free_shipping' => 'boolean',
     ];
 

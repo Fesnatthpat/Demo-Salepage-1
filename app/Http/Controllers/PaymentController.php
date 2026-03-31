@@ -97,10 +97,11 @@ class PaymentController extends Controller
         $productIds = $cartItems->map(fn($item) => $item->attributes['product_id'] ?? $item->id)->toArray();
         $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
 
-        // 🎟️ ดึงรายการคูปองที่สามารถใช้งานได้ (Active และเป็นรหัสส่วนลด)
+        // 🎟️ ดึงรายการคูปองที่สามารถใช้งานได้ (Active และเปิดให้กดเลือกใช้เองได้)
         $now = now();
         $availableCoupons = \App\Models\Promotion::where('is_active', true)
-            ->where('is_discount_code', true)
+            ->where('is_selectable', true) // ✅ แสดงเฉพาะคูปองที่อนุญาตให้กดเลือกได้เอง
+            ->whereDoesntHave('birthdayPromotion') // ❌ ไม่แสดงโปรวันเกิดในรายการคูปองแนะนำ
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->where(function ($q) {

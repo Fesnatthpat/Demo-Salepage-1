@@ -52,7 +52,7 @@
                     selectedFreebies: @js($selectedFreebies),
                     initialShippingMethodId: {{ $defaultMethod->id ?? 'null' }},
                     itemCount: {{ $totalItemCount ?? 1 }},
-                    availableCoupons: @js($availableCoupons->map(fn($c) => ['code' => $c->code, 'desc' => $c->name]))
+                    availableCoupons: @js($availableCoupons->map(fn($c) => ['code' => $c->code, 'name' => $c->name]))
                 })">
                 
                 {{-- ⬅️ ฝั่งซ้าย: ข้อมูลที่อยู่, รายการสินค้า, ช่องทางชำระ --}}   
@@ -420,10 +420,12 @@
                                         <button type="button" @click="discountCode = coupon.code; applyPromoCode()"
                                             :disabled="isApplyingDiscount"
                                             class="shrink-0 flex items-center gap-3 border border-red-200 bg-red-50/50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all disabled:opacity-50 text-left active:scale-95 shadow-sm">
-                                            <i class="fas fa-ticket-alt text-red-500 text-xl"></i>
+                                            <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center text-white shrink-0">
+                                                <i class="fas fa-ticket-alt text-lg"></i>
+                                            </div>
                                             <div>
-                                                <div class="text-xs font-black text-red-700 uppercase" x-text="coupon.code"></div>
-                                                <div class="text-[10px] font-medium text-red-600 mt-0.5" x-text="coupon.desc"></div>
+                                                <div class="text-xs font-black text-red-700 uppercase" x-text="coupon.name"></div>
+                                                <div class="text-[9px] font-medium text-red-500 mt-0.5">คลิกเพื่อรับส่วนลด</div>
                                             </div>
                                         </button>
                                     </template>
@@ -447,7 +449,13 @@
                                 <span class="font-medium" x-show="shippingCost > 0" x-text="'฿' + formatNumber(shippingCost)"></span>
                             </div>
                             <div class="flex justify-between items-center text-red-500 font-bold bg-red-50 p-2 rounded-lg text-xs sm:text-sm" x-show="totalDiscount > 0" x-transition>
-                                <span><i class="fas fa-tags mr-1"></i> ส่วนลดรวม</span>
+                                <span>
+                                    <i class="fas fa-tags mr-1"></i> ส่วนลดรวม
+                                    <span class="ml-1 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full" 
+                                          x-show="totalOriginalAmount > 0"
+                                          x-text="'-' + Math.round((totalDiscount / totalOriginalAmount) * 100) + '%'">
+                                    </span>
+                                </span>
                                 <span x-text="'-฿' + formatNumber(totalDiscount)"></span>
                             </div>
                         </div>

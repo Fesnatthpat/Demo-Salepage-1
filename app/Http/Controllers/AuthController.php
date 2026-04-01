@@ -46,8 +46,11 @@ class AuthController extends Controller
             // 💡 เติม ->stateless() เพื่อปิดการตรวจสอบ State ตอนทดสอบใน Local (แก้ปัญหา Session เด้ง)
             $lineUser = Socialite::driver('line')->stateless()->user();
 
-            // 1. เก็บ Session ตะกร้าสินค้าของ Guest (ดึงจาก Cookie ถ้า Session ปกติหายไป)
+            // 1. เก็บ Session ตะกร้าสินค้าของ Guest (ดึงจาก Cookie หรือ Session ปัจจุบัน)
+            // ต้องดึง "ก่อน" ทำการ Auth::login($user) เพราะไอดีจะเปลี่ยนหลังล็อกอิน
             $guestSessionId = request()->cookie('guest_cart_id') ?: session()->getId();
+            
+            Log::info("LINE Login Callback - Guest Session ID: " . $guestSessionId);
 
             // 2. ค้นหาผู้ใช้ด้วย line_id หรือสร้างผู้ใช้ใหม่หากยังไม่เคยสมัคร
             $user = User::updateOrCreate(
@@ -57,13 +60,10 @@ class AuthController extends Controller
                     // 💡 ใส่ Fallback ให้ email เพื่อป้องกัน Error กรณีที่ผู้ใช้ไม่ได้ผูกอีเมลไว้กับ LINE
                     'email' => $lineUser->getEmail() ?? $lineUser->getId() . '@line.me',
                     'avatar' => $lineUser->getAvatar(),
-                    // หมายเหตุ: หากฐานข้อมูลของคุณบังคับว่ารหัสผ่าน (password) ห้ามเป็นค่าว่าง 
-                    // ให้เอาเครื่องหมาย // ด้านหน้าบรรทัดด้านล่างออกครับ
-                    // 'password' => bcrypt(uniqid()), 
                 ]
             );
 
-            // 💡 ดึง URL ที่ต้องการไปหลัง Login (ตรวจสอบทั้ง Session และ Cookie สำรอง)
+            // 💡 ดึง URL ที่ต้องการไปหลัง Login
             $intendedUrl = session()->pull('birthday_redirect_url');
             if (!$intendedUrl) {
                 $intendedUrl = request()->cookie('birthday_redirect_backup');
@@ -72,20 +72,23 @@ class AuthController extends Controller
                 $intendedUrl = session()->pull('url.intended');
             }
 
+            // 3. ทำการล็อกอินเข้าสู่ระบบ
+            Auth::login($user);
+            
+            // สำคัญ: สั่งให้ Laravel เปลี่ยน Session ID ใหม่เพื่อความปลอดภัย
+            // และดึงตะกร้าจาก $guestSessionId (ตะกร้าเก่า) มาใส่ใน Session ใหม่ของ User
+            session()->regenerate();
+
+            // 4. รวมตะกร้าสินค้า
+            $this->cartService->mergeGuestCart($guestSessionId, $user->id);
+
             // ล้าง Cookie สำรองทั้งหมด
             cookie()->queue(cookie()->forget('birthday_redirect_backup'));
             cookie()->queue(cookie()->forget('guest_cart_id'));
 
-            // 3. ทำการล็อกอินเข้าสู่ระบบของ Laravel
-            Auth::login($user);
-
-            // 4. รวมตะกร้าสินค้าจากตอนที่ยังไม่ได้ล็อกอิน เข้ากับบัญชีของผู้ใช้
-            $this->cartService->mergeGuestCart($guestSessionId, $user->id);
-
             // บังคับบันทึก Session ก่อน Redirect
             session()->save();
 
-            // กลับไปยังหน้าที่ลูกค้าตั้งใจจะไป
             return redirect($intendedUrl ?: config('app.url'));
 
         } catch (\Exception $e) {

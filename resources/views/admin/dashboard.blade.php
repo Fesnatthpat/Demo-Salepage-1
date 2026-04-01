@@ -173,7 +173,7 @@
     </div>
 
     {{-- 3.5 Candlestick Chart (Full Width) --}}
-    <div class="mb-8">
+    {{-- <div class="mb-8">
         <div class="w-full bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-bold text-gray-200 text-lg flex items-center">
@@ -185,7 +185,7 @@
                 <div id="candleStickChart"></div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     {{-- 4. Recent Orders Table & Top Products --}}
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">

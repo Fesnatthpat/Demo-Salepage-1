@@ -488,20 +488,43 @@ class CartService
 
     public function mergeGuestCart(string $guestSessionKey, int $userId): void
     {
-        $guestCart = Cart::session('_guest_'.$guestSessionKey);
-        $guestItems = $guestCart->getContent();
+        // 1. พยายามหาตะกร้าจากหลายแหล่งที่อาจจะเป็นไปได้
+        $possibleKeys = [
+            $guestSessionKey,
+            '_guest_' . $guestSessionKey,
+            str_replace('_guest_', '', $guestSessionKey)
+        ];
+
+        $guestItems = collect();
+        foreach (array_unique($possibleKeys) as $key) {
+            $items = Cart::session($key)->getContent();
+            if ($items->isNotEmpty()) {
+                $guestItems = $items;
+                $guestCart = Cart::session($key);
+                break;
+            }
+        }
         
-        $guestPromoCode = session("cart__guest_{$guestSessionKey}_promo_code");
+        // จัดการเรื่อง Promo Code
+        $guestPromoCode = null;
+        foreach (array_unique($possibleKeys) as $key) {
+            $code = session("cart_{$key}_promo_code");
+            if ($code) {
+                $guestPromoCode = $code;
+                session()->forget("cart_{$key}_promo_code");
+                break;
+            }
+        }
+        
         if ($guestPromoCode) {
             session(["cart_{$userId}_promo_code" => $guestPromoCode]);
-            session()->forget("cart__guest_{$guestSessionKey}_promo_code");
         }
 
         if ($guestItems->isEmpty()) {
             return;
         }
 
-        $this->restoreCartFromDatabase($userId);
+        // 2. เตรียมตะกร้าของ User
         $userCart = Cart::session($userId);
         
         $productIds = $guestItems->map(function($item) {
@@ -518,35 +541,34 @@ class CartService
                 if (!$product) continue;
 
                 $isFreebie = $guestItem->attributes['is_freebie'] ?? false;
-                if (!$isFreebie && $guestItem->quantity > ($product->pd_sp_stock ?? 0)) {
-                    continue;
-                }
 
-                if ($userCart->has($guestItem->id)) {
-                    $userCart->update($guestItem->id, [
-                        'quantity' => $guestItem->quantity,
-                        'attributes' => $guestItem->attributes->toArray()
-                    ]);
-                } else {
-                    $attributes = $guestItem->attributes->toArray();
-                    
-                    $userCart->add([
-                        'id' => $guestItem->id,
-                        'name' => $guestItem->name,
-                        'price' => $guestItem->price,
-                        'quantity' => $guestItem->quantity,
-                        'attributes' => $attributes,
-                        'associatedModel' => $product,
-                    ]);
-                }
+                // เพิ่มเข้าตะกร้า User (ถ้ามีอยู่แล้วให้บวกจำนวนเพิ่ม หรือทับไปเลย)
+                $userCart->add([
+                    'id' => $guestItem->id,
+                    'name' => $guestItem->name,
+                    'price' => $guestItem->price,
+                    'quantity' => $guestItem->quantity,
+                    'attributes' => $guestItem->attributes->toArray(),
+                    'associatedModel' => $product,
+                ]);
+                
             } catch (Exception $e) {
                 Log::error("Merge Cart Item Error: " . $e->getMessage());
                 continue;
             }
         }
         
+        // 3. บันทึกลง Database ทันทีเพื่อให้หน้า Checkout ดึงไปใช้ได้ชัวร์ๆ
         $this->saveCartToDatabase($userId, $userCart->getContent());
-        $guestCart->clear();
+        
+        // 4. ล้างสถานะเพื่อให้ระบบโหลดข้อมูลใหม่จาก DB ในครั้งต่อไปที่เรียกใช้งาน
+        $this->cartLoadedFromDb = false;
+        $this->restoreCartFromDatabase($userId);
+        
+        // 5. ล้างตะกร้า Guest ทิ้ง
+        if (isset($guestCart)) {
+            $guestCart->clear();
+        }
     }
 
     private function validateFreebieConsistency(int|string $userId): void

@@ -4,20 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\DeliveryAddress;
 use App\Models\Order;
-use App\Models\OrderDetail;
 use App\Models\ProductSalepage;
 use App\Models\Province;
-use App\Models\ShippingMethod;
-use App\Models\ShippingSetting;
 use App\Services\OrderService;
 use App\Services\PromptPayService;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -32,15 +27,25 @@ class PaymentController extends Controller
 
     public function index(Request $request)
     {
+        $userId = Auth::id();
+        $cartService = $this->orderService->getCartService();
+        $cartContent = $cartService->getCartContents();
+
+        // ถ้าไม่มีการส่ง selected_items มา (เช่น หลัง Login) ให้เหมาว่าเลือกทั้งหมดในตะกร้า
         $selectedItems = $request->input('selected_items', []);
+        if (empty($selectedItems)) {
+            $selectedItems = $cartContent->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        }
+
         $selectedFreebies = $request->input('selected_freebies', []);
+
+        if ($cartContent->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'ตะกร้าสินค้าของคุณว่างเปล่า');
+        }
 
         if (empty($selectedItems) && empty($selectedFreebies)) {
             return redirect()->route('cart.index')->with('error', 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
         }
-
-        $userId = Auth::id();
-        $cartContent = Cart::session($userId)->getContent();
 
         $cartItems = collect();
         foreach ($cartContent as $item) {
@@ -79,29 +84,26 @@ class PaymentController extends Controller
             $totalItemCount += (int) $item->quantity;
         }
 
-        $cartService = $this->orderService->getCartService();
         $promoDiscount = $cartService->calculateTotalDiscount($totalAmount, $cartItems);
 
         $totalDiscount += $promoDiscount;
         $totalAmount -= $promoDiscount;
 
         // If there are freebies selected from pool
-        if (!empty($selectedFreebies)) {
+        if (! empty($selectedFreebies)) {
             $totalItemCount += count($selectedFreebies);
         }
 
         $addresses = DeliveryAddress::where('user_id', auth()->id())->get();
         $provinces = Province::all();
-        
-        // ✅ แก้ไขการดึง Product IDs ให้รองรับระบบ Bundle (ใช้ product_id จาก attributes)
-        $productIds = $cartItems->map(fn($item) => $item->attributes['product_id'] ?? $item->id)->toArray();
+
+        $productIds = $cartItems->map(fn ($item) => $item->attributes['product_id'] ?? $item->id)->toArray();
         $products = ProductSalepage::whereIn('pd_sp_id', $productIds)->get()->keyBy('pd_sp_id');
 
-        // 🎟️ ดึงรายการคูปองที่สามารถใช้งานได้ (Active และเปิดให้กดเลือกใช้เองได้)
         $now = now();
         $availableCoupons = \App\Models\Promotion::where('is_active', true)
-            ->where('is_selectable', true) // ✅ แสดงเฉพาะคูปองที่อนุญาตให้กดเลือกได้เอง
-            ->whereDoesntHave('birthdayPromotion') // ❌ ไม่แสดงโปรวันเกิดในรายการคูปองแนะนำ
+            ->where('is_selectable', true)
+            ->whereDoesntHave('birthdayPromotion')
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', $now))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $now))
             ->where(function ($q) {
@@ -110,12 +112,11 @@ class PaymentController extends Controller
             })
             ->get();
 
-        // Calculate initial shipping cost based on the first address or 0
         $shippingCost = 0;
         if ($addresses->count() > 0) {
             $shippingCost = $this->orderService->calculateShippingValue(
-                $addresses->first()->id, 
-                $totalAmount, 
+                $addresses->first()->id,
+                $totalAmount,
                 null,
                 $totalItemCount,
                 $cartItems
@@ -123,8 +124,8 @@ class PaymentController extends Controller
         }
 
         return view('payment', compact(
-            'cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount', 
-            'addresses', 'selectedItems', 'selectedFreebies', 'provinces', 
+            'cartItems', 'totalAmount', 'totalDiscount', 'totalOriginalAmount',
+            'addresses', 'selectedItems', 'selectedFreebies', 'provinces',
             'products', 'shippingCost', 'totalItemCount', 'availableCoupons'
         ));
     }
@@ -137,10 +138,11 @@ class PaymentController extends Controller
         $addressId = $request->input('address_id');
         $subtotal = (float) $request->input('subtotal');
         $itemCount = (int) $request->input('item_count', 1);
-        
+
         $userId = auth()->id();
-        $cartContent = \Cart::session($userId)->getContent();
-        $cartItems = $cartContent->filter(fn($item) => in_array((string)$item->id, $request->input('selected_items', [])));
+        $cartService = $this->orderService->getCartService();
+        $cartContent = $cartService->getCartContents();
+        $cartItems = $cartContent->filter(fn ($item) => in_array((string) $item->id, $request->input('selected_items', [])));
 
         // Determine shipping method to use for calculation
         $shippingMethodId = null;
@@ -155,7 +157,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'success' => true,
-            'shippingCost' => $shippingCost
+            'shippingCost' => $shippingCost,
         ]);
     }
 
@@ -222,12 +224,12 @@ class PaymentController extends Controller
                     $this->orderService->cancelOrder($order);
                     Log::info("Order {$order->ord_code} automatically cancelled due to timeout.");
                 } catch (\Exception $e) {
-                    Log::error("Failed to auto-cancel order {$order->ord_code}: " . $e->getMessage());
+                    Log::error("Failed to auto-cancel order {$order->ord_code}: ".$e->getMessage());
                 }
             }
+
             return redirect()->route('cart.index')->with('error', 'ขออภัย! หมดเวลาชำระเงินแล้ว ระบบได้ทำการคืนสินค้าเข้าคลังเรียบร้อยแล้ว กรุณาทำรายการใหม่อีกครั้ง');
         }
-
 
         $promptpayTarget = env('PROMPTPAY_ACCOUNT', '0812345678');
         $payload = $promptPayService->generatePayload($promptpayTarget, $order->net_amount);
@@ -247,6 +249,7 @@ class PaymentController extends Controller
         // อนุญาตให้รีเฟรชได้ภายใน 30 นาทีแรกหลังจากสร้างออเดอร์เท่านั้น
         if (now()->greaterThan($order->created_at->addMinutes(30))) {
             $this->orderService->cancelOrder($order);
+
             return back()->with('error', 'หมดเวลาชำระเงินแล้ว ออเดอร์ถูกยกเลิก');
         }
 
@@ -358,7 +361,7 @@ class PaymentController extends Controller
 
             $grandTotal = max(0, $totalAmount - $promoDiscount);
             $totalDiscount = $totalDiscountFromProducts + $promoDiscount;
-            
+
             // Determine shipping method to use for calculation
             $shippingMethodId = null;
             $shippingMode = \App\Models\ShippingSetting::get('shipping_mode', 'global');
@@ -370,7 +373,7 @@ class PaymentController extends Controller
 
             // Recalculate shipping based on new grandTotal and item count
             $shippingCost = $this->orderService->calculateShippingValue($addressId, $grandTotal, $shippingMethodId, $totalItemCount, $checkoutCartItems);
-            
+
             $finalTotal = $grandTotal + $shippingCost;
 
             return response()->json([
@@ -381,7 +384,7 @@ class PaymentController extends Controller
                 'shippingCost' => (float) $shippingCost,
                 'totalDiscount' => (float) $totalDiscount,
                 'finalTotal' => (float) $finalTotal,
-                'itemCount' => $totalItemCount
+                'itemCount' => $totalItemCount,
             ]);
 
         } catch (ValidationException $e) {
@@ -398,7 +401,7 @@ class PaymentController extends Controller
     public function uploadSlip(Request $request, $orderCode)
     {
         $request->validate([
-            'slip_image' => 'required|image|mimes:jpeg,png,jpg|max:5120'
+            'slip_image' => 'required|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         $order = Order::where('ord_code', $orderCode)->where('user_id', Auth::id())->firstOrFail();
@@ -416,7 +419,7 @@ class PaymentController extends Controller
                 DB::beginTransaction();
 
                 $extension = $request->file('slip_image')->getClientOriginalExtension();
-                $filename = \Illuminate\Support\Str::uuid() . '.' . $extension;
+                $filename = \Illuminate\Support\Str::uuid().'.'.$extension;
                 $path = $request->file('slip_image')->storeAs('slips', $filename, 'public');
 
                 $alreadyPaid = ($order->status_id >= Order::STATUS_PAID);
